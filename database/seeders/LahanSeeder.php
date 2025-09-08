@@ -82,24 +82,8 @@ class LahanSeeder extends Seeder
             }
         }
 
-        // Note: Klasifikasi with deskripsi "-" (index 0) is intentionally left without variabel mapping
-        // as it represents a default/null classification that may not be used in the new structure
+        // Data seeders
+        $this->call(LahanDataSeeder::class);
 
-        // Note: Data seeding will be done separately due to large volume
-        // The actual data from ref_pertanianlahan.sql contains thousands of records
-        // You can uncomment and modify the following section to seed sample data
-        
-        /*
-        // Sample data seeding (uncomment to use)
-        $sampleData = [
-            ['tahun' => 2010, 'id_bulan' => 0, 'id_wilayah' => 11, 'id_variabel' => $insertedVariabels[0]->id, 'id_klasifikasi' => $insertedKlasifikasis[1]->id, 'nilai' => 201230, 'status' => null],
-            ['tahun' => 2010, 'id_bulan' => 0, 'id_wilayah' => 11, 'id_variabel' => $insertedVariabels[0]->id, 'id_klasifikasi' => $insertedKlasifikasis[2]->id, 'nilai' => 112419, 'status' => null],
-            // Add more sample data as needed
-        ];
-
-        foreach ($sampleData as $dataRow) {
-            LahanData::create($dataRow);
-        }
-        */
     }
 }

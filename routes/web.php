@@ -201,6 +201,7 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
 Route::prefix('pertanian')->name('pertanian.')->group(function () {
     Route::get('benih-pupuk', [App\Http\Controllers\BenihPupukController::class, 'index'])->name('benih-pupuk');
     Route::get('iklim-opt-dpi', [App\Http\Controllers\IklimOptDpiController::class, 'index'])->name('iklim-opt-dpi');
+    Route::get('lahan', [App\Http\Controllers\LahanController::class, 'index'])->name('lahan');
     Route::get('daftar-alamat', function () {
         return view('pertanian.daftar-alamat');
     })->name('daftar-alamat');
@@ -233,6 +234,16 @@ Route::prefix('api/iklim-opt-dpi')->name('api.iklim-opt-dpi.')->group(function (
     Route::get('years', [App\Http\Controllers\IklimOptDpiController::class, 'getAvailableYears'])->name('years');
     Route::post('filter', [App\Http\Controllers\IklimOptDpiController::class, 'filter'])->name('filter');
     Route::post('search', [App\Http\Controllers\IklimOptDpiController::class, 'search'])->name('search');
+});
+
+// API Routes for Lahan
+Route::prefix('api/lahan')->name('api.lahan.')->group(function () {
+    Route::get('topiks', [App\Http\Controllers\LahanController::class, 'getTopiks'])->name('topiks');
+    Route::get('variabels/{topik}', [App\Http\Controllers\LahanController::class, 'getVariabelsByTopik'])->name('variabels');
+    Route::post('klasifikasis', [App\Http\Controllers\LahanController::class, 'getKlasifikasiByVariabels'])->name('klasifikasis');
+    Route::get('provinces', [App\Http\Controllers\LahanController::class, 'getProvinces'])->name('provinces');
+    Route::get('years', [App\Http\Controllers\LahanController::class, 'getAvailableYears'])->name('years');
+    Route::post('filter', [App\Http\Controllers\LahanController::class, 'filter'])->name('filter');
 });
 
 Route::prefix('api')->name('api.')->group(function () {
