@@ -1,0 +1,133 @@
+/* Import Flux first so Tailwind utilities (declared after) can override component defaults in both light & dark modes */
+@import '../../vendor/livewire/flux/dist/flux.css';
+@import 'tailwindcss';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *)); /* Custom dark variant selector */
+
+/* Explicit dark overrides for common surfaces (in case component CSS wins cascade) */
+@layer utilities {
+    .dark .surface-card { @apply bg-white dark:!bg-neutral-800 border border-neutral-200 dark:border-neutral-700; }
+    .dark .surface-modal { @apply bg-white dark:!bg-neutral-800; }
+    /* Active nav item text color in dark mode */
+    .dark [data-current='true'] .nav-link-text { @apply text-white; }
+    [data-current='true'] .nav-link-text { @apply font-medium; }
+        /* Fallback if component uses data-state instead of data-current */
+        [data-state='active'] .nav-link-text { @apply font-medium; }
+    
+    /* Force dark mode background */
+    .dark body { background-color: #171717 !important; }
+    .dark html { background-color: #171717 !important; }
+    
+    /* Force dark background for admin panel selection */
+    body.bg-gradient-to-br.from-neutral-900 {
+        background: linear-gradient(to bottom right, #171717, #262626, #0a0a0a) !important;
+    }
+    
+    /* Force dark mode for admin pages */
+    .dark .bg-gradient-to-br {
+        background: linear-gradient(to bottom right, #171717, #262626, #0a0a0a) !important;
+    }
+    
+    /* Print styles */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        /* Ensure proper print layout */
+        body {
+            background: white !important;
+            color: black !important;
+        }
+        
+        table {
+            border-collapse: collapse !important;
+        }
+        
+        th, td {
+            border: 1px solid #000 !important;
+            padding: 8px !important;
+        }
+        
+        /* Hide unnecessary elements during print */
+        button, .btn, [type="button"] {
+            display: none !important;
+        }
+        
+        /* Show only table content for printing */
+        #kelompok-table-wrapper,
+        #users-table-wrapper {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+        .dark [data-state='active'] .nav-link-text { @apply text-white; }
+            /* Icon coloring for active nav items */
+            [data-current='true'].active-icon svg, [data-state='active'].active-icon svg { @apply text-neutral-900; }
+            .dark [data-current='true'].active-icon svg, .dark [data-state='active'].active-icon svg { @apply text-white; }
+            /* Hover (non-active) */
+            .active-icon svg { @apply transition-colors text-neutral-500 dark:text-neutral-500; }
+            .active-icon:hover svg { @apply text-neutral-800 dark:text-neutral-300; }
+}
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f5f5f5;
+    --color-zinc-200: #e5e5e5;
+    --color-zinc-300: #d4d4d4;
+    --color-zinc-400: #a3a3a3;
+    --color-zinc-500: #737373;
+    --color-zinc-600: #525252;
+    --color-zinc-700: #404040;
+    --color-zinc-800: #262626;
+    --color-zinc-900: #171717;
+    --color-zinc-950: #0a0a0a;
+
+    --color-accent: var(--color-neutral-800);
+    --color-accent-content: var(--color-neutral-800);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-white);
+        --color-accent-content: var(--color-white);
+        --color-accent-foreground: var(--color-neutral-800);
+    }
+}
+
+@layer base {
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-neutral-200, currentColor);
+    }
+}
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply  !mb-0 !leading-tight;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* \[:where(&)\]:size-4 {
+    @apply size-4;
+} */

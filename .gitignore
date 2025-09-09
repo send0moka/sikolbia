@@ -1,0 +1,77 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# IDE Helper files
+.phpstorm.meta.php
+
+docs*
+praproposal*
+
+/final_res
+
+# Python ML Environment
+lstm_env/
+venv/
+env/
+.env_ml
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ML Models and Data
+*.h5
+*.pkl
+*.joblib
+trained_models/
+model_checkpoints/
+*.model
+
+# Exception: Include production model files
+!ml_models/models/nbm_production/
+!ml_models/models/nbm_production/*.pkl
+
+# Data files
+*.csv
+*.json
+# *.sql
+ref_pertanianbp.sql
+ref_pertanianiod.sql
+ref_pertanianlahan.sql
+TransaksiNbmSeeder_*.php
+parse_nbm_data.py
+create_efficient_seeder.py
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Debug Files
+debug_api.php
+debug_layouts.php
+/public/debug-ajax.html
+

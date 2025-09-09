@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Test</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; width: 100%; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Leaflet Map Test</h1>
+    <div class="test-info">
+        <p>This is a simple test to verify Leaflet map functionality works correctly.</p>
+        <p>If you see a map with markers below, the basic Leaflet setup is working.</p>
+    </div>
+    
+    <div id="map"></div>
+    
+    <div class="test-info">
+        <p><strong>Test Results:</strong></p>
+        <ul id="test-results">
+            <li>Loading Leaflet...</li>
+        </ul>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function addResult(message, success = true) {
+            const li = document.createElement('li');
+            li.textContent = message;
+            li.style.color = success ? 'green' : 'red';
+            results.appendChild(li);
+        }
+        
+        try {
+            // Clear loading message
+            results.innerHTML = '';
+            
+            addResult('✓ Leaflet library loaded successfully');
+            
+            // Create map
+            const map = L.map('map').setView([-2.5, 118], 5);
+            addResult('✓ Map container initialized');
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            addResult('✓ Tile layer added');
+            
+            // Add test markers
+            const testData = [
+                { lat: -6.2, lng: 106.8, name: 'Jakarta' },
+                { lat: -7.8, lng: 110.4, name: 'Yogyakarta' },
+                { lat: -8.5, lng: 115.3, name: 'Denpasar' }
+            ];
+            
+            testData.forEach(item => {
+                L.marker([item.lat, item.lng])
+                    .addTo(map)
+                    .bindPopup(`<b>${item.name}</b><br>Lat: ${item.lat}<br>Lng: ${item.lng}`);
+            });
+            
+            addResult(`✓ Added ${testData.length} test markers`);
+            
+            // Fit bounds to markers
+            const group = new L.featureGroup(testData.map(item => L.marker([item.lat, item.lng])));
+            map.fitBounds(group.getBounds().pad(0.1));
+            addResult('✓ Map bounds fitted to markers');
+            
+            // Force map size invalidation
+            setTimeout(() => {
+                map.invalidateSize();
+                addResult('✓ Map size invalidated');
+            }, 100);
+            
+            addResult('🎉 All tests passed! Map should be fully functional.');
+            
+        } catch (error) {
+            addResult(`✗ Error: ${error.message}`, false);
+            console.error('Map test error:', error);
+        }
+    </script>
+</body>
+</html>

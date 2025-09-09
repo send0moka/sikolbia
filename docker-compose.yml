@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: basis-data-konsumsi-pangan-app
+    container_name: basis-data-konsumsi-pangan-app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html:cached
+    networks:
+      - laravel
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=konsumsi_pangan
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootsecret
+
+  nginx:
+    image: nginx:alpine
+    container_name: basis-data-konsumsi-pangan-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:8.0
+    container_name: basis-data-konsumsi-pangan-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: konsumsi_pangan
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: basis-data-konsumsi-pangan-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - laravel
+
+volumes:
+  db_data:
+
+networks:
+  laravel:
+    driver: bridge
