@@ -60,6 +60,9 @@ RUN if [ -f package.json ]; then \
 # Create storage link and set permissions
 RUN rm -rf public/storage && ln -s /var/www/html/storage/app/public /var/www/html/public/storage
 
+# Copy Livewire and Flux assets
+RUN chmod +x copy_assets.sh && ./copy_assets.sh
+
 # Make optimization script executable
 RUN chmod +x optimize_laravel.sh
 
