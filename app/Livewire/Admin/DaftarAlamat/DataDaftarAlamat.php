@@ -476,9 +476,16 @@ class DataDaftarAlamat extends Component
         $this->fill($alamat->toArray());
         $this->existingGambar = $alamat->gambar;
         
-        // Ensure coordinates are preserved
+        // Ensure coordinates are preserved and logged
         $this->oldLatitude = $this->latitude;
         $this->oldLongitude = $this->longitude;
+        
+        // Log coordinates for debugging
+        Log::info('Edit coordinates loaded', [
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'nama_dinas' => $this->nama_dinas
+        ]);
         
         $this->showModal = true;
         $this->dispatch('initializeMap');

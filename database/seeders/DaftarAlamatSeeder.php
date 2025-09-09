@@ -16,7 +16,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Aceh',
                 'kabupaten_kota' => 'Kota Banda Aceh',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-perkebunan-banda-aceh.jpg',
                 'nama_dinas' => 'Dinas Pertanian dan Perkebunan',
                 'alamat' => 'Jl. T. Panglima Nyak Makam No.24, Kota Baru, Kec. Kuta Alam, Kota Banda Aceh, Aceh 24415',
                 'telp' => '06517552342',
@@ -29,7 +29,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Aceh',
                 'kabupaten_kota' => 'Kabupaten Aceh Tengah',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-perkebunan-dan-kehutanan-aceh-tengah.jpeg',
                 'nama_dinas' => 'Dinas Perkebunan dan Kehutanan',
                 'alamat' => 'Jalan Kartini No.3, Bujang, Kec. Lut Tawar, Kabupaten Aceh Tengah, Aceh 24519',
                 'telp' => '06437426361',
@@ -42,7 +42,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sumatera Utara',
                 'kabupaten_kota' => 'Kota Medan',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-tanaman-pangan-medan.jpg',
                 'nama_dinas' => 'Dinas Pertanian Tanaman Pangan',
                 'alamat' => 'Jl. Jenderal Besar A.H. Nasution No.6, Pangkalan Masyhur, Kec. Medan Johor, Kota Medan, Sumatera Utara 20219',
                 'telp' => '0617860633',
@@ -55,7 +55,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sumatera Barat',
                 'kabupaten_kota' => 'Kota Padang',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-padang.jpeg',
                 'nama_dinas' => 'Dinas Pertanian',
                 'alamat' => 'Jl. Raya Sei Lareh, Lubuk Minturun, Kec. Koto Tangah, Kota Padang, Sumatera Barat 25586',
                 'telp' => '0751495892',
@@ -68,7 +68,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Riau',
                 'kabupaten_kota' => 'Kabupaten Rokan Hulu',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-perikanan-dan-peternakan-rokan-hulu.png',
                 'nama_dinas' => 'Dinas Perikanan dan Peternakan',
                 'alamat' => 'Jl. Diponegoro KM.3, Koto Tinggi, Kec. Rambah, Kabupaten Rokan Hulu, Riau 28557',
                 'telp' => '076291122',
@@ -81,7 +81,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kepulauan Riau',
                 'kabupaten_kota' => 'Kota Batam',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-ketahanan-pangan-dan-pertanian-batam.png',
                 'nama_dinas' => 'Dinas Ketahanan Pangan Dan Pertanian',
                 'alamat' => 'Jl. Raja Ali H. No.3, sei harapan, Kec. Sekupang, Kota Batam, Kepulauan Riau 29444',
                 'telp' => '081276513351',
@@ -94,7 +94,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Jambi',
                 'kabupaten_kota' => 'Kota Jambi',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-ketahanan-pangan-jambi.png',
                 'nama_dinas' => 'Dinas Pertanian dan Ketahanan Pangan',
                 'alamat' => 'Jl. Kapten Pattimura No.Km.10, Kenali Besar, Kec. Kota Baru, Kota Jambi, Jambi 36128',
                 'telp' => '0741580573',
@@ -107,7 +107,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sumatera Selatan',
                 'kabupaten_kota' => 'Kabupaten Musi Rawas',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/badan-ketahanan-pangan-musi-rawas.png',
                 'nama_dinas' => 'Badan Ketahanan Pangan',
                 'alamat' => 'Desa Muara Beliti Baru, Muara Beliti, Musi Rawas Regency, South Sumatra 31661',
                 'telp' => null,
@@ -120,7 +120,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Bengkulu',
                 'kabupaten_kota' => 'Kota Bengkulu',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/badan-pangan-dan-pertanian-bengkulu.png',
                 'nama_dinas' => 'Badan Pangan dan Pertanian',
                 'alamat' => 'Semarang, Sungai Serut, Bengkulu City, Bengkulu 38119',
                 'telp' => '085273040022',
@@ -133,7 +133,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Lampung',
                 'kabupaten_kota' => 'Kota Bandar Lampung',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-ketahanan-pangan-tanaman-pangan-dan-hortikultura-bandar-lampung.png',
                 'nama_dinas' => 'Dinas Ketahanan Pangan, Tanaman Pangan dan Hortikultura',
                 'alamat' => 'JL. Hj Zainal Abidin Pagaralam No.01, Labuhan Ratu, Kec. Kedaton, Kota Bandar Lampung, Lampung 35132',
                 'telp' => '0721704700',
@@ -146,7 +146,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kepulauan Bangka Belitung',
                 'kabupaten_kota' => 'Kota Bangka',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pangan-dan-pertanian-bangka.png',
                 'nama_dinas' => 'Dinas Pangan dan Pertanian',
                 'alamat' => 'Jl. Diponegoro No.10, Parit Padang, Sungai Liat, Kabupaten Bangka, Kepulauan Bangka Belitung 33215',
                 'telp' => '071792300',
@@ -159,7 +159,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Banten',
                 'kabupaten_kota' => 'Kota Serang',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-ketahanan-pangan-serang.png',
                 'nama_dinas' => 'Dinas Pertanian dan Ketahanan Pangan',
                 'alamat' => 'Kawasan Pusat Pemerintahan Provinsi Banten, Jl. Syech Nawawi Al-Bantani No.1, Curug, Sukajaya, Kec. Serang, Kota Serang, Banten 42171',
                 'telp' => '0254267032',
@@ -172,7 +172,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Daerah Khusus Jakarta',
                 'kabupaten_kota' => 'Kota Jakarta Selatan',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/badan-ketahanan-pangan-kementerian-pertanian-jakarta-selatan.png',
                 'nama_dinas' => 'Badan Ketahanan Pangan, Kementerian Pertanian',
                 'alamat' => 'Gedung E Lantai IV, Jl. Harsono RM No.3 3, RT.5/RW.7, Ragunan, Ps. Minggu, Kota Jakarta Selatan, Daerah Khusus Jakarta 12550',
                 'telp' => null,
@@ -185,7 +185,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Jawa Barat',
                 'kabupaten_kota' => 'Kota Bandung',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-tanaman-pangan-dan-hortikultura-bandung.png',
                 'nama_dinas' => 'Dinas Tanaman Pangan dan Hortikultura',
                 'alamat' => 'Jl. Surapati No.71, Sadang Serang, Kecamatan Coblong, Kota Bandung, Jawa Barat 40133',
                 'telp' => '0222503884',
@@ -198,7 +198,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Jawa Tengah',
                 'kabupaten_kota' => 'Kabupaten Semarang',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-perkebunan-semarang.png',
                 'nama_dinas' => 'Dinas Pertanian dan Perkebunan',
                 'alamat' => 'Komplek, Tarubudaya, Jl. Tarubudaya Jl. Jenderal Gatot Subroto, Bandarjo, Kec. Ungaran Bar., Kabupaten Semarang, Jawa Tengah 50517',
                 'telp' => '0246921348',
@@ -211,7 +211,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Daerah Istimewa Yogyakarta',
                 'kabupaten_kota' => 'Kota Yogyakarta',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-pangan-yogyakarta.png',
                 'nama_dinas' => 'Dinas Pertanian dan Pangan',
                 'alamat' => 'Giwangan, Umbulharjo, Yogyakarta City, Special Region of Yogyakarta 55163',
                 'telp' => '02744396955',
@@ -224,7 +224,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Jawa Timur',
                 'kabupaten_kota' => 'Kota Surabaya',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-ketahanan-pangan-surabaya.png',
                 'nama_dinas' => 'Dinas Pertanian dan Ketahanan Pangan',
                 'alamat' => 'Jl. Ahmad Yani No.152, Gayungan, Kec. Gayungan, Surabaya, Jawa Timur 60235',
                 'telp' => '0318280110',
@@ -237,7 +237,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Bali',
                 'kabupaten_kota' => 'Kota Denpasar',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-ketahanan-pangan-denpasar.png',
                 'nama_dinas' => 'Dinas Pertanian dan Ketahanan Pangan',
                 'alamat' => 'Jl. WR Supratman No.71, Sumerta Kaja, Kec. Denpasar Tim., Kota Denpasar, Bali 80236',
                 'telp' => '0361228716',
@@ -250,7 +250,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Nusa Tenggara Barat',
                 'kabupaten_kota' => 'Kabupaten Lombok Tengah',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-lombok-tengah.png',
                 'nama_dinas' => 'Dinas Pertanian',
                 'alamat' => 'Ahmad Yani Street No.1, Praya, Central Lombok Regency, West Nusa Tenggara 83511',
                 'telp' => '0370654015',
@@ -263,7 +263,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Nusa Tenggara Timur',
                 'kabupaten_kota' => 'Kabupaten Sumba Timur',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-pangan-sumba-timur.png',
                 'nama_dinas' => 'Dinas Pertanian dan Pangan',
                 'alamat' => 'Jl. Gatot Soebroto No.8, Prailiu, Kec. Kambera, Kabupaten Sumba Timur, Nusa Tenggara Timur 87212',
                 'telp' => null,
@@ -276,7 +276,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kalimantan Barat',
                 'kabupaten_kota' => 'Kota Pontianak',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-tanaman-pangan-dan-hortikultura-pontianak.png',
                 'nama_dinas' => 'Dinas Tanaman Pangan dan Hortikultura',
                 'alamat' => 'Jl. Alianyang No.17, Sungai Bangkong, Kec. Pontianak Kota, Kota Pontianak, Kalimantan Barat 78113',
                 'telp' => '0561734017',
@@ -289,7 +289,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kalimantan Tengah',
                 'kabupaten_kota' => 'Kota Palangka Raya',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-palangkaraya.png',
                 'nama_dinas' => 'Dinas Pertanian',
                 'alamat' => 'Jl. Cilik Riwut No.Km. 7, RW.8, Bukit Tunggal, Kec. Jekan Raya, Kota Palangka Raya, Kalimantan Tengah 74874',
                 'telp' => '05363232729',
@@ -302,7 +302,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kalimantan Selatan',
                 'kabupaten_kota' => 'Kabupaten Banjar',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-tanaman-pangan-dan-hortikultura-banjar.png',
                 'nama_dinas' => 'Dinas Tanaman Pangan dan Hortikultura',
                 'alamat' => 'Jl. Keramat, Cindai Alus, Kec. Martapura, Kabupaten Banjar, Kalimantan Selatan 70612',
                 'telp' => null,
@@ -315,7 +315,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kalimantan Timur',
                 'kabupaten_kota' => 'Kota Samarinda',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-ketahanan-pangan-dan-pertanian-samarinda.png',
                 'nama_dinas' => 'Dinas Ketahanan Pangan dan Pertanian',
                 'alamat' => 'Jl. Biola No.1, Sungai Pinang Luar, Kec. Samarinda Kota, Kota Samarinda, Kalimantan Timur 75117',
                 'telp' => null,
@@ -328,7 +328,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Kalimantan Utara',
                 'kabupaten_kota' => 'Kabupaten Nunukan',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-ketahanan-pangan-dan-pertanian-nunukan.png',
                 'nama_dinas' => 'Dinas Ketahanan Pangan dan Pertanian',
                 'alamat' => 'Kompleks Perkantoran Gabungan Dinas (Gadis I), Jl. Ujang Dewa, Sedadap, Prov., Nunukan Sel., Kabupaten Nunukan, Kalimantan Utara 77482',
                 'telp' => '055622843',
@@ -341,7 +341,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sulawesi Utara',
                 'kabupaten_kota' => 'Kabupaten Minahasa',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-peternakan-minahasa.png',
                 'nama_dinas' => 'Dinas Pertanian dan Peternakan',
                 'alamat' => 'Kalasey Satu, Pineleng, Minahasa Regency, North Sulawesi',
                 'telp' => null,
@@ -354,7 +354,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sulawesi Tengah',
                 'kabupaten_kota' => 'Kabupaten Sigi',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/balai-pengkajian-teknologi-pertanian-sigi.png',
                 'nama_dinas' => 'Balai Pengkajian Teknologi Pertanian',
                 'alamat' => 'Jl. Poros Palu - Kulawi No.KM 17, Maku, Kec. Dolo, Kabupaten Sigi, Sulawesi Tengah 94362',
                 'telp' => '04514013202',
@@ -367,7 +367,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sulawesi Selatan',
                 'kabupaten_kota' => 'Kota Makassar',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-peternakan-ketahanan-pangan-makassar.png',
                 'nama_dinas' => 'Dinas Pertanian, Peternakan & Ketahanan Pangan',
                 'alamat' => 'Jl. Bandang No.30, Bontoala Tua, Kec. Bontoala, Kota Makassar, Sulawesi Selatan 90154',
                 'telp' => '041421208',
@@ -380,7 +380,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sulawesi Tenggara',
                 'kabupaten_kota' => 'Kota Kendari',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-kota-kendari.png',
                 'nama_dinas' => 'Dinas Pertanian',
                 'alamat' => 'Jl. Balai Kota, Mandonga, Kec. Mandonga, Kota Kendari, Sulawesi Tenggara 93111',
                 'telp' => null,
@@ -393,7 +393,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Gorontalo',
                 'kabupaten_kota' => 'Kabupaten Gorontalo',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-tanaman-pangan-dan-hortikultura-gorontalo.png',
                 'nama_dinas' => 'Dinas Pertanian Tanaman Pangan Dan Hortikultura',
                 'alamat' => 'Tinelo Ayula, Bulango Selatan, Gorontalo Regency, Gorontalo 96125',
                 'telp' => null,
@@ -406,7 +406,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Sulawesi Barat',
                 'kabupaten_kota' => 'Kabupaten Polewali Mandar',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-peternakan-polewali-mandar.png',
                 'nama_dinas' => 'Dinas Pertanian dan Peternakan',
                 'alamat' => 'JL. Muhamad Yamin No.177, Madatte, Kec. Polewali, Kabupaten Polewali Mandar, Sulawesi Barat 91311',
                 'telp' => null,
@@ -419,7 +419,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Maluku',
                 'kabupaten_kota' => 'Kota Ambon',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-ambon.png',
                 'nama_dinas' => 'Dinas Pertanian',
                 'alamat' => 'Jl. W.R. Supratman No.21, Uritetu, Kec. Sirimau, Kota Ambon, Maluku 97124',
                 'telp' => null,
@@ -432,7 +432,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Maluku Utara',
                 'kabupaten_kota' => 'Kota Tidore Kepulauan',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-tidore-kepulauan.png',
                 'nama_dinas' => 'Dinas Pertanian',
                 'alamat' => 'Komp. Pertanian, Jl. Raya Kusu, Sofifi, Galala, Tidore, Kota Tidore Kepulauan, Maluku Utara',
                 'telp' => null,
@@ -445,7 +445,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Papua Barat',
                 'kabupaten_kota' => 'Kabupaten Manokwari',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-ketahanan-pangan-manokwari.png',
                 'nama_dinas' => 'Dinas Pertanian dan Ketahanan Pangan',
                 'alamat' => 'Jl. Percetakan Sanggeng, Sanggeng, Kec. Manokwari Bar., Kabupaten Manokwari, Papua Bar. 98312',
                 'telp' => '0986211961',
@@ -458,7 +458,7 @@ class DaftarAlamatSeeder extends Seeder
             [
                 'provinsi' => 'Provinsi Papua',
                 'kabupaten_kota' => 'Kota Jayapura',
-                'gambar' => null,
+                'gambar' => 'daftar-alamat/dinas-pertanian-dan-ketahanan-pangan-jayapura.png',
                 'nama_dinas' => 'Dinas Pertanian dan Ketahanan Pangan',
                 'alamat' => 'Wahno, Abepura, Jayapura City, Papua',
                 'telp' => null,

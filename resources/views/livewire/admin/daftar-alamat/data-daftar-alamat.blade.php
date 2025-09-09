@@ -10,6 +10,13 @@
             border-radius: 8px;
             position: relative;
             z-index: 10;
+            background-color: #f8f9fa;
+        }
+        
+        /* Force proper dimensions */
+        #location-map .leaflet-container {
+            height: 320px !important;
+            width: 100% !important;
         }
 
         /* Custom popup styling */
@@ -804,16 +811,63 @@
                                             
                                                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                                             attribution: '© OpenStreetMap contributors',
-                                                            maxZoom: 19
+                                                            maxZoom: 19,
+                                                            errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                                                            timeout: 10000
                                                         }).addTo(this.map);
                                             
-                                                        // Force map to resize
+                                                        // Force map to resize multiple times to ensure proper loading
                                                         this.map.invalidateSize(true);
                                             
+                                                        // Check if we have existing coordinates (for edit mode)
+                                                        const latInput = document.getElementById('latitude-input');
+                                                        const lngInput = document.getElementById('longitude-input');
+                                                        const existingLat = latInput && latInput.value ? parseFloat(latInput.value) : null;
+                                                        const existingLng = lngInput && lngInput.value ? parseFloat(lngInput.value) : null;
+                                                        
+                                                        console.log('Checking coordinates:', {
+                                                            latInput: latInput?.value,
+                                                            lngInput: lngInput?.value,
+                                                            existingLat,
+                                                            existingLng
+                                                        });
+                                                        
+                                                        let initialLat, initialLng, initialZoom;
+                                                        
+                                                        if (existingLat && existingLng && existingLat !== 0 && existingLng !== 0) {
+                                                            // Use existing coordinates for edit mode
+                                                            console.log('Using existing coordinates:', existingLat, existingLng);
+                                                            initialLat = existingLat;
+                                                            initialLng = existingLng;
+                                                            initialZoom = 15;
+                                                        } else {
+                                                            // Use default Indonesia center for create mode
+                                                            console.log('Using default coordinates (create mode)');
+                                                            initialLat = -2.5489;
+                                                            initialLng = 118.0149;
+                                                            initialZoom = 5;
+                                                        }
+                                                        
+                                                        // Set view first, then add marker
+                                                        this.map.setView([initialLat, initialLng], initialZoom);
+                                                        this.setMarker(initialLat, initialLng);
+                                                        
+                                                        // Force multiple redraws to ensure tiles load
+                                                        setTimeout(() => {
+                                                            this.map.invalidateSize(true);
+                                                            this.map.setView([initialLat, initialLng], initialZoom);
+                                                        }, 100);
+                                                        
+                                                        setTimeout(() => {
+                                                            this.map.invalidateSize(true);
+                                                        }, 300);
+                                                        
+                                                        setTimeout(() => {
+                                                            this.map.invalidateSize(true);
+                                                        }, 500);
+                                                        
                                                         this.mapReady = true;
                                                         console.log('Map initialized successfully');
-                                            
-                                                        this.setMarker(-2.5489, 118.0149);
                                             
                                                         // Add click handler with error protection
                                                         this.map.on('click', (e) => {
@@ -824,6 +878,19 @@
                                                                 console.error('Error handling map click:', error);
                                                             }
                                                         });
+                                                        // Add event listeners to ensure tiles load properly
+                                                        this.map.on('load', () => {
+                                                            console.log('Map load event fired');
+                                                            this.map.invalidateSize(true);
+                                                        });
+                                                        
+                                                        this.map.on('tileload', () => {
+                                                            console.log('Tiles loading...');
+                                                        });
+                                                        
+                                                        this.map.on('tilesload', () => {
+                                                            console.log('All tiles loaded');
+                                                        });
                                             
                                                         // Prevent DOM updates during map interaction
                                                         this.map.on('mousedown', () => {
@@ -832,25 +899,6 @@
                                                                 document.body.style.pointerEvents = 'auto';
                                                             }, 100);
                                                         });
-                                            
-                                                        // Multiple resize attempts
-                                                        setTimeout(() => {
-                                                            if (this.map) {
-                                                                this.map.invalidateSize(true);
-                                                            }
-                                                        }, 100);
-                                            
-                                                        setTimeout(() => {
-                                                            if (this.map) {
-                                                                this.map.invalidateSize(true);
-                                                            }
-                                                        }, 300);
-                                            
-                                                        setTimeout(() => {
-                                                            if (this.map) {
-                                                                this.map.invalidateSize(true);
-                                                            }
-                                                        }, 1000);
                                             
                                                     } catch (error) {
                                                         console.error('Error initializing map:', error);
@@ -1444,7 +1492,101 @@
                 previewImage(fileInput);
             }
         });
+
+        // Listen for modal opened event to update coordinates display
+        const modal = document.querySelector('[x-data*="showModal"]');
+        if (modal) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const isVisible = !modal.style.display || modal.style.display !== 'none';
+                        if (isVisible) {
+                            setTimeout(() => {
+                                updateCoordinatesDisplay();
+                                
+                                // Force map redraw when modal becomes visible
+                                const mapContainer = document.querySelector('[x-data*="initMap"]');
+                                if (mapContainer && mapContainer.__x) {
+                                    const alpineData = mapContainer.__x.$data;
+                                    if (alpineData.map) {
+                                        // Multiple invalidateSize calls to ensure proper rendering
+                                        alpineData.map.invalidateSize(true);
+                                        setTimeout(() => {
+                                            alpineData.map.invalidateSize(true);
+                                        }, 100);
+                                        setTimeout(() => {
+                                            alpineData.map.invalidateSize(true);
+                                        }, 300);
+                                    }
+                                }
+                            }, 100);
+                        }
+                    }
+                });
+            });
+            observer.observe(modal, { attributes: true });
+        }
+
+        // Listen for Livewire wire:model updates
+        Livewire.on('initializeMap', () => {
+            setTimeout(() => {
+                updateCoordinatesDisplay();
+                // Also trigger map update if needed
+                const mapContainer = document.querySelector('[x-data*="initMap"]');
+                if (mapContainer && mapContainer.__x) {
+                    const alpineData = mapContainer.__x.$data;
+                    if (alpineData.map && alpineData.setMarker) {
+                        // Force map to redraw when modal is opened
+                        alpineData.map.invalidateSize(true);
+                        
+                        const latInput = document.getElementById('latitude-input');
+                        const lngInput = document.getElementById('longitude-input');
+                        if (latInput && lngInput && latInput.value && lngInput.value) {
+                            const lat = parseFloat(latInput.value);
+                            const lng = parseFloat(lngInput.value);
+                            if (lat !== 0 && lng !== 0) {
+                                // Set view first, then marker
+                                alpineData.map.setView([lat, lng], 15);
+                                setTimeout(() => {
+                                    alpineData.setMarker(lat, lng);
+                                    alpineData.map.invalidateSize(true);
+                                }, 100);
+                            }
+                        }
+                    }
+                }
+            }, 200);
+        });
     });
+
+    function updateCoordinatesDisplay() {
+        const latInput = document.getElementById('latitude-input');
+        const lngInput = document.getElementById('longitude-input');
+        const latDisplay = document.getElementById('current-latitude');
+        const lngDisplay = document.getElementById('current-longitude');
+
+        console.log('updateCoordinatesDisplay called', {
+            latInput: latInput?.value,
+            lngInput: lngInput?.value,
+            latDisplay: latDisplay?.textContent,
+            lngDisplay: lngDisplay?.textContent
+        });
+
+        if (latInput && lngInput && latDisplay && lngDisplay) {
+            const lat = latInput.value;
+            const lng = lngInput.value;
+            
+            if (lat && lng && lat !== '0' && lng !== '0') {
+                latDisplay.textContent = parseFloat(lat).toFixed(6);
+                lngDisplay.textContent = parseFloat(lng).toFixed(6);
+                console.log('Updated coordinates display:', lat, lng);
+            } else {
+                console.log('Coordinates are empty or zero:', lat, lng);
+            }
+        } else {
+            console.log('Missing elements for coordinate display');
+        }
+    }
 
     function submitForm() {
         const form = document.getElementById('alamat-form');
