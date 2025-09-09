@@ -746,6 +746,63 @@
                                         @enderror
                                     </div>
 
+                                    <!-- Image Upload Section -->
+                                    <div class="md:col-span-2">
+                                        <label
+                                            class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Gambar</label>
+
+                                        <!-- File Input -->
+                                        <div class="mt-1">
+                                            <input wire:model="gambar" id="gambar-upload" type="file"
+                                                accept="image/*"
+                                                onchange="validateFileSize(this); previewImage(this);"
+                                                class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-300" />
+                                            @error('gambar')
+                                                <span
+                                                    class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Image Preview -->
+                                        <div id="image-preview" class="mt-4 hidden">
+                                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                                Preview:</p>
+                                            <div
+                                                class="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-4">
+                                                <img id="preview-img" src="" alt="Preview"
+                                                    class="max-w-full h-auto max-h-48 mx-auto rounded-lg shadow-sm">
+                                            </div>
+                                        </div>
+
+                                        <!-- Existing Image -->
+                                        @if ($existingGambar)
+                                            <div class="mt-4" id="existing-image">
+                                                <p
+                                                    class="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                                    Gambar Saat Ini:</p>
+                                                <div class="relative inline-block">
+                                                    <img src="{{ asset('storage/' . $existingGambar) }}"
+                                                        alt="Existing Image"
+                                                        class="max-w-full h-auto max-h-48 rounded-lg shadow-sm">
+                                                    <button wire:click="deleteImage" type="button"
+                                                        wire:confirm="Apakah Anda yakin ingin menghapus gambar ini?"
+                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                                            Format yang didukung: JPEG, PNG, JPG, GIF, SVG. Maksimal 2MB.
+                                        </p>
+                                    </div>
+
                                     <!-- Location Map Section -->
                                     <div class="md:col-span-2">
                                         <label
@@ -1059,63 +1116,6 @@
                                             <span class="text-red-500 dark:text-red-400 text-sm">Longitude
                                                 diperlukan</span>
                                         @enderror
-                                    </div>
-
-                                    <!-- Image Upload Section -->
-                                    <div class="md:col-span-2">
-                                        <label
-                                            class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Gambar</label>
-
-                                        <!-- File Input -->
-                                        <div class="mt-1">
-                                            <input wire:model="gambar" id="gambar-upload" type="file"
-                                                accept="image/*"
-                                                onchange="validateFileSize(this); previewImage(this);"
-                                                class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-300" />
-                                            @error('gambar')
-                                                <span
-                                                    class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span>
-                                            @enderror
-                                        </div>
-
-                                        <!-- Image Preview -->
-                                        <div id="image-preview" class="mt-4 hidden">
-                                            <p class="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                                Preview:</p>
-                                            <div
-                                                class="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-4">
-                                                <img id="preview-img" src="" alt="Preview"
-                                                    class="max-w-full h-auto max-h-48 mx-auto rounded-lg shadow-sm">
-                                            </div>
-                                        </div>
-
-                                        <!-- Existing Image -->
-                                        @if ($existingGambar)
-                                            <div class="mt-4" id="existing-image">
-                                                <p
-                                                    class="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                                    Gambar Saat Ini:</p>
-                                                <div class="relative inline-block">
-                                                    <img src="{{ asset('storage/' . $existingGambar) }}"
-                                                        alt="Existing Image"
-                                                        class="max-w-full h-auto max-h-48 rounded-lg shadow-sm">
-                                                    <button wire:click="deleteImage" type="button"
-                                                        wire:confirm="Apakah Anda yakin ingin menghapus gambar ini?"
-                                                        class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                                            Format yang didukung: JPEG, PNG, JPG, GIF, SVG. Maksimal 2MB.
-                                        </p>
                                     </div>
                                 </div>
                             </div>
