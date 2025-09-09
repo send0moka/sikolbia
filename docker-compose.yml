@@ -9,17 +9,26 @@ services:
     container_name: basis-data-konsumsi-pangan-app
     working_dir: /var/www/html
     volumes:
-      - .:/var/www/html:cached
+      - .:/var/www/html:delegated
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
     networks:
       - laravel
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_DATABASE=konsumsi_pangan
       - DB_USERNAME=root
       - DB_PASSWORD=rootsecret
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 512m
 
   nginx:
     image: nginx:alpine
@@ -41,12 +50,22 @@ services:
     environment:
       MYSQL_DATABASE: konsumsi_pangan
       MYSQL_ROOT_PASSWORD: rootsecret
+      MYSQL_INNODB_BUFFER_POOL_SIZE: 256M
+      MYSQL_INNODB_LOG_FILE_SIZE: 64M
+      MYSQL_INNODB_FLUSH_LOG_AT_TRX_COMMIT: 2
+      MYSQL_QUERY_CACHE_SIZE: 64M
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     networks:
       - laravel
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=256M --innodb-log-file-size=64M --innodb-flush-log-at-trx-commit=2
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -61,8 +80,23 @@ services:
     networks:
       - laravel
 
+  redis:
+    image: redis:7-alpine
+    container_name: basis-data-konsumsi-pangan-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - laravel
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
 volumes:
   db_data:
+  vendor_data:
+  node_modules_data:
+  redis_data:
 
 networks:
   laravel:
