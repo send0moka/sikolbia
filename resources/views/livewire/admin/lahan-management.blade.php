@@ -99,7 +99,7 @@
                 <select wire:model.live="filterTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Topik</option>
                     @foreach($topiks as $topik)
-                        <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                        <option value="{{ $topik->id }}">{{ $topik->deskripsi }}</option>
                     @endforeach
                 </select>
             </div>
@@ -108,7 +108,7 @@
                 <select wire:model.live="filterVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Variabel</option>
                     @foreach($variabels as $variabel)
-                        <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
+                        <option value="{{ $variabel->id }}">{{ $variabel->deskripsi }} ({{ $variabel->satuan }})</option>
                     @endforeach
                 </select>
             </div>
@@ -117,7 +117,7 @@
                 <select wire:model.live="filterKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Klasifikasi</option>
                     @foreach($klasifikasis as $klasifikasi)
-                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
+                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi }}</option>
                     @endforeach
                 </select>
             </div>
@@ -278,17 +278,17 @@
                             #{{ $lahan->id }}
                         </td>
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                            {{ $lahan->lahanTopik->nama }}
+                            {{ $lahan->topik->deskripsi ?? 'N/A' }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $lahan->lahanVariabel->nama }}
-                            <span class="text-xs text-neutral-500 dark:text-neutral-400">({{ $lahan->lahanVariabel->satuan }})</span>
+                            {{ $lahan->variabel->deskripsi ?? 'N/A' }}
+                            <span class="text-xs text-neutral-500 dark:text-neutral-400">({{ $lahan->variabel->satuan ?? '' }})</span>
                         </td>
                         <td class="px-6 py-4">
-                            {{ $lahan->lahanKlasifikasi->nama }}
+                            {{ $lahan->klasifikasi->deskripsi ?? 'N/A' }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $lahan->wilayah }}
+                            {{ $lahan->wilayah->nama ?? 'N/A' }}
                         </td>
                         <td class="px-6 py-4">
                             {{ $lahan->tahun }}
@@ -297,15 +297,21 @@
                             {{ number_format($lahan->nilai, 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full 
-                                @if($lahan->status === 'Aktif') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
-                                @elseif($lahan->status === 'Tidak Aktif') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
-                                @elseif($lahan->status === 'Dalam Proses') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
-                                @elseif($lahan->status === 'Selesai') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
-                                @else bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-300
-                                @endif">
-                                {{ $lahan->status }}
-                            </span>
+                            @if($lahan->status)
+                                <span class="px-2 py-1 text-xs rounded-full 
+                                    @if($lahan->status === 'Aktif') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                                    @elseif($lahan->status === 'Tidak Aktif') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
+                                    @elseif($lahan->status === 'Dalam Proses') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
+                                    @elseif($lahan->status === 'Selesai') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
+                                    @else bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-300
+                                    @endif">
+                                    {{ $lahan->status }}
+                                </span>
+                            @else
+                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+                                    N/A
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 no-print">
                             <div class="flex space-x-2">
@@ -353,40 +359,97 @@
                 <form wire:submit="createLahan">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik Lahan</label>
-                            <select wire:model="id_lahan_topik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Topik</option>
-                                @foreach($topiks as $topik)
-                                    <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
-                                @endforeach
-                            </select>
-                            @error('id_lahan_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
-                            <select wire:model="id_lahan_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel Lahan</label>
+                            <select wire:model.live="id_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
                                 <option value="">Pilih Variabel</option>
                                 @foreach($variabels as $variabel)
-                                    <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
+                                    <option value="{{ $variabel->id }}">{{ $variabel->deskripsi }} ({{ $variabel->satuan }})</option>
                                 @endforeach
                             </select>
-                            @error('id_lahan_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                            @error('id_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Klasifikasi</label>
-                            <select wire:model="id_lahan_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Klasifikasi</option>
-                                @foreach($klasifikasis as $klasifikasi)
-                                    <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
-                                @endforeach
+                            <select wire:model="id_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                @if($id_variabel)
+                                    <option value="">Pilih Klasifikasi</option>
+                                    @foreach($klasifikasiOptions as $klasifikasi)
+                                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi }}</option>
+                                    @endforeach
+                                @else
+                                    <option value="">Pilih variabel terlebih dahulu</option>
+                                @endif
                             </select>
-                            @error('id_lahan_klasifikasi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                            @error('id_klasifikasi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        <flux:input wire:model="wilayah" label="Wilayah" placeholder="Masukkan nama wilayah" required />
-                        @error('wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Tingkat Wilayah</label>
+                            <select wire:model.live="tingkat_wilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Tingkat Wilayah</option>
+                                <option value="nasional">Nasional</option>
+                                <option value="provinsi">Provinsi</option>
+                            </select>
+                            @error('tingkat_wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        @if($tingkat_wilayah === 'provinsi')
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Provinsi</label>
+                            <select wire:model.live="id_provinsi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Provinsi</option>
+                                @foreach($provinsiOptions as $provinsi)
+                                    <option value="{{ $provinsi->id }}">{{ $provinsi->nama }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_provinsi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+                        @endif
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                @if($tingkat_wilayah === 'nasional')
+                                    Provinsi (Tingkat Nasional)
+                                @elseif($tingkat_wilayah === 'provinsi')
+                                    Kabupaten/Kota
+                                @else
+                                    Wilayah
+                                @endif
+                            </label>
+                            <select wire:model="id_wilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">
+                                    @if($tingkat_wilayah === 'nasional')
+                                        Pilih Provinsi (Tingkat Nasional)
+                                    @elseif($tingkat_wilayah === 'provinsi')
+                                        Pilih Kabupaten/Kota
+                                    @else
+                                        Pilih Wilayah
+                                    @endif
+                                </option>
+                                @if($tingkat_wilayah === 'nasional')
+                                    @foreach($provinsiOptions as $provinsi)
+                                        <option value="{{ $provinsi->id }}">{{ $provinsi->nama }}</option>
+                                    @endforeach
+                                @elseif($tingkat_wilayah === 'provinsi' && $id_provinsi)
+                                    @foreach($kabupatenKotaOptions as $kabkota)
+                                        <option value="{{ $kabkota->id }}">{{ $kabkota->nama }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('id_wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Bulan</label>
+                            <select wire:model="id_bulan" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Bulan</option>
+                                @foreach($bulans as $bulan)
+                                    <option value="{{ $bulan->id }}">{{ $bulan->nama }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_bulan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
                         <flux:input wire:model="tahun" label="Tahun" type="number" placeholder="2024" min="2000" max="2030" required />
                         @error('tahun') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
@@ -395,9 +458,9 @@
                         @error('nilai') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status</label>
-                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Status</option>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status (Opsional)</label>
+                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                                <option value="">Pilih Status (Opsional)</option>
                                 <option value="Aktif">Aktif</option>
                                 <option value="Tidak Aktif">Tidak Aktif</option>
                                 <option value="Dalam Proses">Dalam Proses</option>
@@ -426,44 +489,101 @@
     <div class="fixed inset-0 bg-neutral-900/70 dark:bg-neutral-950/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border border-neutral-200 dark:border-neutral-700 w-96 shadow-xl rounded-md bg-white dark:!bg-neutral-800">
             <div class="mt-3">
-                <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Edit Data Lahan</h3>
+                                <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Edit Data Lahan</h3>
                 <form wire:submit="updateLahan">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik Lahan</label>
-                            <select wire:model="id_lahan_topik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Topik</option>
-                                @foreach($topiks as $topik)
-                                    <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
-                                @endforeach
-                            </select>
-                            @error('id_lahan_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
-                            <select wire:model="id_lahan_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel Lahan</label>
+                            <select wire:model.live="id_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
                                 <option value="">Pilih Variabel</option>
                                 @foreach($variabels as $variabel)
-                                    <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
+                                    <option value="{{ $variabel->id }}">{{ $variabel->deskripsi }} ({{ $variabel->satuan }})</option>
                                 @endforeach
                             </select>
-                            @error('id_lahan_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                            @error('id_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Klasifikasi</label>
-                            <select wire:model="id_lahan_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Klasifikasi</option>
-                                @foreach($klasifikasis as $klasifikasi)
-                                    <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
-                                @endforeach
+                            <select wire:model="id_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                @if($id_variabel)
+                                    <option value="">Pilih Klasifikasi</option>
+                                    @foreach($klasifikasiOptions as $klasifikasi)
+                                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi }}</option>
+                                    @endforeach
+                                @else
+                                    <option value="">Pilih variabel terlebih dahulu</option>
+                                @endif
                             </select>
-                            @error('id_lahan_klasifikasi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                            @error('id_klasifikasi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        <flux:input wire:model="wilayah" label="Wilayah" placeholder="Masukkan nama wilayah" required />
-                        @error('wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Tingkat Wilayah</label>
+                            <select wire:model.live="tingkat_wilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Tingkat Wilayah</option>
+                                <option value="nasional">Nasional</option>
+                                <option value="provinsi">Provinsi</option>
+                            </select>
+                            @error('tingkat_wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        @if($tingkat_wilayah === 'provinsi')
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Provinsi</label>
+                            <select wire:model.live="id_provinsi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Provinsi</option>
+                                @foreach($provinsiOptions as $provinsi)
+                                    <option value="{{ $provinsi->id }}">{{ $provinsi->nama }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_provinsi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+                        @endif
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                @if($tingkat_wilayah === 'nasional')
+                                    Provinsi (Tingkat Nasional)
+                                @elseif($tingkat_wilayah === 'provinsi')
+                                    Kabupaten/Kota
+                                @else
+                                    Wilayah
+                                @endif
+                            </label>
+                            <select wire:model="id_wilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">
+                                    @if($tingkat_wilayah === 'nasional')
+                                        Pilih Provinsi (Tingkat Nasional)
+                                    @elseif($tingkat_wilayah === 'provinsi')
+                                        Pilih Kabupaten/Kota
+                                    @else
+                                        Pilih Wilayah
+                                    @endif
+                                </option>
+                                @if($tingkat_wilayah === 'nasional')
+                                    @foreach($provinsiOptions as $provinsi)
+                                            <option value="{{ $provinsi->id }}">{{ $provinsi->nama }}</option>
+                                    @endforeach
+                                @elseif($tingkat_wilayah === 'provinsi' && $id_provinsi)
+                                    @foreach($kabupatenKotaOptions as $kabkota)
+                                        <option value="{{ $kabkota->id }}">{{ $kabkota->nama }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('id_wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Bulan</label>
+                            <select wire:model="id_bulan" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Bulan</option>
+                                @foreach($bulans as $bulan)
+                                    <option value="{{ $bulan->id }}">{{ $bulan->nama }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_bulan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
                         <flux:input wire:model="tahun" label="Tahun" type="number" placeholder="2024" min="2000" max="2030" required />
                         @error('tahun') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
@@ -472,9 +592,9 @@
                         @error('nilai') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status</label>
-                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Status</option>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status (Opsional)</label>
+                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                                <option value="">Pilih Status (Opsional)</option>
                                 <option value="Aktif">Aktif</option>
                                 <option value="Tidak Aktif">Tidak Aktif</option>
                                 <option value="Dalam Proses">Dalam Proses</option>
@@ -511,7 +631,7 @@
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mt-2">Hapus Data Lahan</h3>
                 <div class="mt-2">
                     <p class="text-sm text-neutral-500 dark:text-neutral-400">
-                        Apakah Anda yakin ingin menghapus data lahan <strong>{{ $deletingLahan->lahanTopik->nama ?? '' }}</strong> di wilayah <strong>{{ $deletingLahan->wilayah ?? '' }}</strong>?
+                        Apakah Anda yakin ingin menghapus data lahan <strong>{{ $deletingLahan->topik->deskripsi ?? 'N/A' }}</strong> di wilayah <strong>{{ $deletingLahan->wilayah->nama ?? 'N/A' }}</strong>?
                         <br>Tindakan ini tidak dapat dibatalkan.
                     </p>
                 </div>

@@ -40,9 +40,9 @@ class Reports extends Component
 
     public function render()
     {
-        $topiks = LahanTopik::orderBy('nama')->get();
-        $variabels = LahanVariabel::orderBy('nama')->get();
-        $klasifikasis = LahanKlasifikasi::orderBy('nama')->get();
+        $topiks = LahanTopik::orderBy('deskripsi')->get();
+        $variabels = LahanVariabel::orderBy('deskripsi')->get();
+        $klasifikasis = LahanKlasifikasi::orderBy('deskripsi')->get();
         $regions = $this->getRegions();
 
         $reportData = $this->generateReportData();
@@ -427,27 +427,28 @@ class Reports extends Component
                     ->get();
 
             case 'topik':
-                return $query->join('lahan_topik', 'lahan_data.id_lahan_topik', '=', 'lahan_topik.id')
-                    ->select('lahan_topik.nama as group_name')
+                return $query->join('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+                    ->join('lahan_topik', 'lahan_variabel.id_topik', '=', 'lahan_topik.id')
+                    ->select('lahan_topik.deskripsi as group_name')
                     ->selectRaw('COUNT(*) as total_records')
                     ->selectRaw('AVG(lahan_data.nilai) as avg_value')
                     ->selectRaw('SUM(lahan_data.nilai) as total_value')
                     ->selectRaw('MAX(lahan_data.nilai) as max_value')
                     ->selectRaw('MIN(lahan_data.nilai) as min_value')
-                    ->groupBy('lahan_topik.nama')
-                    ->orderBy('lahan_topik.nama')
+                    ->groupBy('lahan_topik.deskripsi')
+                    ->orderBy('lahan_topik.deskripsi')
                     ->get();
 
             case 'variabel':
-                return $query->join('lahan_variabel', 'lahan_data.id_lahan_variabel', '=', 'lahan_variabel.id')
-                    ->select('lahan_variabel.nama as group_name')
+                return $query->join('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+                    ->select('lahan_variabel.deskripsi as group_name')
                     ->selectRaw('COUNT(*) as total_records')
                     ->selectRaw('AVG(lahan_data.nilai) as avg_value')
                     ->selectRaw('SUM(lahan_data.nilai) as total_value')
                     ->selectRaw('MAX(lahan_data.nilai) as max_value')
                     ->selectRaw('MIN(lahan_data.nilai) as min_value')
-                    ->groupBy('lahan_variabel.nama')
-                    ->orderBy('lahan_variabel.nama')
+                    ->groupBy('lahan_variabel.deskripsi')
+                    ->orderBy('lahan_variabel.deskripsi')
                     ->get();
 
             case 'year':
@@ -470,13 +471,13 @@ class Reports extends Component
     {
         return $query->select([
                 'lahan_data.*',
-                'lahan_topik.nama as topik_nama',
-                'lahan_variabel.nama as variabel_nama',
-                'lahan_klasifikasi.nama as klasifikasi_nama'
+                'lahan_topik.deskripsi as topik_nama',
+                'lahan_variabel.deskripsi as variabel_nama',
+                'lahan_klasifikasi.deskripsi as klasifikasi_nama'
             ])
-            ->join('lahan_topik', 'lahan_data.id_lahan_topik', '=', 'lahan_topik.id')
-            ->join('lahan_variabel', 'lahan_data.id_lahan_variabel', '=', 'lahan_variabel.id')
-            ->join('lahan_klasifikasi', 'lahan_data.id_lahan_klasifikasi', '=', 'lahan_klasifikasi.id')
+            ->join('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+            ->join('lahan_topik', 'lahan_variabel.id_topik', '=', 'lahan_topik.id')
+            ->join('lahan_klasifikasi', 'lahan_data.id_klasifikasi', '=', 'lahan_klasifikasi.id')
             ->orderBy('lahan_data.tahun', 'desc')
             ->limit(100)
             ->get();

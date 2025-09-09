@@ -54,7 +54,7 @@ class Statistics extends Component
             ->pluck('tahun')
             ->toArray();
             
-        $this->topiks = LahanTopik::orderBy('nama')->get();
+        $this->topiks = LahanTopik::orderBy('deskripsi')->get();
     }
 
     private function loadStatistics()
@@ -115,9 +115,10 @@ class Statistics extends Component
 
     private function loadTopikDistribution()
     {
-        $query = LahanData::select('lahan_topik.nama', DB::raw('COUNT(*) as count'), DB::raw('AVG(lahan_data.nilai) as avg_value'))
-            ->join('lahan_topik', 'lahan_data.id_lahan_topik', '=', 'lahan_topik.id')
-            ->groupBy('lahan_topik.id', 'lahan_topik.nama')
+        $query = LahanData::select('lahan_topik.deskripsi as nama', DB::raw('COUNT(*) as count'), DB::raw('AVG(lahan_data.nilai) as avg_value'))
+            ->join('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+            ->join('lahan_topik', 'lahan_variabel.id_topik', '=', 'lahan_topik.id')
+            ->groupBy('lahan_topik.id', 'lahan_topik.deskripsi')
             ->orderBy('count', 'desc');
             
         if ($this->selectedYear) {

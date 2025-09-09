@@ -100,7 +100,7 @@
                     @forelse($recentData as $data)
                         <tr>
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
-                                {{ $data->topik->nama ?? 'N/A' }}
+                                {{ $data->topik->deskripsi ?? 'N/A' }}
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-300">
                                 {{ number_format($data->nilai, 2) }}
@@ -109,7 +109,7 @@
                                 {{ $data->tahun }}
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-300">
-                                {{ $data->wilayah }}
+                                {{ $data->wilayah->nama ?? 'N/A' }}
                             </td>
                         </tr>
                     @empty

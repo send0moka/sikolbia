@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class LahanData extends Model
 {
@@ -53,9 +54,21 @@ class LahanData extends Model
     }
 
     // Get the topik through variabel relationship
-    public function topik(): BelongsTo
+    public function topik()
     {
-        return $this->belongsTo(LahanTopik::class, 'id_topik')
-                    ->through('variabel');
+        return $this->hasOneThrough(
+            LahanTopik::class,
+            LahanVariabel::class,
+            'id', // Foreign key on lahan_variabel table
+            'id', // Foreign key on lahan_topik table  
+            'id_variabel', // Local key on lahan_data table
+            'id_topik' // Local key on lahan_variabel table
+        );
+    }
+
+    // Alias for topik relationship (for backward compatibility)
+    public function lahanTopik()
+    {
+        return $this->topik();
     }
 }

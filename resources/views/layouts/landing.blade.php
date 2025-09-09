@@ -135,7 +135,7 @@
                                     </a>
                                     <a href="{{ route('pertanian.iklim-opt-dpi') }}"
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                                        Iklim, dan OPT DPI
+                                        Data Iklim, dan OPT DPI
                                     </a>
                                     <a href="{{ route('pertanian.daftar-alamat') }}"
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">

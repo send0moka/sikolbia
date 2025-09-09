@@ -25,12 +25,14 @@ class LahanManagement extends Component
 
     // Form fields
     public $nilai = '';
-    public $wilayah = '';
+    public $id_wilayah = '';
+    public $tingkat_wilayah = ''; // 'nasional' atau 'provinsi'
+    public $id_provinsi = ''; // untuk filter kabupaten/kota
+    public $id_bulan = '';
     public $tahun = '';
     public $status = '';
-    public $id_lahan_topik = '';
-    public $id_lahan_variabel = '';
-    public $id_lahan_klasifikasi = '';
+    public $id_variabel = '';
+    public $id_klasifikasi = '';
     public $editingLahan = null;
     public $deletingLahan = null;
     public $exportFormat = 'xlsx';
@@ -64,12 +66,12 @@ class LahanManagement extends Component
 
     protected $rules = [
         'nilai' => 'required|numeric|min:0',
-        'wilayah' => 'required|min:3',
+        'id_wilayah' => 'required|exists:wilayah,id',
+        'id_bulan' => 'required|exists:bulan,id',
         'tahun' => 'required|integer|min:2000|max:2030',
-        'status' => 'required|in:Aktif,Tidak Aktif,Dalam Proses,Selesai,Tertunda',
-        'id_lahan_topik' => 'required|exists:lahan_topik,id',
-        'id_lahan_variabel' => 'required|exists:lahan_variabel,id',
-        'id_lahan_klasifikasi' => 'required|exists:lahan_klasifikasi,id',
+        'status' => 'nullable|in:Aktif,Tidak Aktif,Dalam Proses,Selesai,Tertunda',
+        'id_variabel' => 'required|exists:lahan_variabel,id',
+        'id_klasifikasi' => 'required|exists:lahan_klasifikasi,id',
     ];
 
     public function updatingSearch()
@@ -107,12 +109,26 @@ class LahanManagement extends Component
     {
         $this->editingLahan = LahanData::findOrFail($lahanId);
         $this->nilai = $this->editingLahan->nilai;
-        $this->wilayah = $this->editingLahan->wilayah;
+        $this->id_wilayah = $this->editingLahan->id_wilayah;
+        $this->id_bulan = $this->editingLahan->id_bulan;
         $this->tahun = $this->editingLahan->tahun;
         $this->status = $this->editingLahan->status;
-        $this->id_lahan_topik = $this->editingLahan->id_lahan_topik;
-        $this->id_lahan_variabel = $this->editingLahan->id_lahan_variabel;
-        $this->id_lahan_klasifikasi = $this->editingLahan->id_lahan_klasifikasi;
+        $this->id_variabel = $this->editingLahan->id_variabel;
+        $this->id_klasifikasi = $this->editingLahan->id_klasifikasi;
+        
+        // Set tingkat wilayah dan provinsi berdasarkan wilayah yang dipilih
+        if ($this->id_wilayah) {
+            $wilayah = \App\Models\Wilayah::find($this->id_wilayah);
+            if ($wilayah) {
+                if ($wilayah->id_kategori == 1) { // Provinsi
+                    $this->tingkat_wilayah = 'nasional';
+                } else { // Kabupaten/Kota
+                    $this->tingkat_wilayah = 'provinsi';
+                    $this->id_provinsi = $wilayah->id_parent;
+                }
+            }
+        }
+        
         $this->showEditModal = true;
     }
 
@@ -140,12 +156,12 @@ class LahanManagement extends Component
 
         LahanData::create([
             'nilai' => $this->nilai,
-            'wilayah' => $this->wilayah,
+            'id_wilayah' => $this->id_wilayah,
+            'id_bulan' => $this->id_bulan,
             'tahun' => $this->tahun,
             'status' => $this->status,
-            'id_lahan_topik' => $this->id_lahan_topik,
-            'id_lahan_variabel' => $this->id_lahan_variabel,
-            'id_lahan_klasifikasi' => $this->id_lahan_klasifikasi,
+            'id_variabel' => $this->id_variabel,
+            'id_klasifikasi' => $this->id_klasifikasi,
         ]);
 
         session()->flash('message', 'Data lahan berhasil dibuat.');
@@ -158,12 +174,12 @@ class LahanManagement extends Component
 
         $this->editingLahan->update([
             'nilai' => $this->nilai,
-            'wilayah' => $this->wilayah,
+            'id_wilayah' => $this->id_wilayah,
+            'id_bulan' => $this->id_bulan,
             'tahun' => $this->tahun,
             'status' => $this->status,
-            'id_lahan_topik' => $this->id_lahan_topik,
-            'id_lahan_variabel' => $this->id_lahan_variabel,
-            'id_lahan_klasifikasi' => $this->id_lahan_klasifikasi,
+            'id_variabel' => $this->id_variabel,
+            'id_klasifikasi' => $this->id_klasifikasi,
         ]);
 
         session()->flash('message', 'Data lahan berhasil diupdate.');
@@ -182,14 +198,53 @@ class LahanManagement extends Component
     private function resetForm()
     {
         $this->nilai = '';
-        $this->wilayah = '';
+        $this->id_wilayah = '';
+        $this->tingkat_wilayah = '';
+        $this->id_provinsi = '';
+        $this->id_bulan = '';
         $this->tahun = '';
         $this->status = '';
-        $this->id_lahan_topik = '';
-        $this->id_lahan_variabel = '';
-        $this->id_lahan_klasifikasi = '';
+        $this->id_variabel = '';
+        $this->id_klasifikasi = '';
         $this->editingLahan = null;
         $this->resetErrorBag();
+    }
+
+    public function updatedTingkatWilayah()
+    {
+        $this->id_wilayah = '';
+        $this->id_provinsi = '';
+    }
+
+    public function updatedIdProvinsi()
+    {
+        $this->id_wilayah = '';
+    }
+
+    public function updatedIdVariabel()
+    {
+        $this->id_klasifikasi = '';
+    }
+
+    public function getProvinsiOptions()
+    {
+        return \App\Models\Wilayah::where('id_kategori', 1)->orderBy('nama')->get();
+    }
+
+    public function getKabupatenKotaOptions()
+    {
+        if ($this->id_provinsi) {
+            return \App\Models\Wilayah::where('id_parent', $this->id_provinsi)->orderBy('nama')->get();
+        }
+        return collect();
+    }
+
+    public function getKlasifikasiOptions()
+    {
+        if ($this->id_variabel) {
+            return \App\Models\LahanKlasifikasi::where('id_variabel', $this->id_variabel)->orderBy('sorter')->get();
+        }
+        return collect();
     }
     
     public function sortBy($field)
@@ -232,19 +287,22 @@ class LahanManagement extends Component
 
     public function render()
     {
-        $query = LahanData::with(['lahanTopik', 'lahanVariabel', 'lahanKlasifikasi'])
+        $query = LahanData::with(['topik', 'variabel', 'klasifikasi', 'wilayah'])
             ->when($this->search, function ($query) {
                 $search = '%' . $this->search . '%';
-                $query->where('wilayah', 'like', $search)
-                    ->orWhere('tahun', 'like', $search)
+                $query->where('tahun', 'like', $search)
                     ->orWhere('nilai', 'like', $search)
-                    ->orWhereHas('lahanTopik', function($q) use ($search) {
-                        $q->where('nama', 'like', $search);
+                    ->orWhere('status', 'like', $search)
+                    ->orWhereHas('topik', function($q) use ($search) {
+                        $q->where('deskripsi', 'like', $search);
                     })
-                    ->orWhereHas('lahanVariabel', function($q) use ($search) {
-                        $q->where('nama', 'like', $search);
+                    ->orWhereHas('variabel', function($q) use ($search) {
+                        $q->where('deskripsi', 'like', $search);
                     })
-                    ->orWhereHas('lahanKlasifikasi', function($q) use ($search) {
+                    ->orWhereHas('klasifikasi', function($q) use ($search) {
+                        $q->where('deskripsi', 'like', $search);
+                    })
+                    ->orWhereHas('wilayah', function($q) use ($search) {
                         $q->where('nama', 'like', $search);
                     });
             })
@@ -252,13 +310,15 @@ class LahanManagement extends Component
                 $query->where('tahun', $this->filterTahun);
             })
             ->when($this->filterTopik, function ($query) {
-                $query->where('id_lahan_topik', $this->filterTopik);
+                $query->whereHas('variabel', function($q) {
+                    $q->where('id_topik', $this->filterTopik);
+                });
             })
             ->when($this->filterVariabel, function ($query) {
-                $query->where('id_lahan_variabel', $this->filterVariabel);
+                $query->where('id_variabel', $this->filterVariabel);
             })
             ->when($this->filterKlasifikasi, function ($query) {
-                $query->where('id_lahan_klasifikasi', $this->filterKlasifikasi);
+                $query->where('id_klasifikasi', $this->filterKlasifikasi);
             })
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);
@@ -277,9 +337,14 @@ class LahanManagement extends Component
 
         return view('livewire.admin.lahan-management', [
             'lahans' => $lahans,
-            'topiks' => LahanTopik::orderBy('nama')->get(),
-            'variabels' => LahanVariabel::orderBy('nama')->get(),
-            'klasifikasis' => LahanKlasifikasi::orderBy('nama')->get(),
+            'topiks' => LahanTopik::orderBy('deskripsi')->get(),
+            'variabels' => LahanVariabel::orderBy('deskripsi')->get(),
+            'klasifikasis' => LahanKlasifikasi::orderBy('deskripsi')->get(),
+            'klasifikasiOptions' => $this->getKlasifikasiOptions(),
+            'wilayahs' => \App\Models\Wilayah::orderBy('nama')->get(),
+            'provinsiOptions' => $this->getProvinsiOptions(),
+            'kabupatenKotaOptions' => $this->getKabupatenKotaOptions(),
+            'bulans' => \App\Models\Bulan::orderBy('id')->get(),
             'tahunOptions' => LahanData::select('tahun')
                 ->distinct()
                 ->orderBy('tahun', 'desc')

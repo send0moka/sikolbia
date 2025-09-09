@@ -88,9 +88,9 @@ class Inventory extends Component
 
     private function loadFilters()
     {
-        $this->topiks = LahanTopik::orderBy('nama')->get();
-        $this->variabels = LahanVariabel::orderBy('nama')->get();
-        $this->klasifikasis = LahanKlasifikasi::orderBy('nama')->get();
+        $this->topiks = LahanTopik::orderBy('deskripsi')->get();
+        $this->variabels = LahanVariabel::orderBy('deskripsi')->get();
+        $this->klasifikasis = LahanKlasifikasi::orderBy('deskripsi')->get();
         $this->years = LahanData::select('tahun')
             ->distinct()
             ->orderBy('tahun', 'desc')

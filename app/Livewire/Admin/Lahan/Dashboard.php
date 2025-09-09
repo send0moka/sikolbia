@@ -56,11 +56,12 @@ class Dashboard extends Component
 
         // Topik distribution
         $this->topikDistribution = LahanData::select(
-                'lahan_topik.nama as topik',
+                'lahan_topik.deskripsi as topik',
                 DB::raw('COUNT(*) as total')
             )
-            ->join('lahan_topik', 'lahan_data.id_lahan_topik', '=', 'lahan_topik.id')
-            ->groupBy('lahan_topik.nama')
+            ->join('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+            ->join('lahan_topik', 'lahan_variabel.id_topik', '=', 'lahan_topik.id')
+            ->groupBy('lahan_topik.deskripsi')
             ->orderBy('total', 'desc')
             ->limit(5)
             ->get()
@@ -78,11 +79,12 @@ class Dashboard extends Component
 
         // Top regions
         $this->topRegions = LahanData::select(
-                'wilayah',
+                'wilayah.nama as wilayah',
                 DB::raw('COUNT(*) as total'),
                 DB::raw('AVG(nilai) as avg_value')
             )
-            ->groupBy('wilayah')
+            ->join('wilayah', 'lahan_data.id_wilayah', '=', 'wilayah.id')
+            ->groupBy('wilayah.nama')
             ->orderBy('total', 'desc')
             ->limit(5)
             ->get()
