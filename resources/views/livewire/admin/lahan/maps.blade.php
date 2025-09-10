@@ -19,7 +19,7 @@
             <select wire:model.live="selectedTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                 <option value="">Semua Topik</option>
                 @foreach($topiks as $topik)
-                    <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                    <option value="{{ $topik->id }}">{{ $topik->deskripsi }}</option>
                 @endforeach
             </select>
         </div>
@@ -29,7 +29,7 @@
             <select wire:model.live="selectedVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                 <option value="">Semua Variabel</option>
                 @foreach($variabels as $variabel)
-                    <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
+                    <option value="{{ $variabel->id }}">{{ $variabel->deskripsi }} ({{ $variabel->satuan }})</option>
                 @endforeach
             </select>
         </div>
@@ -39,7 +39,7 @@
             <select wire:model.live="selectedKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                 <option value="">Semua Klasifikasi</option>
                 @foreach($klasifikasis as $klasifikasi)
-                    <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
+                    <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi }}</option>
                 @endforeach
             </select>
         </div>
@@ -230,7 +230,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($mapData as $region)
+                                        @forelse ($mapData as $region)
                     <tr class="bg-white border-b dark:bg-neutral-800 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
                             {{ $region['wilayah'] }}

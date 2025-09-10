@@ -55,8 +55,10 @@ class Maps extends Component
             // Reset dependent filters when parent changes
             if ($property === 'selectedTopik') {
                 $this->reset(['selectedVariabel', 'selectedKlasifikasi']);
+                $this->loadFilters(); // Reload variabels for new topik
             } elseif ($property === 'selectedVariabel') {
                 $this->reset('selectedKlasifikasi');
+                $this->loadFilters(); // Reload klasifikasis for new variabel
             }
             
             $this->loadMapData();
@@ -67,8 +69,23 @@ class Maps extends Component
     private function loadFilters()
     {
         $this->topiks = LahanTopik::orderBy('deskripsi')->get();
-        $this->variabels = LahanVariabel::orderBy('deskripsi')->get();
-        $this->klasifikasis = LahanKlasifikasi::orderBy('deskripsi')->get();
+        
+        // Load variabels based on selected topik
+        if ($this->selectedTopik) {
+            $this->variabels = LahanVariabel::where('id_topik', $this->selectedTopik)
+                ->orderBy('deskripsi')->get();
+        } else {
+            $this->variabels = LahanVariabel::orderBy('deskripsi')->get();
+        }
+        
+        // Load klasifikasis based on selected variabel
+        if ($this->selectedVariabel) {
+            $this->klasifikasis = LahanKlasifikasi::where('id_variabel', $this->selectedVariabel)
+                ->orderBy('deskripsi')->get();
+        } else {
+            $this->klasifikasis = LahanKlasifikasi::orderBy('deskripsi')->get();
+        }
+        
         $this->years = LahanData::select('tahun')
             ->distinct()
             ->orderBy('tahun', 'desc')
@@ -80,29 +97,31 @@ class Maps extends Component
     {
         try {
             $query = LahanData::query()
+                ->join('wilayah', 'lahan_data.id_wilayah', '=', 'wilayah.id')
                 ->select([
-                    'wilayah',
+                    'wilayah.nama as wilayah_nama',
                     DB::raw('COUNT(*) as total_data'),
-                    DB::raw('AVG(nilai) as average_value'),
-                    DB::raw('MAX(nilai) as max_value'),
-                    DB::raw('MIN(nilai) as min_value'),
-                    DB::raw('SUM(nilai) as total_value'),
+                    DB::raw('AVG(lahan_data.nilai) as average_value'),
+                    DB::raw('MAX(lahan_data.nilai) as max_value'),
+                    DB::raw('MIN(lahan_data.nilai) as min_value'),
+                    DB::raw('SUM(lahan_data.nilai) as total_value'),
                 ])
-                ->groupBy('wilayah')
+                ->groupBy('wilayah.id', 'wilayah.nama')
                 ->when($this->selectedTopik, function($q) {
-                    return $q->where('id_lahan_topik', $this->selectedTopik);
+                    return $q->join('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+                             ->where('lahan_variabel.id_topik', $this->selectedTopik);
                 })
                 ->when($this->selectedVariabel, function($q) {
-                    return $q->where('id_lahan_variabel', $this->selectedVariabel);
+                    return $q->where('lahan_data.id_variabel', $this->selectedVariabel);
                 })
                 ->when($this->selectedKlasifikasi, function($q) {
-                    return $q->where('id_lahan_klasifikasi', $this->selectedKlasifikasi);
+                    return $q->where('lahan_data.id_klasifikasi', $this->selectedKlasifikasi);
                 })
                 ->when($this->selectedYear, function($q) {
-                    return $q->where('tahun', $this->selectedYear);
+                    return $q->where('lahan_data.tahun', $this->selectedYear);
                 });
 
-            $data = $query->get()->keyBy('wilayah');
+            $data = $query->get()->keyBy('wilayah_nama');
             
             // Calculate statistics
             $this->totalData = $data->sum('total_data');
@@ -112,9 +131,9 @@ class Maps extends Component
             
             // Format map data with coordinates
             $this->mapData = $data->map(function($item) {
-                $coordinates = $this->getWilayahCoordinates($item->wilayah);
+                $coordinates = $this->getWilayahCoordinates($item->wilayah_nama);
                 return [
-                    'wilayah' => $item->wilayah,
+                    'wilayah' => $item->wilayah_nama,
                     'total_data' => (int)$item->total_data,
                     'average_value' => (float)$item->average_value,
                     'max_value' => (float)$item->max_value,
