@@ -63,16 +63,6 @@
                     Reset Sort
                 </button>
             @endif
-            
-            <div class="flex items-center space-x-2">
-                <label class="text-sm text-neutral-600 dark:text-neutral-400">Tampil</label>
-                <select wire:model.live="perPage" class="text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                    @foreach($perPageOptions as $size)
-                        <option value="{{ $size }}">{{ $size }}</option>
-                    @endforeach
-                </select>
-                <span class="text-sm text-neutral-600 dark:text-neutral-400">/ halaman</span>
-            </div>
         </div>
         <div class="flex items-center gap-3">
             <div class="flex items-center space-x-2">
@@ -381,16 +371,7 @@
         </div>
         
         <!-- Pagination -->
-        <div class="px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="text-xs text-neutral-600 dark:text-neutral-400 md:mr-auto">
-                Menampilkan
-                <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $data->firstItem() }}</span>
-                -
-                <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $data->lastItem() }}</span>
-                dari
-                <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $data->total() }}</span>
-                data benih pupuk
-            </div>
+        <div class="px-6 py-3">
             {{ $data->links('vendor.pagination.tailwind') }}
         </div>
     </div>
