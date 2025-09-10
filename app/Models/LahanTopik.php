@@ -12,11 +12,30 @@ class LahanTopik extends Model
     use HasFactory;
     
     protected $table = 'lahan_topik';
+    // The `lahan_topik` table does not have created_at/updated_at columns.
+    // Disable Eloquent timestamps to avoid insert errors for missing columns.
     public $timestamps = false;
-    
+
+    // DB column is `deskripsi` but UI and Livewire use `nama`.
+    // Keep deskripsi fillable and map a virtual `nama` attribute to it.
+    // Allow setting either `deskripsi` (DB column) or `nama` (UI-facing virtual
+    // attribute). Adding `nama` here enables mass-assignment used by Livewire
+    // create/update calls which pass ['nama' => '...'].
     protected $fillable = [
         'deskripsi',
+        'nama',
     ];
+
+    // Allow getting/setting `nama` to map to `deskripsi` for compatibility
+    public function getNamaAttribute()
+    {
+        return $this->attributes['deskripsi'] ?? null;
+    }
+
+    public function setNamaAttribute($value)
+    {
+        $this->attributes['deskripsi'] = $value;
+    }
 
     public function variabels(): HasMany
     {

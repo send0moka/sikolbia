@@ -94,7 +94,7 @@
                 <select wire:model.live="selectedTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Topik</option>
                     @foreach($topiks as $topik)
-                        <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                        <option value="{{ $topik->id }}">{{ $topik->deskripsi }}</option>
                     @endforeach
                 </select>
             </div>
@@ -104,7 +104,7 @@
                 <select wire:model.live="selectedVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Variabel</option>
                     @foreach($variabels as $variabel)
-                        <option value="{{ $variabel->id }}">{{ $variabel->nama }}</option>
+                        <option value="{{ $variabel->id }}">{{ $variabel->deskripsi }}</option>
                     @endforeach
                 </select>
             </div>
@@ -114,7 +114,18 @@
                 <select wire:model.live="selectedKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Klasifikasi</option>
                     @foreach($klasifikasis as $klasifikasi)
-                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
+                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi }}</option>
+                    @endforeach
+
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Wilayah</label>
+                <select wire:model.live="selectedWilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                    <option value="">Semua Wilayah</option>
+                    @foreach($wilayahs as $w)
+                        <option value="{{ $w->id }}">{{ $w->nama }}</option>
                     @endforeach
                 </select>
             </div>
@@ -309,23 +320,23 @@
                             #{{ $data->id }}
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                {{ $data->lahanTopik->nama }}
+                            <span title="{{ optional($data->lahanTopik)->deskripsi ?? '' }}" class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 inline-block max-w-[10rem] truncate" aria-label="{{ optional($data->lahanTopik)->deskripsi ?? '' }}">
+                                {{ optional($data->lahanTopik)->deskripsi ?? '-' }}
                             </span>
                         </td>
                         <td class="px-6 py-4">
                             <div>
-                                <div class="font-medium text-neutral-900 dark:text-white">{{ $data->lahanVariabel->nama }}</div>
-                                <div class="text-xs text-neutral-500 dark:text-neutral-400">({{ $data->lahanVariabel->satuan }})</div>
+                                <div class="font-medium text-neutral-900 dark:text-white">{{ optional($data->variabel)->deskripsi ?? '-' }}</div>
+                                <div class="text-xs text-neutral-500 dark:text-neutral-400">({{ optional($data->variabel)->satuan ?? '-' }})</div>
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                {{ $data->lahanKlasifikasi->nama }}
-                            </span>
+                                <span title="{{ optional($data->klasifikasi)->deskripsi ?? '' }}" class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 inline-block max-w-[8rem] truncate" aria-label="{{ optional($data->klasifikasi)->deskripsi ?? '' }}">
+                                {{ optional($data->klasifikasi)->deskripsi ?? '-' }}
+                                </span>
                         </td>
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                            {{ $data->wilayah }}
+                            {{ optional($data->wilayah)->nama ?? '-' }}
                         </td>
                         <td class="px-6 py-4">
                             {{ $data->tahun }}
@@ -334,14 +345,17 @@
                             {{ number_format($data->nilai, 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4">
+                            @php
+                                $status = $data->status ?? 'N/A';
+                            @endphp
                             <span class="px-2 py-1 text-xs rounded-full 
-                                @if($data->status === 'Aktif') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
-                                @elseif($data->status === 'Tidak Aktif') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
-                                @elseif($data->status === 'Dalam Proses') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
-                                @elseif($data->status === 'Selesai') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
+                                @if($status === 'Aktif') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                                @elseif($status === 'Tidak Aktif') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
+                                @elseif($status === 'Dalam Proses') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
+                                @elseif($status === 'Selesai') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
                                 @else bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-300
                                 @endif">
-                                {{ $data->status }}
+                                {{ $status }}
                             </span>
                         </td>
                         <td class="px-6 py-4">

@@ -140,64 +140,65 @@
             <table class="w-full text-sm text-left text-neutral-500 dark:text-neutral-400" id="lahan-table">
                 <thead class="text-xs text-neutral-700 uppercase bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-400">
                     <tr>
+                        
                         <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id')">
                             <div class="flex items-center">
                                 ID
                                 @if($sortField === 'id')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
                                 @endif
                             </div>
                         </th>
-                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id_lahan_topik')">
+                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('topik')">
                             <div class="flex items-center">
                                 Topik
-                                @if($sortField === 'id_lahan_topik')
+                                @if($sortField === 'topik')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
                                 @endif
                             </div>
                         </th>
-                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id_lahan_variabel')">
+                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('variabel')">
                             <div class="flex items-center">
                                 Variabel
-                                @if($sortField === 'id_lahan_variabel')
+                                @if($sortField === 'variabel')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
                                 @endif
                             </div>
                         </th>
-                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id_lahan_klasifikasi')">
+                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('klasifikasi')">
                             <div class="flex items-center">
                                 Klasifikasi
-                                @if($sortField === 'id_lahan_klasifikasi')
+                                @if($sortField === 'klasifikasi')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
@@ -209,11 +210,11 @@
                                 Wilayah
                                 @if($sortField === 'wilayah')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
@@ -225,11 +226,11 @@
                                 Tahun
                                 @if($sortField === 'tahun')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
@@ -241,11 +242,11 @@
                                 Nilai
                                 @if($sortField === 'nilai')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
@@ -257,11 +258,11 @@
                                 Status
                                 @if($sortField === 'status')
                                     @if($sortDirection === 'asc')
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
                                         </svg>
                                     @else
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     @endif
@@ -666,4 +667,29 @@
         window.print();
         document.body.innerHTML = originalContents;
     }
+    </script>
+
+    <script>
+    // Listen to Livewire updates and clean sort-related query params from the browser URL
+    document.addEventListener('livewire:load', function () {
+        Livewire.hook('message.processed', (message, component) => {
+            try {
+                const url = new URL(window.location.href);
+                let changed = false;
+                if (url.searchParams.has('sortField')) {
+                    url.searchParams.delete('sortField');
+                    changed = true;
+                }
+                if (url.searchParams.has('sortDirection')) {
+                    url.searchParams.delete('sortDirection');
+                    changed = true;
+                }
+                if (changed) {
+                    window.history.replaceState({}, document.title, url.toString());
+                }
+            } catch (e) {
+                // ignore URL errors
+            }
+        });
+    });
     </script>

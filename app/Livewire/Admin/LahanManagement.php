@@ -51,8 +51,6 @@ class LahanManagement extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'perPage' => ['except' => 10],
-        'sortField' => ['except' => 'id'],
-        'sortDirection' => ['except' => 'asc'],
         'filterTahun' => ['except' => ''],
         'filterTopik' => ['except' => ''],
         'filterVariabel' => ['except' => ''],
@@ -326,7 +324,38 @@ class LahanManagement extends Component
 
         // Apply sorting
         if ($this->sortField) {
-            $query->orderBy($this->sortField, $this->sortDirection);
+            // allow sorting by friendly keys: topik, variabel, klasifikasi, wilayah, tahun, nilai, id
+            switch ($this->sortField) {
+                case 'topik':
+                    // join lahan_variabel -> lahan_topik via lahan_variabel.id_topik
+                    $query->leftJoin('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+                          ->leftJoin('lahan_topik', 'lahan_variabel.id_topik', '=', 'lahan_topik.id')
+                          ->select('lahan_data.*')
+                          ->orderBy('lahan_topik.deskripsi', $this->sortDirection);
+                    break;
+                case 'variabel':
+                    $query->leftJoin('lahan_variabel', 'lahan_data.id_variabel', '=', 'lahan_variabel.id')
+                          ->select('lahan_data.*')
+                          ->orderBy('lahan_variabel.deskripsi', $this->sortDirection);
+                    break;
+                case 'klasifikasi':
+                    $query->leftJoin('lahan_klasifikasi', 'lahan_data.id_klasifikasi', '=', 'lahan_klasifikasi.id')
+                          ->select('lahan_data.*')
+                          ->orderBy('lahan_klasifikasi.deskripsi', $this->sortDirection);
+                    break;
+                case 'wilayah':
+                    $query->leftJoin('wilayah', 'lahan_data.id_wilayah', '=', 'wilayah.id')
+                          ->select('lahan_data.*')
+                          ->orderBy('wilayah.nama', $this->sortDirection);
+                    break;
+                default:
+                    // default to ordering by lahan_data column if exists
+                    $allowed = ['id', 'tahun', 'nilai', 'status'];
+                    if (in_array($this->sortField, $allowed, true)) {
+                        $query->orderBy('lahan_data.' . $this->sortField, $this->sortDirection);
+                    }
+                    break;
+            }
         }
 
         $lahans = $query->paginate($this->perPage);
