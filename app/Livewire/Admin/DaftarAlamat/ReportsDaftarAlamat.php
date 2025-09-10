@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\DaftarAlamat;
 use App\Models\DaftarAlamat;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ReportsDaftarAlamat extends Component
 {
@@ -12,8 +13,8 @@ class ReportsDaftarAlamat extends Component
     public $dateFrom = '';
     public $dateTo = '';
     public $statusFilter = '';
-    public $kategoriFilter = '';
-    public $wilayahFilter = '';
+    public $provinsiFilter = '';
+    public $kabupatenKotaFilter = '';
     
     public $summaryData = [];
     public $detailData = [];
@@ -55,25 +56,28 @@ class ReportsDaftarAlamat extends Component
             'total_alamat' => $query->count(),
             'total_aktif' => (clone $query)->where('status', 'Aktif')->count(),
             'total_with_coordinates' => (clone $query)->withCoordinates()->count(),
-            'total_provinsi' => (clone $query)->distinct('wilayah')->count(),
+            'total_provinsi' => (clone $query)->distinct('provinsi')->count(),
+            'total_kabupaten_kota' => (clone $query)->distinct('kabupaten_kota')->count(),
             'status_breakdown' => (clone $query)->select('status', DB::raw('count(*) as total'))
                 ->groupBy('status')
                 ->get()
                 ->pluck('total', 'status')
                 ->toArray(),
-            'kategori_breakdown' => (clone $query)->select('kategori', DB::raw('count(*) as total'))
-                ->whereNotNull('kategori')
-                ->groupBy('kategori')
-                ->orderByDesc('total')
-                ->get()
-                ->pluck('total', 'kategori')
-                ->toArray(),
-            'wilayah_breakdown' => (clone $query)->select('wilayah', DB::raw('count(*) as total'))
-                ->groupBy('wilayah')
+            'provinsi_breakdown' => (clone $query)->select('provinsi', DB::raw('count(*) as total'))
+                ->whereNotNull('provinsi')
+                ->groupBy('provinsi')
                 ->orderByDesc('total')
                 ->take(10)
                 ->get()
-                ->pluck('total', 'wilayah')
+                ->pluck('total', 'provinsi')
+                ->toArray(),
+            'kabupaten_kota_breakdown' => (clone $query)->select('kabupaten_kota', DB::raw('count(*) as total'))
+                ->whereNotNull('kabupaten_kota')
+                ->groupBy('kabupaten_kota')
+                ->orderByDesc('total')
+                ->take(10)
+                ->get()
+                ->pluck('total', 'kabupaten_kota')
                 ->toArray(),
         ];
     }
@@ -83,7 +87,8 @@ class ReportsDaftarAlamat extends Component
         $query = DaftarAlamat::query();
         $this->applyFilters($query);
 
-        $this->detailData = $query->orderBy('wilayah')
+        $this->detailData = $query->orderBy('provinsi')
+                                 ->orderBy('kabupaten_kota')
                                  ->orderBy('nama_dinas')
                                  ->get()
                                  ->map(function ($item, $index) {
@@ -97,42 +102,71 @@ class ReportsDaftarAlamat extends Component
         $query = DaftarAlamat::query();
         $this->applyFilters($query);
 
+        // Check if we have any data
+        $totalRecords = (clone $query)->count();
+        
+        if ($totalRecords === 0) {
+            $this->chartData = [
+                'status_chart' => [],
+                'provinsi_chart' => [],
+                'kabupaten_kota_chart' => [],
+                'total_records' => 0
+            ];
+            return;
+        }
+
         $this->chartData = [
             'status_chart' => (clone $query)->select('status', DB::raw('count(*) as total'))
                 ->groupBy('status')
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'label' => $item->status,
-                        'value' => $item->total,
+                        'label' => $item->status ?: 'Tidak Diketahui',
+                        'total' => (int) $item->total,
+                        'value' => (int) $item->total, // Backup untuk Chart.js
                         'color' => $this->getStatusColor($item->status)
                     ];
-                }),
-            'kategori_chart' => (clone $query)->select('kategori', DB::raw('count(*) as total'))
-                ->whereNotNull('kategori')
-                ->groupBy('kategori')
-                ->orderByDesc('total')
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'label' => $item->kategori,
-                        'value' => $item->total,
-                        'color' => $this->getRandomColor()
-                    ];
-                }),
-            'wilayah_chart' => (clone $query)->select('wilayah', DB::raw('count(*) as total'))
-                ->groupBy('wilayah')
+                })->toArray(),
+            'provinsi_chart' => (clone $query)->select('provinsi', DB::raw('count(*) as total'))
+                ->whereNotNull('provinsi')
+                ->where('provinsi', '!=', '')
+                ->groupBy('provinsi')
                 ->orderByDesc('total')
                 ->take(10)
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'label' => $item->wilayah,
-                        'value' => $item->total,
+                        'label' => $item->provinsi,
+                        'total' => (int) $item->total,
+                        'value' => (int) $item->total, // Backup untuk Chart.js
                         'color' => $this->getRandomColor()
                     ];
-                }),
+                })->toArray(),
+            'kabupaten_kota_chart' => (clone $query)->select('kabupaten_kota', DB::raw('count(*) as total'))
+                ->whereNotNull('kabupaten_kota')
+                ->where('kabupaten_kota', '!=', '')
+                ->groupBy('kabupaten_kota')
+                ->orderByDesc('total')
+                ->take(10)
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'label' => $item->kabupaten_kota,
+                        'total' => (int) $item->total,
+                        'value' => (int) $item->total, // Backup untuk Chart.js
+                        'color' => $this->getRandomColor()
+                    ];
+                })->toArray(),
+            'total_records' => $totalRecords
         ];
+
+        // Debug log
+        Log::info('Chart data generated:', [
+            'total_records' => $totalRecords,
+            'status_count' => count($this->chartData['status_chart']),
+            'provinsi_count' => count($this->chartData['provinsi_chart']),
+            'kabupaten_kota_count' => count($this->chartData['kabupaten_kota_chart'])
+        ]);
     }
 
     private function applyFilters($query)
@@ -145,12 +179,12 @@ class ReportsDaftarAlamat extends Component
             $query->where('status', $this->statusFilter);
         }
 
-        if ($this->kategoriFilter) {
-            $query->where('kategori', $this->kategoriFilter);
+        if ($this->provinsiFilter) {
+            $query->where('provinsi', $this->provinsiFilter);
         }
 
-        if ($this->wilayahFilter) {
-            $query->where('wilayah', 'like', '%' . $this->wilayahFilter . '%');
+        if ($this->kabupatenKotaFilter) {
+            $query->where('kabupaten_kota', $this->kabupatenKotaFilter);
         }
     }
 
@@ -169,16 +203,27 @@ class ReportsDaftarAlamat extends Component
 
     private function getRandomColor()
     {
-        $colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316'];
-        return $colors[array_rand($colors)];
+        $colors = [
+            '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', 
+            '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#14B8A6',
+            '#F472B6', '#A78BFA', '#34D399', '#FBBF24', '#FB7185',
+            '#60A5FA', '#4ADE80', '#FACC15', '#F87171', '#C084FC'
+        ];
+        
+        // Use deterministic color selection based on index to ensure consistency
+        static $colorIndex = 0;
+        $color = $colors[$colorIndex % count($colors)];
+        $colorIndex++;
+        
+        return $color;
     }
 
     public function exportExcel()
     {
         // Build query parameters
         $params = array_filter([
-            'wilayah' => $this->wilayahFilter,
-            'kategori' => $this->kategoriFilter,
+            'provinsi' => $this->provinsiFilter,
+            'kabupaten_kota' => $this->kabupatenKotaFilter,
             'status' => $this->statusFilter,
             'date_from' => $this->dateFrom,
             'date_to' => $this->dateTo,
@@ -192,8 +237,8 @@ class ReportsDaftarAlamat extends Component
     {
         // Build query parameters
         $params = array_filter([
-            'wilayah' => $this->wilayahFilter,
-            'kategori' => $this->kategoriFilter,
+            'provinsi' => $this->provinsiFilter,
+            'kabupaten_kota' => $this->kabupatenKotaFilter,
             'status' => $this->statusFilter,
             'date_from' => $this->dateFrom,
             'date_to' => $this->dateTo,
@@ -207,8 +252,8 @@ class ReportsDaftarAlamat extends Component
     {
         // Build query parameters
         $params = array_filter([
-            'wilayah' => $this->wilayahFilter,
-            'kategori' => $this->kategoriFilter,
+            'provinsi' => $this->provinsiFilter,
+            'kabupaten_kota' => $this->kabupatenKotaFilter,
             'status' => $this->statusFilter,
             'date_from' => $this->dateFrom,
             'date_to' => $this->dateTo,
@@ -239,12 +284,12 @@ class ReportsDaftarAlamat extends Component
         $this->generateReport();
     }
 
-    public function updatedKategoriFilter()
+    public function updatedProvinsiFilter()
     {
         $this->generateReport();
     }
 
-    public function updatedWilayahFilter()
+    public function updatedKabupatenKotaFilter()
     {
         $this->generateReport();
     }
@@ -252,15 +297,24 @@ class ReportsDaftarAlamat extends Component
     public function render()
     {
         $statusOptions = DaftarAlamat::getStatusOptions();
-        $kategoriOptions = DaftarAlamat::getKategoriOptions();
         
-        $wilayahOptions = DaftarAlamat::distinct('wilayah')
-                                   ->orderBy('wilayah')
-                                   ->pluck('wilayah')
+        $provinsiOptions = DaftarAlamat::distinct('provinsi')
+                                   ->whereNotNull('provinsi')
+                                   ->orderBy('provinsi')
+                                   ->pluck('provinsi')
                                    ->toArray();
 
+        $kabupatenKotaOptions = DaftarAlamat::when($this->provinsiFilter, function($query) {
+                                        return $query->where('provinsi', $this->provinsiFilter);
+                                    })
+                                    ->distinct('kabupaten_kota')
+                                    ->whereNotNull('kabupaten_kota')
+                                    ->orderBy('kabupaten_kota')
+                                    ->pluck('kabupaten_kota')
+                                    ->toArray();
+
         return view('livewire.admin.daftar-alamat.reports-daftar-alamat', compact(
-            'statusOptions', 'kategoriOptions', 'wilayahOptions'
+            'statusOptions', 'provinsiOptions', 'kabupatenKotaOptions'
         ));
     }
 }

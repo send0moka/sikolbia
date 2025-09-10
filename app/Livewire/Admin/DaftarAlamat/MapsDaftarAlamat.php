@@ -12,18 +12,24 @@ class MapsDaftarAlamat extends Component
     public $statusFilter = '';
     
     #[Url]
-    public $kategoriFilter = '';
+    public $provinsiFilter = '';
     
     #[Url]
-    public $wilayahFilter = '';
+    public $kabupatenKotaFilter = '';
 
     public $selectedAlamat = null;
     public $showInfoModal = false;
 
     public function showInfo($id)
     {
-        $this->selectedAlamat = DaftarAlamat::findOrFail($id);
-        $this->showInfoModal = true;
+        try {
+            $this->selectedAlamat = DaftarAlamat::findOrFail($id);
+            $this->showInfoModal = true;
+        } catch (\Exception $e) {
+            session()->flash('error', 'Data alamat tidak ditemukan.');
+            $this->showInfoModal = false;
+            $this->selectedAlamat = null;
+        }
     }
 
     public function closeInfoModal()
@@ -34,7 +40,7 @@ class MapsDaftarAlamat extends Component
 
     public function resetFilters()
     {
-        $this->reset(['statusFilter', 'kategoriFilter', 'wilayahFilter']);
+        $this->reset(['statusFilter', 'provinsiFilter', 'kabupatenKotaFilter']);
         $this->updateMap();
     }
 
@@ -43,12 +49,12 @@ class MapsDaftarAlamat extends Component
         $this->updateMap();
     }
 
-    public function updatedKategoriFilter()
+    public function updatedProvinsiFilter()
     {
         $this->updateMap();
     }
 
-    public function updatedWilayahFilter()
+    public function updatedKabupatenKotaFilter()
     {
         $this->updateMap();
     }
@@ -61,12 +67,12 @@ class MapsDaftarAlamat extends Component
             $query->where('status', $this->statusFilter);
         }
 
-        if ($this->kategoriFilter) {
-            $query->where('kategori', $this->kategoriFilter);
+        if ($this->provinsiFilter) {
+            $query->where('provinsi', $this->provinsiFilter);
         }
 
-        if ($this->wilayahFilter) {
-            $query->where('wilayah', 'like', '%' . $this->wilayahFilter . '%');
+        if ($this->kabupatenKotaFilter) {
+            $query->where('kabupaten_kota', $this->kabupatenKotaFilter);
         }
 
         $alamats = $query->get();
@@ -77,10 +83,10 @@ class MapsDaftarAlamat extends Component
                 'lat' => (float) $alamat->latitude,
                 'lng' => (float) $alamat->longitude,
                 'title' => $alamat->nama_dinas,
-                'wilayah' => $alamat->wilayah,
+                'provinsi' => $alamat->provinsi,
+                'kabupaten_kota' => $alamat->kabupaten_kota,
                 'alamat' => $alamat->alamat,
                 'status' => $alamat->status,
-                'kategori' => $alamat->kategori,
                 'telp' => $alamat->telp,
                 'email' => $alamat->email,
                 'gambar' => $alamat->gambar ? asset('storage/' . $alamat->gambar) : null,
@@ -98,23 +104,32 @@ class MapsDaftarAlamat extends Component
             $query->where('status', $this->statusFilter);
         }
 
-        if ($this->kategoriFilter) {
-            $query->where('kategori', $this->kategoriFilter);
+        if ($this->provinsiFilter) {
+            $query->where('provinsi', $this->provinsiFilter);
         }
 
-        if ($this->wilayahFilter) {
-            $query->where('wilayah', 'like', '%' . $this->wilayahFilter . '%');
+        if ($this->kabupatenKotaFilter) {
+            $query->where('kabupaten_kota', $this->kabupatenKotaFilter);
         }
 
         $alamats = $query->get();
 
         $statusOptions = DaftarAlamat::getStatusOptions();
-        $kategoriOptions = DaftarAlamat::getKategoriOptions();
         
-        $wilayahOptions = DaftarAlamat::distinct('wilayah')
-                                   ->orderBy('wilayah')
-                                   ->pluck('wilayah')
+        $provinsiOptions = DaftarAlamat::distinct('provinsi')
+                                   ->orderBy('provinsi')
+                                   ->pluck('provinsi')
+                                   ->filter()
                                    ->toArray();
+        
+        $kabupatenKotaOptions = DaftarAlamat::when($this->provinsiFilter, function($query) {
+                                        return $query->where('provinsi', $this->provinsiFilter);
+                                    })
+                                    ->distinct('kabupaten_kota')
+                                    ->orderBy('kabupaten_kota')
+                                    ->pluck('kabupaten_kota')
+                                    ->filter()
+                                    ->toArray();
 
         // Prepare map data
         $mapData = $alamats->map(function ($alamat) {
@@ -123,10 +138,10 @@ class MapsDaftarAlamat extends Component
                 'lat' => (float) $alamat->latitude,
                 'lng' => (float) $alamat->longitude,
                 'title' => $alamat->nama_dinas,
-                'wilayah' => $alamat->wilayah,
+                'provinsi' => $alamat->provinsi,
+                'kabupaten_kota' => $alamat->kabupaten_kota,
                 'alamat' => $alamat->alamat,
                 'status' => $alamat->status,
-                'kategori' => $alamat->kategori,
                 'telp' => $alamat->telp,
                 'email' => $alamat->email,
                 'gambar' => $alamat->gambar ? asset('storage/' . $alamat->gambar) : null,
@@ -134,7 +149,7 @@ class MapsDaftarAlamat extends Component
         });
 
         return view('livewire.admin.daftar-alamat.maps-daftar-alamat', compact(
-            'alamats', 'statusOptions', 'kategoriOptions', 'wilayahOptions', 'mapData'
+            'alamats', 'statusOptions', 'provinsiOptions', 'kabupatenKotaOptions', 'mapData'
         ));
     }
 }
