@@ -5,7 +5,7 @@ namespace App\Livewire\Admin\BenihPupuk;
 use App\Models\BenihPupukData;
 use App\Models\BenihPupukTopik;
 use App\Models\BenihPupukVariabel;
-use App\Models\BenihPupukWilayah;
+use App\Models\Wilayah;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +27,7 @@ class DashboardBenihPupuk extends Component
             'total_data' => BenihPupukData::count(),
             'total_topik' => BenihPupukTopik::count(),
             'total_variabel' => BenihPupukVariabel::count(),
-            'total_wilayah' => BenihPupukWilayah::count(),
+            'total_wilayah' => Wilayah::count(),
             'data_aktif' => BenihPupukData::where('status', 'A')->count(),
             'available_years' => BenihPupukData::getAvailableYears(),
         ];
@@ -60,7 +60,7 @@ class DashboardBenihPupuk extends Component
         // Recent data entries
         $recentData = BenihPupukData::withRelations()
             ->where('status', 'A')
-            ->orderByDesc('date_created')
+            ->orderByDesc('created_at')
             ->limit(10)
             ->get();
 

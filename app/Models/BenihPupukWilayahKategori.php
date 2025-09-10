@@ -9,7 +9,7 @@ class BenihPupukWilayahKategori extends Model
 {
     use HasFactory;
 
-    protected $table = 'benih_pupuk_wilayah_kategori';
+    protected $table = 'wilayah_kategori';
     
     public $timestamps = false;
 
@@ -24,7 +24,7 @@ class BenihPupukWilayahKategori extends Model
     // Relationships
     public function wilayahs()
     {
-        return $this->hasMany(BenihPupukWilayah::class, 'id_kategori');
+        return $this->hasMany(Wilayah::class, 'id_kategori');
     }
 
     // Accessors

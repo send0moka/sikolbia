@@ -10,8 +10,6 @@ class BenihPupukData extends Model
     use HasFactory;
 
     protected $table = 'benih_pupuk_data';
-    
-    public $timestamps = false;
 
     protected $fillable = [
         'tahun',
@@ -21,8 +19,6 @@ class BenihPupukData extends Model
         'id_klasifikasi',
         'nilai',
         'status',
-        'date_created',
-        'date_modified',
     ];
 
     protected $casts = [
@@ -33,19 +29,17 @@ class BenihPupukData extends Model
         'id_variabel' => 'integer',
         'id_klasifikasi' => 'integer',
         'nilai' => 'float',
-        'date_created' => 'datetime',
-        'date_modified' => 'datetime',
     ];
 
     // Relationships
     public function bulan()
     {
-        return $this->belongsTo(BenihPupukBulan::class, 'id_bulan');
+        return $this->belongsTo(Bulan::class, 'id_bulan');
     }
 
     public function wilayah()
     {
-        return $this->belongsTo(BenihPupukWilayah::class, 'id_wilayah');
+        return $this->belongsTo(Wilayah::class, 'id_wilayah');
     }
 
     public function variabel()
@@ -112,6 +106,10 @@ class BenihPupukData extends Model
 
     public function getStatusLabelAttribute()
     {
+        if (empty($this->status)) {
+            return 'null';
+        }
+
         return match($this->status) {
             'A' => 'Aktif',
             'I' => 'Tidak Aktif',

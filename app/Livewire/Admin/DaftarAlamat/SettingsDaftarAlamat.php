@@ -7,6 +7,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
 
 class SettingsDaftarAlamat extends Component
 {
@@ -23,7 +24,6 @@ class SettingsDaftarAlamat extends Component
     
     public $bulkAction = '';
     public $selectedStatus = 'Aktif';
-    public $selectedKategori = '';
     
     public $showBulkModal = false;
     public $bulkProgress = 0;
@@ -86,7 +86,7 @@ class SettingsDaftarAlamat extends Component
         }
         
         if (!$this->includeCoordinates) {
-            $query->select(['id', 'no', 'wilayah', 'nama_dinas', 'alamat', 'telp', 'faks', 'email', 'website', 'status', 'kategori']);
+            $query->select(['id', 'provinsi', 'kabupaten_kota', 'nama_dinas', 'alamat', 'telp', 'email', 'website', 'status']);
         }
 
         return redirect()->route('admin.daftar-alamat.export', [
@@ -128,13 +128,6 @@ class SettingsDaftarAlamat extends Component
                     $this->bulkStatus = "Status berhasil diperbarui untuk {$updated} record.";
                     break;
                     
-                case 'update_kategori':
-                    if ($this->selectedKategori) {
-                        $updated = $query->update(['kategori' => $this->selectedKategori]);
-                        $this->bulkStatus = "Kategori berhasil diperbarui untuk {$updated} record.";
-                    }
-                    break;
-                    
                 case 'delete_inactive':
                     $deleted = DaftarAlamat::where('status', 'Tidak Aktif')->delete();
                     $this->bulkStatus = "Berhasil menghapus {$deleted} record tidak aktif.";
@@ -174,7 +167,7 @@ class SettingsDaftarAlamat extends Component
     public function seedSampleData()
     {
         try {
-            \Artisan::call('db:seed', ['--class' => 'DaftarAlamatSeeder']);
+            Artisan::call('db:seed', ['--class' => 'DaftarAlamatSeeder']);
             session()->flash('message', 'Sample data berhasil ditambahkan.');
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal menambahkan sample data: ' . $e->getMessage());
@@ -199,7 +192,7 @@ class SettingsDaftarAlamat extends Component
             'total_alamat' => DaftarAlamat::count(),
             'total_aktif' => DaftarAlamat::where('status', 'Aktif')->count(),
             'total_with_coordinates' => DaftarAlamat::withCoordinates()->count(),
-            'total_provinsi' => DaftarAlamat::distinct('wilayah')->count(),
+            'total_provinsi' => DaftarAlamat::distinct('provinsi')->count(),
         ];
 
         $statusOptions = DaftarAlamat::getStatusOptions();

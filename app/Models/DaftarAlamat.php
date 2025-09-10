@@ -99,4 +99,9 @@ class DaftarAlamat extends Model
             'Pending' => 'Pending',
         ];
     }
+
+    public static function getKategoriOptions()
+    {
+        return [];
+    }
 }

@@ -9,7 +9,7 @@ class BenihPupukBulan extends Model
 {
     use HasFactory;
 
-    protected $table = 'benih_pupuk_bulan';
+    protected $table = 'bulan';
     
     public $timestamps = false;
 

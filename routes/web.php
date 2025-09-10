@@ -170,6 +170,29 @@ Route::middleware(['auth'])->prefix('admin/benih-pupuk')->name('admin.benih-pupu
     Route::get('export/pdf', [App\Http\Controllers\BenihPupukController::class, 'exportPdf'])->name('export.pdf');
 });
 
+// Export download route for Livewire - OUTSIDE auth middleware for download functionality
+Route::get('admin/benih-pupuk/export/download', [App\Http\Controllers\Admin\BenihPupukExportController::class, 'download']);
+Route::get('admin/benih-pupuk/export/test', function() {
+    return response()->json([
+        'message' => 'Route works!',
+        'time' => now(),
+        'session_data' => session()->get('export_data')
+    ]);
+});
+Route::get('admin/benih-pupuk/export/set-session', function() {
+    session()->put('export_data', [
+        'filename' => 'test-export-' . now()->format('Ymd-His') . '.xlsx',
+        'format' => 'xlsx'
+    ]);
+    return response()->json([
+        'message' => 'Session data set!',
+        'session_data' => session()->get('export_data')
+    ]);
+});
+Route::get('admin/benih-pupuk/export/simple-test', function() {
+    return 'Simple test route works!';
+});
+
 // Susenas Routes (accessible by both superadmin and admin)
 Route::middleware(['auth', 'permission:view kelompokbps|view komoditibps|view susenas'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
     Route::view('kelompok-bps', 'admin.kelompok-bps')->name('kelompok-bps');

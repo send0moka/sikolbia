@@ -1,4 +1,11 @@
 <div>
+    <!-- Flash Messages -->
+    @if (session()->has('error'))
+        <div class="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Header -->
     <div class="mb-6">
         <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Peta Daftar Alamat</h1>
@@ -19,18 +26,18 @@
                 </select>
             </div>
             <div>
-                <select wire:model.live="kategoriFilter" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white">
-                    <option value="">Semua Kategori</option>
-                    @foreach($kategoriOptions as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
+                <select wire:model.live="provinsiFilter" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white">
+                    <option value="">Semua Provinsi</option>
+                    @foreach($provinsiOptions as $provinsi)
+                        <option value="{{ $provinsi }}">{{ $provinsi }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <select wire:model.live="wilayahFilter" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white">
-                    <option value="">Semua Wilayah</option>
-                    @foreach($wilayahOptions as $wilayah)
-                        <option value="{{ $wilayah }}">{{ $wilayah }}</option>
+                <select wire:model.live="kabupatenKotaFilter" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white">
+                    <option value="">Semua Kabupaten/Kota</option>
+                    @foreach($kabupatenKotaOptions as $kabupatenKota)
+                        <option value="{{ $kabupatenKota }}">{{ $kabupatenKota }}</option>
                     @endforeach
                 </select>
             </div>
@@ -58,34 +65,33 @@
             <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Daftar Lokasi</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @forelse($alamats as $alamat)
-                    <div class="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer" wire:click="showInfo({{ $alamat->id }})">
+                    <div class="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all cursor-pointer bg-white dark:bg-neutral-800" 
+                         wire:click="showInfo({{ $alamat->id }})" 
+                         role="button" 
+                         tabindex="0">
                         <div class="flex items-start justify-between mb-2">
                             <h4 class="font-medium text-neutral-900 dark:text-white text-sm truncate">
                                 {{ $alamat->nama_dinas }}
                             </h4>
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $alamat->status_badge }} ml-2">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $alamat->status_badge }} ml-2 flex-shrink-0">
                                 {{ $alamat->status }}
                             </span>
                         </div>
+                        <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-1 truncate">
+                            {{ $alamat->provinsi }}
+                        </p>
                         <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-2 truncate">
-                            {{ $alamat->wilayah }}
+                            {{ $alamat->kabupaten_kota }}
                         </p>
                         <p class="text-xs text-neutral-500 dark:text-neutral-500 mb-3 line-clamp-2">
                             {{ $alamat->alamat }}
                         </p>
-                        <div class="flex items-center justify-between text-xs text-neutral-400">
-                            <div class="flex items-center">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                                {{ number_format($alamat->latitude, 4) }}, {{ number_format($alamat->longitude, 4) }}
-                            </div>
-                            @if($alamat->kategori)
-                                <span class="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs">
-                                    {{ $alamat->kategori }}
-                                </span>
-                            @endif
+                        <div class="flex items-center text-xs text-neutral-400">
+                            <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span class="font-mono">{{ number_format($alamat->latitude, 4) }}, {{ number_format($alamat->longitude, 4) }}</span>
                         </div>
                     </div>
                 @empty
@@ -102,119 +108,112 @@
     </div>
 
     <!-- Info Modal -->
-    @if($showInfoModal)
+    @if($showInfoModal && $selectedAlamat)
     <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-neutral-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop transition-opacity" aria-hidden="true" wire:click="closeInfoModal"></div>
+        
+        <!-- Modal container -->
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                @if($selectedAlamat)
+            
+            <!-- Modal content -->
+            <div class="relative inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full modal-content">
+                <!-- Modal header and content -->
                 <div class="bg-white dark:bg-neutral-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">{{ $selectedAlamat->nama_dinas }}</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Wilayah</label>
-                        <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->wilayah }}</p>
+                    <!-- Close button -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-neutral-900 dark:text-white">{{ $selectedAlamat->nama_dinas }}</h3>
+                        <button wire:click="closeInfoModal" type="button" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                     </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Provinsi</label>
+                            <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->provinsi }}</p>
+                        </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Alamat</label>
-                        <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->alamat }}</p>
-                    </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Kabupaten/Kota</label>
+                            <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->kabupaten_kota }}</p>
+                        </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        @if($selectedAlamat->telp)
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Alamat</label>
+                            <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->alamat }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @if($selectedAlamat->telp)
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Telepon</label>
+                                    <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->telp }}</p>
+                                </div>
+                            @endif
+
+                            @if($selectedAlamat->email)
+                                <div>
+                                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</label>
+                                    <p class="mt-1 text-sm text-neutral-900 dark:text-white">
+                                        <a href="mailto:{{ $selectedAlamat->email }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                            {{ $selectedAlamat->email }}
+                                        </a>
+                                    </p>
+                                </div>
+                            @endif
+
+                            @if($selectedAlamat->website)
+                                <div class="sm:col-span-2">
+                                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Website</label>
+                                    <p class="mt-1 text-sm text-neutral-900 dark:text-white">
+                                        <a href="{{ $selectedAlamat->website }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                            {{ $selectedAlamat->website }}
+                                        </a>
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Telepon</label>
-                                <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->telp }}</p>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Status</label>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $selectedAlamat->status_badge }} mt-1">
+                                    {{ $selectedAlamat->status }}
+                                </span>
                             </div>
-                        @endif
-
-                        @if($selectedAlamat->faks)
+                            
                             <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Faks</label>
-                                <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->faks }}</p>
-                            </div>
-                        @endif
-
-                        @if($selectedAlamat->email)
-                            <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</label>
-                                <p class="mt-1 text-sm text-neutral-900 dark:text-white">
-                                    <a href="mailto:{{ $selectedAlamat->email }}" class="text-blue-600 dark:text-blue-400 hover:underline">
-                                        {{ $selectedAlamat->email }}
-                                    </a>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Koordinat</label>
+                                <p class="mt-1 text-sm text-neutral-900 dark:text-white font-mono">
+                                    {{ number_format($selectedAlamat->latitude, 6) }}, {{ number_format($selectedAlamat->longitude, 6) }}
                                 </p>
                             </div>
-                        @endif
+                        </div>
 
-                        @if($selectedAlamat->website)
+                        @if($selectedAlamat->gambar)
                             <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Website</label>
-                                <p class="mt-1 text-sm text-neutral-900 dark:text-white">
-                                    <a href="{{ $selectedAlamat->website }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
-                                        {{ $selectedAlamat->website }}
-                                    </a>
-                                </p>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Gambar</label>
+                                <div class="flex justify-center">
+                                    <img src="{{ asset('storage/' . $selectedAlamat->gambar) }}" 
+                                         alt="{{ $selectedAlamat->nama_dinas }}" 
+                                         class="max-w-full max-h-64 object-cover rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600"
+                                         loading="lazy">
+                                </div>
                             </div>
                         @endif
                     </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Status</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $selectedAlamat->status_badge }} mt-1">
-                                {{ $selectedAlamat->status }}
-                            </span>
-                        </div>
-
-                        @if($selectedAlamat->kategori)
-                            <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Kategori</label>
-                                <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->kategori }}</p>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Koordinat</label>
-                        <p class="mt-1 text-sm text-neutral-900 dark:text-white">
-                            {{ number_format($selectedAlamat->latitude, 6) }}, {{ number_format($selectedAlamat->longitude, 6) }}
-                        </p>
-                    </div>
-
-                    @if($selectedAlamat->posisi)
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Posisi</label>
-                            <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->posisi }}</p>
-                        </div>
-                    @endif
-
-                    @if($selectedAlamat->gambar)
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Gambar</label>
-                            <div class="mt-2">
-                                <img src="{{ asset('storage/' . $selectedAlamat->gambar) }}" 
-                                     alt="{{ $selectedAlamat->nama_dinas }}" 
-                                     class="w-full max-w-sm h-48 object-cover rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-600">
-                            </div>
-                        </div>
-                    @endif
-
-                    @if($selectedAlamat->keterangan)
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Keterangan</label>
-                            <p class="mt-1 text-sm text-neutral-900 dark:text-white">{{ $selectedAlamat->keterangan }}</p>
-                        </div>
-                    @endif
                 </div>
-                </div>
+                
+                <!-- Modal footer -->
                 <div class="bg-neutral-50 dark:bg-neutral-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button wire:click="closeInfoModal" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button wire:click="closeInfoModal" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
                         Tutup
                     </button>
                 </div>
-                @endif
             </div>
         </div>
     </div>
@@ -223,6 +222,31 @@
     @push('styles')
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Custom Modal Styles -->
+    <style>
+        .modal-backdrop {
+            backdrop-filter: blur(2px);
+        }
+        
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        /* Ensure modal appears above map */
+        .leaflet-container {
+            z-index: 1;
+        }
+        
+        /* Line clamp for description */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
     @endpush
 
     @push('scripts')
@@ -279,11 +303,11 @@
                                     </div>
                                 ` : ''}
                                 <h3 class="font-semibold text-sm mb-2">${location.title}</h3>
-                                <p class="text-xs text-neutral-600 mb-1">${location.wilayah}</p>
+                                <p class="text-xs text-neutral-600 mb-1">${location.provinsi}</p>
+                                <p class="text-xs text-neutral-600 mb-1">${location.kabupaten_kota}</p>
                                 <p class="text-xs text-neutral-500 mb-2">${location.alamat}</p>
                                 <div class="flex justify-between items-center text-xs mb-2">
                                     <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">${location.status}</span>
-                                    ${location.kategori ? `<span class="bg-neutral-100 text-neutral-800 px-2 py-1 rounded">${location.kategori}</span>` : ''}
                                 </div>
                                 ${location.telp ? `<p class="text-xs mt-1"><strong>Telp:</strong> ${location.telp}</p>` : ''}
                                 ${location.email ? `<p class="text-xs"><strong>Email:</strong> ${location.email}</p>` : ''}
@@ -321,11 +345,11 @@
                                         </div>
                                     ` : ''}
                                     <h3 class="font-semibold text-sm mb-2">${location.title}</h3>
-                                    <p class="text-xs text-neutral-600 mb-1">${location.wilayah}</p>
+                                    <p class="text-xs text-neutral-600 mb-1">${location.provinsi}</p>
+                                    <p class="text-xs text-neutral-600 mb-1">${location.kabupaten_kota}</p>
                                     <p class="text-xs text-neutral-500 mb-2">${location.alamat}</p>
                                     <div class="flex justify-between items-center text-xs mb-2">
                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">${location.status}</span>
-                                        ${location.kategori ? `<span class="bg-neutral-100 text-neutral-800 px-2 py-1 rounded">${location.kategori}</span>` : ''}
                                     </div>
                                     ${location.telp ? `<p class="text-xs mt-1"><strong>Telp:</strong> ${location.telp}</p>` : ''}
                                     ${location.email ? `<p class="text-xs"><strong>Email:</strong> ${location.email}</p>` : ''}

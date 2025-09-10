@@ -101,7 +101,6 @@
                     <select wire:model="bulkAction" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                         <option value="">Pilih aksi</option>
                         <option value="update_status">Update Status</option>
-                        <option value="update_kategori">Update Kategori</option>
                         <option value="delete_inactive">Hapus Data Tidak Aktif</option>
                         <option value="archive_old">Arsipkan Data Lama</option>
                     </select>
@@ -112,17 +111,6 @@
                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status Baru</label>
                         <select wire:model="selectedStatus" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                             @foreach($statusOptions as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-                
-                @if($bulkAction === 'update_kategori')
-                    <div>
-                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Kategori Baru</label>
-                        <select wire:model="selectedKategori" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                            @foreach($kategoriOptions as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
                             @endforeach
                         </select>

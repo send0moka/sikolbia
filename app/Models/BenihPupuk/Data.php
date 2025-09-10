@@ -14,7 +14,6 @@ class Data extends Model
 {
     protected $table = 'benih_pupuk_data';
     public $incrementing = true;
-    public $timestamps = false;
     
     protected $primaryKey = 'id';
     
@@ -26,8 +25,6 @@ class Data extends Model
         'id_klasifikasi',
         'nilai',
         'status',
-        'date_created',
-        'date_modified'
     ];
     
     protected $casts = [
@@ -37,8 +34,6 @@ class Data extends Model
         'id_variabel' => 'integer',
         'id_klasifikasi' => 'integer',
         'nilai' => 'float',
-        'date_created' => 'datetime',
-        'date_modified' => 'datetime'
     ];
     
     /**
