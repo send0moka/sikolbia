@@ -2,38 +2,58 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Models\BenihPupukData;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class BenihPupukExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles
+class BenihPupukExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithChunkReading
 {
-    protected $headers;
-    protected $rows;
-    protected $firstColumnHeader;
-
-    public function __construct(array $headers, array $rows, string $firstColumnHeader)
+    public function query()
     {
-        $this->headers = $headers;
-        $this->rows = $rows;
-        $this->firstColumnHeader = $firstColumnHeader;
+        // Limit to 5000 records for production use to avoid memory issues
+        return BenihPupukData::with(['bulan', 'wilayah', 'variabel', 'klasifikasi'])->limit(5000);
     }
 
-    public function collection()
+    public function chunkSize(): int
     {
-        return collect($this->rows)->map(function ($row) {
-            $values = collect($row['values'])->map(function ($value) {
-                return $value !== null ? number_format($value, 2, ',', '.') : '-';
-            })->all();
-            return array_merge([$row['label']], $values);
-        });
+        return 500; // Smaller chunk size
     }
 
     public function headings(): array
     {
-        return array_merge([$this->firstColumnHeader], $this->headers);
+        return [
+            'ID',
+            'Tahun',
+            'Bulan',
+            'Wilayah',
+            'Variabel',
+            'Klasifikasi',
+            'Nilai',
+            'Status',
+            'Dibuat',
+            'Diubah'
+        ];
+    }
+
+    public function map($data): array
+    {
+        return [
+            $data->id,
+            $data->tahun,
+            $data->bulan->nama ?? '-',
+            $data->wilayah->nama ?? '-',
+            $data->variabel->deskripsi ?? '-',
+            $data->klasifikasi->deskripsi ?? '-',
+            $data->nilai ? number_format($data->nilai, 2, ',', '.') : '-',
+            $data->status,
+            $data->created_at ? $data->created_at->format('d/m/Y H:i') : '-',
+            $data->updated_at ? $data->updated_at->format('d/m/Y H:i') : '-',
+        ];
     }
 
     public function styles(Worksheet $sheet)
@@ -44,4 +64,3 @@ class BenihPupukExport implements FromCollection, WithHeadings, ShouldAutoSize, 
         ];
     }
 }
-

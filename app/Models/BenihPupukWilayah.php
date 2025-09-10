@@ -9,7 +9,7 @@ class BenihPupukWilayah extends Model
 {
     use HasFactory;
 
-    protected $table = 'benih_pupuk_wilayah';
+    protected $table = 'wilayah';
     
     public $timestamps = false;
 
@@ -32,17 +32,17 @@ class BenihPupukWilayah extends Model
     // Relationships
     public function kategori()
     {
-        return $this->belongsTo(BenihPupukWilayahKategori::class, 'id_kategori');
+        return $this->belongsTo(WilayahKategori::class, 'id_kategori');
     }
 
     public function parent()
     {
-        return $this->belongsTo(BenihPupukWilayah::class, 'id_parent');
+        return $this->belongsTo(Wilayah::class, 'id_parent');
     }
 
     public function children()
     {
-        return $this->hasMany(BenihPupukWilayah::class, 'id_parent');
+        return $this->hasMany(Wilayah::class, 'id_parent');
     }
 
     public function data()

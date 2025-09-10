@@ -12,7 +12,7 @@
                 @endforeach
             </select>
             <select wire:model.live="selectedMonth" class="rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                @foreach(\App\Models\BenihPupukBulan::getBulanNames() as $id => $name)
+                @foreach(\App\Models\Bulan::getBulanNames() as $id => $name)
                     <option value="{{ $id }}">{{ $name }}</option>
                 @endforeach
             </select>
@@ -115,7 +115,7 @@
                             @foreach($monthlyData as $data)
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm text-neutral-600 dark:text-neutral-400">
-                                        {{ \App\Models\BenihPupukBulan::getBulanNames()[$data->id_bulan] ?? "Bulan {$data->id_bulan}" }}
+                                        {{ \App\Models\Bulan::getBulanNames()[$data->id_bulan] ?? "Bulan {$data->id_bulan}" }}
                                     </span>
                                     <div class="flex items-center space-x-2">
                                         <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ number_format($data->total_records) }}</span>
