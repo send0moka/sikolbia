@@ -1,18 +1,121 @@
 
 <div>
-<section class="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 text-white py-12 rounded-lg shadow-lg">
-    <div class="max-w-5xl mx-auto px-4">
-        <div class="text-center">
-            <h1 class="text-3xl md:text-4xl font-bold mb-4">🌱 Import Data Benih & Pupuk</h1>
-            <p class="text-lg md:text-xl text-blue-100 dark:text-blue-200 mb-6">Panduan lengkap untuk mengimpor data benih dan pupuk ke sistem</p>
-            <div class="bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-lg p-6 max-w-3xl mx-auto">
-                <p class="text-base leading-relaxed">Ikuti langkah-langkah berikut untuk memastikan proses import berjalan lancar dan data sesuai standar aplikasi.</p>
+<!-- Fixed Header with Title and Import Form -->
+<header class="fixed top-0 z-30 bg-gradient-to-r from-neutral-600 to-neutral-700 dark:from-neutral-800 dark:to-neutral-900 text-white shadow-lg border-b border-neutral-500/20 backdrop-blur-sm bg-opacity-95"
+        style="left: calc(16rem + 1px); right: 0;">
+    <div class="px-4 sm:px-6 py-3">
+        <div class="flex items-center justify-between">
+            <!-- Title Section -->
+            <div class="flex-shrink-0">
+                <h1 class="text-lg sm:text-xl font-bold">🌱 Import Data Benih & Pupuk</h1>
+            </div>
+
+            <!-- Import Form Section -->
+            <div class="flex-shrink-0">
+                <form action="{{ route('admin.benih-pupuk.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 sm:gap-3">
+                    @csrf
+                    <div class="flex items-center gap-2">
+                        <input type="file" name="importFile" accept=".csv,.xlsx,.xls"
+                               class="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded border border-blue-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-1 sm:file:mr-2 file:py-1 file:px-1 sm:file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                        <button type="submit"
+                                class="inline-flex items-center px-3 sm:px-4 py-1 sm:py-2 bg-blue-600 hover:bg-gray-50 text-white font-semibold rounded transition-colors duration-200 shadow-sm text-sm">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Import</span>
+                            <span>Import</span>
+                        </button>
+                    </div>
+                    @error('importFile')
+                        <span class="text-red-300 text-xs ml-2">{{ $message }}</span>
+                    @enderror
+                </form>
             </div>
         </div>
     </div>
-</section>
+</header>
 
-<div class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+<!-- Toast Notification Container - Moved outside main content -->
+<div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none">
+    @if (session()->has('message'))
+        <div id="success-toast" class="flex items-center p-4 bg-green-100 dark:bg-green-900/20 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-600 rounded-lg shadow-lg backdrop-blur-sm pointer-events-auto animate-in slide-in-from-right-2 fade-in duration-300">
+            <svg class="w-5 h-5 mr-3 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-sm font-medium flex-1">{{ session('message') }}</p>
+            <button onclick="closeToast('success-toast')" class="ml-4 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    @endif
+
+    @if (session()->has('error') || $errors->any())
+        <div id="error-toast" class="flex items-center p-4 bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-600 rounded-lg shadow-lg backdrop-blur-sm pointer-events-auto animate-in slide-in-from-right-2 fade-in duration-300">
+            <svg class="w-5 h-5 mr-3 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-sm font-medium flex-1">
+                @if(session()->has('error'))
+                    {{ session('error') }}
+                @elseif($errors->has('importFile'))
+                    {{ $errors->first('importFile') }}
+                @else
+                    Terjadi kesalahan saat memproses data
+                @endif
+            </p>
+            <button onclick="closeToast('error-toast')" class="ml-4 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    @endif
+</div>
+
+<script>
+    // Auto-hide toasts after 10 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const successToast = document.getElementById('success-toast');
+        const errorToast = document.getElementById('error-toast');
+
+        if (successToast) {
+            setTimeout(() => {
+                closeToast('success-toast');
+            }, 10000);
+        }
+
+        if (errorToast) {
+            setTimeout(() => {
+                closeToast('error-toast');
+            }, 10000);
+        }
+    });
+
+    function closeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+    }
+
+    // Show toast if there are validation errors on page load
+    @if($errors->any() && !$errors->has('importFile'))
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force show error toast for general errors
+            const errorToast = document.getElementById('error-toast');
+            if (errorToast) {
+                errorToast.style.display = 'flex';
+            }
+        });
+    @endif
+</script><!-- Main Content with Instructions -->
+<div class="max-w-5xl mx-auto px-4 py-8 space-y-8 pt-20">
     <!-- Step 1: Import Guide -->
     <section class="mb-10">
         <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow border border-blue-200 dark:border-blue-700 p-8">
@@ -146,48 +249,5 @@
             </div>
         </div>
     </section>
-
-    <!-- Step 5: Import Form -->
-    <section class="mb-10">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-600 p-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">📤 Import Data Benih & Pupuk</h2>
-            <form action="{{ route('admin.benih-pupuk.import') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div>
-                    <label class="block text-base font-medium text-gray-700 dark:text-gray-100 mb-2">File Import</label>
-                    <input type="file" name="importFile" accept=".csv,.xlsx,.xls"
-                           class="w-fit text-base p-2 rounded-md border-2 border-gray-300 dark:border-white dark:bg-gray-700 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400" />
-                    @error('importFile')
-                        <span class="text-red-500 dark:text-red-600 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">
-                    <p>Format file yang didukung: CSV, Excel (.xlsx, .xls)</p>
-                    <p>Ukuran maksimal: 2MB</p>
-                </div>
-                <div>
-                    <button type="submit"
-                            class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white text-base font-semibold rounded-md transition-colors duration-200">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                        Mulai Import
-                    </button>
-                </div>
-            </form>
-        </div>
-    </section>
-
-    <!-- Step 6: Success/Error Messages -->
-    @if (session()->has('message'))
-        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/20 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-600 rounded">
-            {{ session('message') }}
-        </div>
-    @endif
-    @if (session()->has('error'))
-        <div class="mt-4 p-4 bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-600 rounded">
-            {{ session('error') }}
-        </div>
-    @endif
 </div>
 </div>

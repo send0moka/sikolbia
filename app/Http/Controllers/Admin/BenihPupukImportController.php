@@ -28,11 +28,10 @@ class BenihPupukImportController extends Controller
             // Import the data directly using Laravel Excel with the uploaded file
             Excel::import(new BenihPupukImport, $file);
 
-            return back()->with('message', 'Data berhasil diimpor!');
+            return back()->with('message', 'Data berhasil diimpor!')->with('success', true);
 
         } catch (\Exception $e) {
-
-            return back()->withErrors(['importFile' => 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage()]);
+            return back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
         }
     }
 }
