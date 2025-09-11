@@ -59,4 +59,21 @@ class BenihPupukExportController extends Controller
             return Redirect::back()->with('error', 'Gagal mengunduh file: ' . $e->getMessage());
         }
     }
+
+    public function downloadTemplate()
+    {
+        try {
+            $filename = 'template_import_benih_pupuk_' . now()->format('Ymd_His') . '.xlsx';
+
+            return Excel::download(
+                new \App\Exports\BenihPupukTemplateExport(),
+                $filename,
+                \Maatwebsite\Excel\Excel::XLSX
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Template download error: ' . $e->getMessage());
+            return Redirect::back()->with('error', 'Gagal mengunduh template: ' . $e->getMessage());
+        }
+    }
 }

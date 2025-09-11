@@ -164,6 +164,12 @@ Route::middleware(['auth'])->prefix('admin/benih-pupuk')->name('admin.benih-pupu
     
     Route::view('data', 'admin.panel-benih-pupuk.data')->name('data');
     
+    Route::view('import', 'admin.panel-benih-pupuk.import')->name('import');
+    Route::post('import', [App\Http\Controllers\Admin\BenihPupukImportController::class, 'import'])->name('admin.benih-pupuk.import');
+    
+    // Template download route
+    Route::get('download-template', [App\Http\Controllers\Admin\BenihPupukExportController::class, 'downloadTemplate'])->name('download-template');
+    
     // Export routes - using direct names without duplicate prefix
     Route::get('export/excel', [App\Http\Controllers\BenihPupukController::class, 'exportExcel'])->name('export.excel');
     Route::get('export/csv', [App\Http\Controllers\BenihPupukController::class, 'exportCsv'])->name('export.csv');

@@ -25,7 +25,9 @@
                     <flux:navlist.item icon="cube" :href="route('admin.benih-pupuk.data')" :current="request()->routeIs('admin.benih-pupuk.data')" wire:navigate class="group active-icon">
                         <span class="nav-link-text transition-colors {{ request()->routeIs('admin.benih-pupuk.data') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Data Benih & Pupuk') }}</span>
                     </flux:navlist.item>
-                    
+                    <flux:navlist.item icon="arrow-up-tray" :href="route('admin.benih-pupuk.import')" :current="request()->routeIs('admin.benih-pupuk.import')" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.benih-pupuk.import') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Impor Data') }}</span>
+                    </flux:navlist.item>
                 </flux:navlist.group>
 
             </flux:navlist>
