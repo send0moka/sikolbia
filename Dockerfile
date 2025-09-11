@@ -19,7 +19,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update \
     && apt-get install -y nodejs \
+    && node --version \
+    && npm --version \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -49,12 +52,19 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-d
 
 # Install npm dependencies
 RUN if [ -f package.json ]; then \
-      npm ci --only=production && npm cache clean --force; \
+      echo "Installing npm dependencies..." && \
+      npm ci --only=production && \
+      npm cache clean --force; \
+    else \
+      echo "No package.json found, skipping npm install"; \
     fi
 
 # Build assets if needed
 RUN if [ -f package.json ]; then \
+      echo "Building assets..." && \
       npm run build; \
+    else \
+      echo "No package.json found, skipping npm build"; \
     fi
 
 # Create storage link and set permissions
