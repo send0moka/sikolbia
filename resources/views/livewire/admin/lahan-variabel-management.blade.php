@@ -45,6 +45,13 @@
     <div class="bg-white dark:!bg-neutral-800 overflow-hidden shadow-sm rounded-lg border border-neutral-200 dark:border-neutral-700">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left text-neutral-500 dark:text-neutral-400">
+                <colgroup>
+                    <col style="width:6%" />
+                    <col style="width:44%" />
+                    <col style="width:20%" />
+                    <col style="width:20%" />
+                    <col style="width:10%" />
+                </colgroup>
                 <thead class="text-xs text-neutral-700 uppercase bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-400">
                     <tr>
                         <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id')">
@@ -58,8 +65,8 @@
                             </div>
                         </th>
                         <th scope="col" class="px-6 py-3">Nama Variabel</th>
+                        <th scope="col" class="px-6 py-3">Topik</th>
                         <th scope="col" class="px-6 py-3">Satuan</th>
-                        <th scope="col" class="px-6 py-3">Dibuat</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -69,17 +76,18 @@
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
                             {{ $variabel->id }}
                         </td>
-                        <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
+                        <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white truncate">
                             {{ $variabel->nama }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-neutral-700 dark:text-neutral-300">{{ $variabel->topik->deskripsi ?? '-' }}</span>
                         </td>
                         <td class="px-6 py-4">
                             <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                                 {{ $variabel->satuan }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
-                            {{ $variabel->created_at->format('d/m/Y H:i') }}
-                        </td>
+                        
                         <td class="px-6 py-4">
                             <div class="flex space-x-2">
                                 <flux:button wire:click="openEditModal({{ $variabel->id }})" variant="ghost" size="sm">
@@ -127,9 +135,23 @@
                     <div class="space-y-4">
                         <flux:input wire:model="nama" label="Nama Variabel" placeholder="Masukkan nama variabel lahan" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
-                        
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Topik</label>
+                            <select wire:model="id_topik" class="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200">
+                                <option value="">Pilih topik...</option>
+                                @foreach($topikOptions as $t)
+                                    <option value="{{ $t->id }}">{{ $t->deskripsi }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
                         <flux:input wire:model="satuan" label="Satuan" placeholder="Masukkan satuan (contoh: Ha, Ton, %)" required />
                         @error('satuan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+
+                        <flux:input wire:model="sorter" label="Sorter (opsional)" placeholder="Biarkan kosong untuk auto" />
+                        @error('sorter') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <flux:button type="button" wire:click="closeCreateModal" variant="ghost">
@@ -155,9 +177,23 @@
                     <div class="space-y-4">
                         <flux:input wire:model="nama" label="Nama Variabel" placeholder="Masukkan nama variabel lahan" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
-                        
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Topik</label>
+                            <select wire:model="id_topik" class="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200">
+                                <option value="">Pilih topik...</option>
+                                @foreach($topikOptions as $t)
+                                    <option value="{{ $t->id }}">{{ $t->deskripsi }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
                         <flux:input wire:model="satuan" label="Satuan" placeholder="Masukkan satuan (contoh: Ha, Ton, %)" required />
                         @error('satuan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+
+                        <flux:input wire:model="sorter" label="Sorter (opsional)" placeholder="Biarkan kosong untuk auto" />
+                        @error('sorter') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <flux:button type="button" wire:click="closeEditModal" variant="ghost">

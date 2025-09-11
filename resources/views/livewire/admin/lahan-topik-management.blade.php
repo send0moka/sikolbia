@@ -45,7 +45,12 @@
     <!-- Topik Table -->
     <div class="bg-white dark:!bg-neutral-800 overflow-hidden shadow-sm rounded-lg border border-neutral-200 dark:border-neutral-700">
         <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left text-neutral-500 dark:text-neutral-400">
+            <table class="w-full table-fixed text-sm text-left text-neutral-500 dark:text-neutral-400">
+                <colgroup>
+                    <col style="width:10%" />
+                    <col style="width:70%" />
+                    <col style="width:20%" />
+                </colgroup>
                 <thead class="text-xs text-neutral-700 uppercase bg-neutral-50 dark:bg-neutral-700 dark:text-neutral-400">
                     <tr>
                         <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id')">
@@ -68,16 +73,7 @@
                                 @endif
                             </div>
                         </th>
-                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('created_at')">
-                            <div class="flex items-center">
-                                Dibuat
-                                @if($sortField === 'created_at')
-                                    <x-icon.chevron-up class="w-4 h-4 ml-1 {{ $sortDirection === 'desc' ? 'rotate-180' : '' }}" />
-                                @else
-                                    <x-icon.chevron-up class="w-4 h-4 ml-1 text-transparent" />
-                                @endif
-                            </div>
-                        </th>
+                        
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -90,9 +86,7 @@
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
                             {{ $topik->nama }}
                         </td>
-                        <td class="px-6 py-4">
-                            {{ $topik->created_at->format('d/m/Y H:i') }}
-                        </td>
+                        
                         <td class="px-6 py-4">
                             <div class="flex space-x-2">
                                 <button type="button" wire:click="openEditModal({{ $topik->id }})" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800">
@@ -106,7 +100,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-neutral-500 dark:text-neutral-400">
+                        <td colspan="3" class="px-6 py-4 text-center text-neutral-500 dark:text-neutral-400">
                             Tidak ada topik lahan ditemukan
                         </td>
                     </tr>

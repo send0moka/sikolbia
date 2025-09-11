@@ -36,13 +36,15 @@ class Categories extends Component
             ->map(function($topik) {
                 $avgNilai = $topik->data()->avg('nilai') ?? 0;
                 $totalNilai = $topik->data()->sum('nilai') ?? 0;
-                
+
                 return [
                     'id' => $topik->id,
-                    'deskripsi' => $topik->deskripsi,
-                    'data_count' => $topik->data_count,
-                    'avg_nilai' => round($avgNilai, 2),
-                    'total_nilai' => $totalNilai
+                    // Blade expects 'nama' and other specific keys
+                    'nama' => $topik->deskripsi,
+                    'total_data' => (int) $topik->data_count,
+                    'avg_value' => round($avgNilai, 2),
+                    'total_value' => (float) $totalNilai,
+                    'created_at' => optional($topik->created_at)->toDateTimeString(),
                 ];
             })->toArray();
 
@@ -52,14 +54,15 @@ class Categories extends Component
             ->map(function($variabel) {
                 $avgNilai = $variabel->data()->avg('nilai') ?? 0;
                 $totalNilai = $variabel->data()->sum('nilai') ?? 0;
-                
+
                 return [
                     'id' => $variabel->id,
-                    'deskripsi' => $variabel->deskripsi,
+                    'nama' => $variabel->deskripsi,
                     'satuan' => $variabel->satuan,
-                    'data_count' => $variabel->data_count,
-                    'avg_nilai' => round($avgNilai, 2),
-                    'total_nilai' => $totalNilai
+                    'total_data' => (int) $variabel->data_count,
+                    'avg_value' => round($avgNilai, 2),
+                    'total_value' => (float) $totalNilai,
+                    'created_at' => optional($variabel->created_at)->toDateTimeString(),
                 ];
             })->toArray();
 
@@ -69,13 +72,14 @@ class Categories extends Component
             ->map(function($klasifikasi) {
                 $avgNilai = $klasifikasi->data()->avg('nilai') ?? 0;
                 $totalNilai = $klasifikasi->data()->sum('nilai') ?? 0;
-                
+
                 return [
                     'id' => $klasifikasi->id,
-                    'deskripsi' => $klasifikasi->deskripsi,
-                    'data_count' => $klasifikasi->data_count,
-                    'avg_nilai' => round($avgNilai, 2),
-                    'total_nilai' => $totalNilai
+                    'nama' => $klasifikasi->deskripsi,
+                    'total_data' => (int) $klasifikasi->data_count,
+                    'avg_value' => round($avgNilai, 2),
+                    'total_value' => (float) $totalNilai,
+                    'created_at' => optional($klasifikasi->created_at)->toDateTimeString(),
                 ];
             })->toArray();
     }

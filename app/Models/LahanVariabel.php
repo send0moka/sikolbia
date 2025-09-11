@@ -21,6 +21,17 @@ class LahanVariabel extends Model
         'sorter',
     ];
 
+    // Provide a virtual `nama` attribute to match UI usage (maps to `deskripsi`).
+    public function getNamaAttribute()
+    {
+        return $this->attributes['deskripsi'] ?? null;
+    }
+
+    public function setNamaAttribute($value)
+    {
+        $this->attributes['deskripsi'] = $value;
+    }
+
     public function topik(): BelongsTo
     {
         return $this->belongsTo(LahanTopik::class, 'id_topik');

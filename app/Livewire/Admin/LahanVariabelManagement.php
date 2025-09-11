@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\LahanVariabel;
+use App\Models\LahanTopik;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -26,6 +27,11 @@ class LahanVariabelManagement extends Component
     // Form fields
     public $nama = '';
     public $satuan = '';
+    public $id_topik = null;
+    public $sorter = null;
+
+    // Lists
+    public $topikOptions = [];
 
     // Edit/Delete tracking
     public $editingVariabel;
@@ -34,6 +40,8 @@ class LahanVariabelManagement extends Component
     protected $rules = [
         'nama' => 'required|string|max:255',
         'satuan' => 'required|string|max:50',
+    'id_topik' => 'required|integer|exists:lahan_topik,id',
+    'sorter' => 'nullable|integer',
     ];
 
     protected $messages = [
@@ -56,6 +64,7 @@ class LahanVariabelManagement extends Component
     public function openCreateModal()
     {
         $this->resetForm();
+    $this->loadTopikOptions();
         $this->showCreateModal = true;
     }
 
@@ -70,6 +79,9 @@ class LahanVariabelManagement extends Component
         $this->editingVariabel = LahanVariabel::findOrFail($id);
         $this->nama = $this->editingVariabel->nama;
         $this->satuan = $this->editingVariabel->satuan;
+    $this->id_topik = $this->editingVariabel->id_topik;
+    $this->sorter = $this->editingVariabel->sorter;
+    $this->loadTopikOptions();
         $this->showEditModal = true;
     }
 
@@ -96,9 +108,17 @@ class LahanVariabelManagement extends Component
     {
         $this->validate();
 
+        // If sorter not provided, compute next sorter value
+        if (empty($this->sorter)) {
+            $maxSorter = LahanVariabel::max('sorter');
+            $this->sorter = is_null($maxSorter) ? 1 : ($maxSorter + 1);
+        }
+
         LahanVariabel::create([
-            'nama' => $this->nama,
+            'id_topik' => $this->id_topik,
+            'deskripsi' => $this->nama,
             'satuan' => $this->satuan,
+            'sorter' => $this->sorter,
         ]);
 
         session()->flash('message', 'Variabel lahan berhasil ditambahkan.');
@@ -110,8 +130,10 @@ class LahanVariabelManagement extends Component
         $this->validate();
 
         $this->editingVariabel->update([
-            'nama' => $this->nama,
+            'id_topik' => $this->id_topik,
+            'deskripsi' => $this->nama,
             'satuan' => $this->satuan,
+            'sorter' => $this->sorter,
         ]);
 
         session()->flash('message', 'Variabel lahan berhasil diperbarui.');
@@ -129,7 +151,14 @@ class LahanVariabelManagement extends Component
     {
         $this->nama = '';
         $this->satuan = '';
+        $this->id_topik = null;
+        $this->sorter = null;
         $this->resetErrorBag();
+    }
+
+    private function loadTopikOptions()
+    {
+        $this->topikOptions = LahanTopik::orderBy('deskripsi')->get();
     }
 
     public function sortBy($field)
@@ -146,11 +175,14 @@ class LahanVariabelManagement extends Component
     {
         $variabels = LahanVariabel::query()
             ->when($this->search, function ($query) {
-                $query->where('nama', 'like', '%' . $this->search . '%')
-                      ->orWhere('satuan', 'like', '%' . $this->search . '%');
+            // `nama` is a virtual attribute mapped to `deskripsi` in the model.
+            // Use the actual DB column `deskripsi` for searching.
+            $query->where('deskripsi', 'like', '%' . $this->search . '%')
+                ->orWhere('satuan', 'like', '%' . $this->search . '%');
             })
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
+        ->with('topik')
+        ->orderBy($this->sortField, $this->sortDirection)
+        ->paginate($this->perPage);
 
         return view('livewire.admin.lahan-variabel-management', [
             'variabels' => $variabels,
