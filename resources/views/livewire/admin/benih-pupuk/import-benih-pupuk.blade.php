@@ -1,7 +1,7 @@
 
 <div>
 <!-- Fixed Header with Title and Import Form -->
-<header class="fixed top-0 z-30 bg-gradient-to-r from-neutral-600 to-neutral-700 dark:from-neutral-800 dark:to-neutral-900 text-white shadow-lg border-b border-neutral-500/20 backdrop-blur-sm bg-opacity-95"
+<header class="fixed top-0 z-30 bg-gradient-to-r from-neutral-600 to-neutral-700 dark:from-neutral-800 dark:to-neutral-900 text-white shadow-lg border-b border-zinc-200 dark:border-zinc-700 backdrop-blur-sm bg-opacity-95"
         style="left: calc(16rem + 1px); right: 0;">
     <div class="px-4 sm:px-6 py-3">
         <div class="flex items-center justify-between">
