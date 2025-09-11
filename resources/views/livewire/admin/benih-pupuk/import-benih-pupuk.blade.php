@@ -12,24 +12,23 @@
 
             <!-- Import Form Section -->
             <div class="flex-shrink-0">
-                <form action="{{ route('admin.benih-pupuk.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 sm:gap-3">
+                <form action="{{ route('admin.benih-pupuk.preview') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 sm:gap-3">
                     @csrf
-                    <div class="flex items-center gap-2">
-                        <input type="file" name="importFile" accept=".csv,.xlsx,.xls"
-                               class="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded border border-blue-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-1 sm:file:mr-2 file:py-1 file:px-1 sm:file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                        <button type="submit"
-                                class="inline-flex items-center px-3 sm:px-4 py-1 sm:py-2 bg-blue-600 hover:bg-gray-50 text-white font-semibold rounded transition-colors duration-200 shadow-sm text-sm">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                            </svg>
-                            <span class="hidden sm:inline">Import</span>
-                            <span>Import</span>
-                        </button>
-                    </div>
-                    @error('importFile')
-                        <span class="text-red-300 text-xs ml-2">{{ $message }}</span>
-                    @enderror
+                    <input type="file" name="importFile" accept=".csv,.xlsx,.xls"
+                           class="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded border border-blue-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-1 sm:file:mr-2 file:py-1 file:px-1 sm:file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                    <button type="submit"
+                            class="inline-flex items-center px-3 sm:px-4 py-1 sm:py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded transition-colors duration-200 shadow-sm text-sm">
+                        <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Preview</span>
+                        <span>Preview</span>
+                    </button>
                 </form>
+                @error('importFile')
+                    <span class="text-red-300 text-xs ml-2">{{ $message }}</span>
+                @enderror
             </div>
         </div>
     </div>
@@ -73,6 +72,90 @@
         </div>
     @endif
 </div>
+
+<!-- Preview Modal -->
+@if(session('showPreviewModal'))
+<div class="fixed inset-0 z-60 overflow-y-auto pointer-events-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 pointer-events-auto">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity pointer-events-none" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen pointer-events-none" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto max-h-screen overflow-y-auto">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                            Preview Data Import
+                        </h3>
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-600">
+                                Total Baris: <strong>{{ Cache::get('totalRows') }}</strong> | Total Kolom: <strong>{{ Cache::get('totalColumns') }}</strong>
+                            </p>
+                        </div>
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach(Cache::get('previewData', []) as $rowIndex => $row)
+                                        <tr class="{{ $rowIndex == 0 ? 'bg-gray-50 font-semibold' : '' }}">
+                                            @foreach($row as $cell)
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ $cell }}
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <form action="{{ route('admin.benih-pupuk.import') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Konfirmasi Import
+                    </button>
+                </form>
+                <a href="{{ route('admin.benih-pupuk.cancel-preview') }}" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Batal
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Import Progress Modal -->
+@if($showImportModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                            Proses Import
+                        </h3>
+                        <div class="mb-4">
+                            <div class="bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: {{ $importProgress }}%"></div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">{{ $importStatus }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button wire:click="$set('showImportModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm" :disabled="$importProgress < 100">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <script>
     // Auto-hide toasts after 10 seconds

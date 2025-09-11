@@ -18,59 +18,65 @@ class ImportBenihPupuk extends Component
     public $importProgress = 0;
     public $importStatus = '';
     public $showImportModal = false;
-
-    // Hook into Livewire's lifecycle to prevent image validation
-    public function dehydrate()
-    {
-        // This method runs before the component is sent to the frontend
-        // We can use it to ensure no image validation is applied
-    }
+    public $previewData = [];
+    public $totalRows = 0;
+    public $totalColumns = 0;
+    public $showPreviewModal = false;
 
     public function updatedImportFile()
     {
-        // Skip Livewire's default validation and handle it manually
-        // This prevents the "must be an image" error
-        if ($this->importFile) {
-            // Custom validation using Laravel's validator
-            $validator = validator(['importFile' => $this->importFile], [
-                'importFile' => 'mimetypes:application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain|max:10240'
-            ]);
-
-            if ($validator->fails()) {
-                $this->addError('importFile', 'File harus berupa Excel (.xlsx, .xls) atau CSV (.csv)');
-                // Clear the file to prevent further processing
-                $this->importFile = null;
-                return;
-            } else {
-                $this->resetErrorBag('importFile');
-            }
-        }
+        $this->resetValidation('importFile');
     }
 
-    public function startImport()
+    public function previewImport()
     {
-        // Clear any existing validation errors first
-        $this->resetErrorBag();
-
-        // Manual validation for file
         if (!$this->importFile) {
             $this->addError('importFile', 'File import wajib dipilih');
             return;
         }
 
-        // Validate file type manually
-        if ($this->importFile) {
-            $validator = validator(['importFile' => $this->importFile], [
-                'importFile' => 'mimetypes:application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain|max:10240'
-            ]);
+        $this->validate([
+            'importFile' => 'file|mimes:xlsx,xls,csv|max:10240',
+        ], [
+            'importFile.file' => 'File harus valid',
+            'importFile.mimes' => 'File harus berupa Excel (.xlsx, .xls) atau CSV (.csv)',
+            'importFile.max' => 'File maksimal 10MB',
+        ]);
 
-            if ($validator->fails()) {
-                $this->addError('importFile', 'File harus berupa Excel (.xlsx, .xls) atau CSV (.csv)');
-                return;
-            }
+        try {
+            $path = $this->importFile->store('temp-imports');
+
+            // Load the file using Laravel Excel
+            $data = Excel::toArray([], storage_path('app/' . $path))[0]; // Assuming first sheet
+
+            // Get headers (first row)
+            $headers = array_shift($data);
+
+            // Total columns is count of headers
+            $this->totalColumns = count($headers);
+
+            // Total rows is count of data + 1 for header
+            $this->totalRows = count($data) + 1;
+
+            // Preview first 10 rows
+            $this->previewData = array_slice($data, 0, 10);
+
+            // Add headers to preview for display
+            array_unshift($this->previewData, $headers);
+
+            Storage::delete($path);
+
+            $this->showPreviewModal = true;
+
+        } catch (\Exception $e) {
+            $this->addError('importFile', 'Gagal membaca file: ' . $e->getMessage());
+            Log::error('Preview error: ' . $e->getMessage());
         }
+    }
 
-        // If we get here, validation passed
+    public function startImport()
+    {
+        $this->showPreviewModal = false;
         $this->showImportModal = true;
         $this->importProgress = 0;
         $this->importStatus = 'Memulai import...';

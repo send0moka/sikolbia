@@ -165,6 +165,8 @@ Route::middleware(['auth'])->prefix('admin/benih-pupuk')->name('admin.benih-pupu
     Route::view('data', 'admin.panel-benih-pupuk.data')->name('data');
     
     Route::view('import', 'admin.panel-benih-pupuk.import')->name('import');
+    Route::post('preview', [App\Http\Controllers\Admin\BenihPupukImportController::class, 'preview'])->name('preview');
+    Route::get('cancel-preview', [App\Http\Controllers\Admin\BenihPupukImportController::class, 'cancelPreview'])->name('cancel-preview');
     Route::post('import', [App\Http\Controllers\Admin\BenihPupukImportController::class, 'import'])->name('admin.benih-pupuk.import');
     
     // Template download route
