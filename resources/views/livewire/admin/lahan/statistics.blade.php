@@ -31,6 +31,33 @@
                 @endforeach
             </select>
         </div>
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Filter Variabel</label>
+            <select wire:model.live="selectedVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                <option value="">Semua Variabel</option>
+                @foreach($variabels as $v)
+                    <option value="{{ $v->id }}">{{ $v->deskripsi ?? $v->nama }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Filter Klasifikasi</label>
+            <select wire:model.live="selectedKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                <option value="">Semua Klasifikasi</option>
+                @foreach($klasifikasis as $k)
+                    <option value="{{ $k->id }}">{{ $k->deskripsi ?? $k->nama }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Filter Wilayah</label>
+            <select wire:model.live="selectedWilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                <option value="">Semua Wilayah</option>
+                @foreach($wilayahs as $w)
+                    <option value="{{ $w->id }}">{{ $w->nama }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
 
     <!-- Summary Cards -->
@@ -112,6 +139,7 @@
             <div class="h-64">
                 <canvas id="yearlyTrendsChart" x-ref="chart"></canvas>
             </div>
+            <div x-ref="yearlyData" style="display:none">@json($yearlyTrends)</div>
             @if(count($yearlyTrends) > 0)
             <div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400 text-right">
                 Data dari {{ count($yearlyTrends) }} tahun
@@ -124,15 +152,22 @@
                     chart: null,
                     showAvg: true,
                     showCount: true,
-                    
+
                     initChart() {
                         const ctx = this.$refs.chart.getContext('2d');
-                        const yearlyData = @json($yearlyTrends);
-                        
+                        // read data from DOM so Livewire updates are reflected
+                        let yearlyData = [];
+                        try {
+                            const node = this.$root.querySelector('[x-ref="yearlyData"]');
+                            yearlyData = JSON.parse(node ? node.textContent || '[]' : '[]');
+                        } catch (e) {
+                            yearlyData = [];
+                        }
+
                         const labels = yearlyData.map(item => item.year);
                         const avgValues = yearlyData.map(item => item.avg_value);
                         const countValues = yearlyData.map(item => item.count);
-                        
+
                         const chartData = {
                             labels: labels,
                             datasets: [
@@ -160,7 +195,7 @@
                                 }
                             ]
                         };
-                        
+
                         const config = {
                             type: 'line',
                             data: chartData,
@@ -176,9 +211,7 @@
                                         position: 'top',
                                         labels: {
                                             color: '#6b7280',
-                                            font: {
-                                                size: 12
-                                            }
+                                            font: { size: 12 }
                                         }
                                     },
                                     tooltip: {
@@ -192,9 +225,7 @@
                                         callbacks: {
                                             label: function(context) {
                                                 let label = context.dataset.label || '';
-                                                if (label) {
-                                                    label += ': ';
-                                                }
+                                                if (label) label += ': ';
                                                 if (context.parsed.y !== null) {
                                                     if (context.datasetIndex === 0) {
                                                         label += context.parsed.y.toLocaleString('id-ID', {maximumFractionDigits: 2});
@@ -208,72 +239,46 @@
                                     }
                                 },
                                 scales: {
-                                    x: {
-                                        grid: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        },
-                                        ticks: {
-                                            color: '#9ca3af'
-                                        },
-                                        border: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        }
-                                    },
-                                    y: {
-                                        type: 'linear',
-                                        display: this.showAvg,
-                                        position: 'left',
-                                        grid: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        },
-                                        ticks: {
-                                            color: '#9ca3af',
-                                            callback: function(value) {
-                                                return value.toLocaleString('id-ID');
-                                            }
-                                        },
-                                        border: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        }
-                                    },
-                                    y1: {
-                                        type: 'linear',
-                                        display: this.showCount,
-                                        position: 'right',
-                                        grid: {
-                                            drawOnChartArea: false,
-                                        },
-                                        ticks: {
-                                            color: '#9ca3af',
-                                            callback: function(value) {
-                                                return value.toLocaleString('id-ID');
-                                            }
-                                        }
-                                    }
+                                    x: { grid: { color: 'rgba(229, 231, 235, 0.1)' }, ticks: { color: '#9ca3af' }, border: { color: 'rgba(229, 231, 235, 0.1)' } },
+                                    y: { type: 'linear', display: this.showAvg, position: 'left', grid: { color: 'rgba(229, 231, 235, 0.1)' }, ticks: { color: '#9ca3af', callback: function(value) { return value.toLocaleString('id-ID'); } }, border: { color: 'rgba(229, 231, 235, 0.1)' } },
+                                    y1: { type: 'linear', display: this.showCount, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#9ca3af', callback: function(value) { return value.toLocaleString('id-ID'); } } }
                                 }
                             }
                         };
-                        
+
+                        if (this.chart) this.chart.destroy();
                         this.chart = new Chart(ctx, config);
+
+                        // Small timeout to ensure container layout finished then force resize to avoid invisible charts
+                        setTimeout(() => { try { this.chart.resize(); } catch (e) {} }, 50);
+
+                        this.initListener && this.initListener();
                     },
-                    
+
                     toggleDataset(type) {
-                        if (type === 'avg') {
-                            this.showAvg = !this.showAvg;
-                        } else if (type === 'count') {
-                            this.showCount = !this.showCount;
-                        }
-                        
+                        if (type === 'avg') this.showAvg = !this.showAvg;
+                        else if (type === 'count') this.showCount = !this.showCount;
+
                         if (this.chart) {
-                            // Update dataset visibility
                             this.chart.data.datasets[0].hidden = !this.showAvg;
                             this.chart.data.datasets[1].hidden = !this.showCount;
-                            
-                            // Update scale visibility
                             this.chart.options.scales.y.display = this.showAvg;
                             this.chart.options.scales.y1.display = this.showCount;
-                            
                             this.chart.update();
+                        }
+                    },
+
+                    // Re-init when backend updates data
+                    initListener() {
+                        if (window.Livewire) {
+                            Livewire.hook('message.processed', (message, component) => {
+                                try {
+                                    if (this.chart) this.chart.destroy();
+                                    this.initChart();
+                                } catch (e) {
+                                    // ignore
+                                }
+                            });
                         }
                     }
                 };
@@ -281,10 +286,10 @@
             </script>
         </div>
 
-        <!-- Topik Distribution -->
-        <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700" x-data="topikDistributionChart()" x-init="initChart()">
+        <!-- Variabel Distribution (replaces Topik) -->
+        <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700" x-data="variabelDistributionChart()" x-init="initChart()">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Distribusi Topik</h3>
+                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Distribusi Variabel</h3>
                 <div class="flex items-center space-x-2">
                     <button @click="toggleView()" class="px-3 py-1 text-xs rounded-md transition-colors" :class="{'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': showChart, 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400': !showChart}">
                         <span x-text="showChart ? 'Tabel' : 'Grafik'"></span>
@@ -294,24 +299,25 @@
             
             <!-- Chart View -->
             <div x-show="showChart" class="h-64">
-                <canvas id="topikDistributionChart" x-ref="chart"></canvas>
+                <canvas id="variabelDistributionChart" x-ref="chart"></canvas>
             </div>
+            <div x-ref="variabelData" style="display:none">@json($variabelDistribution)</div>
             
             <!-- Table View -->
             <div x-show="!showChart" class="space-y-3">
-                @forelse($topikDistribution as $topik)
+                @forelse($variabelDistribution as $item)
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ $topik['name'] }}</span>
-                            <span class="text-sm text-neutral-600 dark:text-neutral-400">{{ $topik['percentage'] }}%</span>
+                            <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ $item['name'] }}</span>
+                            <span class="text-sm text-neutral-600 dark:text-neutral-400">{{ $item['percentage'] }}%</span>
                         </div>
                         <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $topik['percentage'] }}%"></div>
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $item['percentage'] }}%"></div>
                         </div>
                         <div class="flex justify-between text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                            <span>{{ number_format($topik['count']) }} data</span>
-                            <span>Avg: {{ number_format($topik['avg_value'], 2) }}</span>
+                            <span>{{ number_format($item['count']) }} data</span>
+                            <span>Avg: {{ number_format($item['avg_value'] ?? 0, 2) }}</span>
                         </div>
                     </div>
                 </div>
@@ -321,100 +327,59 @@
             </div>
             
             <script>
-            function topikDistributionChart() {
+            function variabelDistributionChart() {
                 return {
                     chart: null,
                     showChart: true,
                     
                     initChart() {
                         const ctx = this.$refs.chart.getContext('2d');
-                        const topikData = @json($topikDistribution);
-                        
-                        if (topikData.length === 0) return;
-                        
+                        let data = [];
+                        try {
+                            data = JSON.parse(this.$root.querySelector('[x-ref="variabelData"]').textContent || '[]');
+                        } catch (e) {
+                            data = [];
+                        }
+                        if (!data || data.length === 0) return;
                         const colors = [
-                            'rgba(59, 130, 246, 0.7)',  // blue
-                            'rgba(16, 185, 129, 0.7)',  // green
-                            'rgba(245, 158, 11, 0.7)',  // yellow
-                            'rgba(139, 92, 246, 0.7)',  // purple
-                            'rgba(236, 72, 153, 0.7)',  // pink
-                            'rgba(20, 184, 166, 0.7)',  // teal
-                            'rgba(249, 115, 22, 0.7)',  // orange
-                            'rgba(6, 182, 212, 0.7)',   // cyan
-                            'rgba(236, 72, 153, 0.7)',  // pink
-                            'rgba(139, 92, 246, 0.7)',  // purple
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(236, 72, 153, 0.7)'
                         ];
-                        
-                        const borderColors = colors.map(color => color.replace('0.7', '1'));
-                        
+                        const borderColors = colors.map(c => c.replace('0.7', '1'));
                         const chartData = {
-                            labels: topikData.map(item => item.name),
+                            labels: data.map(i => i.name),
                             datasets: [{
-                                data: topikData.map(item => item.count),
-                                backgroundColor: colors.slice(0, topikData.length),
-                                borderColor: borderColors.slice(0, topikData.length),
+                                data: data.map(i => i.count),
+                                backgroundColor: colors.slice(0, data.length),
+                                borderColor: borderColors.slice(0, data.length),
                                 borderWidth: 1,
                                 hoverOffset: 10
                             }]
                         };
-                        
-                        const config = {
-                            type: 'doughnut',
-                            data: chartData,
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        position: 'right',
-                                        labels: {
-                                            color: '#6b7280',
-                                            font: {
-                                                size: 11
-                                            },
-                                            padding: 15,
-                                            usePointStyle: true,
-                                            pointStyle: 'circle'
-                                        }
-                                    },
-                                    tooltip: {
-                                        backgroundColor: '#1f2937',
-                                        titleColor: '#f9fafb',
-                                        bodyColor: '#f9fafb',
-                                        borderColor: '#374151',
-                                        borderWidth: 1,
-                                        padding: 10,
-                                        usePointStyle: true,
-                                        callbacks: {
-                                            label: function(context) {
-                                                const label = context.label || '';
-                                                const value = context.raw || 0;
-                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                                const percentage = Math.round((value / total) * 100);
-                                                return `${label}: ${value.toLocaleString('id-ID')} (${percentage}%)`;
-                                            }
-                                        }
-                                    }
-                                },
-                                cutout: '60%',
-                                animation: {
-                                    animateScale: true,
-                                    animateRotate: true
-                                }
-                            }
-                        };
-                        
+                        const config = { type: 'doughnut', data: chartData, options: { responsive: true, maintainAspectRatio: false, cutout: '60%' } };
+                        if (this.chart) this.chart.destroy();
                         this.chart = new Chart(ctx, config);
+                        // Resize shortly after init to avoid invisible canvas when container layout shifts
+                        setTimeout(() => { try { this.chart.resize(); } catch (e) {} }, 50);
+                        this.initListener && this.initListener();
                     },
-                    
-                    toggleView() {
-                        this.showChart = !this.showChart;
-                    },
-                    
-                    // Clean up chart when component is destroyed
-                    destroyChart() {
-                        if (this.chart) {
-                            this.chart.destroy();
+                    toggleView() { this.showChart = !this.showChart; },
+                    destroyChart() { if (this.chart) this.chart.destroy(); }
+                    ,
+                    // Re-init when backend updates data
+                    initListener() {
+                        if (window.Livewire) {
+                            Livewire.hook('message.processed', (message, component) => {
+                                try {
+                                    if (this.chart) this.chart.destroy();
+                                    this.initChart();
+                                } catch (e) {
+                                    // ignore
+                                }
+                            });
                         }
                     }
                 };
@@ -425,10 +390,10 @@
 
     <!-- Charts Row 2 -->
     <div class="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Status Distribution -->
-        <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700" x-data="statusDistributionChart()" x-init="initChart()">
+        <!-- Klasifikasi Distribution (replaces Status) -->
+        <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700" x-data="klasifikasiDistributionChart()" x-init="initChart()">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Distribusi Status</h3>
+                <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Distribusi Klasifikasi</h3>
                 <div class="flex items-center space-x-2">
                     <button @click="toggleView()" class="px-3 py-1 text-xs rounded-md transition-colors" :class="{'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': showChart, 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400': !showChart}">
                         <span x-text="showChart ? 'Tabel' : 'Grafik'"></span>
@@ -438,26 +403,19 @@
             
             <!-- Chart View -->
             <div x-show="showChart" class="h-64">
-                <canvas id="statusDistributionChart" x-ref="chart"></canvas>
+                <canvas id="klasifikasiDistributionChart" x-ref="chart"></canvas>
             </div>
+            <div x-ref="klasifikasiData" style="display:none">@json($klasifikasiDistribution)</div>
             
             <!-- Table View -->
             <div x-show="!showChart" class="space-y-3">
-                @forelse($statusDistribution as $status)
+                @forelse($klasifikasiDistribution as $item)
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <span class="px-2 py-1 text-xs rounded-full mr-3
-                            @if($status['status'] === 'Aktif') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
-                            @elseif($status['status'] === 'Tidak Aktif') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
-                            @elseif($status['status'] === 'Dalam Proses') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
-                            @elseif($status['status'] === 'Selesai') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
-                            @else bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-300
-                            @endif">
-                            {{ $status['status'] }}
-                        </span>
-                        <span class="text-sm text-neutral-900 dark:text-white">{{ number_format($status['count']) }}</span>
+                        <span class="px-2 py-1 text-xs rounded-full mr-3 bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-300">{{ $item['name'] }}</span>
+                        <span class="text-sm text-neutral-900 dark:text-white">{{ number_format($item['count']) }}</span>
                     </div>
-                    <span class="text-sm text-neutral-600 dark:text-neutral-400">{{ $status['percentage'] }}%</span>
+                    <span class="text-sm text-neutral-600 dark:text-neutral-400">{{ $item['percentage'] }}%</span>
                 </div>
                 @empty
                 <p class="text-neutral-500 dark:text-neutral-400 text-center py-4">Tidak ada data</p>
@@ -465,126 +423,61 @@
             </div>
             
             <script>
-            function statusDistributionChart() {
+            function klasifikasiDistributionChart() {
                 return {
                     chart: null,
                     showChart: true,
-                    
+
                     initChart() {
                         const ctx = this.$refs.chart.getContext('2d');
-                        const statusData = @json($statusDistribution);
-                        
-                        if (statusData.length === 0) return;
-                        
-                        // Define colors based on status
-                        const getStatusColor = (status) => {
-                            switch(status) {
-                                case 'Aktif':
-                                    return { bg: 'rgba(16, 185, 129, 0.7)', border: 'rgba(16, 185, 129, 1)' };
-                                case 'Tidak Aktif':
-                                    return { bg: 'rgba(239, 68, 68, 0.7)', border: 'rgba(239, 68, 68, 1)' };
-                                case 'Dalam Proses':
-                                    return { bg: 'rgba(245, 158, 11, 0.7)', border: 'rgba(245, 158, 11, 1)' };
-                                case 'Selesai':
-                                    return { bg: 'rgba(59, 130, 246, 0.7)', border: 'rgba(59, 130, 246, 1)' };
-                                default:
-                                    return { bg: 'rgba(156, 163, 175, 0.7)', border: 'rgba(156, 163, 175, 1)' };
-                            }
-                        };
-                        
-                        const labels = statusData.map(item => item.status);
-                        const data = statusData.map(item => item.count);
-                        const backgroundColors = statusData.map(item => getStatusColor(item.status).bg);
-                        const borderColors = statusData.map(item => getStatusColor(item.status).border);
-                        
-                        const chartData = {
-                            labels: labels,
-                            datasets: [{
-                                data: data,
-                                backgroundColor: backgroundColors,
-                                borderColor: borderColors,
-                                borderWidth: 1,
-                                barPercentage: 0.6,
-                                borderRadius: 4
-                            }]
-                        };
-                        
+                        let data = [];
+                        try {
+                            data = JSON.parse(this.$root.querySelector('[x-ref="klasifikasiData"]').textContent || '[]');
+                        } catch (e) {
+                            data = [];
+                        }
+                        if (!data || data.length === 0) return;
+
+                        // filter out undefined/placeholder names
+                        const filtered = data.filter(i => (i.name || '').toString().toLowerCase() !== 'undefined');
+                        if (filtered.length === 0) return;
+
+                        const labels = filtered.map(i => i.name);
+                        const values = filtered.map(i => i.count);
+                        const colors = [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ];
+                        const backgroundColors = values.map((_, idx) => colors[idx % colors.length]);
+
                         const config = {
                             type: 'bar',
-                            data: chartData,
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                indexAxis: 'y',
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    },
-                                    tooltip: {
-                                        backgroundColor: '#1f2937',
-                                        titleColor: '#f9fafb',
-                                        bodyColor: '#f9fafb',
-                                        borderColor: '#374151',
-                                        borderWidth: 1,
-                                        padding: 10,
-                                        usePointStyle: true,
-                                        callbacks: {
-                                            label: function(context) {
-                                                const label = context.label || '';
-                                                const value = context.raw || 0;
-                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                                const percentage = Math.round((value / total) * 100);
-                                                return `${label}: ${value.toLocaleString('id-ID')} (${percentage}%)`;
-                                            }
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        grid: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        },
-                                        ticks: {
-                                            color: '#9ca3af',
-                                            callback: function(value) {
-                                                return value.toLocaleString('id-ID');
-                                            }
-                                        },
-                                        border: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        }
-                                    },
-                                    y: {
-                                        grid: {
-                                            display: false
-                                        },
-                                        ticks: {
-                                            color: '#9ca3af',
-                                            align: 'left'
-                                        },
-                                        border: {
-                                            color: 'rgba(229, 231, 235, 0.1)'
-                                        }
-                                    }
-                                },
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeOutQuart'
-                                }
-                            }
+                            data: {
+                                labels: labels,
+                                datasets: [{ data: values, backgroundColor: backgroundColors, borderRadius: 4 }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y' }
                         };
-                        
+
+                        if (this.chart) this.chart.destroy();
                         this.chart = new Chart(ctx, config);
                     },
-                    
-                    toggleView() {
-                        this.showChart = !this.showChart;
-                    },
-                    
-                    // Clean up chart when component is destroyed
-                    destroyChart() {
-                        if (this.chart) {
-                            this.chart.destroy();
+
+                    toggleView() { this.showChart = !this.showChart; },
+                    destroyChart() { if (this.chart) this.chart.destroy(); },
+
+                    // Re-init when backend updates data
+                    initListener() {
+                        if (window.Livewire) {
+                            Livewire.hook('message.processed', (message, component) => {
+                                try {
+                                    if (this.chart) this.chart.destroy();
+                                    this.initChart();
+                                } catch (e) {
+                                    // ignore
+                                }
+                            });
                         }
                     }
                 };
