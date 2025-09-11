@@ -90,6 +90,26 @@
                             <p class="text-sm text-gray-600">
                                 Total Baris: <strong>{{ Cache::get('totalRows') }}</strong> | Total Kolom: <strong>{{ Cache::get('totalColumns') }}</strong>
                             </p>
+                            @if(Cache::get('warnings'))
+                                <div class="mt-2 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+                                    <strong>Peringatan Kolom:</strong>
+                                    <ul class="list-disc list-inside mt-1">
+                                        @foreach(Cache::get('warnings') as $warning)
+                                            <li>{{ $warning }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            @if(Cache::get('rowWarnings'))
+                                <div class="mt-2 p-3 text-left bg-red-100 border border-red-400 text-red-700 rounded">
+                                    <strong>Peringatan Data:</strong>
+                                    <ul class="list-disc list-inside mt-1">
+                                        @foreach(Cache::get('rowWarnings') as $rowWarning)
+                                            <li>Baris {{ $rowWarning['row'] }}: {{ implode(', ', $rowWarning['warnings']) }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
                         <div class="overflow-x-auto max-h-96">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -112,7 +132,7 @@
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <form action="{{ route('admin.benih-pupuk.import') }}" method="POST" class="inline">
                     @csrf
-                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="submit" {{ (Cache::get('warnings') || Cache::get('rowWarnings')) ? 'disabled' : '' }} class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 {{ (Cache::get('warnings') || Cache::get('rowWarnings')) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700' }} text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
                         Konfirmasi Import
                     </button>
                 </form>
