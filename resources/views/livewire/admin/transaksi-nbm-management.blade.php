@@ -140,7 +140,6 @@
             <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
                 <thead class="bg-neutral-50 dark:bg-neutral-800/50">
                     <tr>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">No</th>
                         <x-sortable-header field="id" :sort-field="$sortField" :sort-direction="$sortDirection" title="ID" class="px-3 py-3" />
                         <x-sortable-header field="kelompok" :sort-field="$sortField" :sort-direction="$sortDirection" title="Kelompok" class="px-3 py-3" />
                         <x-sortable-header field="komoditi" :sort-field="$sortField" :sort-direction="$sortDirection" title="Komoditi" class="px-3 py-3" />
@@ -193,9 +192,6 @@
                                 <tbody class="bg-white dark:bg-neutral-900 divide-y divide-neutral-200 dark:divide-neutral-700">
                     @forelse($transaksiNbms as $index => $transaksi)
                         <tr wire:key="nbm-row-{{ $transaksi->id }}" class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100 text-center">
-                                {{ ($transaksiNbms->currentPage() - 1) * $transaksiNbms->perPage() + $index + 1 }}
-                            </td>
                             <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->id }}</td>
                             <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->kelompok->nama ?? $transaksi->kode_kelompok }}</td>
                             <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->komoditi->nama ?? $transaksi->kode_komoditi }}</td>

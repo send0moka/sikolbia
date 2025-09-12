@@ -50,6 +50,9 @@ return new class extends Migration
             $table->index(['kode_kelompok', 'kode_komoditi', 'tahun', 'bulan'], 'idx_nbm_lookup');
             $table->index(['tahun', 'bulan'], 'idx_temporal');
             $table->index(['validation_status', 'outlier_flag'], 'idx_quality');
+            
+            // Foreign Key Constraints
+            $table->foreign('kode_kelompok')->references('kode')->on('kelompok')->onDelete('restrict');
         });
     }
 
@@ -59,6 +62,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transaksi_nbms', function (Blueprint $table) {
+            // Drop foreign key constraint
+            $table->dropForeign(['kode_kelompok']);
+            
             $table->dropIndex('idx_nbm_lookup');
             $table->dropIndex('idx_temporal');
             $table->dropIndex('idx_quality');

@@ -12,10 +12,6 @@ class KelompokSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create the 10 specific kelompok data with enhanced attributes
         Kelompok::factory(10)->create();
-        
-        // Add additional kelompok if needed for testing
-        // Kelompok::factory(5)->create();
     }
 }
