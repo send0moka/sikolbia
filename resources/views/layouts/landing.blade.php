@@ -55,15 +55,15 @@
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                                 <div class="py-1">
-                                    <a href="{{ route('admin.konsep-metode') }}" 
+                                    <a href="{{ route('ketersediaan.konsep-metode') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Konsep dan Metode
                                     </a>
-                                    <a href="{{ route('admin.laporan-nbm') }}" 
+                                    <a href="{{ route('ketersediaan.laporan-nbm') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Laporan Data NBM
                                     </a>
-                                    <a href="{{ route('admin.konsep-transaksi-nbm') }}" 
+                                    <a href="{{ route('ketersediaan.konsep-transaksi-nbm') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Konsep Transaksi NBM
                                     </a>
@@ -90,19 +90,19 @@
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                                 <div class="py-1">
-                                    <a href="{{ route('admin.konsumsi.konsep-metode') }}" 
+                                    <a href="{{ route('konsumsi.konsep-metode') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Konsep dan Metode
                                     </a>
-                                    <a href="{{ route('admin.laporan-susenas') }}" 
+                                    <a href="{{ route('konsumsi.laporan-susenas') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Laporan Data Susenas
                                     </a>
-                                    <a href="{{ route('admin.per-kapita-seminggu') }}" 
+                                    <a href="{{ route('konsumsi.per-kapita-seminggu') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Konsumsi Per Kapita Seminggu
                                     </a>
-                                    <a href="{{ route('admin.per-kapita-setahun') }}" 
+                                    <a href="{{ route('konsumsi.per-kapita-setahun') }}" 
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Konsumsi Per Kapita Setahun
                                     </a>
@@ -191,15 +191,15 @@
                         </svg>
                     </button>
                     <div x-show="open" class="pl-6">
-                        <a href="{{ route('admin.konsep-metode') }}" 
+                        <a href="{{ route('ketersediaan.konsep-metode') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Konsep dan Metode
                         </a>
-                        <a href="{{ route('admin.laporan-nbm') }}" 
+                        <a href="{{ route('ketersediaan.laporan-nbm') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Laporan Data NBM
                         </a>
-                        <a href="{{ route('admin.konsep-transaksi-nbm') }}" 
+                        <a href="{{ route('ketersediaan.konsep-transaksi-nbm') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Konsep Transaksi NBM
                         </a>
@@ -216,19 +216,19 @@
                         </svg>
                     </button>
                     <div x-show="open" class="pl-6">
-                        <a href="{{ route('admin.konsumsi.konsep-metode') }}" 
+                        <a href="{{ route('konsumsi.konsep-metode') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Konsep dan Metode
                         </a>
-                        <a href="{{ route('admin.laporan-susenas') }}" 
+                        <a href="{{ route('konsumsi.laporan-susenas') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Laporan Data Susenas
                         </a>
-                        <a href="{{ route('admin.per-kapita-seminggu') }}" 
+                        <a href="{{ route('konsumsi.per-kapita-seminggu') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Konsumsi Per Kapita Seminggu
                         </a>
-                        <a href="{{ route('admin.per-kapita-setahun') }}" 
+                        <a href="{{ route('konsumsi.per-kapita-setahun') }}" 
                            class="block px-3 py-2 text-sm text-neutral-600 hover:text-blue-600 hover:bg-neutral-50">
                             Konsumsi Per Kapita Setahun
                         </a>
@@ -263,8 +263,8 @@
                     <h3 class="text-lg font-semibold mb-4">Menu Utama</h3>
                     <ul class="space-y-2 text-neutral-300">
                         <li><a href="{{ route('home') }}" class="hover:text-white">Home</a></li>
-                        <li><a href="{{ route('admin.konsep-metode') }}" class="hover:text-white">Ketersediaan</a></li>
-                        <li><a href="{{ route('admin.konsumsi.konsep-metode') }}" class="hover:text-white">Konsumsi</a></li>
+                        <li><a href="{{ route('ketersediaan.konsep-metode') }}" class="hover:text-white">Ketersediaan</a></li>
+                        <li><a href="{{ route('konsumsi.konsep-metode') }}" class="hover:text-white">Konsumsi</a></li>
                         <li><a href="{{ route('pertanian.daftar-alamat') }}" class="hover:text-white">Daftar Alamat</a></li>
                         <li><a href="{{ route('login') }}" class="hover:text-white">Manajemen Data</a></li>
                     </ul>

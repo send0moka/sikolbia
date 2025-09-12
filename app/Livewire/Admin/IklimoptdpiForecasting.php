@@ -6,6 +6,8 @@ use App\Models\IklimoptdpiData;
 use App\Models\IklimoptdpiTopik;
 use App\Models\IklimoptdpiVariabel;
 use App\Models\IklimoptdpiKlasifikasi;
+use App\Models\Wilayah;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -82,33 +84,46 @@ class IklimoptdpiForecasting extends Component
         // Apply filters
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('wilayah', 'like', '%' . $this->search . '%')
+                // search by related wilayah name
+                $q->orWhereHas('wilayah', function ($wq) {
+                        $wq->where('nama', 'like', '%' . $this->search . '%');
+                    })
                   ->orWhereHas('topik', function ($topikQuery) {
-                      $topikQuery->where('nama', 'like', '%' . $this->search . '%');
+                      // topik uses 'deskripsi' column
+                      $topikQuery->where('deskripsi', 'like', '%' . $this->search . '%');
                   })
                   ->orWhereHas('variabel', function ($variabelQuery) {
-                      $variabelQuery->where('nama', 'like', '%' . $this->search . '%');
+                      // variabel uses 'deskripsi' column
+                      $variabelQuery->where('deskripsi', 'like', '%' . $this->search . '%');
                   })
                   ->orWhereHas('klasifikasi', function ($klasifikasiQuery) {
-                      $klasifikasiQuery->where('nama', 'like', '%' . $this->search . '%');
+                      // klasifikasi uses 'deskripsi' column
+                      $klasifikasiQuery->where('deskripsi', 'like', '%' . $this->search . '%');
                   });
             });
         }
 
         if ($this->selectedTopik) {
-            $query->where('id_iklimoptdpi_topik', $this->selectedTopik);
+            // Filter by topik via the variabel relationship
+            $query->whereExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('iklimoptdpi_variabel as v')
+                    ->whereColumn('v.id', 'iklimoptdpi_data.id_variabel')
+                    ->where('v.id_topik', $this->selectedTopik);
+            });
         }
 
         if ($this->selectedVariabel) {
-            $query->where('id_iklimoptdpi_variabel', $this->selectedVariabel);
+            $query->where('id_variabel', $this->selectedVariabel);
         }
 
         if ($this->selectedKlasifikasi) {
-            $query->where('id_iklimoptdpi_klasifikasi', $this->selectedKlasifikasi);
+            $query->where('id_klasifikasi', $this->selectedKlasifikasi);
         }
 
         if ($this->selectedWilayah) {
-            $query->where('wilayah', $this->selectedWilayah);
+            // data stores wilayah by id in 'id_wilayah'
+            $query->where('id_wilayah', $this->selectedWilayah);
         }
 
         if ($this->selectedStatus) {
@@ -127,15 +142,23 @@ class IklimoptdpiForecasting extends Component
                      ->paginate($this->perPage);
 
         // Get filter options
-        $topiks = IklimoptdpiTopik::orderBy('nama')->get();
-        $variabels = IklimoptdpiVariabel::orderBy('nama')->get();
-        $klasifikasis = IklimoptdpiKlasifikasi::orderBy('nama')->get();
+    // Use the correct 'deskripsi' column for lists
+    $topiks = IklimoptdpiTopik::orderBy('deskripsi')->get();
+    $variabels = IklimoptdpiVariabel::orderBy('deskripsi')->get();
+    $klasifikasis = IklimoptdpiKlasifikasi::orderBy('deskripsi')->get();
         
-        // Get unique wilayah values
-        $wilayahs = IklimoptdpiData::select('wilayah')
-                                  ->distinct()
-                                  ->orderBy('wilayah')
-                                  ->pluck('wilayah');
+    // Get unique wilayah ids from data and load Wilayah models for dropdown
+    $wilayahIds = IklimoptdpiData::select('id_wilayah')
+                  ->distinct()
+                  ->pluck('id_wilayah')
+                  ->filter()
+                  ->toArray();
+
+    $wilayahs = Wilayah::whereIn('id', $wilayahIds)
+            ->orderBy('id_kategori')
+            ->orderBy('id_parent')
+            ->orderBy('sorter')
+            ->get();
 
         return view('admin.iklim-opt-dpi.forecasting', [
             'data' => $data,

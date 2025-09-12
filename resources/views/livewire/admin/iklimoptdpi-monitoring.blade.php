@@ -1,6 +1,8 @@
 <div>
     <!-- Header -->
     <div class="mb-6">
+
+        
         <div class="flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Monitoring Iklim & OPT DPI</h1>
@@ -70,10 +72,10 @@
 
     <!-- Filters -->
     <div class="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div>
                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Pencarian</label>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari wilayah, nilai..." class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                <input id="iklim-search" type="text" wire:model.live.debounce.300ms="search" placeholder="Cari data Iklim dan OPT DPI" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
             </div>
 
             <div>
@@ -81,46 +83,54 @@
                 <select wire:model.live="selectedTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Topik</option>
                     @foreach($topiks as $topik)
-                        <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                        <option value="{{ $topik->id }}">{{ $topik->deskripsi }}</option>
                     @endforeach
                 </select>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Variabel</label>
-                <select wire:model.live="selectedVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                    <option value="">Semua Variabel</option>
-                    @foreach($variabels as $variabel)
-                        <option value="{{ $variabel->id }}">{{ $variabel->nama }}</option>
-                    @endforeach
+                <select wire:model.live="selectedVariabel" @if(!$selectedTopik) disabled @endif class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                    @if(!$selectedTopik)
+                        <option value="">Silahkan pilih Topik terlebih dahulu</option>
+                    @else
+                        <option value="">Semua Variabel</option>
+                        @foreach($variabels as $variabel)
+                            <option value="{{ $variabel->id }}">{{ $variabel->deskripsi }}</option>
+                        @endforeach
+                    @endif
                 </select>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Klasifikasi</label>
-                <select wire:model.live="selectedKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                    <option value="">Semua Klasifikasi</option>
-                    @foreach($klasifikasis as $klasifikasi)
-                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
-                    @endforeach
+                <select wire:model.live="selectedKlasifikasi" @if(!$selectedVariabel) disabled @endif class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                    @if(!$selectedVariabel)
+                        <option value="">Silahkan pilih Variabel terlebih dahulu</option>
+                    @else
+                        <option value="">Semua Klasifikasi</option>
+                        @foreach($klasifikasis as $klasifikasi)
+                            <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi }}</option>
+                        @endforeach
+                    @endif
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Status</label>
-                <select wire:model.live="selectedStatus" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                    <option value="">Semua Status</option>
-                    <option value="Aktif">Aktif</option>
-                    <option value="Tidak Aktif">Tidak Aktif</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Arsip">Arsip</option>
-                    <option value="Pending">Pending</option>
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Wilayah</label>
+                <select wire:model.live="selectedWilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                    <option value="">Semua Wilayah</option>
+                    @foreach($wilayahs as $w)
+                        <option value="{{ $w->id }}">{{ $w->nama }}</option>
+                    @endforeach
                 </select>
             </div>
 
+            <!-- Status filter removed as requested -->
+
             <div class="flex items-end">
-                <button wire:click="resetFilters" class="w-full px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-accent">
-                    Reset Filter
+                <button wire:click="resetFilters" class="w-full px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-accent">
+                    Reset
                 </button>
             </div>
         </div>
@@ -176,16 +186,16 @@
                                 {{ $item->tahun }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                {{ $item->wilayah }}
+                                {{ is_object($item->wilayah) ? ($item->wilayah->nama ?? json_encode($item->wilayah)) : (is_array($item->wilayah) ? ($item->wilayah['nama'] ?? json_encode($item->wilayah)) : ($item->wilayah ?? '-')) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                {{ $item->topik->nama ?? '-' }}
+                                {{ optional($item->topik)->deskripsi ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                {{ $item->variabel->nama ?? '-' }}
+                                {{ optional($item->variabel)->deskripsi ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                {{ $item->klasifikasi->nama ?? '-' }}
+                                {{ optional($item->klasifikasi)->deskripsi ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                                 {{ number_format($item->nilai, 2, ',', '.') }}
@@ -199,10 +209,17 @@
                                         'Arsip' => 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200',
                                         'Pending' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
                                     ];
-                                    $colorClass = $statusColors[$item->status] ?? 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200';
+                                    // if status is null/empty, show N/A with grey styling
+                                    if (empty($item->status)) {
+                                        $colorClass = 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200';
+                                        $display = 'N/A';
+                                    } else {
+                                        $colorClass = $statusColors[$item->status] ?? 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200';
+                                        $display = $item->status;
+                                    }
                                 @endphp
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }}">
-                                    {{ $item->status }}
+                                    {{ $display }}
                                 </span>
                             </td>
                         </tr>

@@ -23,8 +23,8 @@ class IklimoptdpiData extends Model
     protected $fillable = [
         'tahun',
         'id_bulan',
-        'id_variabel',
-        'id_klasifikasi',
+    'id_variabel',
+    'id_klasifikasi',
         'id_wilayah',
         'nilai',
         'status',
@@ -49,6 +49,35 @@ class IklimoptdpiData extends Model
     public function variabel(): BelongsTo
     {
         return $this->belongsTo(IklimoptdpiVariabel::class, 'id_variabel');
+    }
+
+    // Get the topik through variabel relationship (no direct id_topik on data table)
+    public function topik()
+    {
+        return $this->hasOneThrough(
+            IklimoptdpiTopik::class,
+            IklimoptdpiVariabel::class,
+            'id', // Foreign key on iklimoptdpi_variabel table
+            'id', // Foreign key on iklimoptdpi_topik table
+            'id_variabel', // Local key on iklimoptdpi_data table
+            'id_topik' // Local key on iklimoptdpi_variabel table
+        );
+    }
+
+    // Aliases used elsewhere in the codebase (keep for backward compatibility)
+    public function iklimoptdpiTopik()
+    {
+        return $this->topik();
+    }
+
+    public function iklimoptdpiVariabel(): BelongsTo
+    {
+        return $this->variabel();
+    }
+
+    public function iklimoptdpiKlasifikasi(): BelongsTo
+    {
+        return $this->klasifikasi();
     }
 
     public function klasifikasi(): BelongsTo

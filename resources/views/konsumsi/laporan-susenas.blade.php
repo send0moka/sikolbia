@@ -359,11 +359,11 @@
             <div class="mt-12 bg-neutral-50 p-6 rounded-lg">
                 <h3 class="text-lg font-semibold text-neutral-900 mb-4">Halaman Terkait</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <a href="{{ route('admin.konsumsi.konsep-metode') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
+                    <a href="{{ route('konsumsi.konsep-metode') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">Konsep dan Metode</h4>
                         <p class="text-sm text-neutral-600 mt-1">Metodologi Susenas konsumsi</p>
                     </a>
-                    <a href="{{ route('admin.per-kapita-seminggu') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
+                    <a href="{{ route('konsumsi.per-kapita-seminggu') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">Per Kapita Seminggu</h4>
                         <p class="text-sm text-neutral-600 mt-1">Data konsumsi mingguan</p>
                     </a>

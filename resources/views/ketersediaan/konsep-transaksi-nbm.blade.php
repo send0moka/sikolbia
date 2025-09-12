@@ -708,10 +708,12 @@ public function calculateNBM($data) {
                 Sekarang Anda sudah memahami bagaimana NBM bekerja. Saatnya mencoba sistem yang sesungguhnya!
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('admin.transaksi-nbm') }}" 
-                   class="bg-white text-indigo-700 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-50 dark:hover:bg-neutral-100 transition duration-300 inline-flex items-center justify-center">
-                    📊 Kelola Data NBM
-                </a>
+                @can('view transaksi_nbm')
+                    <a href="{{ route('admin.transaksi-nbm') }}" 
+                       class="bg-white text-indigo-700 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-50 dark:hover:bg-neutral-100 transition duration-300 inline-flex items-center justify-center">
+                        📊 Kelola Data NBM
+                    </a>
+                @endcan
                 <a href="{{ route('ketersediaan.laporan-nbm') }}" 
                    class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-700 dark:hover:text-indigo-800 transition duration-300 inline-flex items-center justify-center">
                     📈 Lihat Laporan NBM
