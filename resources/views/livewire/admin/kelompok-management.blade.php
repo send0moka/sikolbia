@@ -85,7 +85,38 @@
                             {{ $kelompok->deskripsi }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $kelompok->prioritas_nasional }}
+                            @php
+                                $prioritas = strtolower($kelompok->prioritas_nasional);
+                            @endphp
+                            @if($prioritas === 'tinggi')
+                                <div class="flex items-center text-red-600 dark:text-red-400">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                    </svg>
+                                    <span class="font-medium">Tinggi</span>
+                                </div>
+                            @elseif($prioritas === 'sedang')
+                                <div class="flex items-center text-yellow-600 dark:text-yellow-400">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                    <span class="font-medium">Sedang</span>
+                                </div>
+                            @elseif($prioritas === 'rendah')
+                                <div class="flex items-center text-green-600 dark:text-green-400">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                    </svg>
+                                    <span class="font-medium">Rendah</span>
+                                </div>
+                            @else
+                                <div class="flex items-center text-neutral-600 dark:text-neutral-400">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="font-medium">{{ $kelompok->prioritas_nasional ?: 'Tidak Ditetapkan' }}</span>
+                                </div>
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             {{ $kelompok->target_konsumsi_harian }}
@@ -149,13 +180,23 @@
                         <flux:input wire:model="nama" label="Nama Kelompok" placeholder="Masukkan nama kelompok" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <flux:input wire:model="deskripsi" label="Deskripsi" placeholder="Deskripsi kelompok" />
+                        <flux:input wire:model="deskripsi" label="Deskripsi" placeholder="Deskripsi kelompok (minimal 3 karakter)" required />
                         @error('deskripsi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <flux:input wire:model="prioritas_nasional" label="Prioritas Nasional" placeholder="Prioritas nasional (misal: tinggi, sedang, rendah)" />
-                        @error('prioritas_nasional') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Prioritas Nasional</label>
+                            <select wire:model="prioritas_nasional" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:ring-accent focus:border-accent dark:bg-neutral-800 dark:text-neutral-200" required>
+                                <option value="">Pilih Prioritas</option>
+                                <option value="tinggi">Tinggi</option>
+                                <option value="sedang">Sedang</option>
+                                <option value="rendah">Rendah</option>
+                            </select>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Pilih tingkat prioritas nasional untuk kelompok ini</p>
+                            @error('prioritas_nasional') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
                         <flux:input wire:model="target_konsumsi_harian" label="Target Konsumsi Harian" type="number" step="0.01" placeholder="Target konsumsi harian" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Target dalam gram per hari (opsional)</p>
                         @error('target_konsumsi_harian') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <div class="flex items-center space-x-2">
@@ -186,19 +227,31 @@
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Edit Kelompok</h3>
                 <form wire:submit="updateKelompok">
                     <div class="space-y-4">
-                        <flux:input wire:model="kode" label="Kode" placeholder="Masukkan kode kelompok" required />
+                        <flux:input wire:model="kode" label="Kode" placeholder="Masukkan kode kelompok (kapital)" required />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Hanya huruf kapital dan angka, maksimal 10 karakter</p>
                         @error('kode') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <flux:input wire:model="nama" label="Nama Kelompok" placeholder="Masukkan nama kelompok" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <flux:input wire:model="deskripsi" label="Deskripsi" placeholder="Deskripsi kelompok" />
+                        <flux:input wire:model="deskripsi" label="Deskripsi" placeholder="Deskripsi kelompok (minimal 3 karakter)" required />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Minimal 3 karakter, maksimal 255 karakter</p>
                         @error('deskripsi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <flux:input wire:model="prioritas_nasional" label="Prioritas Nasional" placeholder="Prioritas nasional (misal: tinggi, sedang, rendah)" />
-                        @error('prioritas_nasional') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Prioritas Nasional</label>
+                            <select wire:model="prioritas_nasional" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:ring-accent focus:border-accent dark:bg-neutral-800 dark:text-neutral-200" required>
+                                <option value="">Pilih Prioritas</option>
+                                <option value="tinggi">Tinggi</option>
+                                <option value="sedang">Sedang</option>
+                                <option value="rendah">Rendah</option>
+                            </select>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Pilih tingkat prioritas nasional untuk kelompok ini</p>
+                            @error('prioritas_nasional') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
                         <flux:input wire:model="target_konsumsi_harian" label="Target Konsumsi Harian" type="number" step="0.01" placeholder="Target konsumsi harian" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Target dalam gram per hari (opsional)</p>
                         @error('target_konsumsi_harian') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <div class="flex items-center space-x-2">
@@ -250,4 +303,31 @@
         </div>
     </div>
     @endif
-</div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('livewire:loaded', () => {
+            // Auto uppercase kode input
+            Livewire.on('updatedKode', (value) => {
+                const kodeInput = document.querySelector('input[wire\\:model="kode"]');
+                if (kodeInput && value) {
+                    kodeInput.value = value.toUpperCase();
+                }
+            });
+
+            // Auto uppercase when typing in kode field
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input[wire\\:model="kode"]')) {
+                    e.target.value = e.target.value.toUpperCase();
+                }
+            });
+
+            // Remove symbols from kode input
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input[wire\\:model="kode"]')) {
+                    e.target.value = e.target.value.replace(/[^A-Z0-9]/g, '');
+                }
+            });
+        });
+    </script>
+    @endpush

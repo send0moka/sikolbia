@@ -40,12 +40,27 @@ class KelompokManagement extends Component
     ];
 
     protected $rules = [
-        'kode' => 'required|unique:kelompok,kode',
+        'kode' => 'required|unique:kelompok,kode|regex:/^[A-Z0-9]+$/|max:10',
         'nama' => 'required|min:3',
-        'deskripsi' => 'nullable|string',
-        'prioritas_nasional' => 'nullable|string',
-        'target_konsumsi_harian' => 'nullable|numeric',
+        'deskripsi' => 'required|min:3',
+        'prioritas_nasional' => 'required|in:tinggi,sedang,rendah',
+        'target_konsumsi_harian' => 'nullable|numeric|min:0',
         'status_aktif' => 'boolean',
+    ];
+
+    protected $messages = [
+        'kode.required' => 'Kode kelompok wajib diisi.',
+        'kode.unique' => 'Kode kelompok sudah digunakan.',
+        'kode.regex' => 'Kode kelompok hanya boleh berisi huruf kapital dan angka.',
+        'kode.max' => 'Kode kelompok maksimal 10 karakter.',
+        'nama.required' => 'Nama kelompok wajib diisi.',
+        'nama.min' => 'Nama kelompok minimal 3 karakter.',
+        'deskripsi.required' => 'Deskripsi kelompok wajib diisi.',
+        'deskripsi.min' => 'Deskripsi kelompok minimal 3 karakter.',
+        'prioritas_nasional.required' => 'Prioritas nasional wajib dipilih.',
+        'prioritas_nasional.in' => 'Prioritas nasional harus salah satu dari: tinggi, sedang, rendah.',
+        'target_konsumsi_harian.numeric' => 'Target konsumsi harian harus berupa angka.',
+        'target_konsumsi_harian.min' => 'Target konsumsi harian tidak boleh negatif.',
     ];
 
     public function updatingSearch()
@@ -129,15 +144,30 @@ class KelompokManagement extends Component
     public function updateKelompok()
     {
         $rules = [
-            'kode' => 'required|unique:kelompok,kode,' . $this->editingKelompok->id,
+            'kode' => 'required|unique:kelompok,kode,' . $this->editingKelompok->id . '|regex:/^[A-Z0-9]+$/|max:10',
             'nama' => 'required|min:3',
-            'deskripsi' => 'nullable|string',
-            'prioritas_nasional' => 'nullable|string',
-            'target_konsumsi_harian' => 'nullable|numeric',
+            'deskripsi' => 'required|min:3',
+            'prioritas_nasional' => 'required|in:tinggi,sedang,rendah',
+            'target_konsumsi_harian' => 'nullable|numeric|min:0',
             'status_aktif' => 'boolean',
         ];
 
-        $this->validate($rules);
+        $messages = [
+            'kode.required' => 'Kode kelompok wajib diisi.',
+            'kode.unique' => 'Kode kelompok sudah digunakan.',
+            'kode.regex' => 'Kode kelompok hanya boleh berisi huruf kapital dan angka.',
+            'kode.max' => 'Kode kelompok maksimal 10 karakter.',
+            'nama.required' => 'Nama kelompok wajib diisi.',
+            'nama.min' => 'Nama kelompok minimal 3 karakter.',
+            'deskripsi.required' => 'Deskripsi kelompok wajib diisi.',
+            'deskripsi.min' => 'Deskripsi kelompok minimal 3 karakter.',
+            'prioritas_nasional.required' => 'Prioritas nasional wajib dipilih.',
+            'prioritas_nasional.in' => 'Prioritas nasional harus salah satu dari: tinggi, sedang, rendah.',
+            'target_konsumsi_harian.numeric' => 'Target konsumsi harian harus berupa angka.',
+            'target_konsumsi_harian.min' => 'Target konsumsi harian tidak boleh negatif.',
+        ];
+
+        $this->validate($rules, $messages);
 
         $this->editingKelompok->update([
             'kode' => $this->kode,
@@ -165,8 +195,18 @@ class KelompokManagement extends Component
     {
         $this->kode = '';
         $this->nama = '';
+        $this->deskripsi = '';
+        $this->prioritas_nasional = '';
+        $this->target_konsumsi_harian = '';
+        $this->status_aktif = true;
         $this->editingKelompok = null;
         $this->resetErrorBag();
+    }
+
+    // Auto uppercase kode when updated
+    public function updatedKode($value)
+    {
+        $this->kode = strtoupper($value);
     }
 
     public function render()
