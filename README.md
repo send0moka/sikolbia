@@ -66,7 +66,8 @@ docker run -d -p 8000:80 send0moka/basis-data-konsumsi-pangan:latest
 | **Nginx** | `8000` | Web server reverse proxy |
 | **MySQL** | `3306` | Database utama |
 | **phpMyAdmin** | `8081` | Database management UI |
-| **ML API** | `8082` | Machine Learning API server |
+| **FastAPI ML** | `8082` | Machine Learning API server |
+| **Redis** | `6379` | Cache dan session storage |
 
 ### Environment Variables:
 
@@ -80,7 +81,7 @@ DB_USERNAME=root
 DB_PASSWORD=rootsecret
 
 # ML API
-ML_API_URL=http://ml-api:8082
+ML_API_URL=http://fastapi-ml:8082
 
 # App
 APP_NAME="Basis Data Konsumsi Pangan"

@@ -1,0 +1,1 @@
+Model: nbm_fixed_v1\nTraining Date: 2025-08-14 15:31:46\nConfiguration: epochs=30, batch_size=8, sequence_length=5\n\nPerformance Metrics:\nMSE: 233.8098\nMAE: 9.2680\nMAPE: 20.66%\nRMSE: 15.2908\nR2: -0.2162\n
