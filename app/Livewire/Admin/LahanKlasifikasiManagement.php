@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\LahanKlasifikasi;
+use App\Models\LahanVariabel;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -25,6 +26,10 @@ class LahanKlasifikasiManagement extends Component
 
     // Form fields
     public $nama = '';
+    public $id_variabel = null;
+
+    // Lists
+    public $variabelOptions = [];
 
     // Edit/Delete tracking
     public $editingKlasifikasi;
@@ -32,6 +37,7 @@ class LahanKlasifikasiManagement extends Component
 
     protected $rules = [
         'nama' => 'required|string|max:255',
+    'id_variabel' => 'required|integer|exists:lahan_variabel,id',
     ];
 
     protected $messages = [
@@ -52,6 +58,7 @@ class LahanKlasifikasiManagement extends Component
     public function openCreateModal()
     {
         $this->resetForm();
+    $this->loadVariabelOptions();
         $this->showCreateModal = true;
     }
 
@@ -65,6 +72,8 @@ class LahanKlasifikasiManagement extends Component
     {
         $this->editingKlasifikasi = LahanKlasifikasi::findOrFail($id);
         $this->nama = $this->editingKlasifikasi->nama;
+    $this->id_variabel = $this->editingKlasifikasi->id_variabel;
+    $this->loadVariabelOptions();
         $this->showEditModal = true;
     }
 
@@ -92,7 +101,8 @@ class LahanKlasifikasiManagement extends Component
         $this->validate();
 
         LahanKlasifikasi::create([
-            'nama' => $this->nama,
+            'deskripsi' => $this->nama,
+            'id_variabel' => $this->id_variabel,
         ]);
 
         session()->flash('message', 'Klasifikasi lahan berhasil ditambahkan.');
@@ -104,7 +114,8 @@ class LahanKlasifikasiManagement extends Component
         $this->validate();
 
         $this->editingKlasifikasi->update([
-            'nama' => $this->nama,
+            'deskripsi' => $this->nama,
+            'id_variabel' => $this->id_variabel,
         ]);
 
         session()->flash('message', 'Klasifikasi lahan berhasil diperbarui.');
@@ -121,7 +132,13 @@ class LahanKlasifikasiManagement extends Component
     private function resetForm()
     {
         $this->nama = '';
+        $this->id_variabel = null;
         $this->resetErrorBag();
+    }
+
+    private function loadVariabelOptions()
+    {
+        $this->variabelOptions = LahanVariabel::orderBy('deskripsi')->get();
     }
 
     public function sortBy($field)
@@ -138,8 +155,10 @@ class LahanKlasifikasiManagement extends Component
     {
         $klasifikasis = LahanKlasifikasi::query()
             ->when($this->search, function ($query) {
-                $query->where('nama', 'like', '%' . $this->search . '%');
+                // search actual DB column `deskripsi`
+                $query->where('deskripsi', 'like', '%' . $this->search . '%');
             })
+            ->with('variabel')
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 

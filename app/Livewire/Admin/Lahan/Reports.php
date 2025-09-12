@@ -34,8 +34,22 @@ class Reports extends Component
 
     public function mount()
     {
-        $this->dateFrom = Carbon::now()->subYear()->format('Y-m-d');
-        $this->dateTo = Carbon::now()->format('Y-m-d');
+        // Default date range should cover the entire dataset (year-only)
+        try {
+            $minYear = LahanData::min('tahun');
+            $maxYear = LahanData::max('tahun');
+            if ($minYear && $maxYear) {
+                $this->dateFrom = (string) $minYear; // year only
+                $this->dateTo = (string) $maxYear;   // year only
+            } else {
+                $this->dateFrom = (string) Carbon::now()->subYear()->year;
+                $this->dateTo = (string) Carbon::now()->year;
+            }
+        } catch (\Exception $e) {
+            // Fallback to last 1 year if DB isn't accessible or table is empty
+            $this->dateFrom = (string) Carbon::now()->subYear()->year;
+            $this->dateTo = (string) Carbon::now()->year;
+        }
     }
 
     public function render()
@@ -53,6 +67,7 @@ class Reports extends Component
             'variabels' => $variabels,
             'klasifikasis' => $klasifikasis,
             'regions' => $regions,
+            'years' => $this->getAvailableYears(),
             'reportData' => $reportData,
             'reportSummary' => $reportSummary,
         ]);
@@ -363,12 +378,16 @@ class Reports extends Component
 
     private function getRegions()
     {
-        return LahanData::select('wilayah')
-            ->distinct()
-            ->whereNotNull('wilayah')
-            ->orderBy('wilayah')
-            ->pluck('wilayah')
+        // Return canonical list from `wilayah.nama` only
+        return \App\Models\Wilayah::orderBy('nama')
+            ->pluck('nama')
             ->toArray();
+    }
+
+    // Helper to provide available years for the year-range selects
+    private function getAvailableYears()
+    {
+        return LahanData::select('tahun')->distinct()->orderBy('tahun')->pluck('tahun')->toArray();
     }
 
     private function generateReportData()
@@ -376,24 +395,41 @@ class Reports extends Component
         $query = LahanData::with(['topik', 'variabel', 'klasifikasi']);
 
         // Apply filters
-        if ($this->selectedTopik) {
-            $query->where('id_lahan_topik', $this->selectedTopik);
+        // If the report is grouped by topik/variabel, do not apply the corresponding
+        // filter to avoid a "double filter" effect — user requested grouping alone.
+        if ($this->selectedTopik && $this->groupBy !== 'topik') {
+            // filter by topik via lahan_variabel relationship
+            $query->whereExists(function($q) {
+                $q->select(DB::raw(1))
+                  ->from('lahan_variabel')
+                  ->whereColumn('lahan_variabel.id', 'lahan_data.id_variabel')
+                  ->where('lahan_variabel.id_topik', $this->selectedTopik);
+            });
         }
-        if ($this->selectedVariabel) {
-            $query->where('id_lahan_variabel', $this->selectedVariabel);
+
+        if ($this->selectedVariabel && $this->groupBy !== 'variabel') {
+            // correct FK column name is `id_variabel`
+            $query->where('id_variabel', $this->selectedVariabel);
         }
+
         if ($this->selectedKlasifikasi) {
-            $query->where('id_lahan_klasifikasi', $this->selectedKlasifikasi);
+            // correct FK column name is `id_klasifikasi`
+            $query->where('id_klasifikasi', $this->selectedKlasifikasi);
         }
+
         if ($this->selectedRegion) {
-            $query->where('wilayah', $this->selectedRegion);
+            // selectedRegion contains the region name (nama). Translate to id_wilayah
+            $regionId = \App\Models\Wilayah::where('nama', $this->selectedRegion)->value('id');
+            if ($regionId) {
+                $query->where('id_wilayah', $regionId);
+            }
         }
         if ($this->dateFrom) {
-            $yearFrom = Carbon::parse($this->dateFrom)->year;
+            $yearFrom = (int) $this->dateFrom;
             $query->where('tahun', '>=', $yearFrom);
         }
         if ($this->dateTo) {
-            $yearTo = Carbon::parse($this->dateTo)->year;
+            $yearTo = (int) $this->dateTo;
             $query->where('tahun', '<=', $yearTo);
         }
 
@@ -416,14 +452,15 @@ class Reports extends Component
     {
         switch ($this->groupBy) {
             case 'region':
-                return $query->select('wilayah as group_name')
+                return $query->leftJoin('wilayah', 'lahan_data.id_wilayah', '=', 'wilayah.id')
+                    ->select('wilayah.nama as group_name')
                     ->selectRaw('COUNT(*) as total_records')
-                    ->selectRaw('AVG(nilai) as avg_value')
-                    ->selectRaw('SUM(nilai) as total_value')
-                    ->selectRaw('MAX(nilai) as max_value')
-                    ->selectRaw('MIN(nilai) as min_value')
-                    ->groupBy('wilayah')
-                    ->orderBy('wilayah')
+                    ->selectRaw('AVG(lahan_data.nilai) as avg_value')
+                    ->selectRaw('SUM(lahan_data.nilai) as total_value')
+                    ->selectRaw('MAX(lahan_data.nilai) as max_value')
+                    ->selectRaw('MIN(lahan_data.nilai) as min_value')
+                    ->groupBy('wilayah.nama')
+                    ->orderBy('wilayah.nama')
                     ->get();
 
             case 'topik':
@@ -491,19 +528,22 @@ class Reports extends Component
 
         $currentYearData = (clone $query)
             ->where('tahun', $currentYear)
-            ->select('wilayah')
+            // ensure we join wilayah table and key by wilayah.nama
+            ->leftJoin('wilayah', 'lahan_data.id_wilayah', '=', 'wilayah.id')
+            ->select('wilayah.nama as wilayah')
             ->selectRaw('AVG(nilai) as avg_value')
             ->selectRaw('COUNT(*) as total_records')
-            ->groupBy('wilayah')
+            ->groupBy('wilayah.nama')
             ->get()
             ->keyBy('wilayah');
 
         $previousYearData = (clone $query)
             ->where('tahun', $previousYear)
-            ->select('wilayah')
+            ->leftJoin('wilayah', 'lahan_data.id_wilayah', '=', 'wilayah.id')
+            ->select('wilayah.nama as wilayah')
             ->selectRaw('AVG(nilai) as avg_value')
             ->selectRaw('COUNT(*) as total_records')
-            ->groupBy('wilayah')
+            ->groupBy('wilayah.nama')
             ->get()
             ->keyBy('wilayah');
 
@@ -558,25 +598,43 @@ class Reports extends Component
         $query = LahanData::query();
 
         // Apply same filters as main report
-        if ($this->selectedTopik) {
-            $query->where('id_lahan_topik', $this->selectedTopik);
+        // Mirror filter logic from generateReportData() and avoid double-filter when grouping
+        if ($this->selectedTopik && $this->groupBy !== 'topik') {
+            $query->whereExists(function($q) {
+                $q->select(DB::raw(1))
+                  ->from('lahan_variabel')
+                  ->whereColumn('lahan_variabel.id', 'lahan_data.id_variabel')
+                  ->where('lahan_variabel.id_topik', $this->selectedTopik);
+            });
         }
-        if ($this->selectedVariabel) {
-            $query->where('id_lahan_variabel', $this->selectedVariabel);
+
+        if ($this->selectedVariabel && $this->groupBy !== 'variabel') {
+            $query->where('id_variabel', $this->selectedVariabel);
         }
+
         if ($this->selectedKlasifikasi) {
-            $query->where('id_lahan_klasifikasi', $this->selectedKlasifikasi);
+            $query->where('id_klasifikasi', $this->selectedKlasifikasi);
         }
+
         if ($this->selectedRegion) {
-            $query->where('wilayah', $this->selectedRegion);
+            $regionId = \App\Models\Wilayah::where('nama', $this->selectedRegion)->value('id');
+            if ($regionId) {
+                $query->where('id_wilayah', $regionId);
+            }
         }
         if ($this->dateFrom) {
-            $yearFrom = Carbon::parse($this->dateFrom)->year;
+            $yearFrom = (int) $this->dateFrom;
             $query->where('tahun', '>=', $yearFrom);
         }
         if ($this->dateTo) {
-            $yearTo = Carbon::parse($this->dateTo)->year;
+            $yearTo = (int) $this->dateTo;
             $query->where('tahun', '<=', $yearTo);
+        }
+
+        $uniqueRegions = $query->distinct('id_wilayah')->whereNotNull('id_wilayah')->count();
+        // fallback: if id_wilayah is not used, fallback to wilayah names count (rare)
+        if ($uniqueRegions === 0) {
+            $uniqueRegions = $query->distinct('wilayah')->whereNotNull('wilayah')->count();
         }
 
         return [
@@ -585,7 +643,7 @@ class Reports extends Component
             'average_value' => $query->avg('nilai'),
             'max_value' => $query->max('nilai'),
             'min_value' => $query->min('nilai'),
-            'unique_regions' => $query->distinct('wilayah')->count(),
+            'unique_regions' => $uniqueRegions,
             'date_range' => [
                 'from' => $query->min('tahun') . '-01-01',
                 'to' => $query->max('tahun') . '-12-31'

@@ -58,7 +58,7 @@
                             </div>
                         </th>
                         <th scope="col" class="px-6 py-3">Nama Klasifikasi</th>
-                        <th scope="col" class="px-6 py-3">Dibuat</th>
+                        <th scope="col" class="px-6 py-3">Variabel</th>
                         <th scope="col" class="px-6 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -72,7 +72,7 @@
                             {{ $klasifikasi->nama }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $klasifikasi->created_at->format('d/m/Y H:i') }}
+                            <span class="text-sm text-neutral-700 dark:text-neutral-300">{{ $klasifikasi->variabel->deskripsi ?? '-' }}</span>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex space-x-2">
@@ -121,6 +121,17 @@
                     <div class="space-y-4">
                         <flux:input wire:model="nama" label="Nama Klasifikasi" placeholder="Masukkan nama klasifikasi lahan" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Variabel</label>
+                            <select wire:model="id_variabel" class="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200">
+                                <option value="">Pilih variabel...</option>
+                                @foreach($variabelOptions as $v)
+                                    <option value="{{ $v->id }}">{{ $v->deskripsi }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <flux:button type="button" wire:click="closeCreateModal" variant="ghost">
@@ -146,6 +157,17 @@
                     <div class="space-y-4">
                         <flux:input wire:model="nama" label="Nama Klasifikasi" placeholder="Masukkan nama klasifikasi lahan" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Variabel</label>
+                            <select wire:model="id_variabel" class="mt-1 block w-full rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200">
+                                <option value="">Pilih variabel...</option>
+                                @foreach($variabelOptions as $v)
+                                    <option value="{{ $v->id }}">{{ $v->deskripsi }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <flux:button type="button" wire:click="closeEditModal" variant="ghost">

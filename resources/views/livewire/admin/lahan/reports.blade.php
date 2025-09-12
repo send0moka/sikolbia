@@ -23,45 +23,25 @@
 
     <!-- Filters -->
     <div class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Topik Filter -->
-        <div>
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik</label>
-            <select wire:model.live="selectedTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200">
-                <option value="">Semua Topik</option>
-                @foreach($topiks as $topik)
-                    <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
-                @endforeach
-            </select>
-        </div>
+    <!-- Topik and Variabel filters removed by request -->
 
-        <!-- Variabel Filter -->
-        <div>
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
-            <select wire:model.live="selectedVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200">
-                <option value="">Semua Variabel</option>
-                @foreach($variabels as $variabel)
-                    <option value="{{ $variabel->id }}">{{ $variabel->nama }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <!-- Date Range -->
+        <!-- Year Range -->
         <div class="lg:col-span-2">
             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Rentang Tahun</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <input 
-                        type="date" 
-                        wire:model.live="dateFrom" 
-                        class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200"
-                    >
+                    <select wire:model.live="dateFrom" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200">
+                        @foreach($years as $y)
+                            <option value="{{ $y }}">{{ $y }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
-                    <input 
-                        type="date" 
-                        wire:model.live="dateTo" 
-                        class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200"
-                    >
+                    <select wire:model.live="dateTo" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200">
+                        @foreach($years as $y)
+                            <option value="{{ $y }}">{{ $y }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>

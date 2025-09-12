@@ -20,6 +20,17 @@ class LahanKlasifikasi extends Model
         'sorter',
     ];
 
+    // Provide a virtual `nama` attribute for UI compatibility (maps to `deskripsi`).
+    public function getNamaAttribute()
+    {
+        return $this->attributes['deskripsi'] ?? null;
+    }
+
+    public function setNamaAttribute($value)
+    {
+        $this->attributes['deskripsi'] = $value;
+    }
+
     public function variabel(): BelongsTo
     {
         return $this->belongsTo(LahanVariabel::class, 'id_variabel');
