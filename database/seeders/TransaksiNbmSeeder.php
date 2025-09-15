@@ -17,19 +17,20 @@ class TransaksiNbmSeeder extends Seeder
         // Clear existing data
         TransaksiNbm::truncate();
         
-        echo "Seeding TransaksiNbm data (memory-optimized approach)...\n";
+        echo "Seeding TransaksiNbm data (full historical dataset)...\n";
         
-        // Get base yearly data - limit to recent years to reduce memory usage
+        // Get base yearly data - using full historical data (1993-2024)
         $baseData = $this->getData();
-        $recentData = array_filter($baseData, fn($r) => $r['tahun'] >= 2020); // Only 2020-2023
+        // Uncomment line below if you want to limit to recent years only:
+        // $baseData = array_filter($baseData, fn($r) => $r['tahun'] >= 2020);
         
         $totalRecords = 0;
-        $chunkSize = 50; // Very small chunks
+        $chunkSize = 50; // Small chunks for memory management
         
-        echo "Processing " . count($recentData) . " base records from 2020-2023...\n";
+        echo "Processing " . count($baseData) . " base records from 1993-2024...\n";
         
-        // Process in smaller batches
-        $batches = array_chunk($recentData, 5); // Process 5 commodities at a time
+        // Process in smaller batches to manage memory
+        $batches = array_chunk($baseData, 5); // Process 5 commodities at a time
         
         foreach ($batches as $batchIndex => $batch) {
             echo "Processing batch " . ($batchIndex + 1) . "/" . count($batches) . "\n";

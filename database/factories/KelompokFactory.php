@@ -97,6 +97,14 @@ class KelompokFactory extends Factory
                 'target_konsumsi_harian' => 25.00,
                 'status_aktif' => true
             ],
+            [
+                'kode' => '11', 
+                'nama' => 'Minuman',
+                'deskripsi' => 'Minuman olahan dan non-alkohol',
+                'prioritas_nasional' => 'rendah',
+                'target_konsumsi_harian' => 50.00,
+                'status_aktif' => true
+            ],
         ];
         
         static $counter = 0;
