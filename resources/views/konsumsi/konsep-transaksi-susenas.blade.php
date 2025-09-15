@@ -677,10 +677,12 @@ public function analyzeSusenas($data) {
                 Sekarang Anda sudah memahami bagaimana analisis Susenas bekerja. Saatnya mencoba sistem yang sesungguhnya!
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('admin.susenas') }}" 
-                   class="bg-white text-emerald-700 px-8 py-3 rounded-lg font-semibold hover:bg-emerald-50 dark:hover:bg-neutral-100 transition duration-300 inline-flex items-center justify-center">
-                    📊 Kelola Data Susenas
-                </a>
+                    @can('view susenas')
+                        <a href="{{ route('admin.susenas') }}" 
+                           class="bg-white text-emerald-700 px-8 py-3 rounded-lg font-semibold hover:bg-emerald-50 dark:hover:bg-neutral-100 transition duration-300 inline-flex items-center justify-center">
+                            📊 Kelola Data Susenas
+                        </a>
+                    @endcan
                 <a href="{{ route('konsumsi.laporan-susenas') }}" 
                    class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-emerald-700 dark:hover:text-emerald-800 transition duration-300 inline-flex items-center justify-center">
                     📈 Lihat Laporan Susenas

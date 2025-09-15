@@ -60,9 +60,10 @@ class IklimoptdpiMaps extends Component
 
     private function loadFilters()
     {
-        $this->topiks = IklimoptdpiTopik::orderBy('nama')->get();
-        $this->variabels = IklimoptdpiVariabel::orderBy('nama')->get();
-        $this->klasifikasis = IklimoptdpiKlasifikasi::orderBy('nama')->get();
+    // order by existing 'deskripsi' columns instead of non-existent 'nama'
+    $this->topiks = IklimoptdpiTopik::orderBy('deskripsi')->get();
+    $this->variabels = IklimoptdpiVariabel::orderBy('deskripsi')->get();
+    $this->klasifikasis = IklimoptdpiKlasifikasi::orderBy('deskripsi')->get();
         $this->years = IklimoptdpiData::select('tahun')
             ->distinct()
             ->orderBy('tahun', 'desc')
@@ -75,26 +76,35 @@ class IklimoptdpiMaps extends Component
         try {
             $query = IklimoptdpiData::query()
                 ->select([
-                    'wilayah',
-                    DB::raw('COUNT(*) as total_data'),
-                    DB::raw('AVG(nilai) as average_value'),
-                    DB::raw('MAX(nilai) as max_value'),
-                    DB::raw('MIN(nilai) as min_value'),
-                    DB::raw('SUM(nilai) as total_value'),
+                    'wilayah.id as wilayah_id',
+                    'wilayah.nama as wilayah',
+                    DB::raw('COUNT(iklimoptdpi_data.id) as total_data'),
+                    DB::raw('AVG(iklimoptdpi_data.nilai) as average_value'),
+                    DB::raw('MAX(iklimoptdpi_data.nilai) as max_value'),
+                    DB::raw('MIN(iklimoptdpi_data.nilai) as min_value'),
+                    DB::raw('SUM(iklimoptdpi_data.nilai) as total_value'),
                 ])
-                ->groupBy('wilayah')
+                ->join('wilayah', 'iklimoptdpi_data.id_wilayah', '=', 'wilayah.id')
+                ->groupBy('wilayah.id', 'wilayah.nama')
                 ->when($this->selectedTopik, function($q) {
-                    return $q->where('id_iklimoptdpi_topik', $this->selectedTopik);
+                    // data table doesn't have id_iklimoptdpi_topik directly; filter via variabel -> topik relationship
+                    return $q->whereExists(function($sub) {
+                        $sub->select(DB::raw(1))
+                            ->from('iklimoptdpi_variabel as v')
+                            ->whereColumn('v.id', 'iklimoptdpi_data.id_variabel')
+                            ->where('v.id_topik', $this->selectedTopik);
+                    });
                 })
                 ->when($this->selectedVariabel, function($q) {
-                    return $q->where('id_iklimoptdpi_variabel', $this->selectedVariabel);
+                    return $q->where('id_variabel', $this->selectedVariabel);
                 })
                 ->when($this->selectedKlasifikasi, function($q) {
-                    return $q->where('id_iklimoptdpi_klasifikasi', $this->selectedKlasifikasi);
+                    return $q->where('id_klasifikasi', $this->selectedKlasifikasi);
                 });
 
             if ($this->selectedYear && $this->selectedYear !== 'all') {
-                $query->whereYear('tanggal', $this->selectedYear);
+                // data table stores year in 'tahun'
+                $query->where('tahun', $this->selectedYear);
             }
 
             $data = $query->get()->keyBy('wilayah');

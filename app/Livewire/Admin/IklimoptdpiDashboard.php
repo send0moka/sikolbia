@@ -35,24 +35,38 @@ class IklimoptdpiDashboard extends Component
             ->limit(10)
             ->get();
         
-        // Get data by year for chart
+        // Get data by year for chart (earliest -> latest)
         $yearlyData = IklimoptdpiData::select('tahun', DB::raw('count(*) as total'))
             ->groupBy('tahun')
-            ->orderBy('tahun', 'desc')
-            ->limit(5)
+            ->orderBy('tahun', 'asc')
             ->get();
         
-        // Get data by wilayah
-        $wilayahStats = IklimoptdpiData::select('wilayah', DB::raw('count(*) as total'))
-            ->groupBy('wilayah')
+        // Get data by wilayah (use id_wilayah from data table and include wilayah name)
+        $wilayahStats = IklimoptdpiData::with('wilayah')
+            ->select('id_wilayah', DB::raw('count(*) as total'))
+            ->groupBy('id_wilayah')
             ->orderBy('total', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function($row) {
+                // attempt to lazy-load related wilayah name if relationship exists
+                $name = null;
+                if (method_exists($row, 'wilayah') && $row->wilayah) {
+                    $name = $row->wilayah->nama ?? $row->wilayah->name ?? null;
+                }
+                return [
+                    'id' => $row->id_wilayah,
+                    'name' => $name,
+                    'total' => $row->total,
+                ];
+            });
         
-        // Get average nilai by topik
-        $topikStats = IklimoptdpiData::with('topik')
-            ->select('id_iklimoptdpi_topik', DB::raw('avg(nilai) as avg_nilai'), DB::raw('count(*) as total'))
-            ->groupBy('id_iklimoptdpi_topik')
+        // Get average nilai by topik via variabel -> topik relationship
+        $topikStats = DB::table('iklimoptdpi_data')
+            ->join('iklimoptdpi_variabel', 'iklimoptdpi_data.id_variabel', '=', 'iklimoptdpi_variabel.id')
+            ->join('iklimoptdpi_topik', 'iklimoptdpi_variabel.id_topik', '=', 'iklimoptdpi_topik.id')
+            ->select('iklimoptdpi_topik.id as topik_id', 'iklimoptdpi_topik.deskripsi as topik_name', DB::raw('avg(iklimoptdpi_data.nilai) as avg_nilai'), DB::raw('count(*) as total'))
+            ->groupBy('iklimoptdpi_topik.id', 'iklimoptdpi_topik.deskripsi')
             ->orderBy('total', 'desc')
             ->limit(5)
             ->get();
