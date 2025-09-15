@@ -242,6 +242,19 @@ Route::prefix('pertanian')->name('pertanian.')->group(function () {
     })->name('daftar-alamat');
 });
 
+// API Routes for Dashboard Komoditas (without web middleware)
+Route::middleware([])->group(function () {
+    Route::prefix('api/dashboard-komoditas')->name('api.dashboard-komoditas.')->group(function () {
+        Route::get('commodities', [App\Http\Controllers\DashboardKomoditasController::class, 'getCommoditiesData'])->name('commodities');
+        Route::get('summary', [App\Http\Controllers\DashboardKomoditasController::class, 'getSummaryStats'])->name('summary');
+    });
+    
+    // Simple test route
+    Route::get('api/test', function () {
+        return response()->json(['status' => 'ok', 'message' => 'API is working']);
+    });
+});
+
 // API Routes for Benih Pupuk
 Route::prefix('api/benih-pupuk')->name('api.benih-pupuk.')->group(function () {
     Route::get('topiks', [App\Http\Controllers\BenihPupukController::class, 'getTopiks'])->name('topiks');

@@ -24,7 +24,7 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-600">Total Komoditas</p>
-                            <p class="text-2xl font-bold text-gray-900">247</p>
+                            <p class="text-2xl font-bold text-gray-900" x-text="summary.totalCommodities"></p>
                         </div>
                         <div class="p-3 rounded-full bg-blue-100">
                             <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,8 +38,8 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-600">Trend Naik</p>
-                            <p class="text-2xl font-bold text-green-600">156</p>
-                            <p class="text-xs text-green-600">+63.2%</p>
+                            <p class="text-2xl font-bold text-green-600" x-text="summary.trendUp"></p>
+                            <p class="text-xs text-green-600" x-text="'+' + summary.trendUpPercent + '%'"></p>
                         </div>
                         <div class="p-3 rounded-full bg-green-100">
                             <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,8 +53,8 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-600">Trend Turun</p>
-                            <p class="text-2xl font-bold text-red-600">91</p>
-                            <p class="text-xs text-red-600">-36.8%</p>
+                            <p class="text-2xl font-bold text-red-600" x-text="summary.trendDown"></p>
+                            <p class="text-xs text-red-600" x-text="'-' + summary.trendDownPercent + '%'"></p>
                         </div>
                         <div class="p-3 rounded-full bg-red-100">
                             <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,7 +68,7 @@
                     <div class="flex items-center">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-600">Volatilitas Tinggi</p>
-                            <p class="text-2xl font-bold text-yellow-600">23</p>
+                            <p class="text-2xl font-bold text-yellow-600" x-text="summary.highVolatility"></p>
                             <p class="text-xs text-yellow-600">Alert</p>
                         </div>
                         <div class="p-3 rounded-full bg-yellow-100">
@@ -98,11 +98,11 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Periode</label>
                         <select x-model="selectedPeriod" @change="updateView()"
                                 class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="1M">1 Bulan</option>
-                            <option value="3M">3 Bulan</option>
+                            <option value="2M">2 Bulan</option>
+                            <option value="4M">4 Bulan</option>
                             <option value="6M">6 Bulan</option>
                             <option value="1Y">1 Tahun</option>
-                            <option value="3Y">3 Tahun</option>
+                            <option value="All Time">Semua Waktu</option>
                         </select>
                     </div>
                     
@@ -159,31 +159,61 @@
 
                 <!-- Commodities Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <template x-for="(commodity, index) in filteredCommodities" :key="`commodity-${index}`">
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer" @click="selectCommodity(commodity)">
+                    <!-- Loading State -->
+                    <template x-if="loading">
+                        <div class="col-span-full flex justify-center items-center py-12">
+                            <div class="text-center">
+                                <svg class="animate-spin mx-auto h-8 w-8 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="text-gray-600">Memuat data komoditas...</p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Commodity Cards -->
+                    <template x-for="(commodity, index) in filteredCommodities" :key="`commodity-${commodity.id || index}`">
+                        <div class="rounded-lg shadow-sm border p-4 transition-shadow cursor-pointer"
+                             :class="commodity?.hasData ? 'bg-white border-gray-200 hover:shadow-md' : 'bg-gray-50 border-gray-300 opacity-70'"
+                             @click="commodity?.hasData ? selectCommodity(commodity) : null">
+                            
+                            <!-- Disabled State Badge (only for commodities without data) -->
+                            <div x-show="!commodity?.hasData" class="mb-2">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Data belum tersedia
+                                </span>
+                            </div>
+                            
                             <!-- Card Header -->
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-8 w-8">
-                                        <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-lg"
+                                        <div class="h-8 w-8 rounded-full flex items-center justify-center text-lg"
+                                             :class="commodity?.hasData ? 'bg-gray-100' : 'bg-gray-200'"
                                              x-text="getCommodityEmoji(commodity?.group || '01')">
                                         </div>
                                     </div>
                                     <div class="ml-2">
-                                        <h3 class="font-medium text-gray-900 text-sm" x-text="commodity?.name || 'Loading...'"></h3>
+                                        <h3 class="font-medium text-sm"
+                                            :class="commodity?.hasData ? 'text-gray-900' : 'text-gray-600'"
+                                            x-text="commodity?.name || 'Loading...'"></h3>
                                         <p class="text-xs text-gray-500" x-text="commodity?.groupName || ''"></p>
                                     </div>
                                 </div>
                                 <div class="text-xs text-gray-400" x-text="commodity?.lastUpdate || '-'"></div>
                             </div>
 
-                            <!-- Price Info -->
-                            <div class="mb-3">
+                            <!-- Price Info (only show for commodities with data) -->
+                            <div class="mb-3" x-show="commodity?.hasData">
                                 <div class="text-lg font-bold text-gray-900" x-text="formatValue(commodity?.currentValue || 0, commodity?.unit || 'Rp/Kg')"></div>
                                 <div class="flex items-center space-x-2 mt-1">
                                     <span class="text-sm font-medium" 
                                           :class="(commodity?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'"
-                                          x-text="((commodity?.change || 0) >= 0 ? '+' : '') + formatValue(commodity?.change || 0, commodity?.unit || 'Rp/Kg')">
+                                          x-text="((commodity?.change || 0) >= 0 ? '+' : '') + formatValue(Math.abs(commodity?.change || 0), commodity?.unit || 'Rp/Kg')">
                                     </span>
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                                           :class="(commodity?.changePercent || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
@@ -196,19 +226,46 @@
                                 </div>
                             </div>
 
-                            <!-- Mini Chart -->
-                            <div class="h-16 w-full">
+                            <!-- No Data Message (for commodities without data) -->
+                            <div class="mb-3" x-show="!commodity?.hasData">
+                                <div class="text-lg font-medium text-gray-500">-</div>
+                                <div class="text-sm text-gray-400 mt-1">
+                                    Transaksi belum tersedia untuk komoditas ini
+                                </div>
+                            </div>
+
+                            <!-- Mini Chart (only show for commodities with data) -->
+                            <div class="h-16 w-full" x-show="commodity?.hasData">
                                 <canvas :id="'chart-' + (commodity?.id || index)" class="w-full h-16" width="200" height="64"></canvas>
+                            </div>
+
+                            <!-- Placeholder for no data -->
+                            <div class="h-16 w-full flex items-center justify-center" x-show="!commodity?.hasData">
+                                <div class="text-center">
+                                    <svg class="h-8 w-8 text-gray-400 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="text-xs text-gray-400">Grafik tidak tersedia</p>
+                                </div>
                             </div>
                         </div>
                     </template>
                 </div>
 
-                <!-- Debug Info (Temporary) -->
-                <div class="px-6 py-4 bg-gray-50 text-xs text-gray-600" x-show="filteredCommodities.length === 0">
-                    <p>Debug: No commodities found. Total commodities: <span x-text="commodities.length"></span></p>
-                    <p>Filtered commodities: <span x-text="filteredCommodities.length"></span></p>
-                    <p>Search query: "<span x-text="searchQuery"></span>"</p>
+                <!-- No Data State -->
+                <div class="px-6 py-8 text-center" x-show="!loading && filteredCommodities.length === 0">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-4 4-4-4m-6 0l4 4-4-4" />
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak Ada Data Komoditas</h3>
+                    <p class="text-gray-600 mb-4">
+                        <span x-show="searchQuery">Tidak ditemukan komoditas dengan kata kunci "<span x-text="searchQuery"></span>"</span>
+                        <span x-show="!searchQuery">Belum ada data komoditas yang tersedia</span>
+                    </p>
+                    <button @click="refreshData(); searchQuery = ''" 
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+                        Muat Ulang Data
+                    </button>
                 </div>
 
                 <!-- Load More Button -->
@@ -294,14 +351,44 @@
     <script>
         function dashboardData() {
             return {
-                // Dashboard summary data can be implemented here
+                summary: {
+                    totalCommodities: 0,
+                    trendUp: 0,
+                    trendDown: 0,
+                    highVolatility: 0,
+                    trendUpPercent: 0,
+                    trendDownPercent: 0
+                },
+                loading: false,
+
+                init() {
+                    this.loadSummaryData();
+                },
+
+                async loadSummaryData() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/api/dashboard-komoditas/summary');
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.summary = result.data;
+                        } else {
+                            console.error('Failed to load summary data:', result.message);
+                        }
+                    } catch (error) {
+                        console.error('Error loading summary data:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                }
             }
         }
 
         function filterControls() {
             return {
                 selectedMetric: 'harga',
-                selectedPeriod: '3M',
+                selectedPeriod: '1Y',
                 selectedGroup: '',
                 
                 updateView() {
@@ -330,22 +417,15 @@
                 canLoadMore: true,
                 displayCount: 20,
                 charts: {},
+                loading: false,
+                currentFilters: {
+                    metric: 'harga',
+                    period: '1Y',
+                    group: ''
+                },
 
                 init() {
-                    this.loadSampleData();
-                    this.filteredCommodities = this.commodities.slice(0, this.displayCount);
-                    
-                    // Debug: Log data to console
-                    console.log('Commodities loaded:', this.commodities.length);
-                    console.log('Sample commodity:', this.commodities[0]);
-                    console.log('Filtered commodities:', this.filteredCommodities.length);
-                    console.log('Sample filtered commodity:', this.filteredCommodities[0]);
-                    
-                    // Force refresh in case of reactivity issues
-                    setTimeout(() => {
-                        this.filteredCommodities = [...this.commodities.slice(0, this.displayCount)];
-                        console.log('Force refresh, filtered commodities:', this.filteredCommodities.length);
-                    }, 100);
+                    this.loadCommoditiesData();
                     
                     this.$nextTick(() => {
                         this.initializeCharts();
@@ -353,12 +433,52 @@
 
                     // Listen for filter changes
                     window.addEventListener('filter-changed', (e) => {
-                        this.updateData(e.detail);
+                        this.currentFilters = e.detail;
+                        this.loadCommoditiesData();
                     });
 
                     window.addEventListener('refresh-data', () => {
-                        this.refreshData();
+                        this.loadCommoditiesData();
                     });
+                },
+
+                async loadCommoditiesData() {
+                    this.loading = true;
+                    try {
+                        const params = new URLSearchParams({
+                            metric: this.currentFilters.metric,
+                            period: this.currentFilters.period,
+                            group: this.currentFilters.group,
+                            search: this.searchQuery,
+                            limit: this.displayCount
+                        });
+
+                        const response = await fetch(`/api/dashboard-komoditas/commodities?${params}`);
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.commodities = result.data;
+                            this.filteredCommodities = result.data;
+                            this.canLoadMore = result.hasMore;
+                            
+                            console.log('Commodities loaded from API:', this.commodities.length);
+                            
+                            // Initialize charts after data is loaded
+                            this.$nextTick(() => {
+                                this.initializeCharts();
+                            });
+                        } else {
+                            console.error('Failed to load commodities data:', result.message);
+                            // Fallback to sample data if API fails
+                            this.loadSampleData();
+                        }
+                    } catch (error) {
+                        console.error('Error loading commodities data:', error);
+                        // Fallback to sample data if API fails
+                        this.loadSampleData();
+                    } finally {
+                        this.loading = false;
+                    }
                 },
 
                 loadSampleData() {
@@ -383,15 +503,7 @@
                         { id: 5, name: 'Ubi Jalar', group: '02', groupName: groupNames['02'], currentValue: 4800, change: 120, changePercent: 2.56, unit: 'Rp/kg', lastUpdate: '4 min ago' },
                         { id: 6, name: 'Gula Pasir', group: '03', groupName: groupNames['03'], currentValue: 14200, change: -300, changePercent: -2.07, unit: 'Rp/kg', lastUpdate: '1 min ago' },
                         { id: 7, name: 'Pisang Ambon', group: '04', groupName: groupNames['04'], currentValue: 8500, change: 150, changePercent: 1.80, unit: 'Rp/kg', lastUpdate: '6 min ago' },
-                        { id: 8, name: 'Jeruk Manis', group: '04', groupName: groupNames['04'], currentValue: 12000, change: -200, changePercent: -1.64, unit: 'Rp/kg', lastUpdate: '2 min ago' },
-                        { id: 9, name: 'Cabai Merah', group: '05', groupName: groupNames['05'], currentValue: 45000, change: 2500, changePercent: 5.88, unit: 'Rp/kg', lastUpdate: '1 min ago' },
-                        { id: 10, name: 'Bawang Merah', group: '05', groupName: groupNames['05'], currentValue: 28000, change: -1500, changePercent: -5.08, unit: 'Rp/kg', lastUpdate: '3 min ago' },
-                        { id: 11, name: 'Daging Sapi', group: '06', groupName: groupNames['06'], currentValue: 135000, change: 5000, changePercent: 3.85, unit: 'Rp/kg', lastUpdate: '5 min ago' },
-                        { id: 12, name: 'Daging Ayam', group: '06', groupName: groupNames['06'], currentValue: 32000, change: -800, changePercent: -2.44, unit: 'Rp/kg', lastUpdate: '2 min ago' },
-                        { id: 13, name: 'Telur Ayam', group: '07', groupName: groupNames['07'], currentValue: 26500, change: 750, changePercent: 2.91, unit: 'Rp/kg', lastUpdate: '4 min ago' },
-                        { id: 14, name: 'Susu Segar', group: '08', groupName: groupNames['08'], currentValue: 9500, change: 200, changePercent: 2.15, unit: 'Rp/liter', lastUpdate: '7 min ago' },
-                        { id: 15, name: 'Minyak Goreng', group: '09', groupName: groupNames['09'], currentValue: 16800, change: -400, changePercent: -2.33, unit: 'Rp/liter', lastUpdate: '3 min ago' },
-                        { id: 16, name: 'Ikan Bandeng', group: '10', groupName: groupNames['10'], currentValue: 25000, change: 1000, changePercent: 4.17, unit: 'Rp/kg', lastUpdate: '6 min ago' }
+                        { id: 8, name: 'Jeruk Manis', group: '04', groupName: groupNames['04'], currentValue: 12000, change: -200, changePercent: -1.64, unit: 'Rp/kg', lastUpdate: '2 min ago' }
                     ];
 
                     // Add calculated fields
@@ -403,6 +515,8 @@
                         volatility: Math.random() * 15 + 5,
                         chartData: this.generateChartData(c.currentValue)
                     }));
+
+                    this.filteredCommodities = this.commodities;
                 },
 
                 generateChartData(baseValue) {
@@ -421,13 +535,16 @@
                 },
 
                 filterCommodities() {
+                    if (!this.searchQuery) {
+                        this.loadCommoditiesData();
+                        return;
+                    }
+
                     const query = this.searchQuery.toLowerCase();
-                    this.filteredCommodities = this.commodities
-                        .filter(c => 
-                            c.name.toLowerCase().includes(query) || 
-                            c.groupName.toLowerCase().includes(query)
-                        )
-                        .slice(0, this.displayCount);
+                    this.filteredCommodities = this.commodities.filter(c => 
+                        c.name.toLowerCase().includes(query) || 
+                        c.groupName.toLowerCase().includes(query)
+                    );
                     
                     this.$nextTick(() => {
                         this.initializeCharts();
@@ -467,16 +584,17 @@
                 },
 
                 formatValue(value, unit) {
+                    if (!value) return '0 ' + unit;
                     return new Intl.NumberFormat('id-ID').format(Math.round(value)) + ' ' + unit;
                 },
 
                 initializeCharts() {
                     this.filteredCommodities.forEach(commodity => {
-                        this.createMiniChart(commodity, false); // Only card charts now
+                        this.createMiniChart(commodity);
                     });
                 },
 
-                createMiniChart(commodity, isMobile) {
+                createMiniChart(commodity) {
                     const canvasId = `chart-${commodity.id}`;
                     const canvas = document.getElementById(canvasId);
                     
@@ -488,49 +606,67 @@
                     }
 
                     const ctx = canvas.getContext('2d');
-                    const isPositive = commodity.changePercent >= 0;
+                    const isPositive = (commodity.changePercent || 0) >= 0;
                     
-                    // Generate simple labels for chart data
-                    const labels = commodity.chartData.map((_, index) => index);
-                    const values = commodity.chartData.map(item => item.y || item.value || item);
+                    // Process chart data with validation
+                    let chartData = commodity.chartData || [];
+                    if (typeof chartData[0] === 'object' && chartData[0] && chartData[0].y !== undefined) {
+                        // Data is in {x, y} format
+                        chartData = chartData.map(item => item.y || 0);
+                    }
+                    
+                    // Ensure we have valid numeric data
+                    chartData = chartData.filter(val => val !== null && val !== undefined && !isNaN(val));
+                    
+                    // If no valid data, create empty chart
+                    if (chartData.length === 0) {
+                        chartData = [0];
+                    }
                     
                     this.charts[canvasId] = new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: labels,
+                            labels: chartData.map((_, index) => index),
                             datasets: [{
-                                data: values,
+                                data: chartData,
                                 borderColor: isPositive ? '#10B981' : '#EF4444',
                                 backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                                 borderWidth: 2,
                                 fill: true,
                                 tension: 0.4,
                                 pointRadius: 0,
-                                pointHoverRadius: 0
+                                pointHoverRadius: 0,
+                                hidden: false  // Explicitly set hidden property
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            animation: false,  // Disable animations to prevent errors
                             plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: false }
+                                legend: { 
+                                    display: false 
+                                },
+                                tooltip: { 
+                                    enabled: false 
+                                }
                             },
                             scales: {
-                                x: {
-                                    display: false
+                                x: { 
+                                    display: false,
+                                    grid: { display: false }
                                 },
-                                y: {
-                                    display: false
+                                y: { 
+                                    display: false,
+                                    grid: { display: false }
                                 }
                             },
-                            interaction: {
-                                intersect: false
+                            interaction: { 
+                                intersect: false,
+                                mode: 'nearest'
                             },
-                            elements: {
-                                point: {
-                                    radius: 0
-                                }
+                            elements: { 
+                                point: { radius: 0 } 
                             }
                         }
                     });
@@ -544,20 +680,16 @@
 
                 loadMore() {
                     this.displayCount += 20;
-                    this.filterCommodities();
-                    this.canLoadMore = this.displayCount < this.commodities.length;
+                    this.loadCommoditiesData();
                 },
 
                 updateData(filters) {
-                    // Simulate data update based on filters
-                    this.loadSampleData();
-                    this.filterCommodities();
+                    this.currentFilters = filters;
+                    this.loadCommoditiesData();
                 },
 
                 refreshData() {
-                    // Simulate data refresh
-                    this.loadSampleData();
-                    this.filterCommodities();
+                    this.loadCommoditiesData();
                 }
             }
         }
@@ -595,11 +727,29 @@
                     }
 
                     const ctx = canvas.getContext('2d');
-                    const isPositive = this.selectedCommodity.changePercent >= 0;
+                    const isPositive = (this.selectedCommodity.changePercent || 0) >= 0;
                     
-                    // Generate simple labels for chart data
-                    const labels = this.selectedCommodity.chartData.map((_, index) => `Day ${index + 1}`);
-                    const values = this.selectedCommodity.chartData.map(item => item.y || item.value || item);
+                    // Validate and process chart data
+                    const chartData = this.selectedCommodity.chartData || [];
+                    
+                    // Use actual date labels from chartData
+                    const labels = chartData.map((item, index) => {
+                        if (item && item.x) {
+                            // Convert YYYY-MM format to readable month/year
+                            const [year, month] = item.x.split('-');
+                            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            return `${monthNames[parseInt(month) - 1]} ${year}`;
+                        }
+                        return `Month ${index + 1}`;
+                    });
+                    
+                    const values = chartData.map(item => {
+                        if (item && typeof item === 'object') {
+                            return item.y || item.value || 0;
+                        }
+                        return item || 0;
+                    });
 
                     this.detailChart = new Chart(ctx, {
                         type: 'line',
@@ -617,14 +767,20 @@
                                 pointHoverRadius: 6,
                                 pointBackgroundColor: isPositive ? '#10B981' : '#EF4444',
                                 pointBorderColor: '#fff',
-                                pointBorderWidth: 2
+                                pointBorderWidth: 2,
+                                hidden: false  // Explicitly set hidden property
                             }]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            animation: {
+                                duration: 400
+                            },
                             plugins: {
-                                legend: { display: false },
+                                legend: { 
+                                    display: false 
+                                },
                                 tooltip: {
                                     mode: 'index',
                                     intersect: false,

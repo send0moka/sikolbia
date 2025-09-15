@@ -38,6 +38,11 @@ class TransaksiNbmSeeder extends Seeder
             $batchData = [];
             
             foreach ($batch as $yearlyRecord) {
+                // FIX: Ensure kode_kelompok matches first 2 digits of kode_komoditi
+                $kodeKomoditi = $yearlyRecord['kode_komoditi'];
+                $expectedKodeKelompok = substr($kodeKomoditi, 0, 2);
+                $yearlyRecord['kode_kelompok'] = $expectedKodeKelompok;
+                
                 // Create 12 monthly records for each yearly record
                 for ($bulan = 1; $bulan <= 12; $bulan++) {
                     $monthlyRecord = $yearlyRecord;
@@ -55,7 +60,6 @@ class TransaksiNbmSeeder extends Seeder
                     
                     // Add economic and agricultural data based on year and commodity
                     $tahun = $yearlyRecord['tahun'];
-                    $kodeKomoditi = $yearlyRecord['kode_komoditi'];
                     
                     // Add economic indicators
                     $monthlyRecord = array_merge($monthlyRecord, $this->getEconomicData($tahun, $bulan));
