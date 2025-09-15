@@ -54,7 +54,7 @@
                         <select wire:model.live="selectedWilayah" class="mt-1 block w-full py-2 px-3 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-zinc-800 text-neutral-900 dark:text-neutral-100 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="">Semua Wilayah</option>
                             @foreach($wilayahs as $wilayah)
-                                <option value="{{ $wilayah->id }}">{{ $wilayah->nama ?? $wilayah->deskripsi ?? json_encode($wilayah) }}</option>
+                                <option value="{{ $wilayah->id }}">{{ $wilayah->nama ?? ($wilayah->deskripsi ?? json_encode($wilayah)) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -141,12 +141,12 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                                             @if(is_object($item->wilayah))
-                                                {{ $item->wilayah->nama ?? $item->wilayah->deskripsi ?? json_encode($item->wilayah) }}
+                                                {{ $item->wilayah->nama ?? ($item->wilayah->deskripsi ?? json_encode($item->wilayah)) }}
                                             @elseif(is_array($item->wilayah))
-                                                {{ $item->wilayah['nama'] ?? $item->wilayah['deskripsi'] ?? json_encode($item->wilayah) }}
+                                                {{ $item->wilayah['nama'] ?? ($item->wilayah['deskripsi'] ?? json_encode($item->wilayah)) }}
                                             @else
                                                 {{-- fallback: if data stores id only, try to resolve via loaded relation --}}
-                                                {{ optional($item->wilayah)->nama ?? optional($item->wilayah)->deskripsi ?? $item->id_wilayah ?? '-' }}
+                                                {{ optional($item->wilayah)->nama ?? (optional($item->wilayah)->deskripsi ?? $item->id_wilayah ?? '-') }}
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">

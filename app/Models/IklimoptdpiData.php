@@ -16,9 +16,10 @@ class IklimoptdpiData extends Model
     
     protected $table = 'iklimoptdpi_data';
     
-    // Composite primary key
-    protected $primaryKey = null;
-    public $incrementing = false;
+    // Primary key
+    protected $primaryKey = 'id';
+    public $incrementing = true;
+    protected $keyType = 'int';
     
     protected $fillable = [
         'tahun',

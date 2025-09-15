@@ -160,7 +160,7 @@ class IklimoptdpiMonitoring extends Component
 
     public function render()
     {
-        $query = IklimoptdpiData::with(['topik', 'variabel', 'klasifikasi'])
+        $query = IklimoptdpiData::with(['variabel.topik', 'variabel', 'klasifikasi', 'wilayah'])
             ->when($this->search, function($q) {
                 return $q->where(function($subQuery) {
                     // Search related wilayah name instead of a non-existent `wilayah` column
@@ -168,14 +168,14 @@ class IklimoptdpiMonitoring extends Component
                             $wq->where('nama', 'like', '%' . $this->search . '%');
                         })
                         ->orWhere('nilai', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('topik', function($topikQuery) {
-                            $topikQuery->where('iklimoptdpi_topik.deskripsi', 'like', '%' . $this->search . '%');
+                        ->orWhereHas('variabel.topik', function($topikQuery) {
+                            $topikQuery->where('deskripsi', 'like', '%' . $this->search . '%');
                         })
                         ->orWhereHas('variabel', function($variabelQuery) {
-                            $variabelQuery->where('iklimoptdpi_variabel.deskripsi', 'like', '%' . $this->search . '%');
+                            $variabelQuery->where('deskripsi', 'like', '%' . $this->search . '%');
                         })
                         ->orWhereHas('klasifikasi', function($klasifikasiQuery) {
-                            $klasifikasiQuery->where('iklimoptdpi_klasifikasi.deskripsi', 'like', '%' . $this->search . '%');
+                            $klasifikasiQuery->where('deskripsi', 'like', '%' . $this->search . '%');
                         });
                 });
             })

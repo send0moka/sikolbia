@@ -4,9 +4,7 @@
         <div class="flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Kelola Data Iklim Opt DPI</h1>
-                <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                    Kelola data iklim optimalisasi DPI
-                </p>
+                <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">Kelola data iklim optimalisasi DPI</p>
             </div>
             <flux:button wire:click="openCreateModal" variant="primary">
                 Tambah Data Iklim Opt DPI
@@ -37,7 +35,7 @@
                 </svg>
                 Filter
             </flux:button>
-            
+
             <!-- Reset Sort Button -->
             @if(!empty($sortField))
                 <flux:button wire:click="resetSort" variant="ghost" class="!px-3 !py-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200">
@@ -98,26 +96,48 @@
                 <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik</label>
                 <select wire:model.live="filterTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                     <option value="">Semua Topik</option>
-                    @foreach($topiks as $topik)
-                        <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                    @foreach($filterTopiks as $topik)
+                        <option value="{{ $topik->id }}">{{ $topik->deskripsi ?? $topik->nama ?? '-' }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
                 <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
-                <select wire:model.live="filterVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                    <option value="">Semua Variabel</option>
-                    @foreach($variabels as $variabel)
-                        <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
-                    @endforeach
-                </select>
+                @if(empty($filterTopik))
+                    <select disabled class="w-full text-sm rounded-md border-neutral-200 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                        <option>Pilih Topik terlebih dahulu</option>
+                    </select>
+                @else
+                    <select wire:model.live="filterVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                        <option value="">Semua Variabel</option>
+                        @foreach($filterVariabels as $variabel)
+                            <option value="{{ $variabel->id }}">{{ $variabel->deskripsi ?? $variabel->nama ?? '-' }} @if($variabel->satuan) ({{ $variabel->satuan }})@endif</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
             <div>
                 <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Klasifikasi</label>
-                <select wire:model.live="filterKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
-                    <option value="">Semua Klasifikasi</option>
-                    @foreach($klasifikasis as $klasifikasi)
-                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
+                @if(empty($filterVariabel))
+                    <select disabled class="w-full text-sm rounded-md border-neutral-200 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                        <option>Pilih Variabel terlebih dahulu</option>
+                    </select>
+                @else
+                    <select wire:model.live="filterKlasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                        <option value="">Semua Klasifikasi</option>
+                        @foreach($filterKlasifikasis as $klasifikasi)
+                            <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi ?? $klasifikasi->nama ?? '-' }}</option>
+                        @endforeach
+                    </select>
+                @endif
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">Wilayah</label>
+                <select wire:model.live="filterWilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                    <option value="">Semua Wilayah</option>
+                    @foreach($wilayahs ?? [] as $w)
+                        <option value="{{ $w->id }}">{{ $w->nama ?? ($w->deskripsi ?? '-') }}</option>
                     @endforeach
                 </select>
             </div>
@@ -278,17 +298,26 @@
                             #{{ $iklimoptdpi->id }}
                         </td>
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                            {{ $iklimoptdpi->iklimoptdpiTopik->nama }}
+                            {{ $iklimoptdpi->iklimoptdpiTopik->deskripsi ?? $iklimoptdpi->iklimoptdpiTopik->nama ?? '-' }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $iklimoptdpi->iklimoptdpiVariabel->nama }}
+                            {{ $iklimoptdpi->iklimoptdpiVariabel->deskripsi ?? $iklimoptdpi->iklimoptdpiVariabel->nama ?? '-' }}
                             <span class="text-xs text-neutral-500 dark:text-neutral-400">({{ $iklimoptdpi->iklimoptdpiVariabel->satuan }})</span>
                         </td>
                         <td class="px-6 py-4">
-                            {{ $iklimoptdpi->iklimoptdpiKlasifikasi->nama }}
+                            {{ $iklimoptdpi->iklimoptdpiKlasifikasi->deskripsi ?? $iklimoptdpi->iklimoptdpiKlasifikasi->nama ?? '-' }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $iklimoptdpi->wilayah }}
+                            @php
+                                $w = $iklimoptdpi->wilayah;
+                            @endphp
+                            @if(is_object($w))
+                                {{ $w->nama ?? ($w->deskripsi ?? json_encode($w)) }}
+                            @elseif(is_array($w))
+                                {{ $w['nama'] ?? ($w['deskripsi'] ?? json_encode($w)) }}
+                            @else
+                                {{ optional($iklimoptdpi->relationLoaded('wilayah') ? $iklimoptdpi->wilayah : null)->nama ?? $w ?? '-' }}
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             {{ $iklimoptdpi->tahun }}
@@ -304,7 +333,10 @@
                                 @elseif($iklimoptdpi->status === 'Selesai') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
                                 @else bg-neutral-100 text-neutral-800 dark:bg-neutral-900/30 dark:text-neutral-300
                                 @endif">
-                                {{ $iklimoptdpi->status }}
+                                    @php
+                                        $statusText = $iklimoptdpi->status ?: 'N/A';
+                                    @endphp
+                                    {{ $statusText }}
                             </span>
                         </td>
                         <td class="px-6 py-4 no-print">
@@ -354,10 +386,10 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik Iklim Opt DPI</label>
-                            <select wire:model="id_iklimoptdpi_topik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                            <select wire:model="id_iklimoptdpi_topik" wire:change="loadFormVariabelsForTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
                                 <option value="">Pilih Topik</option>
                                 @foreach($topiks as $topik)
-                                    <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                                    <option value="{{ $topik->id }}">{{ $topik->deskripsi ?? $topik->nama ?? '-' }}</option>
                                 @endforeach
                             </select>
                             @error('id_iklimoptdpi_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
@@ -365,28 +397,48 @@
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
-                            <select wire:model="id_iklimoptdpi_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Variabel</option>
-                                @foreach($variabels as $variabel)
-                                    <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
-                                @endforeach
-                            </select>
+                            @if(empty($id_iklimoptdpi_topik))
+                                <select disabled class="w-full text-sm rounded-md border-neutral-200 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                                    <option>Pilih Topik terlebih dahulu</option>
+                                </select>
+                            @else
+                                <select wire:model="id_iklimoptdpi_variabel" wire:change="loadFormKlasifikasisForVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                    <option value="">Pilih Variabel</option>
+                                    @foreach($formVariabels as $variabel)
+                                        <option value="{{ $variabel->id }}">{{ $variabel->deskripsi ?? $variabel->nama ?? '-' }} @if($variabel->satuan) ({{ $variabel->satuan }})@endif</option>
+                                    @endforeach
+                                </select>
+                            @endif
                             @error('id_iklimoptdpi_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Klasifikasi</label>
-                            <select wire:model="id_iklimoptdpi_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Klasifikasi</option>
-                                @foreach($klasifikasis as $klasifikasi)
-                                    <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
-                                @endforeach
-                            </select>
+                            @if(empty($id_iklimoptdpi_variabel))
+                                <select disabled class="w-full text-sm rounded-md border-neutral-200 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                                    <option>Pilih Variabel terlebih dahulu</option>
+                                </select>
+                            @else
+                                <select wire:model="id_iklimoptdpi_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                    <option value="">Pilih Klasifikasi</option>
+                                    @foreach($formKlasifikasis as $klasifikasi)
+                                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi ?? $klasifikasi->nama ?? '-' }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                             @error('id_iklimoptdpi_klasifikasi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        <flux:input wire:model="wilayah" label="Wilayah" placeholder="Masukkan nama wilayah" required />
-                        @error('wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Wilayah</label>
+                            <select wire:model="wilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Wilayah</option>
+                                @foreach($wilayahs as $w)
+                                    <option value="{{ $w->id }}">{{ $w->nama ?? ($w->deskripsi ?? '-') }}</option>
+                                @endforeach
+                            </select>
+                            @error('wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
                         <flux:input wire:model="tahun" label="Tahun" type="number" placeholder="2024" min="2000" max="2030" required />
                         @error('tahun') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
@@ -396,7 +448,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status</label>
-                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                                 <option value="">Pilih Status</option>
                                 <option value="Aktif">Aktif</option>
                                 <option value="Tidak Aktif">Tidak Aktif</option>
@@ -431,10 +483,10 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik Iklim Opt DPI</label>
-                            <select wire:model="id_iklimoptdpi_topik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                            <select wire:model="id_iklimoptdpi_topik" wire:change="loadFormVariabelsForTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
                                 <option value="">Pilih Topik</option>
                                 @foreach($topiks as $topik)
-                                    <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                                    <option value="{{ $topik->id }}">{{ $topik->deskripsi ?? $topik->nama ?? '-' }}</option>
                                 @endforeach
                             </select>
                             @error('id_iklimoptdpi_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
@@ -442,28 +494,48 @@
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
-                            <select wire:model="id_iklimoptdpi_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Variabel</option>
-                                @foreach($variabels as $variabel)
-                                    <option value="{{ $variabel->id }}">{{ $variabel->nama }} ({{ $variabel->satuan }})</option>
-                                @endforeach
-                            </select>
+                            @if(empty($id_iklimoptdpi_topik))
+                                <select disabled class="w-full text-sm rounded-md border-neutral-200 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                                    <option>Pilih Topik terlebih dahulu</option>
+                                </select>
+                            @else
+                                <select wire:model="id_iklimoptdpi_variabel" wire:change="loadFormKlasifikasisForVariabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                    <option value="">Pilih Variabel</option>
+                                    @foreach($formVariabels as $variabel)
+                                        <option value="{{ $variabel->id }}">{{ $variabel->deskripsi ?? $variabel->nama ?? '-' }} @if($variabel->satuan) ({{ $variabel->satuan }})@endif</option>
+                                    @endforeach
+                                </select>
+                            @endif
                             @error('id_iklimoptdpi_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Klasifikasi</label>
-                            <select wire:model="id_iklimoptdpi_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
-                                <option value="">Pilih Klasifikasi</option>
-                                @foreach($klasifikasis as $klasifikasi)
-                                    <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->nama }}</option>
-                                @endforeach
-                            </select>
+                            @if(empty($id_iklimoptdpi_variabel))
+                                <select disabled class="w-full text-sm rounded-md border-neutral-200 bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+                                    <option>Pilih Variabel terlebih dahulu</option>
+                                </select>
+                            @else
+                                <select wire:model="id_iklimoptdpi_klasifikasi" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                    <option value="">Pilih Klasifikasi</option>
+                                    @foreach($formKlasifikasis as $klasifikasi)
+                                        <option value="{{ $klasifikasi->id }}">{{ $klasifikasi->deskripsi ?? $klasifikasi->nama ?? '-' }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                             @error('id_iklimoptdpi_klasifikasi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        <flux:input wire:model="wilayah" label="Wilayah" placeholder="Masukkan nama wilayah" required />
-                        @error('wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Wilayah</label>
+                            <select wire:model="wilayah" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Wilayah</option>
+                                @foreach($wilayahs as $w)
+                                    <option value="{{ $w->id }}">{{ $w->nama ?? ($w->deskripsi ?? '-') }}</option>
+                                @endforeach
+                            </select>
+                            @error('wilayah') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
                         <flux:input wire:model="tahun" label="Tahun" type="number" placeholder="2024" min="2000" max="2030" required />
                         @error('tahun') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
@@ -473,7 +545,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Status</label>
-                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                            <select wire:model="status" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
                                 <option value="">Pilih Status</option>
                                 <option value="Aktif">Aktif</option>
                                 <option value="Tidak Aktif">Tidak Aktif</option>
@@ -510,8 +582,9 @@
                 </div>
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mt-2">Hapus Data Iklim Opt DPI</h3>
                 <div class="mt-2">
-                    <p class="text-sm text-neutral-500 dark:text-neutral-400">
-                        Apakah Anda yakin ingin menghapus data iklim opt dpi <strong>{{ $deletingIklimoptdpi->iklimoptdpiTopik->nama ?? '' }}</strong> di wilayah <strong>{{ $deletingIklimoptdpi->wilayah ?? '' }}</strong>?
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                        @php $dw = $deletingIklimoptdpi->wilayah; @endphp
+                        Apakah Anda yakin ingin menghapus data iklim opt dpi <strong>{{ $deletingIklimoptdpi->iklimoptdpiTopik->nama ?? '' }}</strong> di wilayah <strong>{{ is_object($dw) ? ($dw->nama ?? ($dw->deskripsi ?? json_encode($dw))) : (is_array($dw) ? ($dw['nama'] ?? ($dw['deskripsi'] ?? json_encode($dw))) : ($dw ?? '')) }}</strong>?
                         <br>Tindakan ini tidak dapat dibatalkan.
                     </p>
                 </div>
