@@ -44,17 +44,36 @@ class TransaksiNbmSeeder extends Seeder
                     $monthlyRecord['bulan'] = $bulan;
                     $monthlyRecord['periode_data'] = 'bulanan';
                     
+                    // Calculate kuartal based on bulan
+                    $monthlyRecord['kuartal'] = ceil($bulan / 3);
+                    
                     // Simple seasonal variation (avoid complex calculations)
                     $seasonalFactor = 1 + (sin(($bulan - 1) * pi() / 6) * 0.1);
                     if (isset($monthlyRecord['keluaran'])) {
                         $monthlyRecord['keluaran'] = $monthlyRecord['keluaran'] * $seasonalFactor / 12;
                     }
                     
-                    // Add minimal enhanced fields
-                    $monthlyRecord['confidence_score'] = 0.85;
-                    $monthlyRecord['data_source'] = 'BPS';
-                    $monthlyRecord['validation_status'] = 'verified';
-                    $monthlyRecord['outlier_flag'] = false;
+                    // Add economic and agricultural data based on year and commodity
+                    $tahun = $yearlyRecord['tahun'];
+                    $kodeKomoditi = $yearlyRecord['kode_komoditi'];
+                    
+                    // Add economic indicators
+                    $monthlyRecord = array_merge($monthlyRecord, $this->getEconomicData($tahun, $bulan));
+                    
+                    // Add agricultural data based on commodity type
+                    $monthlyRecord = array_merge($monthlyRecord, $this->getAgriculturalData($tahun, $bulan, $kodeKomoditi));
+                    
+                    // Add climate data
+                    $monthlyRecord = array_merge($monthlyRecord, $this->getClimateData($tahun, $bulan));
+                    
+                    // Add price data based on commodity
+                    $monthlyRecord = array_merge($monthlyRecord, $this->getPriceData($tahun, $bulan, $kodeKomoditi));
+                    
+                    // Add policy and quality data
+                    $monthlyRecord = array_merge($monthlyRecord, $this->getPolicyData($tahun, $kodeKomoditi));
+                    
+                    // Add data quality indicators
+                    $monthlyRecord = array_merge($monthlyRecord, $this->getDataQualityIndicators($tahun, $bulan, $kodeKomoditi));
                     
                     $monthlyRecord['created_at'] = now();
                     $monthlyRecord['updated_at'] = now();
@@ -95,6 +114,349 @@ class TransaksiNbmSeeder extends Seeder
         ];
         
         return array_merge($record, $enhanced);
+    }
+    
+    /**
+     * Generate economic data based on year and month
+     */
+    private function getEconomicData(int $tahun, int $bulan): array
+    {
+        // Indonesian economic data trends (1993-2024)
+        $baseUSD = 2100; // Base USD rate in 1993
+        $yearDiff = $tahun - 1993;
+        
+        // Historical USD exchange rate trend (generally increasing over time)
+        $usdRate = $baseUSD + ($yearDiff * 350) + rand(-200, 200);
+        if ($tahun >= 1998 && $tahun <= 1999) $usdRate *= 4; // 1998 crisis
+        if ($tahun >= 2008 && $tahun <= 2009) $usdRate *= 1.2; // 2008 crisis
+        if ($tahun >= 2020) $usdRate = 14000 + rand(-1000, 1000); // Recent years
+        
+        // Population growth (approximately 1.2% annually)
+        $basePop = 187000000; // 1993 population
+        $populasi = $basePop * pow(1.012, $yearDiff);
+        
+        // GDP per capita (USD, generally increasing)
+        $baseGDP = 900; // 1993 GDP per capita
+        $gdpPerKapita = $baseGDP + ($yearDiff * 120) + rand(-50, 100);
+        if ($tahun >= 2010) $gdpPerKapita = 3500 + ($tahun - 2010) * 200 + rand(-200, 300);
+        
+        // Poverty rate (generally decreasing over time)
+        $basePoverty = 25.9; // 1993 poverty rate
+        $kemiskinan = max(5.0, $basePoverty - ($yearDiff * 0.6) + rand(-1, 1));
+        
+        return [
+            'nilai_tukar_usd' => round($usdRate, 2),
+            'populasi_indonesia' => round($populasi),
+            'gdp_per_kapita' => round($gdpPerKapita, 2),
+            'tingkat_kemiskinan' => round($kemiskinan, 2)
+        ];
+    }
+    
+    /**
+     * Generate agricultural data based on commodity type
+     */
+    private function getAgriculturalData(int $tahun, int $bulan, string $kodeKomoditi): array
+    {
+        // Different commodities have different agricultural patterns
+        $kodeInt = intval($kodeKomoditi);
+        
+        // Base values vary by commodity type
+        $luasPanen = 0;
+        $produktivitas = 0;
+        $stokBulog = 0;
+        
+        // Rice and grain commodities (01xx series)
+        if ($kodeInt >= 100 && $kodeInt <= 199) {
+            $luasPanen = 12000000 + rand(-1000000, 2000000); // hectares
+            $produktivitas = 5.0 + rand(-1, 1); // ton/ha
+            $stokBulog = 500000 + rand(-100000, 200000); // tons
+        }
+        // Tubers and roots (02xx series)  
+        elseif ($kodeInt >= 200 && $kodeInt <= 299) {
+            $luasPanen = 1000000 + rand(-200000, 500000);
+            $produktivitas = 15.0 + rand(-3, 5);
+            $stokBulog = 50000 + rand(-10000, 20000);
+        }
+        // Vegetables (03xx series)
+        elseif ($kodeInt >= 300 && $kodeInt <= 399) {
+            $luasPanen = 500000 + rand(-100000, 200000);
+            $produktivitas = 12.0 + rand(-2, 4);
+            $stokBulog = 0; // Bulog doesn't typically stock vegetables
+        }
+        // Fruits (04xx series)
+        elseif ($kodeInt >= 400 && $kodeInt <= 499) {
+            $luasPanen = 800000 + rand(-150000, 300000);
+            $produktivitas = 8.0 + rand(-1, 3);
+            $stokBulog = 0;
+        }
+        // Meat and animal products (05xx-08xx series)
+        elseif ($kodeInt >= 500 && $kodeInt <= 899) {
+            $luasPanen = 0; // Not applicable for animal products
+            $produktivitas = 0;
+            $stokBulog = 10000 + rand(-5000, 15000);
+        }
+        // Other commodities
+        else {
+            $luasPanen = 300000 + rand(-50000, 100000);
+            $produktivitas = 3.0 + rand(-0.5, 1.5);
+            $stokBulog = 20000 + rand(-5000, 10000);
+        }
+        
+        // Seasonal adjustment for planting seasons
+        $seasonalFactor = 1.0;
+        if (in_array($bulan, [4, 5, 6, 10, 11, 12])) { // Planting seasons
+            $seasonalFactor = 1.2;
+        }
+        
+        return [
+            'luas_panen_ha' => round($luasPanen * $seasonalFactor),
+            'produktivitas_ton_ha' => round($produktivitas, 2),
+            'stok_bulog' => round($stokBulog)
+        ];
+    }
+    
+    /**
+     * Generate climate data based on year and month
+     */
+    private function getClimateData(int $tahun, int $bulan): array
+    {
+        // Indonesian climate patterns
+        // Rainy season: Nov-Mar, Dry season: Apr-Oct
+        $isRainySeason = in_array($bulan, [11, 12, 1, 2, 3]);
+        
+        // Base rainfall (mm/month)
+        $curahHujan = $isRainySeason ? 200 + rand(50, 150) : 50 + rand(0, 100);
+        
+        // Temperature (Celsius) - relatively stable in Indonesia
+        $suhuRata = 26.5 + rand(-2, 3) + ($isRainySeason ? -1 : 1);
+        
+        // El Niño index (simplified: -2 to +2)
+        $baseElNino = sin(($tahun - 1993) * 0.3) * 1.5; // Rough El Niño cycle
+        $elNino = $baseElNino + (rand(-50, 50) / 100);
+        $elNino = max(-2, min(2, $elNino));
+        
+        return [
+            'curah_hujan_mm' => round($curahHujan, 1),
+            'suhu_rata_celsius' => round($suhuRata, 1),
+            'indeks_el_nino' => round($elNino, 2)
+        ];
+    }
+    
+    /**
+     * Generate price data based on commodity and economic conditions
+     */
+    private function getPriceData(int $tahun, int $bulan, string $kodeKomoditi): array
+    {
+        $kodeInt = intval($kodeKomoditi);
+        
+        // Base prices vary by commodity type (Rupiah per kg)
+        $baseHargaProdusen = 1000;
+        $baseHargaKonsumen = 1500;
+        
+        // Commodity-specific price multipliers
+        if ($kodeInt >= 100 && $kodeInt <= 199) { // Rice/grains
+            $baseHargaProdusen = 3000;
+            $baseHargaKonsumen = 4000;
+        } elseif ($kodeInt >= 500 && $kodeInt <= 599) { // Meat
+            $baseHargaProdusen = 25000;
+            $baseHargaKonsumen = 35000;
+        } elseif ($kodeInt >= 600 && $kodeInt <= 699) { // Fish
+            $baseHargaProdusen = 15000;
+            $baseHargaKonsumen = 20000;
+        }
+        
+        // Inflation adjustment over years (approximately 8% annually)
+        $yearDiff = $tahun - 1993;
+        $inflationFactor = pow(1.08, $yearDiff);
+        
+        // Crisis adjustments
+        if ($tahun >= 1998 && $tahun <= 1999) $inflationFactor *= 2; // 1998 crisis
+        
+        $hargaProdusen = $baseHargaProdusen * $inflationFactor * (1 + rand(-10, 15) / 100);
+        $hargaKonsumen = $baseHargaKonsumen * $inflationFactor * (1 + rand(-10, 15) / 100);
+        
+        // Monthly inflation rate (as percentage)
+        $baseInflasi = 0.5; // Base monthly inflation
+        $inflasiKomoditi = $baseInflasi + rand(-50, 100) / 100; // -0.5% to 1.5%
+        if ($tahun >= 1998 && $tahun <= 1999) $inflasiKomoditi += 3; // Crisis period
+        
+        return [
+            'harga_produsen' => round($hargaProdusen, 2),
+            'harga_konsumen' => round($hargaKonsumen, 2),
+            'inflasi_komoditi' => round($inflasiKomoditi, 2)
+        ];
+    }
+    
+    /**
+     * Generate policy data based on year, commodity and economic conditions
+     */
+    private function getPolicyData(int $tahun, string $kodeKomoditi): array
+    {
+        $kodeInt = intval($kodeKomoditi);
+        
+        // Import policy varies by commodity type and economic conditions
+        $kebijakanImport = 'bebas'; // default
+        
+        // Strategic commodities have more restrictions
+        if ($kodeInt >= 100 && $kodeInt <= 199) { // Rice/grains - strategic
+            $policies = ['bebas', 'terbatas', 'dilarang'];
+            $weights = [60, 30, 10]; // 60% bebas, 30% terbatas, 10% dilarang
+        } elseif ($kodeInt >= 500 && $kodeInt <= 599) { // Meat - often restricted
+            $policies = ['bebas', 'terbatas', 'dilarang'];
+            $weights = [40, 40, 20];
+        } else { // Other commodities - mostly free
+            $policies = ['bebas', 'terbatas'];
+            $weights = [80, 20];
+        }
+        
+        // Economic crisis periods tend to have more restrictions
+        if ($tahun >= 1998 && $tahun <= 1999) {
+            $weights[0] -= 20; // Less free trade during crisis
+            if (isset($weights[1])) $weights[1] += 15;
+            if (isset($weights[2])) $weights[2] += 5;
+        }
+        
+        $kebijakanImport = $this->weightedRandom($policies, $weights);
+        
+        // Subsidy varies by commodity type and government policy
+        $subsidi = 0;
+        
+        // Rice gets significant subsidies (especially after 2007 food crisis)
+        if ($kodeInt >= 100 && $kodeInt <= 199) {
+            if ($tahun >= 2008) {
+                $subsidi = rand(500, 2000); // 500-2000 billion rupiah
+            } elseif ($tahun >= 2000) {
+                $subsidi = rand(100, 800);
+            } else {
+                $subsidi = rand(0, 300);
+            }
+        }
+        // Fertilizer subsidies for agricultural commodities
+        elseif ($kodeInt >= 200 && $kodeInt <= 499) {
+            if ($tahun >= 2005) {
+                $subsidi = rand(50, 500);
+            } else {
+                $subsidi = rand(0, 100);
+            }
+        }
+        // Animal products - less direct subsidies
+        elseif ($kodeInt >= 500 && $kodeInt <= 899) {
+            if ($tahun >= 2010) {
+                $subsidi = rand(0, 200);
+            } else {
+                $subsidi = rand(0, 50);
+            }
+        }
+        
+        return [
+            'kebijakan_impor' => $kebijakanImport,
+            'subsidi_pemerintah' => $subsidi
+        ];
+    }
+    
+    /**
+     * Generate data quality indicators based on source, year, and commodity
+     */
+    private function getDataQualityIndicators(int $tahun, int $bulan, string $kodeKomoditi): array
+    {
+        $kodeInt = intval($kodeKomoditi);
+        
+        // Data sources vary by commodity type and institutional capacity
+        $dataSources = ['BPS', 'Kementan', 'Bapanas'];
+        $sourceWeights = [60, 25, 15]; // BPS most common
+        
+        // BPS covers most commodities comprehensively
+        // Kementan focuses on agricultural products
+        // Bapanas focuses on food security commodities
+        
+        if ($kodeInt >= 100 && $kodeInt <= 499) { // Agricultural products
+            $sourceWeights = [45, 40, 15]; // More Kementan involvement
+        } elseif ($kodeInt >= 100 && $kodeInt <= 199) { // Strategic food (rice)
+            $sourceWeights = [40, 30, 30]; // High Bapanas involvement
+        }
+        
+        // Earlier years had less institutional capacity
+        if ($tahun < 2000) {
+            $sourceWeights = [80, 15, 5]; // Mostly BPS
+        } elseif ($tahun < 2010) {
+            $sourceWeights = [65, 25, 10];
+        }
+        
+        $dataSource = $this->weightedRandom($dataSources, $sourceWeights);
+        
+        // Confidence score varies by data source and age
+        $confidenceScore = 0.85; // base
+        
+        // Adjust by data source
+        if ($dataSource === 'BPS') {
+            $confidenceScore = 0.80 + rand(0, 15) / 100; // 0.80-0.95
+        } elseif ($dataSource === 'Kementan') {
+            $confidenceScore = 0.75 + rand(0, 20) / 100; // 0.75-0.95
+        } else { // Bapanas
+            $confidenceScore = 0.70 + rand(0, 25) / 100; // 0.70-0.95
+        }
+        
+        // Older data has lower confidence
+        $yearDiff = 2024 - $tahun;
+        $confidenceScore -= ($yearDiff * 0.002); // Decrease by 0.2% per year
+        $confidenceScore = max(0.60, min(0.95, $confidenceScore));
+        
+        // Validation status based on confidence and data age
+        $validationStatus = 'verified';
+        if ($confidenceScore < 0.70) {
+            $validationStatus = 'flagged';
+        } elseif ($confidenceScore < 0.80) {
+            $statuses = ['verified', 'pending'];
+            $validationStatus = $statuses[rand(0, 1)];
+        }
+        
+        // Recent data might be pending
+        if ($tahun >= 2023) {
+            $statuses = ['verified', 'pending', 'flagged'];
+            $weights = [60, 30, 10];
+            $validationStatus = $this->weightedRandom($statuses, $weights);
+        }
+        
+        // Outlier detection based on statistical analysis
+        $outlierFlag = false;
+        
+        // Higher chance of outliers during crisis periods
+        if (($tahun >= 1998 && $tahun <= 1999) || ($tahun >= 2008 && $tahun <= 2009) || $tahun == 2020) {
+            $outlierFlag = rand(1, 100) <= 8; // 8% chance during crisis
+        } else {
+            $outlierFlag = rand(1, 100) <= 3; // 3% chance normally
+        }
+        
+        // Seasonal products might have more outliers
+        if ($kodeInt >= 300 && $kodeInt <= 499) { // Vegetables/fruits
+            $outlierFlag = $outlierFlag || (rand(1, 100) <= 5); // Additional 5% chance
+        }
+        
+        return [
+            'confidence_score' => round($confidenceScore, 2),
+            'data_source' => $dataSource,
+            'validation_status' => $validationStatus,
+            'outlier_flag' => $outlierFlag
+        ];
+    }
+    
+    /**
+     * Weighted random selection helper
+     */
+    private function weightedRandom(array $options, array $weights): string
+    {
+        $totalWeight = array_sum($weights);
+        $random = rand(1, $totalWeight);
+        
+        $currentWeight = 0;
+        for ($i = 0; $i < count($options); $i++) {
+            $currentWeight += $weights[$i];
+            if ($random <= $currentWeight) {
+                return $options[$i];
+            }
+        }
+        
+        return $options[0]; // fallback
     }
     
     private function getData(): array

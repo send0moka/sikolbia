@@ -140,120 +140,172 @@
             <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
                 <thead class="bg-neutral-50 dark:bg-neutral-800/50">
                     <tr>
-                        <x-sortable-header field="id" :sort-field="$sortField" :sort-direction="$sortDirection" title="ID" class="px-3 py-3" />
-                        <x-sortable-header field="kelompok" :sort-field="$sortField" :sort-direction="$sortDirection" title="Kelompok" class="px-3 py-3" />
-                        <x-sortable-header field="komoditi" :sort-field="$sortField" :sort-direction="$sortDirection" title="Komoditi" class="px-3 py-3" />
-                        <x-sortable-header field="tahun" :sort-field="$sortField" :sort-direction="$sortDirection" title="Tahun" class="px-3 py-3" />
-                        <x-sortable-header field="bulan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Bulan" class="px-3 py-3" />
-                        <x-sortable-header field="kuartal" :sort-field="$sortField" :sort-direction="$sortDirection" title="Kuartal" class="px-3 py-3" />
-                        <x-sortable-header field="periode_data" :sort-field="$sortField" :sort-direction="$sortDirection" title="Periode Data" class="px-3 py-3" />
-                        <x-sortable-header field="status_angka" :sort-field="$sortField" :sort-direction="$sortDirection" title="Status Angka" class="px-3 py-3" />
-                        <x-sortable-header field="masukan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Masukan" class="px-3 py-3" />
-                        <x-sortable-header field="keluaran" :sort-field="$sortField" :sort-direction="$sortDirection" title="Keluaran" class="px-3 py-3" />
-                        <x-sortable-header field="impor" :sort-field="$sortField" :sort-direction="$sortDirection" title="Impor" class="px-3 py-3" />
-                        <x-sortable-header field="ekspor" :sort-field="$sortField" :sort-direction="$sortDirection" title="Ekspor" class="px-3 py-3" />
-                        <x-sortable-header field="perubahan_stok" :sort-field="$sortField" :sort-direction="$sortDirection" title="Perubahan Stok" class="px-3 py-3" />
-                        <x-sortable-header field="pakan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Pakan" class="px-3 py-3" />
-                        <x-sortable-header field="bibit" :sort-field="$sortField" :sort-direction="$sortDirection" title="Bibit" class="px-3 py-3" />
-                        <x-sortable-header field="makanan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Makanan" class="px-3 py-3" />
-                        <x-sortable-header field="bukan_makanan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Bukan Makanan" class="px-3 py-3" />
-                        <x-sortable-header field="tercecer" :sort-field="$sortField" :sort-direction="$sortDirection" title="Tercecer" class="px-3 py-3" />
-                        <x-sortable-header field="penggunaan_lain" :sort-field="$sortField" :sort-direction="$sortDirection" title="Penggunaan Lain" class="px-3 py-3" />
-                        <x-sortable-header field="bahan_makanan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Bahan Makanan" class="px-3 py-3" />
-                        <x-sortable-header field="kg_tahun" :sort-field="$sortField" :sort-direction="$sortDirection" title="Kg/Tahun" class="px-3 py-3" />
-                        <x-sortable-header field="gram_hari" :sort-field="$sortField" :sort-direction="$sortDirection" title="Gram/Hari" class="px-3 py-3" />
-                        <x-sortable-header field="kalori_hari" :sort-field="$sortField" :sort-direction="$sortDirection" title="Kalori/Hari" class="px-3 py-3" />
-                        <x-sortable-header field="protein_hari" :sort-field="$sortField" :sort-direction="$sortDirection" title="Protein/Hari" class="px-3 py-3" />
-                        <x-sortable-header field="lemak_hari" :sort-field="$sortField" :sort-direction="$sortDirection" title="Lemak/Hari" class="px-3 py-3" />
-                        <x-sortable-header field="harga_produsen" :sort-field="$sortField" :sort-direction="$sortDirection" title="Harga Produsen" class="px-3 py-3" />
-                        <x-sortable-header field="harga_konsumen" :sort-field="$sortField" :sort-direction="$sortDirection" title="Harga Konsumen" class="px-3 py-3" />
-                        <x-sortable-header field="inflasi_komoditi" :sort-field="$sortField" :sort-direction="$sortDirection" title="Inflasi Komoditi" class="px-3 py-3" />
-                        <x-sortable-header field="nilai_tukar_usd" :sort-field="$sortField" :sort-direction="$sortDirection" title="Nilai Tukar USD" class="px-3 py-3" />
-                        <x-sortable-header field="populasi_indonesia" :sort-field="$sortField" :sort-direction="$sortDirection" title="Populasi Indonesia" class="px-3 py-3" />
-                        <x-sortable-header field="gdp_per_kapita" :sort-field="$sortField" :sort-direction="$sortDirection" title="GDP Per Kapita" class="px-3 py-3" />
-                        <x-sortable-header field="tingkat_kemiskinan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Tingkat Kemiskinan" class="px-3 py-3" />
-                        <x-sortable-header field="curah_hujan_mm" :sort-field="$sortField" :sort-direction="$sortDirection" title="Curah Hujan (mm)" class="px-3 py-3" />
-                        <x-sortable-header field="suhu_rata_celsius" :sort-field="$sortField" :sort-direction="$sortDirection" title="Suhu Rata-rata (C)" class="px-3 py-3" />
-                        <x-sortable-header field="indeks_el_nino" :sort-field="$sortField" :sort-direction="$sortDirection" title="Indeks El Nino" class="px-3 py-3" />
-                        <x-sortable-header field="luas_panen_ha" :sort-field="$sortField" :sort-direction="$sortDirection" title="Luas Panen (Ha)" class="px-3 py-3" />
-                        <x-sortable-header field="produktivitas_ton_ha" :sort-field="$sortField" :sort-direction="$sortDirection" title="Produktivitas (Ton/Ha)" class="px-3 py-3" />
-                        <x-sortable-header field="kebijakan_impor" :sort-field="$sortField" :sort-direction="$sortDirection" title="Kebijakan Impor" class="px-3 py-3" />
-                        <x-sortable-header field="subsidi_pemerintah" :sort-field="$sortField" :sort-direction="$sortDirection" title="Subsidi Pemerintah" class="px-3 py-3" />
-                        <x-sortable-header field="stok_bulog" :sort-field="$sortField" :sort-direction="$sortDirection" title="Stok Bulog" class="px-3 py-3" />
-                        <x-sortable-header field="confidence_score" :sort-field="$sortField" :sort-direction="$sortDirection" title="Confidence Score" class="px-3 py-3" />
-                        <x-sortable-header field="data_source" :sort-field="$sortField" :sort-direction="$sortDirection" title="Data Source" class="px-3 py-3" />
-                        <x-sortable-header field="validation_status" :sort-field="$sortField" :sort-direction="$sortDirection" title="Validation Status" class="px-3 py-3" />
-                        <x-sortable-header field="outlier_flag" :sort-field="$sortField" :sort-direction="$sortDirection" title="Outlier" class="px-3 py-3" />
-                        <x-sortable-header field="created_at" :sort-field="$sortField" :sort-direction="$sortDirection" title="Created At" class="px-3 py-3" />
-                        <x-sortable-header field="updated_at" :sort-field="$sortField" :sort-direction="$sortDirection" title="Updated At" class="px-3 py-3" />
-                        <th class="px-3 py-3 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider no-print">Aksi</th>
+                        <x-sortable-header field="kode_kelompok" :sort-field="$sortField" :sort-direction="$sortDirection" title="Identifikasi" class="px-4 py-3 w-48" />
+                        <x-sortable-header field="masukan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Produksi" class="px-4 py-3 w-40" />
+                        <x-sortable-header field="gram_hari" :sort-field="$sortField" :sort-direction="$sortDirection" title="Konsumsi & Nutrisi" class="px-4 py-3 w-44" />
+                        <x-sortable-header field="harga_konsumen" :sort-field="$sortField" :sort-direction="$sortDirection" title="Ekonomi" class="px-4 py-3 w-36" />
+                        <x-sortable-header field="suhu_rata_celsius" :sort-field="$sortField" :sort-direction="$sortDirection" title="Lingkungan" class="px-4 py-3 w-32" />
+                        <x-sortable-header field="validation_status" :sort-field="$sortField" :sort-direction="$sortDirection" title="Status" class="px-4 py-3 w-32" />
+                        <th class="px-4 py-3 text-center text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider no-print w-32">Aksi</th>
                     </tr>
                 </thead>
                                 <tbody class="bg-white dark:bg-neutral-900 divide-y divide-neutral-200 dark:divide-neutral-700">
                     @forelse($transaksiNbms as $index => $transaksi)
                         <tr wire:key="nbm-row-{{ $transaksi->id }}" class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->id }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->kelompok->nama ?? $transaksi->kode_kelompok }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->komoditi->nama ?? $transaksi->kode_komoditi }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->tahun }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->bulan }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->kuartal }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->periode_data }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ ucfirst($transaksi->status_angka) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->masukan ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->keluaran ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->impor ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->ekspor ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->perubahan_stok ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->pakan ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->bibit ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->makanan ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->bukan_makanan ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->tercecer ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->penggunaan_lain ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->bahan_makanan ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->kg_tahun ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->gram_hari ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->kalori_hari ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->protein_hari ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->lemak_hari ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->harga_produsen ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->harga_konsumen ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->inflasi_komoditi ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->nilai_tukar_usd ?? 0, 4) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->populasi_indonesia ?? 0, 0) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->gdp_per_kapita ?? 0, 0) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->tingkat_kemiskinan ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->curah_hujan_mm ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->suhu_rata_celsius ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->indeks_el_nino ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->luas_panen_ha ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->produktivitas_ton_ha ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->kebijakan_impor }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->subsidi_pemerintah ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->stok_bulog ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ number_format($transaksi->confidence_score ?? 0, 2) }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->data_source }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->validation_status }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->outlier_flag ? 'Ya' : 'Tidak' }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->created_at ? $transaksi->created_at->format('d/m/Y H:i') : '' }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100">{{ $transaksi->updated_at ? $transaksi->updated_at->format('d/m/Y H:i') : '' }}</td>
-                            <td class="px-3 py-3 text-sm text-neutral-900 dark:text-neutral-100 no-print">
-                                <div class="flex space-x-2">
-                                    <flux:button wire:click="openEditModal({{ $transaksi->id }})" variant="ghost" size="sm">Edit</flux:button>
-                                    <flux:button wire:click="openDeleteModal({{ $transaksi->id }})" variant="danger" size="sm">Hapus</flux:button>
-                                    <flux:button wire:click="view({{ $transaksi->id }})" variant="ghost" size="sm">Detail</flux:button>
+                            <!-- Kolom Identifikasi -->
+                            <td class="px-4 py-4 text-sm">
+                                <div class="space-y-1">
+                                    <div class="font-medium text-neutral-900 dark:text-neutral-100">
+                                        {{ $transaksi->kode_kelompok }}-{{ $transaksi->kode_komoditi }}
+                                    </div>
+                                    <div class="text-neutral-600 dark:text-neutral-400">
+                                        {{ $transaksi->tahun }}-{{ sprintf('%02d', $transaksi->bulan) }}
+                                    </div>
+                                    <div class="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                                        {{ $transaksi->data_source }}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kolom Produksi -->
+                            <td class="px-4 py-4 text-sm">
+                                <div class="space-y-1">
+                                    <div class="font-semibold text-green-600 dark:text-green-400">
+                                        {{ number_format($transaksi->masukan ?? 0, 1) }} ton
+                                    </div>
+                                    <div class="text-xs text-neutral-600 dark:text-neutral-400">
+                                        Masukan
+                                    </div>
+                                    <div class="text-xs text-neutral-700 dark:text-neutral-300">
+                                        Impor: {{ number_format($transaksi->impor ?? 0, 0) }}
+                                    </div>
+                                    <div class="text-xs text-neutral-700 dark:text-neutral-300">
+                                        Ekspor: {{ number_format($transaksi->ekspor ?? 0, 0) }}
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kolom Konsumsi & Nutrisi -->
+                            <td class="px-4 py-4 text-sm">
+                                <div class="space-y-1">
+                                    <div class="font-semibold text-orange-600 dark:text-orange-400">
+                                        {{ number_format($transaksi->gram_hari ?? 0, 1) }} g/hari
+                                    </div>
+                                    <div class="text-neutral-700 dark:text-neutral-300">
+                                        {{ number_format($transaksi->kalori_hari ?? 0, 0) }} kal/hari
+                                    </div>
+                                    <div class="text-xs text-neutral-600 dark:text-neutral-400">
+                                        Protein: {{ number_format($transaksi->protein_hari ?? 0, 1) }}g
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kolom Ekonomi -->
+                            <td class="px-4 py-4 text-sm">
+                                <div class="space-y-1">
+                                    <div class="font-semibold text-purple-600 dark:text-purple-400">
+                                        Rp {{ number_format($transaksi->harga_konsumen ?? 0, 0) }}
+                                    </div>
+                                    <div class="text-xs text-neutral-600 dark:text-neutral-400">
+                                        Harga Konsumen
+                                    </div>
+                                    <div class="text-xs text-neutral-700 dark:text-neutral-300">
+                                        Inflasi: {{ number_format(($transaksi->inflasi_komoditi ?? 0) * 100, 2) }}%
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kolom Lingkungan -->
+                            <td class="px-4 py-4 text-sm">
+                                <div class="space-y-1">
+                                    <div class="font-semibold text-blue-600 dark:text-blue-400">
+                                        {{ number_format($transaksi->suhu_rata_celsius ?? 0, 1) }}°C
+                                    </div>
+                                    <div class="text-neutral-700 dark:text-neutral-300">
+                                        {{ number_format($transaksi->curah_hujan_mm ?? 0, 0) }}mm
+                                    </div>
+                                    <div class="text-xs text-neutral-600 dark:text-neutral-400">
+                                        Curah Hujan
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kolom Status -->
+                            <td class="px-4 py-4 text-sm">
+                                <div class="space-y-1">
+                                    <div class="inline-flex items-center">
+                                        @if($transaksi->validation_status === 'verified')
+                                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                                                verified
+                                            </span>
+                                        @elseif($transaksi->validation_status === 'pending')
+                                            <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">
+                                                pending
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 rounded-full">
+                                                flagged
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="text-xs text-neutral-600 dark:text-neutral-400">
+                                        Score: {{ number_format($transaksi->confidence_score ?? 0, 2) }}
+                                    </div>
+                                    <div class="text-xs">
+                                        @if($transaksi->outlier_flag)
+                                            <span class="text-red-600 dark:text-red-400">⚠️ Outlier</span>
+                                        @else
+                                            <span class="text-green-600 dark:text-green-400">✅ Normal</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Kolom Aksi -->
+                            <td class="px-4 py-4 text-sm text-neutral-900 dark:text-neutral-100 no-print">
+                                <div class="flex flex-col sm:flex-row sm:space-x-1 space-y-1 sm:space-y-0">
+                                    <!-- Tombol Detail -->
+                                    <flux:button 
+                                        wire:click="view({{ $transaksi->id }})" 
+                                        variant="ghost" 
+                                        size="sm"
+                                        class="!px-2 !py-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-xs"
+                                    >
+                                        👁️ Detail
+                                    </flux:button>
+                                    
+                                    <!-- Tombol Edit -->
+                                    <flux:button 
+                                        wire:click="openEditModal({{ $transaksi->id }})" 
+                                        variant="ghost" 
+                                        size="sm"
+                                        class="!px-2 !py-1 text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 text-xs"
+                                    >
+                                        ✏️ Edit
+                                    </flux:button>
+                                    
+                                    <!-- Tombol Hapus -->
+                                    <flux:button 
+                                        wire:click="openDeleteModal({{ $transaksi->id }})" 
+                                        variant="ghost" 
+                                        size="sm"
+                                        class="!px-2 !py-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-xs"
+                                    >
+                                        🗑️ Hapus
+                                    </flux:button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="48" class="px-6 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                                @if($search)
-                                    Tidak ada transaksi NBM yang ditemukan untuk pencarian "{{ $search }}".
-                                @else
-                                    Belum ada data transaksi NBM.
-                                @endif
+                            <td colspan="7" class="px-6 py-8 text-center text-neutral-500 dark:text-neutral-400">
+                                <div class="flex flex-col items-center justify-center space-y-3">
+                                    <svg class="w-12 h-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium">Tidak ada data transaksi NBM</p>
+                                    <p class="text-sm">Data akan muncul di sini setelah Anda menambahkan transaksi NBM</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -968,64 +1020,24 @@
                 <div class="max-h-96 overflow-y-auto pr-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         
-                        <!-- Informasi Identitas -->
+                        <!-- 📋 Informasi Dasar -->
                         <div class="lg:col-span-3">
                             <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4">
-                                <svg class="inline w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2v-6a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                                </svg>
-                                Informasi Identitas
+                                📋 Informasi Dasar
                             </h4>
                         </div>
                         
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">ID Transaksi</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm text-neutral-900 dark:text-neutral-100">
+                                <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm font-mono text-blue-900 dark:text-blue-100">
                                     {{ $viewingTransaksi['id'] ?? '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Tahun</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ $viewingTransaksi['tahun'] ?? '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Status Angka</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['status_angka']) ? ucfirst($viewingTransaksi['status_angka']) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Informasi Kelompok & Komoditi -->
-                        <div class="lg:col-span-3">
-                            <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
-                                <svg class="inline w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                                Informasi Kelompok & Komoditi
-                            </h4>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Kode Kelompok</label>
                                 <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-mono text-neutral-900 dark:text-neutral-100">
                                     {{ $viewingTransaksi['kode_kelompok'] ?? '-' }}
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Nama Kelompok</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm text-neutral-900 dark:text-neutral-100">
-                                    {{ $viewingTransaksi['kelompok']['nama'] ?? '-' }}
                                 </div>
                             </div>
                         </div>
@@ -1038,61 +1050,52 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Nama Komoditi</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm text-neutral-900 dark:text-neutral-100">
-                                    {{ $viewingTransaksi['komoditi']['nama'] ?? '-' }}
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Periode</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ ($viewingTransaksi['tahun'] ?? '') . '-' . sprintf('%02d', $viewingTransaksi['bulan'] ?? 0) }} (Q{{ $viewingTransaksi['kuartal'] ?? '-' }})
                                 </div>
                             </div>
                         </div>
                         
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Tanggal Dibuat</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['created_at']) ? \Carbon\Carbon::parse($viewingTransaksi['created_at'])->format('d F Y H:i') : '-' }}
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Periode Data</label>
+                                <div class="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md text-sm text-orange-900 dark:text-orange-100">
+                                    {{ ucfirst($viewingTransaksi['periode_data'] ?? '-') }}
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Terakhir Diperbarui</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['updated_at']) ? \Carbon\Carbon::parse($viewingTransaksi['updated_at'])->format('d F Y H:i') : '-' }}
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Status Angka</label>
+                                <div class="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md text-sm text-purple-900 dark:text-purple-100">
+                                    {{ ucfirst($viewingTransaksi['status_angka'] ?? '-') }}
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Data Produksi & Perdagangan -->
+
+                        <!-- 🏭 Produksi & Distribusi -->
                         <div class="lg:col-span-3">
                             <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
-                                <svg class="inline w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
-                                Data Produksi & Perdagangan
+                                🏭 Produksi & Distribusi
                             </h4>
                         </div>
                         
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Masukan</label>
-                                <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm font-bold text-blue-900 dark:text-blue-100">
-                                    {{ isset($viewingTransaksi['masukan']) ? number_format($viewingTransaksi['masukan'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['masukan']) ? number_format($viewingTransaksi['masukan'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Keluaran</label>
-                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
-                                    {{ isset($viewingTransaksi['keluaran']) ? number_format($viewingTransaksi['keluaran'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm font-bold text-blue-900 dark:text-blue-100">
+                                    {{ isset($viewingTransaksi['keluaran']) ? number_format($viewingTransaksi['keluaran'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Impor</label>
                                 <div class="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md text-sm font-bold text-orange-900 dark:text-orange-100">
-                                    {{ isset($viewingTransaksi['impor']) ? number_format($viewingTransaksi['impor'], 4) : '-' }}
+                                    {{ isset($viewingTransaksi['impor']) ? number_format($viewingTransaksi['impor'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
                         </div>
@@ -1101,35 +1104,19 @@
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Ekspor</label>
                                 <div class="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm font-bold text-red-900 dark:text-red-100">
-                                    {{ isset($viewingTransaksi['ekspor']) ? number_format($viewingTransaksi['ekspor'], 4) : '-' }}
+                                    {{ isset($viewingTransaksi['ekspor']) ? number_format($viewingTransaksi['ekspor'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Perubahan Stok</label>
-                                <div class="px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm font-bold text-yellow-900 dark:text-yellow-100">
-                                    {{ isset($viewingTransaksi['perubahan_stok']) ? number_format($viewingTransaksi['perubahan_stok'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md text-sm font-bold text-purple-900 dark:text-purple-100">
+                                    {{ isset($viewingTransaksi['perubahan_stok']) ? number_format($viewingTransaksi['perubahan_stok'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Data Penggunaan -->
-                        <div class="lg:col-span-3">
-                            <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
-                                <svg class="inline w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2v-6a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                </svg>
-                                Data Penggunaan
-                            </h4>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Pakan</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['pakan']) ? number_format($viewingTransaksi['pakan'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm font-bold text-yellow-900 dark:text-yellow-100">
+                                    {{ isset($viewingTransaksi['pakan']) ? number_format($viewingTransaksi['pakan'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
                         </div>
@@ -1137,108 +1124,260 @@
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Bibit</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['bibit']) ? number_format($viewingTransaksi['bibit'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-md text-sm font-bold text-teal-900 dark:text-teal-100">
+                                    {{ isset($viewingTransaksi['bibit']) ? number_format($viewingTransaksi['bibit'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Makanan</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['makanan']) ? number_format($viewingTransaksi['makanan'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-md text-sm font-bold text-indigo-900 dark:text-indigo-100">
+                                    {{ isset($viewingTransaksi['makanan']) ? number_format($viewingTransaksi['makanan'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Bukan Makanan</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['bukan_makanan']) ? number_format($viewingTransaksi['bukan_makanan'], 4) : '-' }}
+                                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-bold text-gray-900 dark:text-gray-100">
+                                    {{ isset($viewingTransaksi['bukan_makanan']) ? number_format($viewingTransaksi['bukan_makanan'], 2) . ' ton' : '-' }}
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Tercecer</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['tercecer']) ? number_format($viewingTransaksi['tercecer'], 4) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Penggunaan Lain</label>
-                                <div class="px-3 py-2 bg-neutral-50 dark:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                    {{ isset($viewingTransaksi['penggunaan_lain']) ? number_format($viewingTransaksi['penggunaan_lain'], 4) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Data Konsumsi & Gizi -->
+
+                        <!-- 🍽️ Konsumsi & Nutrisi -->
                         <div class="lg:col-span-3">
                             <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
-                                <svg class="inline w-5 h-5 mr-2 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                                Data Konsumsi & Gizi
+                                🍽️ Konsumsi & Nutrisi
                             </h4>
                         </div>
                         
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Bahan Makanan</label>
+                                <div class="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md text-sm font-bold text-orange-900 dark:text-orange-100">
+                                    {{ isset($viewingTransaksi['bahan_makanan']) ? number_format($viewingTransaksi['bahan_makanan'], 2) . ' ton' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Konsumsi Tahunan</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['kg_tahun']) ? number_format($viewingTransaksi['kg_tahun'], 2) . ' kg/tahun' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Tercecer</label>
+                                <div class="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm font-bold text-red-900 dark:text-red-100">
+                                    {{ isset($viewingTransaksi['tercecer']) ? number_format($viewingTransaksi['tercecer'], 2) . ' ton' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Konsumsi Harian</label>
+                                <div class="px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm font-bold text-yellow-900 dark:text-yellow-100">
+                                    {{ isset($viewingTransaksi['gram_hari']) ? number_format($viewingTransaksi['gram_hari'], 1) . ' g/hari' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Kalori</label>
+                                <div class="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm font-bold text-red-900 dark:text-red-100">
+                                    {{ isset($viewingTransaksi['kalori_hari']) ? number_format($viewingTransaksi['kalori_hari'], 0) . ' kal/hari' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Penggunaan Lain</label>
+                                <div class="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md text-sm font-bold text-purple-900 dark:text-purple-100">
+                                    {{ isset($viewingTransaksi['penggunaan_lain']) ? number_format($viewingTransaksi['penggunaan_lain'], 2) . ' ton' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Protein</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['protein_hari']) ? number_format($viewingTransaksi['protein_hari'], 1) . ' g/hari' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Lemak</label>
+                                <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm font-bold text-blue-900 dark:text-blue-100">
+                                    {{ isset($viewingTransaksi['lemak_hari']) ? number_format($viewingTransaksi['lemak_hari'], 2) . ' g/hari' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 💰 Ekonomi -->
+                        <div class="lg:col-span-3">
+                            <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
+                                💰 Ekonomi
+                            </h4>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Harga Produsen</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['harga_produsen']) ? 'Rp ' . number_format($viewingTransaksi['harga_produsen'], 0, ',', '.') : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Harga Konsumen</label>
+                                <div class="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md text-sm font-bold text-purple-900 dark:text-purple-100">
+                                    {{ isset($viewingTransaksi['harga_konsumen']) ? 'Rp ' . number_format($viewingTransaksi['harga_konsumen'], 0, ',', '.') : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Inflasi Komoditi</label>
+                                <div class="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm font-bold text-red-900 dark:text-red-100">
+                                    {{ isset($viewingTransaksi['inflasi_komoditi']) ? number_format($viewingTransaksi['inflasi_komoditi'] * 100, 2) . '%' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Nilai Tukar USD</label>
+                                <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm font-bold text-blue-900 dark:text-blue-100">
+                                    {{ isset($viewingTransaksi['nilai_tukar_usd']) ? 'Rp ' . number_format($viewingTransaksi['nilai_tukar_usd'], 0, ',', '.') . '/USD' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Populasi Indonesia</label>
+                                <div class="px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-md text-sm font-bold text-indigo-900 dark:text-indigo-100">
+                                    {{ isset($viewingTransaksi['populasi_indonesia']) ? number_format($viewingTransaksi['populasi_indonesia'], 0, ',', '.') . ' jiwa' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">GDP per Kapita</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['gdp_per_kapita']) ? '$' . number_format($viewingTransaksi['gdp_per_kapita'], 0, ',', '.') : '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 🌍 Lingkungan & Pertanian -->
+                        <div class="lg:col-span-3">
+                            <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
+                                🌍 Lingkungan & Pertanian
+                            </h4>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Curah Hujan</label>
                                 <div class="px-3 py-2 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-md text-sm font-bold text-cyan-900 dark:text-cyan-100">
-                                    {{ isset($viewingTransaksi['bahan_makanan']) ? number_format($viewingTransaksi['bahan_makanan'], 4) : '-' }}
+                                    {{ isset($viewingTransaksi['curah_hujan_mm']) ? number_format($viewingTransaksi['curah_hujan_mm'], 0) . ' mm' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Suhu Rata-rata</label>
+                                <div class="px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md text-sm font-bold text-orange-900 dark:text-orange-100">
+                                    {{ isset($viewingTransaksi['suhu_rata_celsius']) ? number_format($viewingTransaksi['suhu_rata_celsius'], 1) . '°C' : '-' }}
                                 </div>
                             </div>
                         </div>
                         
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Kg/Tahun</label>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Indeks El Niño</label>
+                                <div class="px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm font-bold text-red-900 dark:text-red-100">
+                                    {{ isset($viewingTransaksi['indeks_el_nino']) ? number_format($viewingTransaksi['indeks_el_nino'], 2) : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Luas Panen</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['luas_panen_ha']) ? number_format($viewingTransaksi['luas_panen_ha'], 0) . ' ha' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Produktivitas</label>
+                                <div class="px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm font-bold text-yellow-900 dark:text-yellow-100">
+                                    {{ isset($viewingTransaksi['produktivitas_ton_ha']) ? number_format($viewingTransaksi['produktivitas_ton_ha'], 2) . ' ton/ha' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Tingkat Kemiskinan</label>
+                                <div class="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md text-sm font-bold text-purple-900 dark:text-purple-100">
+                                    {{ isset($viewingTransaksi['tingkat_kemiskinan']) ? number_format($viewingTransaksi['tingkat_kemiskinan'], 2) . '%' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 📊 Kebijakan & Validasi -->
+                        <div class="lg:col-span-3">
+                            <h4 class="font-semibold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-600 pb-2 mb-4 mt-6">
+                                📊 Kebijakan & Validasi
+                            </h4>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Kebijakan Impor</label>
+                                <div class="px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-md text-sm font-bold text-indigo-900 dark:text-indigo-100">
+                                    @if(isset($viewingTransaksi['kebijakan_impor']))
+                                        @if($viewingTransaksi['kebijakan_impor'] === 'bebas')
+                                            🟢 {{ ucfirst($viewingTransaksi['kebijakan_impor']) }}
+                                        @elseif($viewingTransaksi['kebijakan_impor'] === 'terbatas')
+                                            🟡 {{ ucfirst($viewingTransaksi['kebijakan_impor']) }}
+                                        @else
+                                            🔴 {{ ucfirst($viewingTransaksi['kebijakan_impor']) }}
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Subsidi Pemerintah</label>
+                                <div class="px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-sm font-bold text-green-900 dark:text-green-100">
+                                    {{ isset($viewingTransaksi['subsidi_pemerintah']) ? 'Rp ' . number_format($viewingTransaksi['subsidi_pemerintah'], 0, ',', '.') . ' miliar' : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Stok Bulog</label>
+                                <div class="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-sm font-bold text-blue-900 dark:text-blue-100">
+                                    {{ isset($viewingTransaksi['stok_bulog']) ? number_format($viewingTransaksi['stok_bulog'], 2) . ' ton' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Status Validasi</label>
+                                <div class="px-3 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-md text-sm font-bold text-purple-900 dark:text-purple-100">
+                                    @if(isset($viewingTransaksi['validation_status']))
+                                        @if($viewingTransaksi['validation_status'] === 'verified')
+                                            ✅ Verified
+                                        @elseif($viewingTransaksi['validation_status'] === 'pending')
+                                            ⏳ Pending
+                                        @else
+                                            ⚠️ Flagged
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Confidence Score</label>
+                                <div class="px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-sm font-bold text-yellow-900 dark:text-yellow-100">
+                                    {{ isset($viewingTransaksi['confidence_score']) ? number_format($viewingTransaksi['confidence_score'], 2) . '/1.00' : '-' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Data Source</label>
                                 <div class="px-3 py-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-md text-sm font-bold text-teal-900 dark:text-teal-100">
-                                    {{ isset($viewingTransaksi['kg_tahun']) ? number_format($viewingTransaksi['kg_tahun'], 4) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Gram/Hari</label>
-                                <div class="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md text-sm font-bold text-emerald-900 dark:text-emerald-100">
-                                    {{ isset($viewingTransaksi['gram_hari']) ? number_format($viewingTransaksi['gram_hari'], 4) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Kalori/Hari</label>
-                                <div class="px-3 py-2 bg-lime-50 dark:bg-lime-900/20 border border-lime-200 dark:border-lime-800 rounded-md text-sm font-bold text-lime-900 dark:text-lime-100">
-                                    {{ isset($viewingTransaksi['kalori_hari']) ? number_format($viewingTransaksi['kalori_hari'], 4) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Protein/Hari</label>
-                                <div class="px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md text-sm font-bold text-amber-900 dark:text-amber-100">
-                                    {{ isset($viewingTransaksi['protein_hari']) ? number_format($viewingTransaksi['protein_hari'], 4) : '-' }}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-1">Lemak/Hari</label>
-                                <div class="px-3 py-2 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-md text-sm font-bold text-rose-900 dark:text-rose-100">
-                                    {{ isset($viewingTransaksi['lemak_hari']) ? number_format($viewingTransaksi['lemak_hari'], 6) : '-' }}
+                                    {{ $viewingTransaksi['data_source'] ?? '-' }}
                                 </div>
                             </div>
                         </div>
@@ -1309,43 +1448,27 @@
                     <thead>
                         <tr>
                             <th class="no-col">No</th>
-                            <th>ID</th>
-                            <th>Kelompok</th>
-                            <th>Komoditi</th>
-                            <th>Tahun</th>
+                            <th>Identifikasi</th>
+                            <th>Produksi</th>
+                            <th>Konsumsi & Nutrisi</th>
+                            <th>Ekonomi</th>
+                            <th>Lingkungan</th>
                             <th>Status</th>
-                            <th>Masukan</th>
-                            <th>Keluaran</th>
-                            <th>Impor</th>
-                            <th>Ekspor</th>
-                            <th>Stok</th>
-                            <th>Pakan</th>
-                            <th>Bibit</th>
-                            <th>Makanan</th>
-                            <th>Bukan Makanan</th>
-                            <th>Tercecer</th>
-                            <th>Penggunaan Lain</th>
-                            <th>Bahan Makanan</th>
-                            <th>Kg/Tahun</th>
-                            <th>Gram/Hari</th>
-                            <th>Kalori/Hari</th>
-                            <th>Protein/Hari</th>
-                            <th>Lemak/Hari</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${Array.from(clone.querySelectorAll('tbody tr')).map((row, index) => {
                             const cells = Array.from(row.children);
-                            // Skip first cell (nomor) and find cells without no-print class
-                            const dataCells = cells.slice(1).filter(cell => !cell.classList.contains('no-print'));
-                            const cellsHtml = dataCells.map(cell => cell.outerHTML).join('');
+                            if (cells.length === 1) return row.outerHTML;
+                            
+                            const extractText = (cell) => cell.textContent.replace(/\s+/g, ' ').trim();
+                            const cellsHtml = cells.slice(0, 6).map(cell => `<td>${extractText(cell)}</td>`).join('');
                             return `<tr><td class="no-col">${index + 1}</td>${cellsHtml}</tr>`;
                         }).join('')}
                     </tbody>
                 </table>
             </body></html>`;
 
-            // Create hidden iframe
             const iframe = document.createElement('iframe');
             iframe.style.position = 'fixed';
             iframe.style.right = '0';
@@ -1365,7 +1488,6 @@
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
                 } finally {
-                    // Remove iframe after slight delay to allow dialog
                     setTimeout(() => iframe.remove(), 2000);
                 }
             };
@@ -1424,58 +1546,33 @@
                     <thead>
                         <tr>
                             <th class="no-col">No</th>
-                            <th>ID</th>
-                            <th>Kelompok</th>
-                            <th>Komoditi</th>
-                            <th>Tahun</th>
+                            <th>Identifikasi</th>
+                            <th>Produksi</th>
+                            <th>Konsumsi & Nutrisi</th>
+                            <th>Ekonomi</th>
+                            <th>Lingkungan</th>
                             <th>Status</th>
-                            <th>Masukan</th>
-                            <th>Keluaran</th>
-                            <th>Impor</th>
-                            <th>Ekspor</th>
-                            <th>Stok</th>
-                            <th>Pakan</th>
-                            <th>Bibit</th>
-                            <th>Makanan</th>
-                            <th>Bukan Makanan</th>
-                            <th>Tercecer</th>
-                            <th>Penggunaan Lain</th>
-                            <th>Bahan Makanan</th>
-                            <th>Kg/Tahun</th>
-                            <th>Gram/Hari</th>
-                            <th>Kalori/Hari</th>
-                            <th>Protein/Hari</th>
-                            <th>Lemak/Hari</th>
                         </tr>
                     </thead>
-                    <tbody>`;
+                    </tbody>`;
 
             if (allData && Array.isArray(allData)) {
                 allData.forEach((transaksi, index) => {
+                    const identifikasi = `${transaksi.kode_kelompok || ''}-${transaksi.kode_komoditi || ''} ${transaksi.tahun || ''}-${String(transaksi.bulan || '').padStart(2, '0')} ${transaksi.data_source || ''}`;
+                    const produksi = `${Number(transaksi.masukan || 0).toFixed(1)} ton Masukan Impor: ${Number(transaksi.impor || 0).toFixed(0)} Ekspor: ${Number(transaksi.ekspor || 0).toFixed(0)}`;
+                    const konsumsi = `${Number(transaksi.gram_hari || 0).toFixed(1)} g/hari ${Number(transaksi.kalori_hari || 0).toFixed(0)} kal/hari Protein: ${Number(transaksi.protein_hari || 0).toFixed(1)}g`;
+                    const ekonomi = `Rp ${Number(transaksi.harga_konsumen || 0).toLocaleString('id-ID')} Harga Konsumen Inflasi: ${(Number(transaksi.inflasi_komoditi || 0) * 100).toFixed(2)}%`;
+                    const lingkungan = `${Number(transaksi.suhu_rata_celsius || 0).toFixed(1)}°C ${Number(transaksi.curah_hujan_mm || 0).toFixed(0)}mm Curah Hujan`;
+                    const status = `${transaksi.validation_status || ''} Score: ${Number(transaksi.confidence_score || 0).toFixed(2)} ${transaksi.outlier_flag ? '⚠️ Outlier' : '✅ Normal'}`;
+                    
                     html += `<tr>
                         <td class="no-col">${index + 1}</td>
-                        <td>${transaksi.id}</td>
-                        <td>${transaksi.kelompok?.nama || 'N/A'}</td>
-                        <td>${transaksi.komoditi?.nama || 'N/A'}</td>
-                        <td>${transaksi.tahun}</td>
-                        <td>${transaksi.status_angka || 'N/A'}</td>
-                        <td class="numeric">${Number(transaksi.masukan || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.keluaran || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.impor || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.ekspor || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.perubahan_stok || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.pakan || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.bibit || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.makanan || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.bukan_makanan || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.tercecer || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.penggunaan_lain || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.bahan_makanan || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.kg_tahun || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.gram_hari || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.kalori_hari || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.protein_hari || 0).toFixed(4)}</td>
-                        <td class="numeric">${Number(transaksi.lemak_hari || 0).toFixed(6)}</td>
+                        <td>${identifikasi}</td>
+                        <td>${produksi}</td>
+                        <td>${konsumsi}</td>
+                        <td>${ekonomi}</td>
+                        <td>${lingkungan}</td>
+                        <td>${status}</td>
                     </tr>`;
                 });
             }
@@ -1486,7 +1583,6 @@
             </body>
             </html>`;
 
-            // Create hidden iframe
             const iframe = document.createElement('iframe');
             iframe.style.position = 'fixed';
             iframe.style.right = '0';
