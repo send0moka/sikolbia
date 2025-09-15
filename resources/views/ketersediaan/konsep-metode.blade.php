@@ -60,6 +60,11 @@
                                     class="w-full text-left px-3 py-2 rounded-md border text-sm font-medium transition duration-200">
                                 Komponen NBM
                             </button>
+                            <button @click="activeSection = 'indikator'"
+                                    :class="activeSection === 'indikator' ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-neutral-600 hover:text-neutral-900 border-transparent'"
+                                    class="w-full text-left px-3 py-2 rounded-md border text-sm font-medium transition duration-200">
+                                Indikator Pendukung
+                            </button>
                             <button @click="activeSection = 'metodologi'"
                                     :class="activeSection === 'metodologi' ? 'bg-blue-100 text-blue-700 border-blue-300' : 'text-neutral-600 hover:text-neutral-900 border-transparent'"
                                     class="w-full text-left px-3 py-2 rounded-md border text-sm font-medium transition duration-200">
@@ -198,6 +203,96 @@
                         </div>
                     </div>
 
+                    <!-- Indikator Pendukung NBM -->
+                    <div x-show="activeSection === 'indikator'" class="bg-white rounded-lg border border-neutral-200 p-8">
+                        <h2 class="text-2xl font-bold text-neutral-900 mb-6">Indikator Pendukung dalam NBM</h2>
+                        <div class="prose prose-lg max-w-none">
+                            
+                            <p class="text-neutral-700 leading-relaxed mb-6">
+                                Untuk memberikan analisis yang komprehensif, NBM mengintegrasikan berbagai indikator ekonomi, 
+                                iklim, dan kebijakan yang mempengaruhi ketersediaan pangan Indonesia.
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Economic Context -->
+                                <div class="bg-amber-50 p-6 rounded-lg">
+                                    <h3 class="text-lg font-semibold text-amber-800 mb-4">🏦 Konteks Ekonomi Pangan</h3>
+                                    <ul class="space-y-3 text-amber-700">
+                                        <li>
+                                            <strong>Harga Produsen & Konsumen:</strong> Monitoring margin perdagangan dan aksesibilitas ekonomi pangan
+                                        </li>
+                                        <li>
+                                            <strong>Inflasi Komoditas:</strong> Stabilitas harga untuk perencanaan ketahanan pangan
+                                        </li>
+                                        <li>
+                                            <strong>Nilai Tukar:</strong> Dampak fluktuasi mata uang terhadap kebijakan perdagangan pangan
+                                        </li>
+                                        <li>
+                                            <strong>Daya Beli Masyarakat:</strong> GDP per kapita dan tingkat kemiskinan sebagai indikator akses pangan
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Agricultural Context -->
+                                <div class="bg-green-50 p-6 rounded-lg">
+                                    <h3 class="text-lg font-semibold text-green-800 mb-4">🌾 Kondisi Produksi Pangan</h3>
+                                    <ul class="space-y-3 text-green-700">
+                                        <li>
+                                            <strong>Iklim & Cuaca:</strong> Curah hujan, suhu, dan anomali iklim (El Niño) yang mempengaruhi produksi
+                                        </li>
+                                        <li>
+                                            <strong>Luas & Produktivitas:</strong> Efisiensi penggunaan lahan untuk proyeksi ketersediaan
+                                        </li>
+                                        <li>
+                                            <strong>Manajemen Stok:</strong> Cadangan strategis pemerintah untuk stabilisasi pasar
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Policy Context -->
+                                <div class="bg-purple-50 p-6 rounded-lg">
+                                    <h3 class="text-lg font-semibold text-purple-800 mb-4">🏛️ Kebijakan Pangan</h3>
+                                    <ul class="space-y-3 text-purple-700">
+                                        <li>
+                                            <strong>Regulasi Perdagangan:</strong> Kebijakan impor untuk menjaga keseimbangan pasokan domestik
+                                        </li>
+                                        <li>
+                                            <strong>Dukungan Pemerintah:</strong> Subsidi sektor pangan untuk menjamin ketersediaan dan keterjangkauan
+                                        </li>
+                                        <li>
+                                            <strong>Granularitas Temporal:</strong> Data bulanan dan kuartalan untuk respon kebijakan yang cepat
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Data Reliability -->
+                                <div class="bg-blue-50 p-6 rounded-lg">
+                                    <h3 class="text-lg font-semibold text-blue-800 mb-4">📊 Jaminan Kualitas Data</h3>
+                                    <ul class="space-y-3 text-blue-700">
+                                        <li>
+                                            <strong>Validasi Multi-Level:</strong> Verifikasi data dari berbagai sumber untuk akurasi
+                                        </li>
+                                        <li>
+                                            <strong>Deteksi Anomali:</strong> Identifikasi data outlier untuk analisis mendalam
+                                        </li>
+                                        <li>
+                                            <strong>Transparansi Sumber:</strong> Dokumentasi asal data untuk kepercayaan pengguna
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 bg-indigo-50 p-6 rounded-lg border-l-4 border-indigo-500">
+                                <h4 class="font-semibold text-indigo-900 mb-2">💡 Integrasi Holistik NBM:</h4>
+                                <p class="text-indigo-800">
+                                    Semua indikator ini terintegrasi dalam satu sistem NBM untuk memberikan gambaran menyeluruh 
+                                    tentang ketahanan pangan Indonesia, dari aspek kuantitas, kualitas, aksesibilitas, hingga 
+                                    stabilitas sepanjang waktu.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Metodologi -->
                     <div x-show="activeSection === 'metodologi'" class="bg-white rounded-lg border border-neutral-200 p-8">
                         <h2 class="text-2xl font-bold text-neutral-900 mb-6">Metodologi Penyusunan NBM</h2>
@@ -246,11 +341,15 @@
                             </div>
 
                             <div class="mt-8 bg-neutral-50 p-6 rounded-lg">
-                                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Periode dan Cakupan</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Periode dan Cakupan Data NBM</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div class="text-center">
-                                        <div class="text-2xl font-bold text-blue-600">Tahunan</div>
-                                        <div class="text-sm text-neutral-600">Periode Data</div>
+                                        <div class="text-2xl font-bold text-blue-600">Bulanan</div>
+                                        <div class="text-sm text-neutral-600">Granularitas Temporal</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-2xl font-bold text-blue-600">1993-2024</div>
+                                        <div class="text-sm text-neutral-600">Rentang Historis</div>
                                     </div>
                                     <div class="text-center">
                                         <div class="text-2xl font-bold text-blue-600">34 Provinsi</div>
@@ -307,19 +406,47 @@
                                 </div>
                             </div>
 
-                            <h3 class="text-xl font-semibold text-neutral-900 mb-4">Sumber Data</h3>
+                            <h3 class="text-xl font-semibold text-neutral-900 mb-4">Sumber Data NBM</h3>
                             <div class="bg-neutral-50 p-6 rounded-lg">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <ul class="space-y-2 text-neutral-700">
-                                        <li>• Badan Pusat Statistik (BPS)</li>
-                                        <li>• Kementerian Pertanian</li>
-                                        <li>• Kementerian Kelautan dan Perikanan</li>
-                                    </ul>
-                                    <ul class="space-y-2 text-neutral-700">
-                                        <li>• Kementerian Perindustrian</li>
-                                        <li>• Badan Ketahanan Pangan</li>
-                                        <li>• Gabungan Pengusaha Makanan dan Minuman Indonesia (GAPMMI)</li>
-                                    </ul>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <h4 class="font-semibold text-neutral-900 mb-2">Data Pangan & Statistik:</h4>
+                                        <ul class="space-y-2 text-neutral-700 text-sm">
+                                            <li>• Badan Pusat Statistik (BPS)</li>
+                                            <li>• Kementerian Pertanian</li>
+                                            <li>• Kementerian Kelautan dan Perikanan</li>
+                                            <li>• Badan Ketahanan Pangan</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-neutral-900 mb-2">Data Ekonomi & Perdagangan:</h4>
+                                        <ul class="space-y-2 text-neutral-700 text-sm">
+                                            <li>• Bank Indonesia (BI)</li>
+                                            <li>• Kementerian Perdagangan</li>
+                                            <li>• Kementerian Keuangan</li>
+                                            <li>• Bappenas</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-neutral-900 mb-2">Data Iklim & Lingkungan:</h4>
+                                        <ul class="space-y-2 text-neutral-700 text-sm">
+                                            <li>• BMKG (Meteorologi)</li>
+                                            <li>• NOAA (El Niño Index)</li>
+                                            <li>• Kementerian Lingkungan Hidup</li>
+                                            <li>• FAO (Standar Internasional)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <!-- Integration Note -->
+                                <div class="mt-6 pt-4 border-t border-neutral-200">
+                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                        <h4 class="font-semibold text-blue-900 mb-2">🔗 Integrasi Data Multi-Sumber</h4>
+                                        <p class="text-blue-800 text-sm">
+                                            Sistem NBM mengintegrasikan seluruh data dari berbagai instansi dengan standardisasi 
+                                            metodologi untuk menghasilkan analisis ketahanan pangan yang komprehensif dan akurat.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -336,10 +463,10 @@
                         <h4 class="font-medium text-blue-600">Laporan Data NBM</h4>
                         <p class="text-sm text-neutral-600 mt-1">Akses data dan laporan Neraca Bahan Makanan terbaru</p>
                     </a>
-                    <a href="{{ route('login') }}" 
+                    <a href="{{ route('ketersediaan.dashboard-komoditas') }}" 
                        class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
-                        <h4 class="font-medium text-blue-600">Manajemen Data</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Login untuk mengakses dan mengelola data NBM</p>
+                        <h4 class="font-medium text-blue-600">Dashboard Monitoring Komoditas</h4>
+                        <p class="text-sm text-neutral-600 mt-1">Monitor harga dan tren komoditas pangan secara real-time</p>
                     </a>
                 </div>
             </div>

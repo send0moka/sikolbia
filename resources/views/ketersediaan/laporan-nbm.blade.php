@@ -139,12 +139,23 @@
 
                         <!-- Quick Stats -->
                         <div class="mt-8 pt-6 border-t border-neutral-200">
-                            <h4 class="font-medium text-neutral-900 mb-3">Informasi Data</h4>
+                            <h4 class="font-medium text-neutral-900 mb-3">Informasi Data NBM</h4>
                             <div class="space-y-2 text-sm text-neutral-600">
-                                <p>• Periode: 1993 - 2025</p>
-                                <p>• 10 Kelompok Pangan</p>
-                                <p>• 200+ Komoditas</p>
-                                <p>• Data Nasional</p>
+                                <p>• <strong>Periode:</strong> 1993 - 2024 (Bulanan)</p>
+                                <p>• <strong>Kelompok:</strong> 10 Kelompok Pangan</p>
+                                <p>• <strong>Komoditas:</strong> 200+ Komoditas</p>
+                                <p>• <strong>Cakupan:</strong> Data Nasional</p>
+                                <p>• <strong>Indikator:</strong> Ekonomi, Iklim, Kebijakan</p>
+                            </div>
+                            
+                            <!-- Data Integration Note -->
+                            <div class="mt-4 bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="text-blue-800 font-medium text-xs">Data Terintegrasi Multi-Dimensi</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -436,12 +447,14 @@
 
                             <!-- Data Notes -->
                             <div class="mt-4 text-sm text-neutral-600">
-                                <p><strong>Catatan:</strong></p>
+                                <p><strong>Catatan Data NBM Diperkaya:</strong></p>
                                 <ul class="list-disc list-inside mt-1 space-y-1">
-                                    <li>Data ketersediaan dihitung berdasarkan Neraca Bahan Makanan (NBM)</li>
-                                    <li>Satuan ketersediaan dalam kilogram per kapita per tahun</li>
-                                    <li>Data produksi, impor, dan ekspor dalam satuan ribu ton</li>
-                                    <li>Data telah disesuaikan dengan metodologi BKP-Kementan</li>
+                                    <li>Data ketersediaan dihitung berdasarkan Neraca Bahan Makanan (NBM) dengan metodologi BKP-Kementan</li>
+                                    <li>Satuan ketersediaan dalam kilogram per kapita per tahun, dengan data produksi dalam ribu ton</li>
+                                    <li><strong>Data Diperkaya:</strong> Termasuk indikator ekonomi (harga, inflasi, GDP), iklim (curah hujan, suhu, El Niño), dan kebijakan (impor, subsidi)</li>
+                                    <li><strong>Kualitas Data:</strong> Setiap record memiliki confidence score, status validasi, dan deteksi outlier</li>
+                                    <li><strong>Temporal Granularity:</strong> Data tersedia dalam periode bulanan, kuartalan, dan tahunan (1993-2024)</li>
+                                    <li><strong>Multi-Source Integration:</strong> Integrasi data dari BPS, Kementan, BI, BMKG, dan sumber resmi lainnya</li>
                                 </ul>
                             </div>
                         </div>
@@ -460,19 +473,43 @@
 
             <!-- Related Links -->
             <div class="mt-12 bg-neutral-50 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Halaman Terkait</h3>
+                <h3 class="text-lg font-semibold text-neutral-900 mb-4">Informasi Tambahan & Halaman Terkait</h3>
+                
+                <!-- NBM System Overview -->
+                <div class="mb-6 bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-blue-200">
+                    <h4 class="font-semibold text-blue-900 mb-3">📊 Sistem NBM Terintegrasi</h4>
+                    <p class="text-blue-800 text-sm mb-3">
+                        Neraca Bahan Makanan Indonesia menyediakan analisis komprehensif ketersediaan pangan dengan 
+                        mengintegrasikan data produksi, perdagangan, dan berbagai faktor yang mempengaruhi ketahanan pangan.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <h5 class="font-medium text-green-800 mb-1">💰 Aspek Ekonomi</h5>
+                            <p class="text-green-700">Harga, inflasi, daya beli, dan stabilitas ekonomi pangan</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-blue-800 mb-1">🌡️ Kondisi Iklim & Produksi</h5>
+                            <p class="text-blue-700">Cuaca, produktivitas lahan, dan manajemen cadangan pangan</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-purple-800 mb-1">🏛️ Kebijakan & Kualitas</h5>
+                            <p class="text-purple-700">Regulasi perdagangan, subsidi, dan sistem validasi data</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <a href="{{ route('ketersediaan.konsep-metode') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
-                        <h4 class="font-medium text-blue-600">Konsep dan Metode</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Metodologi penyusunan NBM</p>
+                        <h4 class="font-medium text-blue-600">📖 Konsep dan Metode</h4>
+                        <p class="text-sm text-neutral-600 mt-1">Metodologi NBM dan indikator pendukung</p>
                     </a>
-                    <a href="{{ route('konsumsi.laporan-susenas') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
-                        <h4 class="font-medium text-blue-600">Data Konsumsi</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Lihat data konsumsi pangan dari Susenas</p>
+                    <a href="{{ route('ketersediaan.dashboard-komoditas') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
+                        <h4 class="font-medium text-blue-600">📊 Dashboard Komoditas</h4>
+                        <p class="text-sm text-neutral-600 mt-1">Monitor harga dan tren komoditas real-time</p>
                     </a>
                     <a href="{{ route('login') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
-                        <h4 class="font-medium text-blue-600">Manajemen Data</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Login untuk akses data lengkap</p>
+                        <h4 class="font-medium text-blue-600">⚙️ Manajemen Data</h4>
+                        <p class="text-sm text-neutral-600 mt-1">Login untuk akses data lengkap dan analisis lanjutan</p>
                     </a>
                 </div>
             </div>

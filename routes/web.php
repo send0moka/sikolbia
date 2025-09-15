@@ -35,6 +35,10 @@ Route::prefix('ketersediaan')->name('ketersediaan.')->group(function () {
         return view('ketersediaan.laporan-nbm');
     })->name('laporan-nbm');
     
+    Route::get('dashboard-komoditas', function () {
+        return view('ketersediaan.dashboard-komoditas');
+    })->name('dashboard-komoditas');
+    
     Route::get('konsep-transaksi-nbm', function () {
         return view('ketersediaan.konsep-transaksi-nbm');
     })->name('konsep-transaksi-nbm');
