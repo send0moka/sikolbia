@@ -358,17 +358,20 @@ class IklimoptdpiManagement extends Component
         $query = IklimoptdpiData::with(['iklimoptdpiTopik', 'iklimoptdpiVariabel', 'iklimoptdpiKlasifikasi'])
             ->when($this->search, function ($query) {
                 $search = '%' . $this->search . '%';
-                $query->where('wilayah', 'like', $search)
-                    ->orWhere('tahun', 'like', $search)
-                    ->orWhere('nilai', 'like', $search)
+                // qualify columns to avoid ambiguity when joins are added later
+                $query->where('iklimoptdpi_data.nilai', 'like', $search)
+                    ->orWhere('iklimoptdpi_data.tahun', 'like', $search)
+                    ->orWhereHas('wilayah', function($q) use ($search) {
+                        $q->where('wilayah.nama', 'like', $search);
+                    })
                     ->orWhereHas('iklimoptdpiTopik', function($q) use ($search) {
-                        $q->where('deskripsi', 'like', $search);
+                        $q->where('iklimoptdpi_topik.deskripsi', 'like', $search);
                     })
                     ->orWhereHas('iklimoptdpiVariabel', function($q) use ($search) {
-                        $q->where('deskripsi', 'like', $search);
+                        $q->where('iklimoptdpi_variabel.deskripsi', 'like', $search);
                     })
                     ->orWhereHas('iklimoptdpiKlasifikasi', function($q) use ($search) {
-                        $q->where('deskripsi', 'like', $search);
+                        $q->where('iklimoptdpi_klasifikasi.deskripsi', 'like', $search);
                     });
             })
             ->when($this->filterTahun, function ($query) {

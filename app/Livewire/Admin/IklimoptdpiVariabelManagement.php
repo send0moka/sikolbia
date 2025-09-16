@@ -20,7 +20,10 @@ class IklimoptdpiVariabelManagement extends Component
     public $showDeleteModal = false;
 
     // Form fields
+    // DB column is 'deskripsi' but UI previously used 'nama' — keep both for compatibility
     public $nama = '';
+    public $deskripsi = '';
+    public $id_topik = '';
     public $satuan = '';
     public $editingVariabel = null;
     public $deletingVariabel = null;
@@ -37,7 +40,9 @@ class IklimoptdpiVariabelManagement extends Component
     ];
 
     protected $rules = [
-        'nama' => 'required|min:3|max:255',
+        'deskripsi' => 'nullable|min:3|max:255',
+        'nama' => 'nullable|min:3|max:255',
+        'id_topik' => 'required|exists:iklimoptdpi_topik,id',
         'satuan' => 'required|min:1|max:50',
     ];
 
@@ -80,7 +85,9 @@ class IklimoptdpiVariabelManagement extends Component
     public function openEditModal($variabelId)
     {
         $this->editingVariabel = IklimoptdpiVariabel::findOrFail($variabelId);
-        $this->nama = $this->editingVariabel->nama;
+        $this->deskripsi = $this->editingVariabel->deskripsi ?? $this->editingVariabel->nama ?? '';
+        $this->nama = $this->deskripsi;
+        $this->id_topik = $this->editingVariabel->id_topik ?? '';
         $this->satuan = $this->editingVariabel->satuan;
         $this->showEditModal = true;
     }
@@ -107,8 +114,11 @@ class IklimoptdpiVariabelManagement extends Component
     {
         $this->validate();
 
+        $value = $this->deskripsi ?: $this->nama;
+
         IklimoptdpiVariabel::create([
-            'nama' => $this->nama,
+            'id_topik' => $this->id_topik,
+            'deskripsi' => $value,
             'satuan' => $this->satuan,
         ]);
 
@@ -120,8 +130,11 @@ class IklimoptdpiVariabelManagement extends Component
     {
         $this->validate();
 
+        $value = $this->deskripsi ?: $this->nama;
+
         $this->editingVariabel->update([
-            'nama' => $this->nama,
+            'id_topik' => $this->id_topik,
+            'deskripsi' => $value,
             'satuan' => $this->satuan,
         ]);
 
@@ -141,6 +154,8 @@ class IklimoptdpiVariabelManagement extends Component
     private function resetForm()
     {
         $this->nama = '';
+        $this->deskripsi = '';
+        $this->id_topik = '';
         $this->satuan = '';
         $this->editingVariabel = null;
         $this->resetErrorBag();
@@ -149,14 +164,18 @@ class IklimoptdpiVariabelManagement extends Component
     public function render()
     {
         $variabels = IklimoptdpiVariabel::when($this->search, function ($query) {
-                $query->where('nama', 'like', '%' . $this->search . '%')
-                    ->orWhere('satuan', 'like', '%' . $this->search . '%');
+                $query->where('deskripsi', 'like', '%' . $this->search . '%')
+                    ->orWhere('satuan', 'like', '%' . $this->search . '%')
+                    ->orWhereHas('topik', function ($topikQuery) {
+                        $topikQuery->where('deskripsi', 'like', '%' . $this->search . '%');
+                    });
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
         return view('livewire.admin.iklimoptdpi-variabel-management', [
             'variabels' => $variabels,
+            'topiks' => \App\Models\IklimoptdpiTopik::orderBy('deskripsi')->get(),
         ]);
     }
 }

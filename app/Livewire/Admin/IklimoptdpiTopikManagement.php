@@ -20,7 +20,9 @@ class IklimoptdpiTopikManagement extends Component
     public $showDeleteModal = false;
 
     // Form fields
+    // Use 'deskripsi' column in DB; accept 'nama' as legacy alias in UI bindings
     public $nama = '';
+    public $deskripsi = '';
     public $editingTopik = null;
     public $deletingTopik = null;
 
@@ -36,7 +38,9 @@ class IklimoptdpiTopikManagement extends Component
     ];
 
     protected $rules = [
-        'nama' => 'required|min:3|max:255',
+        // validate either deskripsi or nama; prefer deskripsi
+        'deskripsi' => 'nullable|min:3|max:255',
+        'nama' => 'nullable|min:3|max:255',
     ];
 
     public function updatingSearch()
@@ -78,7 +82,9 @@ class IklimoptdpiTopikManagement extends Component
     public function openEditModal($topikId)
     {
         $this->editingTopik = IklimoptdpiTopik::findOrFail($topikId);
-        $this->nama = $this->editingTopik->nama;
+        // populate both fields to keep backward compatibility with templates
+        $this->deskripsi = $this->editingTopik->deskripsi ?? $this->editingTopik->nama ?? '';
+        $this->nama = $this->deskripsi;
         $this->showEditModal = true;
     }
 
@@ -102,10 +108,13 @@ class IklimoptdpiTopikManagement extends Component
 
     public function createTopik()
     {
+
         $this->validate();
 
+        $value = $this->deskripsi ?: $this->nama;
+
         IklimoptdpiTopik::create([
-            'nama' => $this->nama,
+            'deskripsi' => $value,
         ]);
 
         session()->flash('message', 'Topik iklim opt dpi berhasil dibuat.');
@@ -116,8 +125,10 @@ class IklimoptdpiTopikManagement extends Component
     {
         $this->validate();
 
+        $value = $this->deskripsi ?: $this->nama;
+
         $this->editingTopik->update([
-            'nama' => $this->nama,
+            'deskripsi' => $value,
         ]);
 
         session()->flash('message', 'Topik iklim opt dpi berhasil diupdate.');
@@ -143,7 +154,7 @@ class IklimoptdpiTopikManagement extends Component
     public function render()
     {
         $topiks = IklimoptdpiTopik::when($this->search, function ($query) {
-                $query->where('nama', 'like', '%' . $this->search . '%');
+                $query->where('deskripsi', 'like', '%' . $this->search . '%');
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
