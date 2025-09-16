@@ -640,7 +640,7 @@
                         '07': '🥚', // Telur
                         '08': '🥛', // Susu
                         '09': '🛢️', // Minyak-Lemak
-                        '10': '🐟'  // Ikan
+                        '10': '🐟',  // Ikan
                         '11': '☕'  // Minuman
                     };
                     return emojis[group] || '❓';
