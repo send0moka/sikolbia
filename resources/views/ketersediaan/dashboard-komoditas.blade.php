@@ -111,16 +111,9 @@
                         <select x-model="selectedGroup" @change="updateView()"
                                 class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Semua Kelompok</option>
-                            <option value="01">Padi-padian</option>
-                            <option value="02">Makanan Berpati</option>
-                            <option value="03">Gula</option>
-                            <option value="04">Buah-buahan</option>
-                            <option value="05">Sayur-sayuran</option>
-                            <option value="06">Daging</option>
-                            <option value="07">Telur</option>
-                            <option value="08">Susu</option>
-                            <option value="09">Minyak-Lemak</option>
-                            <option value="10">Ikan</option>
+                            <template x-for="group in groups" :key="group.kode">
+                                <option :value="group.kode" x-text="group.nama"></option>
+                            </template>
                         </select>
                     </div>
                     
@@ -476,6 +469,30 @@
                 selectedMetric: 'harga',
                 selectedPeriod: '1Y',
                 selectedGroup: '',
+                groups: [], // Will be loaded from API
+                
+                init() {
+                    this.loadGroups();
+                },
+
+                async loadGroups() {
+                    try {
+                        const response = await fetch('/api/dashboard-komoditas/groups');
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.groups = result.data;
+                        } else {
+                            console.error('Failed to load groups:', result.message);
+                            // Fallback to empty array
+                            this.groups = [];
+                        }
+                    } catch (error) {
+                        console.error('Error loading groups:', error);
+                        // Fallback to empty array
+                        this.groups = [];
+                    }
+                },
                 
                 updateView() {
                     // Trigger update of commodities list
@@ -560,69 +577,20 @@
                             });
                         } else {
                             console.error('Failed to load commodities data:', result.message);
-                            // Fallback to sample data if API fails
-                            this.loadSampleData();
+                            // Set empty data if API fails
+                            this.commodities = [];
+                            this.totalCommodities = 0;
+                            this.filteredCommodities = [];
                         }
                     } catch (error) {
                         console.error('Error loading commodities data:', error);
-                        // Fallback to sample data if API fails
-                        this.loadSampleData();
+                        // Set empty data if API fails
+                        this.commodities = [];
+                        this.totalCommodities = 0;
+                        this.filteredCommodities = [];
                     } finally {
                         this.loading = false;
                     }
-                },
-
-                loadSampleData() {
-                    const groupNames = {
-                        '01': 'Padi-padian',
-                        '02': 'Makanan Berpati', 
-                        '03': 'Gula',
-                        '04': 'Buah-buahan',
-                        '05': 'Sayur-sayuran',
-                        '06': 'Daging',
-                        '07': 'Telur',
-                        '08': 'Susu',
-                        '09': 'Minyak-Lemak',
-                        '10': 'Ikan'
-                    };
-
-                    const sampleCommodities = [
-                        { id: 1, name: 'Beras Premium', group: '01', groupName: groupNames['01'], currentValue: 15500, change: 250, changePercent: 1.64, unit: 'Rp/kg', lastUpdate: '2 min ago' },
-                        { id: 2, name: 'Beras Medium', group: '01', groupName: groupNames['01'], currentValue: 12800, change: -150, changePercent: -1.16, unit: 'Rp/kg', lastUpdate: '5 min ago' },
-                        { id: 3, name: 'Jagung Pipil', group: '01', groupName: groupNames['01'], currentValue: 4500, change: 75, changePercent: 1.69, unit: 'Rp/kg', lastUpdate: '1 min ago' },
-                        { id: 4, name: 'Singkong', group: '02', groupName: groupNames['02'], currentValue: 3200, change: -50, changePercent: -1.54, unit: 'Rp/kg', lastUpdate: '3 min ago' },
-                        { id: 5, name: 'Ubi Jalar', group: '02', groupName: groupNames['02'], currentValue: 4800, change: 120, changePercent: 2.56, unit: 'Rp/kg', lastUpdate: '4 min ago' },
-                        { id: 6, name: 'Gula Pasir', group: '03', groupName: groupNames['03'], currentValue: 14200, change: -300, changePercent: -2.07, unit: 'Rp/kg', lastUpdate: '1 min ago' },
-                        { id: 7, name: 'Pisang Ambon', group: '04', groupName: groupNames['04'], currentValue: 8500, change: 150, changePercent: 1.80, unit: 'Rp/kg', lastUpdate: '6 min ago' },
-                        { id: 8, name: 'Jeruk Manis', group: '04', groupName: groupNames['04'], currentValue: 12000, change: -200, changePercent: -1.64, unit: 'Rp/kg', lastUpdate: '2 min ago' }
-                    ];
-
-                    // Add calculated fields
-                    this.commodities = sampleCommodities.map(c => ({
-                        ...c,
-                        yearHigh: c.currentValue * (1 + Math.random() * 0.3),
-                        yearLow: c.currentValue * (1 - Math.random() * 0.25),
-                        average: c.currentValue * (1 + (Math.random() - 0.5) * 0.1),
-                        volatility: Math.random() * 15 + 5,
-                        chartData: this.generateChartData(c.currentValue)
-                    }));
-
-                    this.filteredCommodities = this.commodities;
-                },
-
-                generateChartData(baseValue) {
-                    const data = [];
-                    const points = 30;
-                    let value = baseValue * 0.9;
-                    
-                    for (let i = 0; i < points; i++) {
-                        value += (Math.random() - 0.5) * baseValue * 0.05;
-                        data.push({
-                            x: new Date(Date.now() - (points - i) * 24 * 60 * 60 * 1000),
-                            y: value
-                        });
-                    }
-                    return data;
                 },
 
                 filterCommodities() {
@@ -631,15 +599,18 @@
                         return;
                     }
 
-                    const query = this.searchQuery.toLowerCase();
-                    this.filteredCommodities = this.commodities.filter(c => 
-                        c.name.toLowerCase().includes(query) || 
-                        c.groupName.toLowerCase().includes(query)
-                    );
-                    
-                    this.$nextTick(() => {
-                        this.initializeCharts();
-                    });
+                    // Only filter if we have actual data loaded
+                    if (this.commodities.length > 0) {
+                        const query = this.searchQuery.toLowerCase();
+                        this.filteredCommodities = this.commodities.filter(c => 
+                            c.name.toLowerCase().includes(query) || 
+                            c.groupName.toLowerCase().includes(query)
+                        );
+                        
+                        this.$nextTick(() => {
+                            this.initializeCharts();
+                        });
+                    }
                 },
 
                 getCommodityColor(group) {
@@ -670,6 +641,7 @@
                         '08': '🥛', // Susu
                         '09': '🛢️', // Minyak-Lemak
                         '10': '🐟'  // Ikan
+                        '11': '☕'  // Minuman
                     };
                     return emojis[group] || '❓';
                 },

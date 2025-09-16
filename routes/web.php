@@ -247,6 +247,7 @@ Route::middleware([])->group(function () {
     Route::prefix('api/dashboard-komoditas')->name('api.dashboard-komoditas.')->group(function () {
         Route::get('commodities', [App\Http\Controllers\DashboardKomoditasController::class, 'getCommoditiesData'])->name('commodities');
         Route::get('summary', [App\Http\Controllers\DashboardKomoditasController::class, 'getSummaryStats'])->name('summary');
+        Route::get('groups', [App\Http\Controllers\DashboardKomoditasController::class, 'getGroups'])->name('groups');
     });
     
     // Simple test route

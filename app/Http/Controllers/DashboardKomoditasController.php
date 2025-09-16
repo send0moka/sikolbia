@@ -11,6 +11,29 @@ use Illuminate\Support\Facades\DB;
 class DashboardKomoditasController extends Controller
 {
     /**
+     * Get all groups for filter dropdown
+     */
+    public function getGroups()
+    {
+        try {
+            $groups = Kelompok::select(['kode', 'nama'])
+                ->where('status_aktif', 1)
+                ->orderBy('kode')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $groups
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch groups: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get commodities data for dashboard
      */
     public function getCommoditiesData(Request $request)
