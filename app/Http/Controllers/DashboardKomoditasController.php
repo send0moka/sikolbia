@@ -40,7 +40,7 @@ class DashboardKomoditasController extends Controller
     {
         try {
             $metric = $request->get('metric', 'harga');
-            $period = $request->get('period', '1Y'); // Changed default to 1Y for better performance
+            $period = $request->get('period', '3Y'); // Default to 3Y
             $group = $request->get('group', '');
             $search = $request->get('search', '');
             $limit = $request->get('limit', 20);
@@ -104,18 +104,20 @@ class DashboardKomoditasController extends Controller
             // Transform data for frontend - remove take($limit) to show all commodities
             $commodities = $allCommodities->map(function ($commodity) use ($metric, $period, $transactionData) {
                 $commodityKey = $commodity->kode_kelompok . '-' . $commodity->kode_komoditi;
-                $transactionItem = $transactionData->get($commodityKey);
-                
-                // Check if commodity has transaction data
-                $hasData = $transactionItem !== null;
-                
+
+                // Get transaction data for the selected period
+                $periodTransactionItem = $this->getTransactionForPeriod($commodity->kode_kelompok, $commodity->kode_komoditi, $period);
+
+                // Check if commodity has transaction data for the selected period
+                $hasData = $periodTransactionItem !== null;
+
                 if ($hasData) {
-                    // Commodity with transaction data
-                    $currentValue = $this->getCurrentValue($transactionItem, $metric);
+                    // Commodity with transaction data for the period
+                    $currentValue = $this->getCurrentValue($periodTransactionItem, $metric);
                     $historicalData = $this->getHistoricalData($commodity->kode_kelompok, $commodity->kode_komoditi, $period, $metric);
                     $change = $this->calculateChange($historicalData, $currentValue);
                     $changePercent = $this->calculateChangePercent($historicalData, $currentValue);
-                    $lastUpdate = $this->getLastUpdateText($transactionItem->updated_at);
+                    $lastUpdate = $this->getLastUpdateText($periodTransactionItem->updated_at);
                 } else {
                     // Commodity without transaction data - use defaults
                     $currentValue = $commodity->harga_rata_per_kg ?? 0;
@@ -136,10 +138,10 @@ class DashboardKomoditasController extends Controller
                     'unit' => $this->getUnit($metric),
                     'lastUpdate' => $lastUpdate,
                     'hasData' => $hasData,
-                    'yearHigh' => $hasData ? $this->getYearHigh($commodity->kode_kelompok, $commodity->kode_komoditi, $metric) : $currentValue,
-                    'yearLow' => $hasData ? $this->getYearLow($commodity->kode_kelompok, $commodity->kode_komoditi, $metric) : $currentValue,
-                    'average' => $hasData ? $this->getAverage($commodity->kode_kelompok, $commodity->kode_komoditi, $metric) : $currentValue,
-                    'volatility' => $hasData ? $this->getVolatility($commodity->kode_kelompok, $commodity->kode_komoditi, $metric) : 0,
+                    'yearHigh' => $hasData ? $this->getYearHigh($commodity->kode_kelompok, $commodity->kode_komoditi, $metric, $period) : $currentValue,
+                    'yearLow' => $hasData ? $this->getYearLow($commodity->kode_kelompok, $commodity->kode_komoditi, $metric, $period) : $currentValue,
+                    'average' => $hasData ? $this->getAverage($commodity->kode_kelompok, $commodity->kode_komoditi, $metric, $period) : $currentValue,
+                    'volatility' => $hasData ? $this->getVolatility($commodity->kode_kelompok, $commodity->kode_komoditi, $metric, $period) : 0,
                     'chartData' => $historicalData
                 ];
             })->filter()->values(); // Remove null entries
@@ -228,6 +230,53 @@ class DashboardKomoditasController extends Controller
     }
 
     /**
+     * Get transaction data for a specific period
+     */
+    private function getTransactionForPeriod($kodeKelompok, $kodeKomoditi, $period)
+    {
+        $monthsBack = match($period) {
+            '2M' => 2,
+            '4M' => 4,
+            '6M' => 6,
+            '1Y' => 12,
+            '3Y' => 36,
+            '5Y' => 60,
+            'All Time' => null,
+            default => 12
+        };
+
+        $query = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
+            ->where('kode_komoditi', $kodeKomoditi);
+
+        if ($period !== 'All Time' && $monthsBack !== null) {
+            // Calculate the date range for the period (anchor to now)
+            $endDate = now();
+            // Use monthsBack - 1 so that e.g. 12 months includes current month and 11 months before it
+            $startDate = now()->subMonths(max(0, $monthsBack - 1));
+
+            $query->where(function ($q) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate) {
+                    $subQ->where('tahun', '>', $startDate->year)
+                        ->orWhere(function ($dateQ) use ($startDate) {
+                            $dateQ->where('tahun', $startDate->year)
+                                  ->where('bulan', '>=', $startDate->month);
+                        });
+                })->where(function ($subQ) use ($endDate) {
+                    $subQ->where('tahun', '<', $endDate->year)
+                        ->orWhere(function ($dateQ) use ($endDate) {
+                            $dateQ->where('tahun', $endDate->year)
+                                  ->where('bulan', '<=', $endDate->month);
+                        });
+                });
+            });
+        }
+
+        return $query->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->first();
+    }
+
+    /**
      * Get historical data for chart
      */
     private function getHistoricalData($kodeKelompok, $kodeKomoditi, $period, $metric)
@@ -237,6 +286,8 @@ class DashboardKomoditasController extends Controller
             '4M' => 4,
             '6M' => 6,
             '1Y' => 12,
+            '3Y' => 36,
+            '5Y' => 60,
             'All Time' => null, // No limit for All Time
             default => 12
         };
@@ -256,7 +307,8 @@ class DashboardKomoditasController extends Controller
 
             $startDate = \Carbon\Carbon::createFromDate($earliestRecord->tahun, $earliestRecord->bulan, 1);
         } else {
-            // For specific periods, use latest record of THIS commodity as reference
+            // For specific periods, anchor the window to now so e.g. "1Y" is the last 12 months relative to now
+            // Use the latest available data only to determine if we should generate sample data when there is no record
             $latestRecord = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
                 ->where('kode_komoditi', $kodeKomoditi)
                 ->orderBy('tahun', 'desc')
@@ -267,9 +319,9 @@ class DashboardKomoditasController extends Controller
                 return $this->generateSampleData($monthsBack);
             }
 
-            // Calculate start date from THIS commodity's latest available data
-            $latestDate = \Carbon\Carbon::createFromDate($latestRecord->tahun, $latestRecord->bulan, 1);
-            $startDate = $latestDate->copy()->subMonths($monthsBack - 1); // -1 because we want to include current month
+            // Anchor to now: include current month and the previous monthsBack-1 months
+            $endDate = now();
+            $startDate = now()->subMonths(max(0, $monthsBack - 1));
         }
         
         $data = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
@@ -389,12 +441,15 @@ class DashboardKomoditasController extends Controller
     /**
      * Get year high value
      */
-    private function getYearHigh($kodeKelompok, $kodeKomoditi, $metric)
+    private function getYearHigh($kodeKelompok, $kodeKomoditi, $metric, $period)
     {
-        $yearData = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
-            ->where('kode_komoditi', $kodeKomoditi)
-            ->where('tahun', '>=', now()->year - 1)
-            ->get();
+        $query = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
+            ->where('kode_komoditi', $kodeKomoditi);
+
+        // Apply period filter
+        $this->applyPeriodFilter($query, $period);
+
+        $yearData = $query->get();
 
         if ($yearData->isEmpty()) return 0;
 
@@ -406,12 +461,15 @@ class DashboardKomoditasController extends Controller
     /**
      * Get year low value
      */
-    private function getYearLow($kodeKelompok, $kodeKomoditi, $metric)
+    private function getYearLow($kodeKelompok, $kodeKomoditi, $metric, $period)
     {
-        $yearData = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
-            ->where('kode_komoditi', $kodeKomoditi)
-            ->where('tahun', '>=', now()->year - 1)
-            ->get();
+        $query = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
+            ->where('kode_komoditi', $kodeKomoditi);
+
+        // Apply period filter
+        $this->applyPeriodFilter($query, $period);
+
+        $yearData = $query->get();
 
         if ($yearData->isEmpty()) return 0;
 
@@ -425,12 +483,15 @@ class DashboardKomoditasController extends Controller
     /**
      * Get average value
      */
-    private function getAverage($kodeKelompok, $kodeKomoditi, $metric)
+    private function getAverage($kodeKelompok, $kodeKomoditi, $metric, $period)
     {
-        $yearData = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
-            ->where('kode_komoditi', $kodeKomoditi)
-            ->where('tahun', '>=', now()->year - 1)
-            ->get();
+        $query = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
+            ->where('kode_komoditi', $kodeKomoditi);
+
+        // Apply period filter
+        $this->applyPeriodFilter($query, $period);
+
+        $yearData = $query->get();
 
         if ($yearData->isEmpty()) return 0;
 
@@ -446,12 +507,15 @@ class DashboardKomoditasController extends Controller
     /**
      * Get volatility (coefficient of variation)
      */
-    private function getVolatility($kodeKelompok, $kodeKomoditi, $metric)
+    private function getVolatility($kodeKelompok, $kodeKomoditi, $metric, $period)
     {
-        $yearData = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
-            ->where('kode_komoditi', $kodeKomoditi)
-            ->where('tahun', '>=', now()->year - 1)
-            ->get();
+        $query = TransaksiNbm::where('kode_kelompok', $kodeKelompok)
+            ->where('kode_komoditi', $kodeKomoditi);
+
+        // Apply period filter
+        $this->applyPeriodFilter($query, $period);
+
+        $yearData = $query->get();
 
         if ($yearData->count() < 2) return 5; // Default low volatility
 
@@ -472,5 +536,45 @@ class DashboardKomoditasController extends Controller
         
         // Coefficient of variation as percentage
         return $mean > 0 ? ($stdDev / $mean) * 100 : 5;
+    }
+
+    /**
+     * Apply period filter to query
+     */
+    private function applyPeriodFilter($query, $period)
+    {
+        $monthsBack = match($period) {
+            '2M' => 2,
+            '4M' => 4,
+            '6M' => 6,
+            '1Y' => 12,
+            '3Y' => 36,
+            '5Y' => 60,
+            'All Time' => null,
+            default => 12
+        };
+
+        if ($period !== 'All Time' && $monthsBack !== null) {
+            // Calculate the date range for the period (anchor to now)
+            $endDate = now();
+            // Include current month and previous monthsBack-1 months
+            $startDate = now()->subMonths(max(0, $monthsBack - 1));
+
+            $query->where(function ($q) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate) {
+                    $subQ->where('tahun', '>', $startDate->year)
+                        ->orWhere(function ($dateQ) use ($startDate) {
+                            $dateQ->where('tahun', $startDate->year)
+                                  ->where('bulan', '>=', $startDate->month);
+                        });
+                })->where(function ($subQ) use ($endDate) {
+                    $subQ->where('tahun', '<', $endDate->year)
+                        ->orWhere(function ($dateQ) use ($endDate) {
+                            $dateQ->where('tahun', $endDate->year)
+                                  ->where('bulan', '<=', $endDate->month);
+                        });
+                });
+            });
+        }
     }
 }

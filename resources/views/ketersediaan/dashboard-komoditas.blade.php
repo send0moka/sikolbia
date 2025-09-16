@@ -102,6 +102,8 @@
                             <option value="4M">4 Bulan</option>
                             <option value="6M">6 Bulan</option>
                             <option value="1Y">1 Tahun</option>
+                            <option value="3Y">3 Tahun</option>
+                            <option value="5Y">5 Tahun</option>
                             <option value="All Time">Semua Waktu</option>
                         </select>
                     </div>
@@ -348,7 +350,9 @@
                 
                 async loadLastUpdateTime() {
                     try {
-                        const response = await fetch('/api/dashboard-komoditas/commodities?period=1Y&metric=harga');
+                        const period = window.__dashboardDefaultPeriod || '1Y';
+                        const metric = window.__dashboardDefaultMetric || 'harga';
+                        const response = await fetch(`/api/dashboard-komoditas/commodities?period=${period}&metric=${metric}`);
                         const data = await response.json();
                         
                         if (data.success && data.data.length > 0) {
@@ -467,12 +471,15 @@
         function filterControls() {
             return {
                 selectedMetric: 'harga',
-                selectedPeriod: '1Y',
+                selectedPeriod: '3Y',
                 selectedGroup: '',
                 groups: [], // Will be loaded from API
                 
                 init() {
                     this.loadGroups();
+                    // Expose defaults for other components that may need initial period/metric
+                    window.__dashboardDefaultPeriod = this.selectedPeriod;
+                    window.__dashboardDefaultMetric = this.selectedMetric;
                 },
 
                 async loadGroups() {
@@ -496,6 +503,9 @@
                 
                 updateView() {
                     // Trigger update of commodities list
+                    // update global defaults used by headerInfo and other routines
+                    window.__dashboardDefaultPeriod = this.selectedPeriod;
+                    window.__dashboardDefaultMetric = this.selectedMetric;
                     window.dispatchEvent(new CustomEvent('filter-changed', {
                         detail: {
                             metric: this.selectedMetric,
@@ -525,7 +535,7 @@
                 loading: false,
                 currentFilters: {
                     metric: 'harga',
-                    period: '1Y',
+                    period: '3Y',
                     group: ''
                 },
 
