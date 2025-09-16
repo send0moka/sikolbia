@@ -189,13 +189,14 @@
                                 {{ is_object($item->wilayah) ? ($item->wilayah->nama ?? json_encode($item->wilayah)) : (is_array($item->wilayah) ? ($item->wilayah['nama'] ?? json_encode($item->wilayah)) : ($item->wilayah ?? '-')) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                {{ optional($item->topik)->deskripsi ?? '-' }}
+                                {{-- Prefer variabel->topik via relationship, fallback to topik relation if available --}}
+                                {{ optional($item->variabel->topik)->deskripsi ?? optional($item->topik)->deskripsi ?? (optional($item->topik)->nama ?? '-') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                {{ optional($item->variabel)->deskripsi ?? '-' }}
+                                {{ optional($item->variabel)->deskripsi ?? optional($item->iklimoptdpiVariabel)->deskripsi ?? (optional($item->variabel)->nama ?? '-') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                {{ optional($item->klasifikasi)->deskripsi ?? '-' }}
+                                {{ optional($item->klasifikasi)->deskripsi ?? (optional($item->iklimoptdpiKlasifikasi)->deskripsi ?? (optional($item->klasifikasi)->nama ?? '-')) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                                 {{ number_format($item->nilai, 2, ',', '.') }}

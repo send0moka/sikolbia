@@ -10,6 +10,7 @@ use App\Exports\IklimoptdpiExport;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class IklimoptdpiManagement extends Component
 {
@@ -34,6 +35,9 @@ class IklimoptdpiManagement extends Component
     public $editingIklimoptdpi = null;
     public $deletingIklimoptdpi = null;
     public $exportFormat = 'xlsx';
+    // form-specific dependent lists
+    public $formVariabels = [];
+    public $formKlasifikasis = [];
     
     // Sorting
     public $sortField = 'id';
@@ -44,17 +48,22 @@ class IklimoptdpiManagement extends Component
     public $filterTopik = '';
     public $filterVariabel = '';
     public $filterKlasifikasi = '';
+    public $filterWilayah = '';
     public $filterStatus = '';
+    // filter option lists for dependent selects
+    public $filterTopiks = [];
+    public $filterVariabels = [];
+    public $filterKlasifikasis = [];
 
     protected $queryString = [
         'search' => ['except' => ''],
         'perPage' => ['except' => 10],
-        'sortField' => ['except' => 'id'],
-        'sortDirection' => ['except' => 'asc'],
+        // do not persist sortField/sortDirection in URL to keep it clean
         'filterTahun' => ['except' => ''],
         'filterTopik' => ['except' => ''],
         'filterVariabel' => ['except' => ''],
         'filterKlasifikasi' => ['except' => ''],
+        'filterWilayah' => ['except' => ''],
         'filterStatus' => ['except' => ''],
     ];
 
@@ -62,11 +71,26 @@ class IklimoptdpiManagement extends Component
         'perPage' => 'integer',
     ];
 
+    public function mount()
+    {
+        $this->loadFilterLists();
+
+        // If initialized with preselected parent filters, load children
+        if ($this->filterTopik) {
+            $this->loadFilterVariabelsForTopik();
+        }
+        if ($this->filterVariabel) {
+            $this->loadFilterKlasifikasisForVariabel();
+        }
+    }
+
     protected $rules = [
         'nilai' => 'required|numeric|min:0',
-        'wilayah' => 'required|min:3',
+        // wilayah is an id pointing to wilayah table
+        'wilayah' => 'required|exists:wilayah,id',
         'tahun' => 'required|integer|min:2000|max:2030',
-        'status' => 'required|in:Aktif,Tidak Aktif,Dalam Proses,Selesai,Tertunda',
+        // status is optional
+        'status' => 'nullable|in:Aktif,Tidak Aktif,Dalam Proses,Selesai,Tertunda',
         'id_iklimoptdpi_topik' => 'required|exists:iklimoptdpi_topik,id',
         'id_iklimoptdpi_variabel' => 'required|exists:iklimoptdpi_variabel,id',
         'id_iklimoptdpi_klasifikasi' => 'required|exists:iklimoptdpi_klasifikasi,id',
@@ -94,6 +118,9 @@ class IklimoptdpiManagement extends Component
     public function openCreateModal()
     {
         $this->resetForm();
+        // initialize form dependent lists as empty until topik selected
+        $this->formVariabels = collect();
+        $this->formKlasifikasis = collect();
         $this->showCreateModal = true;
     }
 
@@ -106,13 +133,18 @@ class IklimoptdpiManagement extends Component
     public function openEditModal($iklimoptdpiId)
     {
         $this->editingIklimoptdpi = IklimoptdpiData::findOrFail($iklimoptdpiId);
-        $this->nilai = $this->editingIklimoptdpi->nilai;
-        $this->wilayah = $this->editingIklimoptdpi->wilayah;
+    $this->nilai = $this->editingIklimoptdpi->nilai;
+    // set wilayah to the stored wilayah id
+    $this->wilayah = $this->editingIklimoptdpi->id_wilayah;
         $this->tahun = $this->editingIklimoptdpi->tahun;
         $this->status = $this->editingIklimoptdpi->status;
-        $this->id_iklimoptdpi_topik = $this->editingIklimoptdpi->id_iklimoptdpi_topik;
-        $this->id_iklimoptdpi_variabel = $this->editingIklimoptdpi->id_iklimoptdpi_variabel;
-        $this->id_iklimoptdpi_klasifikasi = $this->editingIklimoptdpi->id_iklimoptdpi_klasifikasi;
+        // derive topik id from related variabel, and use actual column names for variabel/klasifikasi
+    $this->id_iklimoptdpi_variabel = $this->editingIklimoptdpi->id_variabel;
+    $this->id_iklimoptdpi_klasifikasi = $this->editingIklimoptdpi->id_klasifikasi;
+    $this->id_iklimoptdpi_topik = optional($this->editingIklimoptdpi->iklimoptdpiVariabel)->id_topik;
+        // load dependent lists for form with current values
+        $this->loadFormVariabelsForTopik();
+        $this->loadFormKlasifikasisForVariabel();
         $this->showEditModal = true;
     }
 
@@ -140,12 +172,14 @@ class IklimoptdpiManagement extends Component
 
         IklimoptdpiData::create([
             'nilai' => $this->nilai,
-            'wilayah' => $this->wilayah,
+            'id_wilayah' => $this->wilayah,
             'tahun' => $this->tahun,
-            'status' => $this->status,
-            'id_iklimoptdpi_topik' => $this->id_iklimoptdpi_topik,
-            'id_iklimoptdpi_variabel' => $this->id_iklimoptdpi_variabel,
-            'id_iklimoptdpi_klasifikasi' => $this->id_iklimoptdpi_klasifikasi,
+            // default to bulan id 13 (setahun) when no bulan is provided by the form
+            'id_bulan' => $this->id_bulan ?? 13,
+            'status' => $this->status ?: null,
+            // store actual DB columns
+            'id_variabel' => $this->id_iklimoptdpi_variabel,
+            'id_klasifikasi' => $this->id_iklimoptdpi_klasifikasi,
         ]);
 
         session()->flash('message', 'Data iklim opt dpi berhasil dibuat.');
@@ -158,12 +192,13 @@ class IklimoptdpiManagement extends Component
 
         $this->editingIklimoptdpi->update([
             'nilai' => $this->nilai,
-            'wilayah' => $this->wilayah,
+            'id_wilayah' => $this->wilayah,
             'tahun' => $this->tahun,
-            'status' => $this->status,
-            'id_iklimoptdpi_topik' => $this->id_iklimoptdpi_topik,
-            'id_iklimoptdpi_variabel' => $this->id_iklimoptdpi_variabel,
-            'id_iklimoptdpi_klasifikasi' => $this->id_iklimoptdpi_klasifikasi,
+            // preserve provided bulan if present, otherwise default to 13 (setahun)
+            'id_bulan' => $this->id_bulan ?? 13,
+            'status' => $this->status ?: null,
+            'id_variabel' => $this->id_iklimoptdpi_variabel,
+            'id_klasifikasi' => $this->id_iklimoptdpi_klasifikasi,
         ]);
 
         session()->flash('message', 'Data iklim opt dpi berhasil diupdate.');
@@ -191,6 +226,44 @@ class IklimoptdpiManagement extends Component
         $this->editingIklimoptdpi = null;
         $this->resetErrorBag();
     }
+
+    // form hooks to keep dependent lists in create/edit modal in sync
+    public function updatedIdIklimoptdpiTopik()
+    {
+        $this->id_iklimoptdpi_variabel = '';
+        $this->id_iklimoptdpi_klasifikasi = '';
+        $this->loadFormVariabelsForTopik();
+    }
+
+    public function updatedIdIklimoptdpiVariabel()
+    {
+        $this->id_iklimoptdpi_klasifikasi = '';
+        $this->loadFormKlasifikasisForVariabel();
+    }
+
+    public function loadFormVariabelsForTopik()
+    {
+        if (! $this->id_iklimoptdpi_topik) {
+            $this->formVariabels = collect();
+            return;
+        }
+
+        $this->formVariabels = IklimoptdpiVariabel::where('id_topik', $this->id_iklimoptdpi_topik)
+            ->orderBy('deskripsi')
+            ->get();
+    }
+
+    public function loadFormKlasifikasisForVariabel()
+    {
+        if (! $this->id_iklimoptdpi_variabel) {
+            $this->formKlasifikasis = collect();
+            return;
+        }
+
+        $this->formKlasifikasis = IklimoptdpiKlasifikasi::where('id_variabel', $this->id_iklimoptdpi_variabel)
+            ->orderBy('deskripsi')
+            ->get();
+    }
     
     public function sortBy($field)
     {
@@ -214,8 +287,58 @@ class IklimoptdpiManagement extends Component
             'filterTopik', 
             'filterVariabel', 
             'filterKlasifikasi', 
+            'filterWilayah',
             'filterStatus'
         ]);
+    }
+
+    // When parent filter changes, reset dependent child filters and reload lists
+    public function updatedFilterTopik()
+    {
+        $this->filterVariabel = '';
+        $this->filterKlasifikasi = '';
+        $this->loadFilterVariabelsForTopik();
+        $this->resetPage();
+    }
+
+    public function updatedFilterVariabel()
+    {
+        $this->filterKlasifikasi = '';
+        $this->loadFilterKlasifikasisForVariabel();
+        $this->resetPage();
+    }
+
+    private function loadFilterLists()
+    {
+        // topik list for filter
+        $this->filterTopiks = IklimoptdpiTopik::orderBy('deskripsi')->get();
+        // start with empty children until a parent is selected to avoid overwhelming the user
+        $this->filterVariabels = collect();
+        $this->filterKlasifikasis = collect();
+    }
+
+    private function loadFilterVariabelsForTopik()
+    {
+        if (! $this->filterTopik) {
+            $this->filterVariabels = collect();
+            return;
+        }
+
+        $this->filterVariabels = IklimoptdpiVariabel::where('id_topik', $this->filterTopik)
+            ->orderBy('deskripsi')
+            ->get();
+    }
+
+    private function loadFilterKlasifikasisForVariabel()
+    {
+        if (! $this->filterVariabel) {
+            $this->filterKlasifikasis = collect();
+            return;
+        }
+
+        $this->filterKlasifikasis = IklimoptdpiKlasifikasi::where('id_variabel', $this->filterVariabel)
+            ->orderBy('deskripsi')
+            ->get();
     }
     
     public function resetSort()
@@ -239,34 +362,70 @@ class IklimoptdpiManagement extends Component
                     ->orWhere('tahun', 'like', $search)
                     ->orWhere('nilai', 'like', $search)
                     ->orWhereHas('iklimoptdpiTopik', function($q) use ($search) {
-                        $q->where('nama', 'like', $search);
+                        $q->where('deskripsi', 'like', $search);
                     })
                     ->orWhereHas('iklimoptdpiVariabel', function($q) use ($search) {
-                        $q->where('nama', 'like', $search);
+                        $q->where('deskripsi', 'like', $search);
                     })
                     ->orWhereHas('iklimoptdpiKlasifikasi', function($q) use ($search) {
-                        $q->where('nama', 'like', $search);
+                        $q->where('deskripsi', 'like', $search);
                     });
             })
             ->when($this->filterTahun, function ($query) {
                 $query->where('tahun', $this->filterTahun);
             })
             ->when($this->filterTopik, function ($query) {
-                $query->where('id_iklimoptdpi_topik', $this->filterTopik);
+                // filter by topik via variabel -> topik relationship
+                $query->whereExists(function($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('iklimoptdpi_variabel as v')
+                        ->whereColumn('v.id', 'iklimoptdpi_data.id_variabel')
+                        ->where('v.id_topik', $this->filterTopik);
+                });
             })
             ->when($this->filterVariabel, function ($query) {
-                $query->where('id_iklimoptdpi_variabel', $this->filterVariabel);
+                $query->where('id_variabel', $this->filterVariabel);
             })
             ->when($this->filterKlasifikasi, function ($query) {
-                $query->where('id_iklimoptdpi_klasifikasi', $this->filterKlasifikasi);
+                $query->where('id_klasifikasi', $this->filterKlasifikasi);
+            })
+            ->when($this->filterWilayah, function ($query) {
+                $query->where('id_wilayah', $this->filterWilayah);
             })
             ->when($this->filterStatus, function ($query) {
                 $query->where('status', $this->filterStatus);
             });
 
-        // Apply sorting
+        // Apply sorting with safe handling for related fields
         if ($this->sortField) {
-            $query->orderBy($this->sortField, $this->sortDirection);
+            // Only join the related table when sorting by its label to avoid unnecessary joins.
+            switch ($this->sortField) {
+            case 'id_iklimoptdpi_topik':
+              // join through variabel to reach topik (data -> variabel -> topik)
+              $query->leftJoin('iklimoptdpi_variabel', 'iklimoptdpi_variabel.id', '=', 'iklimoptdpi_data.id_variabel')
+                  ->leftJoin('iklimoptdpi_topik', 'iklimoptdpi_topik.id', '=', 'iklimoptdpi_variabel.id_topik')
+                  ->select('iklimoptdpi_data.*')
+                  ->orderBy('iklimoptdpi_topik.deskripsi', $this->sortDirection);
+              break;
+            case 'id_iklimoptdpi_variabel':
+              $query->leftJoin('iklimoptdpi_variabel', 'iklimoptdpi_variabel.id', '=', 'iklimoptdpi_data.id_variabel')
+                  ->select('iklimoptdpi_data.*')
+                  ->orderBy('iklimoptdpi_variabel.deskripsi', $this->sortDirection);
+              break;
+            case 'id_iklimoptdpi_klasifikasi':
+              $query->leftJoin('iklimoptdpi_klasifikasi', 'iklimoptdpi_klasifikasi.id', '=', 'iklimoptdpi_data.id_klasifikasi')
+                  ->select('iklimoptdpi_data.*')
+                  ->orderBy('iklimoptdpi_klasifikasi.deskripsi', $this->sortDirection);
+              break;
+                case 'wilayah':
+                    $query->leftJoin('wilayah', 'wilayah.id', '=', 'iklimoptdpi_data.id_wilayah')
+                          ->select('iklimoptdpi_data.*')
+                          ->orderBy('wilayah.nama', $this->sortDirection);
+                    break;
+                default:
+                    // direct column ordering
+                    $query->orderBy($this->sortField, $this->sortDirection);
+            }
         }
 
         $iklimoptdpis = $query->paginate($this->perPage);
@@ -277,9 +436,10 @@ class IklimoptdpiManagement extends Component
 
         return view('livewire.admin.iklimoptdpi-management', [
             'iklimoptdpis' => $iklimoptdpis,
-            'topiks' => IklimoptdpiTopik::orderBy('nama')->get(),
-            'variabels' => IklimoptdpiVariabel::orderBy('nama')->get(),
-            'klasifikasis' => IklimoptdpiKlasifikasi::orderBy('nama')->get(),
+            'topiks' => IklimoptdpiTopik::orderBy('deskripsi')->get(),
+            'variabels' => IklimoptdpiVariabel::orderBy('deskripsi')->get(),
+            'klasifikasis' => IklimoptdpiKlasifikasi::orderBy('deskripsi')->get(),
+            'wilayahs' => \App\Models\Wilayah::orderBy('nama')->get(),
             'tahunOptions' => IklimoptdpiData::select('tahun')
                 ->distinct()
                 ->orderBy('tahun', 'desc')
