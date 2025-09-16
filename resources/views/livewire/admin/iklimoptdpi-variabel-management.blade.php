@@ -88,6 +88,26 @@
                             </button>
                         </th>
                         <th scope="col" class="px-6 py-3">
+                            <button wire:click="sortBy('id_topik')" class="flex items-center space-x-1 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                                <span>Topik</span>
+                                @if($sortField === 'id_topik')
+                                    @if($sortDirection === 'asc')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                        </svg>
+                                    @else
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                        </svg>
+                                    @endif
+                                @else
+                                    <svg class="w-3 h-3 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                    </svg>
+                                @endif
+                            </button>
+                        </th>
+                        <th scope="col" class="px-6 py-3">
                             <button wire:click="sortBy('satuan')" class="flex items-center space-x-1 hover:text-neutral-900 dark:hover:text-white transition-colors">
                                 <span>Satuan</span>
                                 @if($sortField === 'satuan')
@@ -137,7 +157,10 @@
                             {{ $variabel->id }}
                         </td>
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                            {{ $variabel->nama }}
+                            {{ $variabel->deskripsi ?? $variabel->nama ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
+                            {{ optional($variabel->topik)->deskripsi ?? optional($variabel->topik)->nama ?? '-' }}
                         </td>
                         <td class="px-6 py-4">
                             {{ $variabel->satuan }}
@@ -190,6 +213,17 @@
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Tambah Variabel Iklim Opt DPI</h3>
                 <form wire:submit="createVariabel">
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik</label>
+                            <select wire:model="id_topik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Topik</option>
+                                @foreach($topiks ?? [] as $t)
+                                    <option value="{{ $t->id }}">{{ $t->deskripsi ?? $t->nama ?? '-' }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
                         <flux:input wire:model="nama" label="Nama Variabel" placeholder="Masukkan nama variabel" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
@@ -218,6 +252,17 @@
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Edit Variabel Iklim Opt DPI</h3>
                 <form wire:submit="updateVariabel">
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik</label>
+                            <select wire:model="id_topik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Topik</option>
+                                @foreach($topiks ?? [] as $t)
+                                    <option value="{{ $t->id }}">{{ $t->deskripsi ?? $t->nama ?? '-' }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
                         <flux:input wire:model="nama" label="Nama Variabel" placeholder="Masukkan nama variabel" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 

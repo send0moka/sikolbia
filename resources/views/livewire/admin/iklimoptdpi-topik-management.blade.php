@@ -117,7 +117,7 @@
                             {{ $topik->id }}
                         </td>
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                            {{ $topik->nama }}
+                            {{ $topik->deskripsi ?? $topik->nama ?? '-' }}
                         </td>
                         <td class="px-6 py-4">
                             {{ $topik->created_at->format('d/m/Y H:i') }}

@@ -38,6 +38,19 @@
                 </select>
                 <span class="text-sm text-neutral-600 dark:text-neutral-400">/ halaman</span>
             </div>
+            <div class="mt-3 lg:mt-0 lg:ml-4">
+                <label class="text-sm text-neutral-600 dark:text-neutral-400 mr-2">Filter Variabel</label>
+                <select wire:model.live="filterVariabel" class="text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                    <option value="">Semua Variabel</option>
+                    @foreach($variabels as $v)
+                        @php
+                            $topik = $v->topik ?? null;
+                            $label = ($v->deskripsi ?? $v->nama ?? '-') . ($topik ? ' (' . ($topik->deskripsi ?? $topik->nama ?? '-') . ')' : '');
+                        @endphp
+                        <option value="{{ $v->id }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
     </div>
 
@@ -88,6 +101,26 @@
                             </button>
                         </th>
                         <th scope="col" class="px-6 py-3">
+                            <button wire:click="sortBy('id_variabel')" class="flex items-center space-x-1 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                                <span>Variabel</span>
+                                @if($sortField === 'id_variabel')
+                                    @if($sortDirection === 'asc')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                        </svg>
+                                    @else
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                        </svg>
+                                    @endif
+                                @else
+                                    <svg class="w-3 h-3 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                    </svg>
+                                @endif
+                            </button>
+                        </th>
+                        <th scope="col" class="px-6 py-3">
                             <button wire:click="sortBy('created_at')" class="flex items-center space-x-1 hover:text-neutral-900 dark:hover:text-white transition-colors">
                                 <span>Dibuat</span>
                                 @if($sortField === 'created_at')
@@ -117,7 +150,16 @@
                             {{ $klasifikasi->id }}
                         </td>
                         <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
-                            {{ $klasifikasi->nama }}
+                            {{ $klasifikasi->deskripsi ?? $klasifikasi->nama ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 font-medium text-neutral-900 dark:text-white">
+                            @php
+                                $v = $klasifikasi->variabel;
+                                $variabelLabel = optional($v)->deskripsi ?? optional($v)->nama ?? '-';
+                                $topik = optional($v)->topik;
+                                $topikLabel = $topik ? ' (' . ($topik->deskripsi ?? $topik->nama ?? '-') . ')' : '';
+                            @endphp
+                            {{ $variabelLabel }}{{ $topikLabel }}
                         </td>
                         <td class="px-6 py-4">
                             {{ $klasifikasi->created_at->format('d/m/Y H:i') }}
@@ -167,6 +209,21 @@
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Tambah Klasifikasi Iklim Opt DPI</h3>
                 <form wire:submit="createKlasifikasi">
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
+                            <select wire:model="id_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Variabel</option>
+                                @foreach($variabels ?? [] as $v)
+                                    @php
+                                        $topik = $v->topik ?? null;
+                                        $label = ($v->deskripsi ?? $v->nama ?? '-') . ($topik ? ' (' . ($topik->deskripsi ?? $topik->nama ?? '-') . ')' : '');
+                                    @endphp
+                                    <option value="{{ $v->id }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
                         <flux:input wire:model="nama" label="Nama Klasifikasi" placeholder="Masukkan nama klasifikasi" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                     </div>
@@ -192,6 +249,21 @@
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Edit Klasifikasi Iklim Opt DPI</h3>
                 <form wire:submit="updateKlasifikasi">
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Variabel</label>
+                            <select wire:model="id_variabel" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
+                                <option value="">Pilih Variabel</option>
+                                @foreach($variabels ?? [] as $v)
+                                    @php
+                                        $topik = $v->topik ?? null;
+                                        $label = ($v->deskripsi ?? $v->nama ?? '-') . ($topik ? ' (' . ($topik->deskripsi ?? $topik->nama ?? '-') . ')' : '');
+                                    @endphp
+                                    <option value="{{ $v->id }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_variabel') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
                         <flux:input wire:model="nama" label="Nama Klasifikasi" placeholder="Masukkan nama klasifikasi" required />
                         @error('nama') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                     </div>
