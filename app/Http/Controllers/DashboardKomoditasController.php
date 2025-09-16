@@ -351,31 +351,16 @@ class DashboardKomoditasController extends Controller
     }
 
     /**
-     * Get human readable last update text
+     * Get last update text in Indonesian date format
      */
     private function getLastUpdateText($updatedAt)
     {
         if (!$updatedAt) return 'Unknown';
         
         $carbon = \Carbon\Carbon::parse($updatedAt);
-        $now = now();
         
-        // Use absolute values to handle timezone differences
-        $diffInMinutes = abs($now->diffInMinutes($carbon));
-        $diffInHours = abs($now->diffInHours($carbon));
-        $diffInDays = abs($now->diffInDays($carbon));
-        
-        if ($diffInMinutes < 1) {
-            return 'Just now';
-        } elseif ($diffInMinutes < 60) {
-            return floor($diffInMinutes) . ' min ago';
-        } elseif ($diffInHours < 24) {
-            return floor($diffInHours) . ' hours ago';
-        } elseif ($diffInDays < 30) {
-            return floor($diffInDays) . ' days ago';
-        } else {
-            return $carbon->format('M j, Y');
-        }
+        // Return in "15 September 2025, 15:20" format
+        return $carbon->format('j F Y, H:i');
     }
 
     /**

@@ -6,14 +6,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Header -->
             <div class="mb-6">
-                <div class="flex justify-between items-center" x-data="{ currentTime: new Date().toLocaleString('id-ID') }" x-init="setInterval(() => { currentTime = new Date().toLocaleString('id-ID') }, 60000)">
+                <div class="flex justify-between items-center" x-data="headerInfo()" x-init="loadLastUpdateTime()">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Dashboard Monitoring Komoditas</h1>
                         <p class="text-gray-600">Real-time monitoring harga dan tren komoditas pangan Indonesia</p>
                     </div>
                     <div class="text-right">
                         <div class="text-sm text-gray-500">Last Updated</div>
-                        <div class="font-semibold text-gray-900" x-text="currentTime"></div>
+                        <div class="font-semibold text-gray-900" x-text="lastUpdateTime || 'Loading...'"></div>
                     </div>
                 </div>
             </div>
@@ -23,7 +23,7 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-600">Total Komoditas</p>
+                            <p class="text-sm font-medium text-gray-600">Komoditas Aktif</p>
                             <p class="text-2xl font-bold text-gray-900" x-text="summary.totalCommodities"></p>
                         </div>
                         <div class="p-3 rounded-full bg-blue-100">
@@ -158,7 +158,7 @@
                 </div>
 
                 <!-- Commodities Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Loading State -->
                     <template x-if="loading">
                         <div class="col-span-full flex justify-center items-center py-12">
@@ -173,7 +173,7 @@
                     </template>
 
                     <!-- Commodity Cards -->
-                    <template x-for="(commodity, index) in filteredCommodities" :key="`commodity-${commodity.id || index}`">
+                    <template x-for="(commodity, index) in filteredCommodities.slice(0, displayCount)" :key="`commodity-${commodity.id || index}`">
                         <div class="rounded-lg shadow-sm border p-4 transition-shadow cursor-pointer"
                              :class="commodity?.hasData ? 'bg-white border-gray-200 hover:shadow-md' : 'bg-gray-50 border-gray-300 opacity-70'"
                              @click="commodity?.hasData ? selectCommodity(commodity) : null">
@@ -188,51 +188,46 @@
                                 </span>
                             </div>
                             
-                            <!-- Card Header -->
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-8 w-8">
-                                        <div class="h-8 w-8 rounded-full flex items-center justify-center text-lg"
-                                             :class="commodity?.hasData ? 'bg-gray-100' : 'bg-gray-200'"
-                                             x-text="getCommodityEmoji(commodity?.group || '01')">
-                                        </div>
-                                    </div>
-                                    <div class="ml-2">
-                                        <h3 class="font-medium text-sm"
-                                            :class="commodity?.hasData ? 'text-gray-900' : 'text-gray-600'"
-                                            x-text="commodity?.name || 'Loading...'"></h3>
-                                        <p class="text-xs text-gray-500" x-text="commodity?.groupName || ''"></p>
-                                    </div>
-                                </div>
-                                <div class="text-xs text-gray-400" x-text="commodity?.lastUpdate || '-'"></div>
-                            </div>
-
-                            <!-- Price Info (only show for commodities with data) -->
-                            <div class="mb-3" x-show="commodity?.hasData">
-                                <div class="text-lg font-bold text-gray-900" x-text="formatValue(commodity?.currentValue || 0, commodity?.unit || 'Rp/Kg')"></div>
-                                <div class="flex items-center space-x-2 mt-1">
-                                    <span class="text-sm font-medium" 
-                                          :class="(commodity?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'"
-                                          x-text="((commodity?.change || 0) >= 0 ? '+' : '') + formatValue(Math.abs(commodity?.change || 0), commodity?.unit || 'Rp/Kg')">
-                                    </span>
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                                          :class="(commodity?.changePercent || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"
-                                             :class="(commodity?.changePercent || 0) >= 0 ? 'transform rotate-0' : 'transform rotate-180'">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        <span x-text="Math.abs(commodity?.changePercent || 0).toFixed(2) + '%'"></span>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- No Data Message (for commodities without data) -->
-                            <div class="mb-3" x-show="!commodity?.hasData">
-                                <div class="text-lg font-medium text-gray-500">-</div>
-                                <div class="text-sm text-gray-400 mt-1">
-                                    Transaksi belum tersedia untuk komoditas ini
-                                </div>
-                            </div>
+            <!-- Card Header -->
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-8 w-8">
+                        <div class="h-8 w-8 rounded-full flex items-center justify-center text-lg"
+                             :class="commodity?.hasData ? 'bg-gray-100' : 'bg-gray-200'"
+                             x-text="getCommodityEmoji(commodity?.group || '01')">
+                        </div>
+                    </div>
+                    <div class="ml-2">
+                        <h3 class="font-medium text-sm"
+                            :class="commodity?.hasData ? 'text-gray-900' : 'text-gray-600'"
+                            x-text="commodity?.name || 'Loading...'"></h3>
+                        <p class="text-xs text-gray-500" x-text="commodity?.groupName || ''"></p>
+                    </div>
+                </div>
+                <!-- Price Info moved to header (only show for commodities with data) -->
+                <div class="text-right" x-show="commodity?.hasData">
+                    <div class="text-lg font-bold text-gray-900" x-text="formatValue(commodity?.currentValue || 0, commodity?.unit || 'Rp/Kg')"></div>
+                    <div class="flex items-center justify-end space-x-1 mt-1">
+                        <span class="text-xs font-medium" 
+                              :class="(commodity?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'"
+                              x-text="((commodity?.change || 0) >= 0 ? '+' : '') + formatValue(Math.abs(commodity?.change || 0), commodity?.unit || 'Rp/Kg')">
+                        </span>
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
+                              :class="(commodity?.changePercent || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                            <svg class="w-2.5 h-2.5 mr-0.5" fill="currentColor" viewBox="0 0 20 20"
+                                 :class="(commodity?.changePercent || 0) >= 0 ? 'transform rotate-0' : 'transform rotate-180'">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span x-text="Math.abs(commodity?.changePercent || 0).toFixed(2) + '%'"></span>
+                        </span>
+                    </div>
+                </div>
+                <!-- No data indicator for header -->
+                <div class="text-right text-gray-500" x-show="!commodity?.hasData">
+                    <div class="text-lg font-medium">-</div>
+                    <div class="text-xs text-gray-400">No data</div>
+                </div>
+            </div>
 
                             <!-- Mini Chart (only show for commodities with data) -->
                             <div class="h-16 w-full" x-show="commodity?.hasData">
@@ -270,10 +265,15 @@
 
                 <!-- Load More Button -->
                 <div class="px-6 py-4 text-center">
+                    <!-- Showing count info -->
+                    <p class="text-sm text-gray-600 mb-3" x-show="totalCommodities > 0">
+                        Menampilkan <span x-text="Math.min(displayCount, totalCommodities)"></span> dari <span x-text="totalCommodities"></span> komoditas
+                    </p>
+                    
                     <button @click="loadMore()" 
-                            x-show="canLoadMore"
-                            class="bg-white p-4 rounded-lg border text-blue-600 hover:text-blue-800 font-medium text-sm">
-                        Load More Commodities
+                            x-show="canLoadMore && totalCommodities > 12"
+                            class="bg-white p-4 rounded-lg border text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors">
+                        <span x-text="showingAll ? 'Tampilkan 12 Komoditas' : `Load More Commodities (+${Math.min(12, totalCommodities - displayCount)})`"></span>
                     </button>
                 </div>
             </div>
@@ -349,6 +349,92 @@
     </style>
 
     <script>
+        function headerInfo() {
+            return {
+                lastUpdateTime: null,
+                
+                async loadLastUpdateTime() {
+                    try {
+                        const response = await fetch('/api/dashboard-komoditas/commodities?period=1Y&metric=harga');
+                        const data = await response.json();
+                        
+                        if (data.success && data.data.length > 0) {
+                            // Find the most recent lastUpdate from all commodities
+                            const updates = data.data
+                                .map(commodity => commodity.lastUpdate)
+                                .filter(update => {
+                                    // Only include valid date strings in "15 September 2025, 15:20" format
+                                    return update && 
+                                           update !== '-' && 
+                                           update !== 'Unknown' && 
+                                           typeof update === 'string' &&
+                                           update.includes(' ') && 
+                                           update.includes(', ') &&
+                                           update.includes(':');
+                                });
+                            
+                            if (updates.length === 0) {
+                                this.lastUpdateTime = 'No valid updates';
+                                return;
+                            }
+                            
+                            // Sort updates by date (newest first)
+                            updates.sort((a, b) => {
+                                try {
+                                    // Convert "15 September 2025, 15:20" to comparable dates
+                                    const parseDate = (dateStr) => {
+                                        if (!dateStr || typeof dateStr !== 'string') return new Date(0);
+                                        
+                                        const parts = dateStr.split(', ');
+                                        if (parts.length !== 2) return new Date(0);
+                                        
+                                        const [datePart, timePart] = parts;
+                                        const timeComponents = timePart.split(':');
+                                        
+                                        if (timeComponents.length !== 2) {
+                                            return new Date(0);
+                                        }
+                                        
+                                        // Parse "15 September 2025" format
+                                        const dateParts = datePart.split(' ');
+                                        if (dateParts.length !== 3) return new Date(0);
+                                        
+                                        const [day, monthName, year] = dateParts;
+                                        const [hour, minute] = timeComponents;
+                                        
+                                        // Convert month name to number
+                                        const months = {
+                                            'January': 0, 'February': 1, 'March': 2, 'April': 3,
+                                            'May': 4, 'June': 5, 'July': 6, 'August': 7,
+                                            'September': 8, 'October': 9, 'November': 10, 'December': 11
+                                        };
+                                        
+                                        const monthIndex = months[monthName];
+                                        if (monthIndex === undefined) return new Date(0);
+                                        
+                                        return new Date(parseInt(year), monthIndex, parseInt(day), 
+                                                      parseInt(hour), parseInt(minute));
+                                    };
+                                    
+                                    return parseDate(b) - parseDate(a);
+                                } catch (error) {
+                                    console.warn('Error parsing dates for sorting:', error);
+                                    return 0;
+                                }
+                            });
+                            
+                            this.lastUpdateTime = updates[0] || 'Unknown';
+                        } else {
+                            this.lastUpdateTime = 'No data available';
+                        }
+                    } catch (error) {
+                        console.error('Error loading last update time:', error);
+                        this.lastUpdateTime = 'Error loading data';
+                    }
+                }
+            }
+        }
+
         function dashboardData() {
             return {
                 summary: {
@@ -415,7 +501,9 @@
                 commodities: [],
                 filteredCommodities: [],
                 canLoadMore: true,
-                displayCount: 20,
+                displayCount: 12,  // Start with 12 commodities
+                totalCommodities: 0,
+                showingAll: false,  // Track if showing all commodities
                 charts: {},
                 loading: false,
                 currentFilters: {
@@ -458,8 +546,11 @@
                         
                         if (result.success) {
                             this.commodities = result.data;
+                            this.totalCommodities = result.data.length;
                             this.filteredCommodities = result.data;
-                            this.canLoadMore = result.hasMore;
+                            
+                            // Update canLoadMore and showingAll status
+                            this.updateLoadMoreStatus();
                             
                             console.log('Commodities loaded from API:', this.commodities.length);
                             
@@ -589,8 +680,19 @@
                 },
 
                 initializeCharts() {
-                    this.filteredCommodities.forEach(commodity => {
-                        this.createMiniChart(commodity);
+                    // Wait for DOM to be updated
+                    this.$nextTick(() => {
+                        // Get currently displayed commodities based on displayCount
+                        const visibleCommodities = this.filteredCommodities.slice(0, this.displayCount);
+                        
+                        visibleCommodities.forEach(commodity => {
+                            // Only create chart if canvas element exists in DOM
+                            const canvasId = `chart-${commodity.id}`;
+                            const canvas = document.getElementById(canvasId);
+                            if (canvas) {
+                                this.createMiniChart(commodity);
+                            }
+                        });
                     });
                 },
 
@@ -679,16 +781,43 @@
                 },
 
                 loadMore() {
-                    this.displayCount += 20;
-                    this.loadCommoditiesData();
+                    if (!this.showingAll) {
+                        // Load more commodities (+12)
+                        this.displayCount += 12;
+                        if (this.displayCount >= this.totalCommodities) {
+                            this.displayCount = this.totalCommodities;
+                            this.showingAll = true;
+                        }
+                    } else {
+                        // Reset to show only 12
+                        this.displayCount = 12;
+                        this.showingAll = false;
+                    }
+                    this.updateLoadMoreStatus();
+                    
+                    // Re-render charts for newly visible cards
+                    this.$nextTick(() => {
+                        this.initializeCharts();
+                    });
+                },
+
+                updateLoadMoreStatus() {
+                    // Always show load more button unless there are no commodities
+                    this.canLoadMore = this.totalCommodities > 0;
                 },
 
                 updateData(filters) {
                     this.currentFilters = filters;
+                    // Reset display count when filters change
+                    this.displayCount = 12;
+                    this.showingAll = false;
                     this.loadCommoditiesData();
                 },
 
                 refreshData() {
+                    // Reset display count when refreshing
+                    this.displayCount = 12;
+                    this.showingAll = false;
                     this.loadCommoditiesData();
                 }
             }

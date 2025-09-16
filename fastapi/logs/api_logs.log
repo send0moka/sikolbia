@@ -10,3 +10,9 @@
 2025-09-15 00:10:08,558 - main_simple - INFO - Starting NBM Prediction API...
 2025-09-15 00:10:08,559 - main_simple - INFO - Model loading skipped in development mode
 2025-09-15 00:10:08,559 - main_simple - INFO - API startup completed successfully
+2025-09-15 12:14:12,626 - main_simple - INFO - Starting NBM Prediction API...
+2025-09-15 12:14:12,626 - main_simple - INFO - Model loading skipped in development mode
+2025-09-15 12:14:12,627 - main_simple - INFO - API startup completed successfully
+2025-09-15 12:21:08,292 - main_simple - INFO - Starting NBM Prediction API...
+2025-09-15 12:21:08,292 - main_simple - INFO - Model loading skipped in development mode
+2025-09-15 12:21:08,293 - main_simple - INFO - API startup completed successfully
