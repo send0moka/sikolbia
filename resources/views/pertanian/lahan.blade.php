@@ -74,7 +74,9 @@
             </div>
 
 <script>
-    const lahanInitialData = {
+    // Expose initial data on the window object so Alpine components can
+    // reliably access it regardless of script load/execute order.
+    window.lahanInitialData = {
         topiks: @json($topiks),
         variabels: @json($variabels),
         klasifikasis: @json($klasifikasis),
@@ -85,7 +87,9 @@
     function lahanForm() {
         return {
             init(data){
-                this.allData = data;
+                // Defensive: accept undefined and provide empty collections as fallback.
+                this.allData = data || { topiks:[], variabels:[], klasifikasis:[], tahuns:[], wilayahs:[] };
+
                 // Build provinsi list from top-level wilayahs and flatten kabupaten from children
                 const wilayahs = Array.isArray(this.allData.wilayahs) ? this.allData.wilayahs : [];
                 this.provinsis = wilayahs.map(p => ({ id: p.id, nama: p.nama }));
@@ -299,7 +303,7 @@
     }
 </script>
 
-            <div x-data="lahanForm()" x-init="init(lahanInitialData)" class="space-y-12">
+            <div x-data="lahanForm()" x-init="init(window.lahanInitialData || { topiks:[], variabels:[], klasifikasis:[], tahuns:[], wilayahs:[] })" class="space-y-12">
                 <!-- Step 1: Pilih Data -->
                 <section class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
                     <h2 class="text-2xl font-bold text-neutral-800 mb-1 flex items-center">

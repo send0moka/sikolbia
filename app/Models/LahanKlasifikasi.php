@@ -23,7 +23,8 @@ class LahanKlasifikasi extends Model
     // Provide a virtual `nama` attribute for UI compatibility (maps to `deskripsi`).
     public function getNamaAttribute()
     {
-        return $this->attributes['deskripsi'] ?? null;
+        // Prefer 'nama' if present (from alias), else fallback to 'deskripsi'
+        return $this->attributes['nama'] ?? ($this->attributes['deskripsi'] ?? null);
     }
 
     public function setNamaAttribute($value)

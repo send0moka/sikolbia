@@ -29,7 +29,10 @@ class LahanTopik extends Model
     // Allow getting/setting `nama` to map to `deskripsi` for compatibility
     public function getNamaAttribute()
     {
-        return $this->attributes['deskripsi'] ?? null;
+        // Prefer explicit 'nama' when it exists (e.g., selected as alias),
+        // otherwise fall back to the DB column 'deskripsi'. This avoids
+        // returning null when queries use "select deskripsi as nama".
+        return $this->attributes['nama'] ?? ($this->attributes['deskripsi'] ?? null);
     }
 
     public function setNamaAttribute($value)
