@@ -28,6 +28,7 @@ class IklimoptdpiManagement extends Component
     public $nilai = '';
     public $wilayah = '';
     public $tahun = '';
+    public $id_bulan = '';
     public $status = '';
     public $id_iklimoptdpi_topik = '';
     public $id_iklimoptdpi_variabel = '';
@@ -38,6 +39,8 @@ class IklimoptdpiManagement extends Component
     // form-specific dependent lists
     public $formVariabels = [];
     public $formKlasifikasis = [];
+    // bulan options
+    public $bulanOptions = [];
     
     // Sorting
     public $sortField = 'id';
@@ -74,6 +77,8 @@ class IklimoptdpiManagement extends Component
     public function mount()
     {
         $this->loadFilterLists();
+        // load bulan master table for form select
+        $this->bulanOptions = DB::table('bulan')->orderBy('id')->get();
 
         // If initialized with preselected parent filters, load children
         if ($this->filterTopik) {
@@ -94,6 +99,7 @@ class IklimoptdpiManagement extends Component
         'id_iklimoptdpi_topik' => 'required|exists:iklimoptdpi_topik,id',
         'id_iklimoptdpi_variabel' => 'required|exists:iklimoptdpi_variabel,id',
         'id_iklimoptdpi_klasifikasi' => 'required|exists:iklimoptdpi_klasifikasi,id',
+        'id_bulan' => 'required|integer|exists:bulan,id',
     ];
 
     public function updatingSearch()
@@ -138,6 +144,7 @@ class IklimoptdpiManagement extends Component
     $this->wilayah = $this->editingIklimoptdpi->id_wilayah;
         $this->tahun = $this->editingIklimoptdpi->tahun;
         $this->status = $this->editingIklimoptdpi->status;
+    $this->id_bulan = $this->editingIklimoptdpi->id_bulan ?? '';
         // derive topik id from related variabel, and use actual column names for variabel/klasifikasi
     $this->id_iklimoptdpi_variabel = $this->editingIklimoptdpi->id_variabel;
     $this->id_iklimoptdpi_klasifikasi = $this->editingIklimoptdpi->id_klasifikasi;
@@ -174,8 +181,7 @@ class IklimoptdpiManagement extends Component
             'nilai' => $this->nilai,
             'id_wilayah' => $this->wilayah,
             'tahun' => $this->tahun,
-            // default to bulan id 13 (setahun) when no bulan is provided by the form
-            'id_bulan' => $this->id_bulan ?? 13,
+            'id_bulan' => $this->id_bulan,
             'status' => $this->status ?: null,
             // store actual DB columns
             'id_variabel' => $this->id_iklimoptdpi_variabel,
@@ -194,8 +200,7 @@ class IklimoptdpiManagement extends Component
             'nilai' => $this->nilai,
             'id_wilayah' => $this->wilayah,
             'tahun' => $this->tahun,
-            // preserve provided bulan if present, otherwise default to 13 (setahun)
-            'id_bulan' => $this->id_bulan ?? 13,
+            'id_bulan' => $this->id_bulan,
             'status' => $this->status ?: null,
             'id_variabel' => $this->id_iklimoptdpi_variabel,
             'id_klasifikasi' => $this->id_iklimoptdpi_klasifikasi,
@@ -219,6 +224,7 @@ class IklimoptdpiManagement extends Component
         $this->nilai = '';
         $this->wilayah = '';
         $this->tahun = '';
+    $this->id_bulan = '';
         $this->status = '';
         $this->id_iklimoptdpi_topik = '';
         $this->id_iklimoptdpi_variabel = '';

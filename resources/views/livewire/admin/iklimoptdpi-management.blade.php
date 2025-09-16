@@ -256,6 +256,22 @@
                                 @endif
                             </div>
                         </th>
+                        <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('id_bulan')">
+                            <div class="flex items-center">
+                                Bulan
+                                @if($sortField === 'id_bulan')
+                                    @if($sortDirection === 'asc')
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                    @else
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    @endif
+                                @endif
+                            </div>
+                        </th>
                         <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('nilai')">
                             <div class="flex items-center">
                                 Nilai
@@ -323,6 +339,12 @@
                             {{ $iklimoptdpi->tahun }}
                         </td>
                         <td class="px-6 py-4">
+                            @php
+                                $bulanRow = $bulanOptions->firstWhere('id', $iklimoptdpi->id_bulan) ?? null;
+                            @endphp
+                            {{ $bulanRow->nama ?? ($bulanRow->deskripsi ?? ($iklimoptdpi->id_bulan ? 'Bulan ' . $iklimoptdpi->id_bulan : 'Setahun')) }}
+                        </td>
+                        <td class="px-6 py-4">
                             {{ number_format($iklimoptdpi->nilai, 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4">
@@ -383,7 +405,7 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Tambah Data Iklim Opt DPI</h3>
                 <form wire:submit="createIklimoptdpi">
-                    <div class="space-y-4">
+                        <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Topik Iklim Opt DPI</label>
                             <select wire:model="id_iklimoptdpi_topik" wire:change="loadFormVariabelsForTopik" class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent" required>
@@ -393,6 +415,17 @@
                                 @endforeach
                             </select>
                             @error('id_iklimoptdpi_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Bulan</label>
+                            <select wire:model="id_bulan" required class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                                <option value="">Pilih Bulan</option>
+                                @foreach($bulanOptions as $b)
+                                    <option value="{{ $b->id }}">{{ $b->nama ?? $b->deskripsi ?? 'Bulan ' . $b->id }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_bulan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
@@ -490,6 +523,17 @@
                                 @endforeach
                             </select>
                             @error('id_iklimoptdpi_topik') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Bulan</label>
+                            <select wire:model="id_bulan" required class="w-full text-sm rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 focus:ring-accent focus:border-accent">
+                                <option value="">Pilih Bulan</option>
+                                @foreach($bulanOptions as $b)
+                                    <option value="{{ $b->id }}">{{ $b->nama ?? $b->deskripsi ?? 'Bulan ' . $b->id }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_bulan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
