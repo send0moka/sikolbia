@@ -208,7 +208,7 @@
                         <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
                               :class="(commodity?.changePercent || 0) >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                             <svg class="w-2.5 h-2.5 mr-0.5" fill="currentColor" viewBox="0 0 20 20"
-                                 :class="(commodity?.changePercent || 0) >= 0 ? 'transform rotate-0' : 'transform rotate-180'">
+                                 :class="(commodity?.changePercent || 0) >= 0 ? 'transform rotate-180' : 'transform rotate-0'">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
                             <span x-text="Math.abs(commodity?.changePercent || 0).toFixed(2) + '%'"></span>
