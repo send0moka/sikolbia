@@ -56,16 +56,11 @@
                                         @change="loadKomoditi()"
                                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Pilih Kelompok</option>
-                                    <option value="padi-padian">Padi-padian</option>
-                                    <option value="makanan-berpati">Makanan Berpati</option>
-                                    <option value="gula">Gula</option>
-                                    <option value="buah-biji-berminyak">Buah Biji Berminyak</option>
-                                    <option value="buah-buahan">Buah-buahan</option>
-                                    <option value="sayur-sayuran">Sayur-sayuran</option>
-                                    <option value="daging">Daging</option>
-                                    <option value="telur">Telur</option>
-                                    <option value="susu">Susu</option>
-                                    <option value="minyak-lemak">Minyak dan Lemak</option>
+                                    @if(!empty($kelompokOptions))
+                                        @foreach($kelompokOptions as $k)
+                                            <option value="{{ $k->kode }}">{{ $k->nama }}</option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
 
@@ -526,6 +521,8 @@
                     tahun_awal: '',
                     tahun_akhir: ''
                 },
+                // Inject kelompok options from server-side into the Alpine component
+                kelompokOptions: @json($kelompokOptions ?? []),
                 availableKomoditi: [],
                 results: [],
                 loading: false,
@@ -549,142 +546,20 @@
                     return this.filters.kelompok && this.filters.tahun_awal;
                 },
 
-                komoditiData: {
-                    'padi-padian': [
-                        {value: 'gabah', label: 'Gabah'},
-                        {value: 'beras', label: 'Beras'},
-                        {value: 'jagung', label: 'Jagung'},
-                        {value: 'gandum', label: 'Gandum'},
-                        {value: 'tepung-gandum', label: 'Tepung Gandum'},
-                        {value: 'beras-ketan', label: 'Beras Ketan'}
-                    ],
-                    'makanan-berpati': [
-                        {value: 'ubi-kayu', label: 'Ubi Kayu'},
-                        {value: 'ubi-jalar', label: 'Ubi Jalar'},
-                        {value: 'kentang', label: 'Kentang'},
-                        {value: 'sagu', label: 'Sagu'},
-                        {value: 'tepung-ubi-kayu', label: 'Tepung Ubi Kayu'},
-                        {value: 'tepung-kentang', label: 'Tepung Kentang'},
-                        {value: 'talas', label: 'Talas'},
-                        {value: 'garut', label: 'Garut'}
-                    ],
-                    'gula': [
-                        {value: 'tebu', label: 'Tebu'},
-                        {value: 'gula-pasir', label: 'Gula Pasir'},
-                        {value: 'gula-merah', label: 'Gula Merah'},
-                        {value: 'sirup', label: 'Sirup'}
-                    ],
-                    'buah-biji-berminyak': [
-                        {value: 'kelapa', label: 'Kelapa'},
-                        {value: 'kemiri', label: 'Kemiri'},
-                        {value: 'wijen', label: 'Wijen'},
-                        {value: 'kacang-tanah', label: 'Kacang Tanah'},
-                        {value: 'biji-bunga-matahari', label: 'Biji Bunga Matahari'},
-                        {value: 'kelapa-sawit', label: 'Kelapa Sawit'},
-                        {value: 'kedelai', label: 'Kedelai'},
-                        {value: 'kapok', label: 'Kapok'},
-                        {value: 'jarak', label: 'Jarak'},
-                        {value: 'lada', label: 'Lada'},
-                        {value: 'pala', label: 'Pala'},
-                        {value: 'cengkeh', label: 'Cengkeh'}
-                    ],
-                    'buah-buahan': [
-                        {value: 'pisang', label: 'Pisang'},
-                        {value: 'jeruk', label: 'Jeruk'},
-                        {value: 'mangga', label: 'Mangga'},
-                        {value: 'rambutan', label: 'Rambutan'},
-                        {value: 'duku', label: 'Duku'},
-                        {value: 'durian', label: 'Durian'},
-                        {value: 'salak', label: 'Salak'},
-                        {value: 'alpukat', label: 'Alpukat'},
-                        {value: 'jambu-biji', label: 'Jambu Biji'},
-                        {value: 'jambu-air', label: 'Jambu Air'},
-                        {value: 'nanas', label: 'Nanas'},
-                        {value: 'pepaya', label: 'Pepaya'},
-                        {value: 'belimbing', label: 'Belimbing'},
-                        {value: 'sukun', label: 'Sukun'},
-                        {value: 'nangka', label: 'Nangka'},
-                        {value: 'sirsak', label: 'Sirsak'},
-                        {value: 'sawo', label: 'Sawo'},
-                        {value: 'markisa', label: 'Markisa'},
-                        {value: 'apel', label: 'Apel'},
-                        {value: 'anggur', label: 'Anggur'},
-                        {value: 'strawberi', label: 'Strawberi'},
-                        {value: 'melon', label: 'Melon'},
-                        {value: 'semangka', label: 'Semangka'},
-                        {value: 'kedondong', label: 'Kedondong'},
-                        {value: 'buah-lainnya', label: 'Buah Lainnya'}
-                    ],
-                    'sayur-sayuran': [
-                        {value: 'kacang-panjang', label: 'Kacang Panjang'},
-                        {value: 'kacang-merah', label: 'Kacang Merah'},
-                        {value: 'kacang-hijau', label: 'Kacang Hijau'},
-                        {value: 'bayam', label: 'Bayam'},
-                        {value: 'kangkung', label: 'Kangkung'},
-                        {value: 'sawi', label: 'Sawi'},
-                        {value: 'kol', label: 'Kol'},
-                        {value: 'wortel', label: 'Wortel'},
-                        {value: 'tomat', label: 'Tomat'},
-                        {value: 'cabai', label: 'Cabai'},
-                        {value: 'buncis', label: 'Buncis'},
-                        {value: 'ketimun', label: 'Ketimun'},
-                        {value: 'labu-siam', label: 'Labu Siam'},
-                        {value: 'terong', label: 'Terong'},
-                        {value: 'bawang-merah', label: 'Bawang Merah'},
-                        {value: 'bawang-putih', label: 'Bawang Putih'},
-                        {value: 'bawang-daun', label: 'Bawang Daun'},
-                        {value: 'peterseli', label: 'Peterseli'},
-                        {value: 'seledri', label: 'Seledri'},
-                        {value: 'kacang-kapri', label: 'Kacang Kapri'},
-                        {value: 'jagung-muda', label: 'Jagung Muda'},
-                        {value: 'rebung', label: 'Rebung'},
-                        {value: 'jamur', label: 'Jamur'},
-                        {value: 'labu-kuning', label: 'Labu Kuning'},
-                        {value: 'oyong', label: 'Oyong'},
-                        {value: 'pare', label: 'Pare'},
-                        {value: 'daun-singkong', label: 'Daun Singkong'},
-                        {value: 'pepaya-muda', label: 'Pepaya Muda'},
-                        {value: 'nangka-muda', label: 'Nangka Muda'},
-                        {value: 'sayur-lainnya', label: 'Sayur Lainnya'}
-                    ],
-                    'daging': [
-                        {value: 'daging-sapi', label: 'Daging Sapi'},
-                        {value: 'daging-kerbau', label: 'Daging Kerbau'},
-                        {value: 'daging-kambing', label: 'Daging Kambing'},
-                        {value: 'daging-domba', label: 'Daging Domba'},
-                        {value: 'daging-ayam', label: 'Daging Ayam'},
-                        {value: 'daging-itik', label: 'Daging Itik'},
-                        {value: 'daging-babi', label: 'Daging Babi'},
-                        {value: 'daging-lainnya', label: 'Daging Lainnya'}
-                    ],
-                    'telur': [
-                        {value: 'telur-ayam-ras', label: 'Telur Ayam Ras'},
-                        {value: 'telur-ayam-kampung', label: 'Telur Ayam Kampung'},
-                        {value: 'telur-itik', label: 'Telur Itik'},
-                        {value: 'telur-lainnya', label: 'Telur Lainnya'}
-                    ],
-                    'susu': [
-                        {value: 'susu-segar', label: 'Susu Segar'},
-                        {value: 'susu-bubuk', label: 'Susu Bubuk'},
-                        {value: 'susu-kental-manis', label: 'Susu Kental Manis'},
-                        {value: 'susu-skim', label: 'Susu Skim'},
-                        {value: 'produk-susu-lainnya', label: 'Produk Susu Lainnya'}
-                    ],
-                    'minyak-lemak': [
-                        {value: 'minyak-kelapa', label: 'Minyak Kelapa'},
-                        {value: 'minyak-sawit', label: 'Minyak Sawit'},
-                        {value: 'minyak-kedelai', label: 'Minyak Kedelai'},
-                        {value: 'minyak-kacang', label: 'Minyak Kacang'},
-                        {value: 'margarin', label: 'Margarin'},
-                        {value: 'mentega', label: 'Mentega'},
-                        {value: 'lemak-hewani', label: 'Lemak Hewani'},
-                        {value: 'minyak-lainnya', label: 'Minyak Lainnya'}
-                    ]
-                },
+                // komoditiData removed: komoditi list is loaded dynamically via AJAX
 
-                loadKomoditi() {
-                    this.availableKomoditi = this.komoditiData[this.filters.kelompok] || [];
+                async loadKomoditi() {
+                    this.availableKomoditi = [];
                     this.filters.komoditi = '';
+                    if (!this.filters.kelompok) return;
+                    try {
+                        const res = await fetch(`/ketersediaan/api/komoditi?kode_kelompok=${encodeURIComponent(this.filters.kelompok)}`, { headers: { 'Accept': 'application/json' } });
+                        if (!res.ok) return;
+                        const payload = await res.json();
+                        this.availableKomoditi = payload.data || [];
+                    } catch (e) {
+                        console.error('Failed to load komoditi', e);
+                    }
                 },
 
                 validateYearRange() {
@@ -699,89 +574,51 @@
                 async searchData() {
                     this.loading = true;
                     this.hasSearched = true;
-                    
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // Generate sample data
-                    this.generateSampleData();
-                    
-                    this.loading = false;
-                },
 
-                generateSampleData() {
-                    const startYear = parseInt(this.filters.tahun_awal);
-                    const endYear = parseInt(this.filters.tahun_akhir) || startYear;
-                    
-                    this.results = [];
-                    
-                    for (let year = startYear; year <= endYear; year++) {
-                        const kelompokLabel = this.getKelompokLabel(this.filters.kelompok);
-                        const komoditiLabel = this.getKomoditiLabel(this.filters.komoditi);
-                        
-                        // Generate base values
-                        const produksi = Math.floor(Math.random() * 10000 + 1000);
-                        const impor = Math.floor(Math.random() * 5000 + 100);
-                        const ekspor = Math.floor(Math.random() * 3000 + 50);
-                        const kgPerTahun = (Math.random() * 100 + 10).toFixed(1);
-                        const gramPerHari = (parseFloat(kgPerTahun) * 1000 / 365).toFixed(1);
-                        
-                        this.results.push({
-                            tahun: year,
-                            kelompok: kelompokLabel,
-                            komoditi: komoditiLabel || 'Semua Komoditi',
-                            
-                            // A. Penyediaan
-                            produksi: produksi,
-                            masukan: Math.floor(produksi * 0.1),
-                            keluaran: Math.floor(produksi * 0.05),
-                            impor: impor,
-                            ekspor: ekspor,
-                            perubahanStok: Math.floor(Math.random() * 500 - 250),
-                            
-                            // B. Pemakaian Dalam Negeri
-                            pakan: Math.floor(Math.random() * 2000 + 100),
-                            bibit: Math.floor(Math.random() * 500 + 50),
-                            diolah: Math.floor(Math.random() * 3000 + 200),
-                            diolahMakanan: Math.floor(Math.random() * 2000 + 150),
-                            diolahBukanMakanan: Math.floor(Math.random() * 1000 + 50),
-                            tercecer: Math.floor(Math.random() * 800 + 100),
-                            penggunaanLain: Math.floor(Math.random() * 300 + 50),
-                            bahanMakanan: Math.floor(Math.random() * 5000 + 500),
-                            
-                            // C. Ketersediaan per Kapita
-                            kgPerTahun: kgPerTahun,
-                            gramPerHari: gramPerHari,
-                            energiKalori: Math.floor(Math.random() * 500 + 100),
-                            proteinGram: (Math.random() * 20 + 2).toFixed(1),
-                            lemakGram: (Math.random() * 15 + 1).toFixed(1)
+                    try {
+                        const params = new URLSearchParams();
+                        params.append('kelompok', this.filters.kelompok);
+                        if (this.filters.komoditi) params.append('komoditi', this.filters.komoditi);
+                        params.append('tahun_awal', this.filters.tahun_awal);
+                        if (this.filters.tahun_akhir) params.append('tahun_akhir', this.filters.tahun_akhir);
+
+                        const res = await fetch(`/ketersediaan/api/laporan-nbm?${params.toString()}`, {
+                            headers: { 'Accept': 'application/json' }
                         });
+
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            console.error('API error', err);
+                            this.results = [];
+                            this.loading = false;
+                            return;
+                        }
+
+                        const payload = await res.json();
+                        this.results = payload.data || [];
+                    } catch (e) {
+                        console.error(e);
+                        this.results = [];
+                    } finally {
+                        this.loading = false;
                     }
                 },
 
+                // Data will be fetched from backend API endpoint
+
                 getKelompokLabel(value) {
-                    const labels = {
-                        'padi-padian': 'Padi-padian',
-                        'makanan-berpati': 'Makanan Berpati',
-                        'gula': 'Gula',
-                        'buah-biji-berminyak': 'Buah Biji Berminyak',
-                        'buah-buahan': 'Buah-buahan',
-                        'sayur-sayuran': 'Sayur-sayuran',
-                        'daging': 'Daging',
-                        'telur': 'Telur',
-                        'susu': 'Susu',
-                        'minyak-lemak': 'Minyak dan Lemak'
-                    };
-                    return labels[value] || value;
+                    if (!value) return '';
+                    const found = this.kelompokOptions.find(k => String(k.kode) === String(value));
+                    return found ? found.nama : value;
                 },
 
                 getKomoditiLabel(value) {
                     if (!value) return '';
-                    
-                    for (const kategori of Object.values(this.komoditiData)) {
-                        const komoditi = kategori.find(k => k.value === value);
-                        if (komoditi) return komoditi.label;
-                    }
+                    // First check currently loaded komoditi list
+                    const found = this.availableKomoditi.find(k => String(k.value) === String(value));
+                    if (found) return found.label;
+
+                    // As a fallback, try fetching the komoditi from the server synchronously (best-effort)
                     return value;
                 },
 

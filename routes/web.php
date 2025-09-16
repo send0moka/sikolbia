@@ -32,8 +32,34 @@ Route::prefix('ketersediaan')->name('ketersediaan.')->group(function () {
     })->name('konsep-metode');
     
     Route::get('laporan-nbm', function () {
-        return view('ketersediaan.laporan-nbm');
+        // Order by 'kode' so the dropdown matches the canonical order in the kelompok table (01..11)
+        $kelompokOptions = App\Models\Kelompok::aktif()->orderBy('kode')->get(['kode', 'nama']);
+        return view('ketersediaan.laporan-nbm', ['kelompokOptions' => $kelompokOptions]);
     })->name('laporan-nbm');
+    
+    // AJAX endpoint for laporan NBM data
+    Route::get('api/laporan-nbm', [App\Http\Controllers\Ketersediaan\LaporanNbmController::class, 'query'])->name('laporan-nbm.api');
+
+    // Return komoditi list for a given kelompok code (AJAX)
+    Route::get('api/komoditi', function (\Illuminate\Http\Request $request) {
+        $kodeKelompok = $request->get('kode_kelompok');
+        if (!$kodeKelompok) {
+            return response()->json(['data' => []]);
+        }
+        // komoditi table uses kode_kelompok + kode_komoditi pattern (e.g. 01 -> 0101,0102...).
+        // Do not filter by a non-existent `status_aktif` column here. Return komoditi for the kelompok.
+        $kom = App\Models\Komoditi::where('kode_kelompok', $kodeKelompok)
+            ->orderBy('kode_komoditi')
+            ->get(['kode_komoditi', 'nama']);
+        $payload = $kom->map(function ($k) {
+            return [
+                'value' => $k->kode_komoditi,
+                // Only return the komoditi name as label (user requested no kode prefix)
+                'label' => $k->nama
+            ];
+        })->values();
+        return response()->json(['data' => $payload]);
+    })->name('ketersediaan.api.komoditi');
     
     Route::get('dashboard-komoditas', function () {
         return view('ketersediaan.dashboard-komoditas');
