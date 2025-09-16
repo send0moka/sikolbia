@@ -48,11 +48,12 @@ class IklimoptdpiReportsExport implements FromCollection, WithHeadings, WithMapp
     {
         return [
             $row->id,
-            $row->topik->nama ?? '-',
-            $row->variabel->nama ?? '-',
+            $row->topik->deskripsi ?? $row->topik->nama ?? '-',
+            $row->variabel->deskripsi ?? $row->variabel->nama ?? '-',
             $row->variabel->satuan ?? '-',
-            $row->klasifikasi->nama ?? '-',
-            $row->wilayah,
+            $row->klasifikasi->deskripsi ?? $row->klasifikasi->nama ?? '-',
+            // Prefer related Wilayah model's nama, otherwise fallback to string/JSON
+            (is_object($row->wilayah) ? ($row->wilayah->nama ?? ($row->wilayah->deskripsi ?? json_encode($row->wilayah))) : ($row->wilayah ?? '-')),
             number_format($row->nilai, 2),
             $row->tahun,
             $row->status,
