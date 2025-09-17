@@ -16,93 +16,94 @@ class KelompokFactory extends Factory
      */
     public function definition(): array
     {
+        // ake 2400 kkal/kapita/hari
         static $kelompokData = [
             [
                 'kode' => '01', 
                 'nama' => 'Padi - Padian',
-                'deskripsi' => 'Kelompok makanan pokok berbasis padi dan serealia lainnya',
-                'prioritas_nasional' => 'tinggi',
-                'target_konsumsi_harian' => 300.00,
+                'deskripsi' => 'Padi-padian terdiri atas: gabah (gabah kering giling) beserta produksi turunannya beras, jagung (pipilan), dan jagung basah gandum beserta produksi turunannya tepung gandum (tepung terigu)',
+                'ake_ketersediaan' => 1354,
+                'skor_pph' => 25.00,
                 'status_aktif' => true
             ],
             [
                 'kode' => '02', 
                 'nama' => 'Makanan berpati',
-                'deskripsi' => 'Sumber karbohidrat alternatif selain beras',
-                'prioritas_nasional' => 'sedang',
-                'target_konsumsi_harian' => 100.00,
+                'deskripsi' => 'Makanan berpati adalah bahan makanan yang mengandung pati yang berasal dari akar/umbi dan lain-lain bagian tanaman yang merupakan bahan makanan pokok lainnya. Kelompok ini terdiri atas; ubi jalar, ubi kayu dengan produksi turunannya yaitu gaplek dan tapioka, tepung sagu yang merupakan produksi turunan dari sagu.',
+                'ake_ketersediaan' => 219,
+                'skor_pph' => 2.50,
                 'status_aktif' => true
             ],
             [
                 'kode' => '03', 
                 'nama' => 'Gula',
-                'deskripsi' => 'Pemanis alami dan sumber energi cepat',
-                'prioritas_nasional' => 'sedang',
-                'target_konsumsi_harian' => 50.00,
+                'deskripsi' => 'Kelompok ini terdiri atas gula pasir dan gula merah (gula mangkok, gula aren, gula semut, gula siwalan, dan lain-lain), baik yang merupakan hasil olahan pabrik maupun rumah tangga.',
+                'ake_ketersediaan' => 121,
+                'skor_pph' => 2.50,
                 'status_aktif' => true
             ],
             [
                 'kode' => '04', 
-                'nama' => 'Buah Biji Berminyak',
-                'deskripsi' => 'Sumber protein nabati dan lemak sehat',
-                'prioritas_nasional' => 'tinggi',
-                'target_konsumsi_harian' => 75.00,
+                'nama' => 'Buah/Biji Berminyak',
+                'deskripsi' => 'Buah/biji berminyak adalah kelompok bahan makanan yang mengandung minyak yang berasal dari buah dan biji-bijian. Bahan makanan dalam kelompok ini adalah; kacang tanah berkulit beserta produksi turunannya kacang tanah lepas kulit, kedelai, kacang hijau, kelapa daging (produksi turunan dari kelapa berkulit), dan kopra (turunan dari kelapa daging)',
+                'ake_ketersediaan' => 71,
+                'skor_pph' => 1.00,
                 'status_aktif' => true
             ],
             [
                 'kode' => '05', 
                 'nama' => 'Buah-buahan',
-                'deskripsi' => 'Sumber vitamin, mineral, dan serat',
-                'prioritas_nasional' => 'sedang',
-                'target_konsumsi_harian' => 150.00,
+                'deskripsi' => 'Kelompok ini terdiri atas; alpukat, jeruk, duku, durian, jambu, mangga, nanas, pepaya, pisang, rambutan, salak, sawo, dan lainnya',
+                'ake_ketersediaan' => 155,
+                'skor_pph' => 30.00,
                 'status_aktif' => true
             ],
             [
                 'kode' => '06', 
                 'nama' => 'Sayur-sayuran',
-                'deskripsi' => 'Sumber vitamin, mineral, dan antioksidan',
-                'prioritas_nasional' => 'tinggi',
-                'target_konsumsi_harian' => 250.00,
+                'deskripsi' => 'Kelompok ini terdiri atas; bawang merah, ketimun, kacang merah, kacang panjang, kentang, kubis, tomat, wortel, cabe, terong, petsai/sawi, bawang daun, kangkung, lobak, labu siam, buncis, bayam, bawang putih, dan lainnya.',
+                'ake_ketersediaan' => 155,
+                'skor_pph' => 30.00,
                 'status_aktif' => true
             ],
             [
                 'kode' => '07', 
                 'nama' => 'Daging',
-                'deskripsi' => 'Sumber protein hewani berkualitas tinggi',
-                'prioritas_nasional' => 'sedang',
-                'target_konsumsi_harian' => 50.00,
+                'deskripsi' => 'Kelompok ini terdiri atas; daging sapi, daging kerbau, daging kambing, daging domba, daging kuda/lainnya, daging babi, daging ayam buras, daging ayam ras, daging itik, dan jeroan semua jenis.',
+                'ake_ketersediaan' => 229,
+                'skor_pph' => 19.06,
                 'status_aktif' => true
             ],
             [
                 'kode' => '08', 
                 'nama' => 'Telur',
-                'deskripsi' => 'Protein hewani terjangkau dan bergizi lengkap',
-                'prioritas_nasional' => 'tinggi',
-                'target_konsumsi_harian' => 30.00,
+                'deskripsi' => 'Mencakup telur ayam buras, telur ayam ras, telur itik, dan telur unggas lainnya.',
+                'ake_ketersediaan' => 229,
+                'skor_pph' => 19.06,
                 'status_aktif' => true
             ],
             [
                 'kode' => '09', 
                 'nama' => 'Susu',
-                'deskripsi' => 'Sumber kalsium dan protein untuk pertumbuhan',
-                'prioritas_nasional' => 'sedang',
-                'target_konsumsi_harian' => 200.00,
+                'deskripsi' => 'Terdiri atas susu sapi termasuk susu olahan impor yang disetarakan susu segar.',
+                'ake_ketersediaan' => 229,
+                'skor_pph' => 19.06,
                 'status_aktif' => true
             ],
             [
                 'kode' => '10', 
-                'nama' => 'Minyak dan Lemak',
-                'deskripsi' => 'Sumber energi dan asam lemak esensial',
-                'prioritas_nasional' => 'sedang',
-                'target_konsumsi_harian' => 25.00,
+                'nama' => 'Ikan',
+                'deskripsi' => 'Ikan yang dimaksud adalah komoditas yang berupa binatang air dan biota perairan lainnya yang meliputi jenis ikan darat dan ikan laut, baik budidaya maupun tangkap serta rumput laut.',
+                'ake_ketersediaan' => 229,
+                'skor_pph' => 19.06,
                 'status_aktif' => true
             ],
             [
                 'kode' => '11', 
-                'nama' => 'Minuman',
-                'deskripsi' => 'Minuman olahan dan non-alkohol',
-                'prioritas_nasional' => 'rendah',
-                'target_konsumsi_harian' => 50.00,
+                'nama' => 'Minyak dan Lemak',
+                'deskripsi' => 'Minyak nabati: minyak kacang tanah, minyak goreng kelapa, minyak goreng sawit. Lemak hewani: lemak sapi, lemak kerbau, lemak kambing, lemak domba, lemak babi.',
+                'ake_ketersediaan' => 562,
+                'skor_pph' => 5.00,
                 'status_aktif' => true
             ],
         ];
@@ -120,8 +121,7 @@ class KelompokFactory extends Factory
             'kode' => str_pad(($counter + 1), 2, '0', STR_PAD_LEFT),
             'nama' => $this->faker->words(2, true),
             'deskripsi' => $this->faker->sentence(),
-            'prioritas_nasional' => $this->faker->randomElement(['tinggi', 'sedang', 'rendah']),
-            'target_konsumsi_harian' => $this->faker->randomFloat(2, 10, 300),
+            'ake_ketersediaan' => $this->faker->randomFloat(2, 10, 300),
             'status_aktif' => $this->faker->boolean(90),
         ];
     }

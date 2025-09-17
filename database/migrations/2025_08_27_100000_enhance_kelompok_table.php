@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::table('kelompok', function (Blueprint $table) {
             $table->text('deskripsi')->nullable()->after('nama');
-            $table->enum('prioritas_nasional', ['tinggi', 'sedang', 'rendah'])->default('sedang')->after('deskripsi');
-            $table->decimal('target_konsumsi_harian', 8, 2)->nullable()->comment('gram per hari per kapita')->after('prioritas_nasional');
-            $table->boolean('status_aktif')->default(true)->after('target_konsumsi_harian');
+            $table->decimal('ake_ketersediaan', 8, 2)->nullable()->comment('Angka Kecukupan Energi ketersediaan')->after('deskripsi');
+            $table->decimal('skor_pph', 8, 2)->nullable()->comment('Skor Pola Pangan Harapan')->after('ake_ketersediaan');
+            $table->boolean('status_aktif')->default(true)->after('skor_pph');
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('kelompok', function (Blueprint $table) {
-            $table->dropColumn(['deskripsi', 'prioritas_nasional', 'target_konsumsi_harian', 'status_aktif']);
+            $table->dropColumn(['deskripsi', 'ake_ketersediaan', 'skor_pph', 'status_aktif']);
         });
     }
 };

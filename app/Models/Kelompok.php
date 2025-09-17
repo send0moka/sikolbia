@@ -15,8 +15,8 @@ class Kelompok extends Model
         'kode',
         'nama',
         'deskripsi',
-        'prioritas_nasional',
-        'target_konsumsi_harian',
+        'ake_ketersediaan',
+        'skor_pph',
         'status_aktif',
     ];
 
@@ -26,7 +26,8 @@ class Kelompok extends Model
             'created_at' => 'datetime:Y-m-d H:i:s',
             'updated_at' => 'datetime:Y-m-d H:i:s',
             'status_aktif' => 'boolean',
-            'target_konsumsi_harian' => 'decimal:2',
+            'ake_ketersediaan' => 'decimal:2',
+            'skor_pph' => 'decimal:2',
         ];
     }
 
@@ -53,19 +54,9 @@ class Kelompok extends Model
         return $query->where('status_aktif', true);
     }
 
-    public function scopePrioritas($query, $prioritas)
-    {
-        return $query->where('prioritas_nasional', $prioritas);
-    }
-
     // Static methods
     public static function getDropdownOptions()
     {
         return static::aktif()->orderBy('nama')->pluck('nama', 'kode')->toArray();
-    }
-
-    public static function getPrioritasTinggi()
-    {
-        return static::aktif()->prioritas('tinggi')->orderBy('nama')->get();
     }
 }
