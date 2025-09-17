@@ -1,7 +1,7 @@
 <x-layouts.landing title="Laporan Data NBM Ketersediaan">
     <!-- Add SheetJS library for Excel export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
+
     <div class="py-12 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Breadcrumb -->
@@ -13,7 +13,9 @@
                     <li>
                         <div class="flex items-center">
                             <svg class="w-6 h-6 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd"
+                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                    clip-rule="evenodd"></path>
                             </svg>
                             <span class="ml-1 text-neutral-500">Ketersediaan</span>
                         </div>
@@ -21,7 +23,9 @@
                     <li>
                         <div class="flex items-center">
                             <svg class="w-6 h-6 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                <path fill-rule="evenodd"
+                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                    clip-rule="evenodd"></path>
                             </svg>
                             <span class="ml-1 text-blue-600 font-medium">Laporan Data NBM</span>
                         </div>
@@ -45,19 +49,18 @@
                 <div class="lg:col-span-1">
                     <div class="bg-neutral-50 rounded-lg p-6 sticky top-24">
                         <h3 class="text-lg font-semibold text-neutral-900 mb-6">Filter Data Ketersediaan</h3>
-                        
+
                         <form @submit.prevent="searchData" class="space-y-6">
                             <!-- Pilih Kelompok -->
                             <div>
                                 <label for="kelompok" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Kelompok Pangan
                                 </label>
-                                <select x-model="filters.kelompok" 
-                                        @change="loadKomoditi()"
-                                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <select x-model="filters.kelompok" @change="loadKomoditi()"
+                                    class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Pilih Kelompok</option>
-                                    @if(!empty($kelompokOptions))
-                                        @foreach($kelompokOptions as $k)
+                                    @if (!empty($kelompokOptions))
+                                        @foreach ($kelompokOptions as $k)
                                             <option value="{{ $k->kode }}">{{ $k->nama }}</option>
                                         @endforeach
                                     @endif
@@ -69,9 +72,8 @@
                                 <label for="komoditi" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Komoditi
                                 </label>
-                                <select x-model="filters.komoditi" 
-                                        :disabled="!filters.kelompok"
-                                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100">
+                                <select x-model="filters.komoditi" :disabled="!filters.kelompok"
+                                    class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100">
                                     <option value="">Pilih Komoditi</option>
                                     <template x-for="komoditi in availableKomoditi" :key="komoditi.value">
                                         <option :value="komoditi.value" x-text="komoditi.label"></option>
@@ -84,9 +86,8 @@
                                 <label for="tahun_awal" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Tahun Awal
                                 </label>
-                                <select x-model="filters.tahun_awal" 
-                                        @change="validateYearRange()"
-                                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <select x-model="filters.tahun_awal" @change="validateYearRange()"
+                                    class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Pilih Tahun</option>
                                     <template x-for="year in years" :key="year">
                                         <option :value="year" x-text="year"></option>
@@ -99,9 +100,8 @@
                                 <label for="tahun_akhir" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Tahun Akhir
                                 </label>
-                                <select x-model="filters.tahun_akhir" 
-                                        :disabled="!filters.tahun_awal"
-                                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100">
+                                <select x-model="filters.tahun_akhir" :disabled="!filters.tahun_awal"
+                                    class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100">
                                     <option value="">Pilih Tahun</option>
                                     <template x-for="year in availableEndYears" :key="year">
                                         <option :value="year" x-text="year"></option>
@@ -110,24 +110,26 @@
                             </div>
 
                             <!-- Button Tampilkan Data -->
-                            <button type="submit" 
-                                    :disabled="!canSearch"
-                                    :class="canSearch ? 'bg-blue-600 hover:bg-blue-700' : 'bg-neutral-400 cursor-not-allowed'"
-                                    class="w-full text-white px-4 py-3 rounded-md font-medium transition duration-200">
+                            <button type="submit" :disabled="!canSearch"
+                                :class="canSearch ? 'bg-blue-600 hover:bg-blue-700' : 'bg-neutral-400 cursor-not-allowed'"
+                                class="w-full text-white px-4 py-3 rounded-md font-medium transition duration-200">
                                 <span x-show="!loading">Tampilkan Data</span>
                                 <span x-show="loading" class="flex items-center justify-center">
-                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
                                     </svg>
                                     Memuat...
                                 </span>
                             </button>
 
                             <!-- Reset Button -->
-                            <button type="button" 
-                                    @click="resetForm()"
-                                    class="w-full bg-neutral-500 hover:bg-neutral-600 text-white px-4 py-2 rounded-md font-medium transition duration-200">
+                            <button type="button" @click="resetForm()"
+                                class="w-full bg-neutral-500 hover:bg-neutral-600 text-white px-4 py-2 rounded-md font-medium transition duration-200">
                                 Reset Filter
                             </button>
                         </form>
@@ -142,14 +144,17 @@
                                 <p>• <strong>Cakupan:</strong> Data Nasional</p>
                                 <p>• <strong>Indikator:</strong> Ekonomi, Iklim, Kebijakan</p>
                             </div>
-                            
+
                             <!-- Data Integration Note -->
                             <div class="mt-4 bg-blue-50 p-3 rounded border-l-4 border-blue-400">
                                 <div class="flex items-center">
-                                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    <span class="text-blue-800 font-medium text-xs">Data Terintegrasi Multi-Dimensi</span>
+                                    <span class="text-blue-800 font-medium text-xs">Data Terintegrasi
+                                        Multi-Dimensi</span>
                                 </div>
                             </div>
                         </div>
@@ -160,18 +165,25 @@
                 <div class="lg:col-span-2">
                     <!-- No Data State -->
                     <div x-show="!hasSearched && !hasData" class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <h3 class="mt-2 text-sm font-medium text-neutral-900">Belum Ada Data yang Ditampilkan</h3>
-                        <p class="mt-1 text-sm text-neutral-500">Pilih filter dan klik "Tampilkan Data" untuk melihat hasil</p>
+                        <p class="mt-1 text-sm text-neutral-500">Pilih filter dan klik "Tampilkan Data" untuk melihat
+                            hasil</p>
                     </div>
 
                     <!-- Loading State -->
                     <div x-show="loading" class="text-center py-12">
-                        <svg class="animate-spin mx-auto h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg class="animate-spin mx-auto h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                         <p class="mt-2 text-sm text-neutral-600">Memuat data...</p>
                     </div>
@@ -179,15 +191,18 @@
                     <!-- Results Table -->
                     <div x-show="hasData && !loading" class="bg-white rounded-lg border border-neutral-200">
                         <!-- Results Header -->
-                        <div class="bg-neutral-50 px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
+                        <div
+                            class="bg-neutral-50 px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
                             <div>
                                 <h3 class="text-lg font-semibold text-neutral-900">Hasil Pencarian</h3>
                                 <p class="text-sm text-neutral-600" x-text="`${results.length} data ditemukan`"></p>
                             </div>
-                            <button @click="exportToExcel()" 
-                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition duration-200">
+                            <button @click="exportToExcel()"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition duration-200">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
                                 </svg>
                                 <span>Export Excel</span>
                             </button>
@@ -197,13 +212,16 @@
                         <div class="p-6 bg-blue-50 border-b">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <strong>Kelompok:</strong> <span x-text="getKelompokLabel(filters.kelompok)"></span>
+                                    <strong>Kelompok:</strong> <span
+                                        x-text="getKelompokLabel(filters.kelompok)"></span>
                                 </div>
                                 <div>
-                                    <strong>Komoditi:</strong> <span x-text="getKomoditiLabel(filters.komoditi) || 'Semua Komoditi'"></span>
+                                    <strong>Komoditi:</strong> <span
+                                        x-text="getKomoditiLabel(filters.komoditi) || 'Semua Komoditi'"></span>
                                 </div>
                                 <div>
-                                    <strong>Periode:</strong> <span x-text="filters.tahun_awal + (filters.tahun_akhir && filters.tahun_akhir !== filters.tahun_awal ? ' - ' + filters.tahun_akhir : '')"></span>
+                                    <strong>Periode:</strong> <span
+                                        x-text="filters.tahun_awal + (filters.tahun_akhir && filters.tahun_akhir !== filters.tahun_awal ? ' - ' + filters.tahun_akhir : '')"></span>
                                 </div>
                                 <div>
                                     <strong>Sumber:</strong> Neraca Bahan Makanan, BKP-Kementan
@@ -213,8 +231,9 @@
 
                         <!-- Catatan Section -->
                         <div class="p-6">
-                            <h4 class="font-semibold text-neutral-900 mb-4">Data NBM (Ketersediaan Per Kapita Per Tahun):</h4>
-                            
+                            <h4 class="font-semibold text-neutral-900 mb-4">Data NBM (Ketersediaan Per Kapita Per
+                                Tahun):</h4>
+
                             <!-- Custom Table with specific styling -->
                             <style>
                                 .table-container {
@@ -222,6 +241,7 @@
                                     overflow-x: auto;
                                     margin-bottom: 1rem;
                                 }
+
                                 .tg {
                                     border-collapse: collapse;
                                     border-spacing: 0;
@@ -230,23 +250,28 @@
                                     margin: 0 auto;
                                     min-width: 600px;
                                 }
-                                .tg td, .tg th {
+
+                                .tg td,
+                                .tg th {
                                     border: 1px solid #d1d5db;
                                     padding: 8px 12px;
                                     text-align: center;
                                     vertical-align: top;
                                     white-space: nowrap;
                                 }
+
                                 .tg .tg-header {
                                     background-color: #f3f4f6;
                                     font-weight: 600;
                                     color: #111827;
                                 }
+
                                 .tg .tg-subheader {
                                     background-color: #f9fafb;
                                     font-weight: 500;
                                     color: #374151;
                                 }
+
                                 .tg td:first-child {
                                     text-align: left;
                                     font-weight: 500;
@@ -256,6 +281,7 @@
                                     z-index: 10;
                                     min-width: 200px;
                                 }
+
                                 .tg th:first-child {
                                     text-align: center;
                                     font-weight: 600;
@@ -265,12 +291,13 @@
                                     z-index: 11;
                                     min-width: 200px;
                                 }
+
                                 .tg .tg-subheader:first-child {
                                     text-align: left;
                                     background-color: #f3f4f6;
                                 }
                             </style>
-                            
+
                             <div class="table-container">
                                 <table class="tg">
                                     <thead>
@@ -280,20 +307,26 @@
                                         </tr>
                                         <tr>
                                             <template x-for="(result, index) in results" :key="index">
-                                                <th class="tg-header" x-text="result.tahun"></th>
+                                                <th class="tg-header">
+                                                    <span x-text="result.tahun"></span>
+                                                    <span x-show="result.tahun == '2023'"
+                                                        class="text-blue-600">(s)</span>
+                                                    <span x-show="result.tahun == '2024'"
+                                                        class="text-blue-600">(ss)</span>
+                                                </th>
                                             </template>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <!-- A. Penyediaan -->
                                         <tr>
-                                            <td class="tg-subheader" :colspan="results.length + 1">A. Penyediaan (Ribu Ton)</td>
-                                        </tr>
-                                        <tr>
-                                            <td>1. Produksi</td>
+                                            <td class="tg-subheader">A. Penyediaan (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.produksi"></td>
                                             </template>
+                                        </tr>
+                                        <tr>
+                                            <td :colspan="results.length + 1">1. Produksi</td>
                                         </tr>
                                         <tr>
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Masukan</td>
@@ -325,10 +358,13 @@
                                                 <td x-text="result.perubahanStok"></td>
                                             </template>
                                         </tr>
-                                        
+
                                         <!-- B. Pemakaian Dalam Negeri -->
                                         <tr>
-                                            <td class="tg-subheader" :colspan="results.length + 1">B. Pemakaian Dalam Negeri (Ribu Ton)</td>
+                                            <td class="tg-subheader">B. Pemakaian Dalam Negeri (Ribu Ton)</td>
+                                            <template x-for="result in results" :key="result.tahun">
+                                                <td x-text="result.diolah"></td>
+                                            </template>
                                         </tr>
                                         <tr>
                                             <td>1. Pakan</td>
@@ -343,10 +379,8 @@
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>3. Diolah untuk</td>
-                                            <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.diolah"></td>
-                                            </template>
+                                            <td :colspan="results.length + 1">3. Diolah untuk
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Makanan</td>
@@ -378,10 +412,11 @@
                                                 <td x-text="result.bahanMakanan"></td>
                                             </template>
                                         </tr>
-                                        
+
                                         <!-- C. Ketersediaan per Kapita -->
                                         <tr>
-                                            <td class="tg-subheader" :colspan="results.length + 1">C. Ketersediaan per Kapita</td>
+                                            <td class="tg-subheader" :colspan="results.length + 1">C. Ketersediaan per
+                                                Kapita</td>
                                         </tr>
                                         <tr>
                                             <td>- Kilogram per Tahun</td>
@@ -423,7 +458,8 @@
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                     <div>
                                         <span class="text-neutral-600">Rata-rata Ketersediaan:</span>
-                                        <div class="font-semibold" x-text="getAverageKetersediaan() + ' kg/kap/thn'"></div>
+                                        <div class="font-semibold" x-text="getAverageKetersediaan() + ' kg/kap/thn'">
+                                        </div>
                                     </div>
                                     <div>
                                         <span class="text-neutral-600">Rata-rata Produksi:</span>
@@ -444,21 +480,30 @@
                             <div class="mt-4 text-sm text-neutral-600">
                                 <p><strong>Catatan Data NBM Diperkaya:</strong></p>
                                 <ul class="list-disc list-inside mt-1 space-y-1">
-                                    <li>Data ketersediaan dihitung berdasarkan Neraca Bahan Makanan (NBM) dengan metodologi BKP-Kementan</li>
-                                    <li>Satuan ketersediaan dalam kilogram per kapita per tahun, dengan data produksi dalam ribu ton</li>
-                                    <li><strong>Data Diperkaya:</strong> Termasuk indikator ekonomi (harga, inflasi, GDP), iklim (curah hujan, suhu, El Niño), dan kebijakan (impor, subsidi)</li>
-                                    <li><strong>Kualitas Data:</strong> Setiap record memiliki confidence score, status validasi, dan deteksi outlier</li>
-                                    <li><strong>Temporal Granularity:</strong> Data tersedia dalam periode bulanan, kuartalan, dan tahunan (1993-2024)</li>
-                                    <li><strong>Multi-Source Integration:</strong> Integrasi data dari BPS, Kementan, BI, BMKG, dan sumber resmi lainnya</li>
+                                    <li>Data ketersediaan dihitung berdasarkan Neraca Bahan Makanan (NBM) dengan
+                                        metodologi BKP-Kementan</li>
+                                    <li>Satuan ketersediaan dalam kilogram per kapita per tahun, dengan data produksi
+                                        dalam ribu ton</li>
+                                    <li><strong>Data Diperkaya:</strong> Termasuk indikator ekonomi (harga, inflasi,
+                                        GDP), iklim (curah hujan, suhu, El Niño), dan kebijakan (impor, subsidi)</li>
+                                    <li><strong>Kualitas Data:</strong> Setiap record memiliki confidence score, status
+                                        validasi, dan deteksi outlier</li>
+                                    <li><strong>Temporal Granularity:</strong> Data tersedia dalam periode bulanan,
+                                        kuartalan, dan tahunan (1993-2024)</li>
+                                    <li><strong>Multi-Source Integration:</strong> Integrasi data dari BPS, Kementan,
+                                        BI, BMKG, dan sumber resmi lainnya</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
 
                     <!-- No Results -->
-                    <div x-show="hasSearched && !hasData && !loading" class="text-center py-12 bg-white rounded-lg border border-neutral-200">
-                        <svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <div x-show="hasSearched && !hasData && !loading"
+                        class="text-center py-12 bg-white rounded-lg border border-neutral-200">
+                        <svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <h3 class="mt-2 text-sm font-medium text-neutral-900">Tidak Ada Data Ditemukan</h3>
                         <p class="mt-1 text-sm text-neutral-500">Coba ubah filter pencarian atau periode tahun</p>
@@ -469,13 +514,14 @@
             <!-- Related Links -->
             <div class="mt-12 bg-neutral-50 p-6 rounded-lg">
                 <h3 class="text-lg font-semibold text-neutral-900 mb-4">Informasi Tambahan & Halaman Terkait</h3>
-                
+
                 <!-- NBM System Overview -->
                 <div class="mb-6 bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-blue-200">
                     <h4 class="font-semibold text-blue-900 mb-3">📊 Sistem NBM Terintegrasi</h4>
                     <p class="text-blue-800 text-sm mb-3">
-                        Neraca Bahan Makanan Indonesia menyediakan analisis komprehensif ketersediaan pangan dengan 
-                        mengintegrasikan data produksi, perdagangan, dan berbagai faktor yang mempengaruhi ketahanan pangan.
+                        Neraca Bahan Makanan Indonesia menyediakan analisis komprehensif ketersediaan pangan dengan
+                        mengintegrasikan data produksi, perdagangan, dan berbagai faktor yang mempengaruhi ketahanan
+                        pangan.
                     </p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
@@ -492,19 +538,23 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <a href="{{ route('ketersediaan.konsep-metode') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
+                    <a href="{{ route('ketersediaan.konsep-metode') }}"
+                        class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">📖 Konsep dan Metode</h4>
                         <p class="text-sm text-neutral-600 mt-1">Metodologi NBM dan indikator pendukung</p>
                     </a>
-                    <a href="{{ route('ketersediaan.dashboard-komoditas') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
+                    <a href="{{ route('ketersediaan.dashboard-komoditas') }}"
+                        class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">📊 Dashboard Komoditas</h4>
                         <p class="text-sm text-neutral-600 mt-1">Monitor harga dan tren komoditas real-time</p>
                     </a>
-                    <a href="{{ route('login') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
+                    <a href="{{ route('login') }}"
+                        class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">⚙️ Manajemen Data</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Login untuk akses data lengkap dan analisis lanjutan</p>
+                        <p class="text-sm text-neutral-600 mt-1">Login untuk akses data lengkap dan analisis lanjutan
+                        </p>
                     </a>
                 </div>
             </div>
@@ -527,21 +577,23 @@
                 results: [],
                 loading: false,
                 hasSearched: false,
-                
+
                 // Generate years from 1993 to 2025
-                years: Array.from({length: 33}, (_, i) => 2025 - i),
-                
+                years: Array.from({
+                    length: 33
+                }, (_, i) => 2025 - i),
+
                 get availableEndYears() {
                     if (!this.filters.tahun_awal) {
                         return [];
                     }
                     return this.years.filter(year => year >= parseInt(this.filters.tahun_awal));
                 },
-                
+
                 get hasData() {
                     return this.results.length > 0;
                 },
-                
+
                 get canSearch() {
                     return this.filters.kelompok && this.filters.tahun_awal;
                 },
@@ -553,7 +605,12 @@
                     this.filters.komoditi = '';
                     if (!this.filters.kelompok) return;
                     try {
-                        const res = await fetch(`/ketersediaan/api/komoditi?kode_kelompok=${encodeURIComponent(this.filters.kelompok)}`, { headers: { 'Accept': 'application/json' } });
+                        const res = await fetch(
+                            `/ketersediaan/api/komoditi?kode_kelompok=${encodeURIComponent(this.filters.kelompok)}`, {
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            });
                         if (!res.ok) return;
                         const payload = await res.json();
                         this.availableKomoditi = payload.data || [];
@@ -583,7 +640,9 @@
                         if (this.filters.tahun_akhir) params.append('tahun_akhir', this.filters.tahun_akhir);
 
                         const res = await fetch(`/ketersediaan/api/laporan-nbm?${params.toString()}`, {
-                            headers: { 'Accept': 'application/json' }
+                            headers: {
+                                'Accept': 'application/json'
+                            }
                         });
 
                         if (!res.ok) {
@@ -625,10 +684,10 @@
                 exportToExcel() {
                     // Create a new workbook
                     const wb = XLSX.utils.book_new();
-                    
+
                     // Prepare data with headers and information
                     const exportData = [];
-                    
+
                     // Add header information
                     exportData.push(['Kelompok :', this.getKelompokLabel(this.filters.kelompok)]);
                     exportData.push(['Komoditi :', this.getKomoditiLabel(this.filters.komoditi) || 'Semua Komoditi']);
@@ -636,7 +695,7 @@
                     exportData.push(['']);
                     exportData.push(['Catatan: Data ketersediaan dalam kg/kapita/tahun']);
                     exportData.push(['']);
-                    
+
                     // Add table header with dynamic columns based on results length
                     const headerRow = ['Uraian'];
                     // Add "Tahun" headers for each column
@@ -644,75 +703,98 @@
                         headerRow.push('Tahun');
                     }
                     exportData.push(headerRow);
-                    
+
                     // Add year row
                     const yearRow = [''];
                     this.results.forEach(result => {
                         yearRow.push(result.tahun);
                     });
                     exportData.push(yearRow);
-                    
+
                     // Add data rows with dynamic columns
                     const ketersediaanRow = ['Ketersediaan (kg/kapita/tahun)'];
                     this.results.forEach(result => {
                         ketersediaanRow.push(parseFloat(result.ketersediaan));
                     });
                     exportData.push(ketersediaanRow);
-                    
+
                     const produksiRow = ['Produksi (ribu ton)'];
                     this.results.forEach(result => {
                         produksiRow.push(parseInt(result.produksi));
                     });
                     exportData.push(produksiRow);
-                    
+
                     const imporRow = ['Impor (ribu ton)'];
                     this.results.forEach(result => {
                         imporRow.push(parseInt(result.impor));
                     });
                     exportData.push(imporRow);
-                    
+
                     const eksporRow = ['Ekspor (ribu ton)'];
                     this.results.forEach(result => {
                         eksporRow.push(parseInt(result.ekspor));
                     });
                     exportData.push(eksporRow);
-                    
+
                     // Create worksheet
                     const ws = XLSX.utils.aoa_to_sheet(exportData);
-                    
+
                     // Define merge ranges for proper table layout with dynamic columns
                     if (!ws['!merges']) ws['!merges'] = [];
-                    
+
                     const numCols = this.results.length;
-                    
+
                     // Merge cells for "Uraian" header (row 7, spans 2 rows)
-                    ws['!merges'].push({s: {r: 6, c: 0}, e: {r: 7, c: 0}});
-                    
+                    ws['!merges'].push({
+                        s: {
+                            r: 6,
+                            c: 0
+                        },
+                        e: {
+                            r: 7,
+                            c: 0
+                        }
+                    });
+
                     // Merge cells for "Tahun" header (row 7, spans all year columns)
                     if (numCols > 1) {
-                        ws['!merges'].push({s: {r: 6, c: 1}, e: {r: 6, c: numCols}});
+                        ws['!merges'].push({
+                            s: {
+                                r: 6,
+                                c: 1
+                            },
+                            e: {
+                                r: 6,
+                                c: numCols
+                            }
+                        });
                     }
-                    
+
                     // Set column widths dynamically
-                    const colWidths = [{width: 25}]; // Uraian column
+                    const colWidths = [{
+                        width: 25
+                    }]; // Uraian column
                     for (let i = 0; i < numCols; i++) {
-                        colWidths.push({width: 15}); // Year columns
+                        colWidths.push({
+                            width: 15
+                        }); // Year columns
                     }
                     ws['!cols'] = colWidths;
-                    
+
                     // Add worksheet to workbook
                     XLSX.utils.book_append_sheet(wb, ws, 'Data NBM');
-                    
+
                     // Generate filename
                     const filename = `data-nbm-${this.filters.kelompok}-${Date.now()}.xlsx`;
-                    
+
                     // Save file
                     XLSX.writeFile(wb, filename);
                 },
 
                 getAverageKetersediaan() {
                     if (this.results.length === 0) return '0.0';
-                    const avg = this.results.reduce((sum, item) => sum + parseFloat(item.kgPerTahun), 0) / this.results.length;
+                    const avg = this.results.reduce((sum, item) => sum + parseFloat(item.kgPerTahun), 0) / this.results
+                        .length;
                     return avg.toFixed(1);
                 },
 
