@@ -108,12 +108,12 @@ class IklimoptdpiReports extends Component
     public function render()
     {
         // Get filter options
-        $topiks = IklimoptdpiTopik::orderBy('nama')->get();
-        $variabels = IklimoptdpiVariabel::orderBy('nama')->get();
-        $wilayahs = IklimoptdpiData::select('wilayah')
-                                  ->distinct()
-                                  ->orderBy('wilayah')
-                                  ->pluck('wilayah');
+    // Use 'deskripsi' for display columns (topik/variabel use 'deskripsi' in DB)
+    $topiks = IklimoptdpiTopik::orderBy('deskripsi')->get();
+    $variabels = IklimoptdpiVariabel::orderBy('deskripsi')->get();
+    // Fetch wilayah list from the `wilayah` table (id => nama) and use id for filtering
+    $wilayahs = \App\Models\Wilayah::orderBy('nama')
+                  ->pluck('nama', 'id');
 
         // Get recent reports data based on filters
         $query = $this->getFilteredQuery();

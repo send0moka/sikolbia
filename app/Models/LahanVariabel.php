@@ -24,7 +24,8 @@ class LahanVariabel extends Model
     // Provide a virtual `nama` attribute to match UI usage (maps to `deskripsi`).
     public function getNamaAttribute()
     {
-        return $this->attributes['deskripsi'] ?? null;
+        // Support queries that alias deskripsi as nama
+        return $this->attributes['nama'] ?? ($this->attributes['deskripsi'] ?? null);
     }
 
     public function setNamaAttribute($value)

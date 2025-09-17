@@ -38,7 +38,7 @@
                         <select wire:model.live="selectedTopik" class="mt-1 block w-full py-2 px-3 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-zinc-800 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-neutral-200">
                             <option value="">Semua Topik</option>
                             @foreach($topiks as $topik)
-                                <option value="{{ $topik->id }}">{{ $topik->nama }}</option>
+                                <option value="{{ $topik->id }}">{{ $topik->deskripsi ?? $topik->nama ?? '' }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -47,16 +47,16 @@
                         <select wire:model.live="selectedVariabel" class="mt-1 block w-full py-2 px-3 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-zinc-800 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-neutral-200">
                             <option value="">Semua Variabel</option>
                             @foreach($variabels as $variabel)
-                                <option value="{{ $variabel->id }}">{{ $variabel->nama }}</option>
+                                <option value="{{ $variabel->id }}">{{ $variabel->deskripsi ?? $variabel->nama ?? '' }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label for="wilayah" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Wilayah</label>
-                        <select wire:model.live="selectedWilayah" class="mt-1 block w-full py-2 px-3 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-zinc-800 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-neutral-200">
+                            <select wire:model.live="selectedWilayah" class="mt-1 block w-full py-2 px-3 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-zinc-800 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-neutral-200">
                             <option value="">Semua Wilayah</option>
-                            @foreach($wilayahs as $wilayah)
-                                <option value="{{ $wilayah }}">{{ $wilayah }}</option>
+                            @foreach($wilayahs as $id => $nama)
+                                <option value="{{ $id }}">{{ $nama }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -154,19 +154,30 @@
                                     {{ $item->id }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    {{ $item->topik->nama ?? '-' }}
+                                    {{ $item->topik->deskripsi ?? $item->topik->nama ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    {{ $item->variabel->nama ?? '-' }}
+                                    {{ $item->variabel->deskripsi ?? $item->variabel->nama ?? '-' }}
                                     @if($item->variabel && $item->variabel->satuan)
                                         <span class="text-xs text-neutral-400">({{ $item->variabel->satuan }})</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    {{ $item->klasifikasi->nama ?? '-' }}
+                                    {{ $item->klasifikasi->deskripsi ?? $item->klasifikasi->nama ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                    {{ $item->wilayah }}
+                                    @php
+                                        // Prefer related Wilayah model's nama, then deskripsi, then fallback
+                                        $wilayahLabel = null;
+                                        if (is_object($item->wilayah)) {
+                                            $wilayahLabel = $item->wilayah->nama ?? $item->wilayah->deskripsi ?? json_encode($item->wilayah);
+                                        } elseif (is_array($item->wilayah)) {
+                                            $wilayahLabel = $item->wilayah['nama'] ?? $item->wilayah['deskripsi'] ?? json_encode($item->wilayah);
+                                        } else {
+                                            $wilayahLabel = $item->wilayah ?? '-';
+                                        }
+                                    @endphp
+                                    {{ $wilayahLabel }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                                     {{ number_format($item->nilai, 2) }}
