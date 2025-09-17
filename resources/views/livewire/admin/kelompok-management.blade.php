@@ -65,8 +65,8 @@
                         <th scope="col" class="px-6 py-3">Kode</th>
                         <th scope="col" class="px-6 py-3">Nama Kelompok</th>
                         <th scope="col" class="px-6 py-3">Deskripsi</th>
-                        <th scope="col" class="px-6 py-3">Prioritas Nasional</th>
-                        <th scope="col" class="px-6 py-3">Target Konsumsi Harian</th>
+                        <th scope="col" class="px-6 py-3">AKE Ketersediaan</th>
+                        <th scope="col" class="px-6 py-3">Skor PPH</th>
                         <th scope="col" class="px-6 py-3">Status Aktif</th>
                         <th scope="col" class="px-6 py-3">Dibuat</th>
                         <th scope="col" class="px-6 py-3 no-print">Aksi</th>
@@ -85,41 +85,10 @@
                             {{ $kelompok->deskripsi }}
                         </td>
                         <td class="px-6 py-4">
-                            @php
-                                $prioritas = strtolower($kelompok->prioritas_nasional);
-                            @endphp
-                            @if($prioritas === 'tinggi')
-                                <div class="flex items-center text-red-600 dark:text-red-400">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                    <span class="font-medium">Tinggi</span>
-                                </div>
-                            @elseif($prioritas === 'sedang')
-                                <div class="flex items-center text-yellow-600 dark:text-yellow-400">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                    <span class="font-medium">Sedang</span>
-                                </div>
-                            @elseif($prioritas === 'rendah')
-                                <div class="flex items-center text-green-600 dark:text-green-400">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg>
-                                    <span class="font-medium">Rendah</span>
-                                </div>
-                            @else
-                                <div class="flex items-center text-neutral-600 dark:text-neutral-400">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <span class="font-medium">{{ $kelompok->prioritas_nasional ?: 'Tidak Ditetapkan' }}</span>
-                                </div>
-                            @endif
+                            {{ $kelompok->ake_ketersediaan ? number_format($kelompok->ake_ketersediaan, 2) : '-' }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $kelompok->target_konsumsi_harian }}
+                            {{ $kelompok->skor_pph ? number_format($kelompok->skor_pph, 2) : '-' }}
                         </td>
                         <td class="px-6 py-4">
                             <span class="px-2 py-1 rounded text-xs {{ $kelompok->status_aktif ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
@@ -142,7 +111,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-neutral-500 dark:text-neutral-400">
+                        <td colspan="8" class="px-6 py-4 text-center text-neutral-500 dark:text-neutral-400">
                             Tidak ada kelompok ditemukan
                         </td>
                     </tr>
@@ -183,21 +152,13 @@
                         <flux:input wire:model="deskripsi" label="Deskripsi" placeholder="Deskripsi kelompok (minimal 3 karakter)" required />
                         @error('deskripsi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Prioritas Nasional</label>
-                            <select wire:model="prioritas_nasional" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:ring-accent focus:border-accent dark:bg-neutral-800 dark:text-neutral-200" required>
-                                <option value="">Pilih Prioritas</option>
-                                <option value="tinggi">Tinggi</option>
-                                <option value="sedang">Sedang</option>
-                                <option value="rendah">Rendah</option>
-                            </select>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Pilih tingkat prioritas nasional untuk kelompok ini</p>
-                            @error('prioritas_nasional') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
-                        </div>
+                        <flux:input wire:model="ake_ketersediaan" label="AKE Ketersediaan" type="number" step="0.01" placeholder="Angka Kecukupan Energi ketersediaan" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Angka Kecukupan Energi ketersediaan (opsional)</p>
+                        @error('ake_ketersediaan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <flux:input wire:model="target_konsumsi_harian" label="Target Konsumsi Harian" type="number" step="0.01" placeholder="Target konsumsi harian" />
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Target dalam gram per hari (opsional)</p>
-                        @error('target_konsumsi_harian') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <flux:input wire:model="skor_pph" label="Skor PPH" type="number" step="0.01" placeholder="Skor Pola Pangan Harapan" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Skor Pola Pangan Harapan (opsional)</p>
+                        @error('skor_pph') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <div class="flex items-center space-x-2">
                             <input type="checkbox" wire:model="status_aktif" id="status_aktif" class="form-checkbox h-4 w-4 text-accent" />
@@ -238,21 +199,13 @@
                         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Minimal 3 karakter, maksimal 255 karakter</p>
                         @error('deskripsi') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Prioritas Nasional</label>
-                            <select wire:model="prioritas_nasional" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:ring-accent focus:border-accent dark:bg-neutral-800 dark:text-neutral-200" required>
-                                <option value="">Pilih Prioritas</option>
-                                <option value="tinggi">Tinggi</option>
-                                <option value="sedang">Sedang</option>
-                                <option value="rendah">Rendah</option>
-                            </select>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Pilih tingkat prioritas nasional untuk kelompok ini</p>
-                            @error('prioritas_nasional') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
-                        </div>
+                        <flux:input wire:model="ake_ketersediaan" label="AKE Ketersediaan" type="number" step="0.01" placeholder="Angka Kecukupan Energi ketersediaan" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Angka Kecukupan Energi ketersediaan (opsional)</p>
+                        @error('ake_ketersediaan') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
-                        <flux:input wire:model="target_konsumsi_harian" label="Target Konsumsi Harian" type="number" step="0.01" placeholder="Target konsumsi harian" />
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Target dalam gram per hari (opsional)</p>
-                        @error('target_konsumsi_harian') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        <flux:input wire:model="skor_pph" label="Skor PPH" type="number" step="0.01" placeholder="Skor Pola Pangan Harapan" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Skor Pola Pangan Harapan (opsional)</p>
+                        @error('skor_pph') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
 
                         <div class="flex items-center space-x-2">
                             <input type="checkbox" wire:model="status_aktif" id="status_aktif_edit" class="form-checkbox h-4 w-4 text-accent" />

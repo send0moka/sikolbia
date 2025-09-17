@@ -26,8 +26,8 @@ class KelompokManagement extends Component
     public $exportFormat = 'xlsx';
 
     public $deskripsi = '';
-    public $prioritas_nasional = '';
-    public $target_konsumsi_harian = '';
+    public $ake_ketersediaan = '';
+    public $skor_pph = '';
     public $status_aktif = true;
 
     protected $queryString = [
@@ -43,8 +43,8 @@ class KelompokManagement extends Component
         'kode' => 'required|unique:kelompok,kode|regex:/^[A-Z0-9]+$/|max:10',
         'nama' => 'required|min:3',
         'deskripsi' => 'required|min:3',
-        'prioritas_nasional' => 'required|in:tinggi,sedang,rendah',
-        'target_konsumsi_harian' => 'nullable|numeric|min:0',
+        'ake_ketersediaan' => 'nullable|numeric|min:0|max:999999.99',
+        'skor_pph' => 'nullable|numeric|min:0|max:999999.99',
         'status_aktif' => 'boolean',
     ];
 
@@ -57,10 +57,12 @@ class KelompokManagement extends Component
         'nama.min' => 'Nama kelompok minimal 3 karakter.',
         'deskripsi.required' => 'Deskripsi kelompok wajib diisi.',
         'deskripsi.min' => 'Deskripsi kelompok minimal 3 karakter.',
-        'prioritas_nasional.required' => 'Prioritas nasional wajib dipilih.',
-        'prioritas_nasional.in' => 'Prioritas nasional harus salah satu dari: tinggi, sedang, rendah.',
-        'target_konsumsi_harian.numeric' => 'Target konsumsi harian harus berupa angka.',
-        'target_konsumsi_harian.min' => 'Target konsumsi harian tidak boleh negatif.',
+        'ake_ketersediaan.numeric' => 'AKE Ketersediaan harus berupa angka.',
+        'ake_ketersediaan.min' => 'AKE Ketersediaan minimal 0.',
+        'ake_ketersediaan.max' => 'AKE Ketersediaan maksimal 999999.99.',
+        'skor_pph.numeric' => 'Skor PPH harus berupa angka.',
+        'skor_pph.min' => 'Skor PPH minimal 0.',
+        'skor_pph.max' => 'Skor PPH maksimal 999999.99.',
     ];
 
     public function updatingSearch()
@@ -100,8 +102,8 @@ class KelompokManagement extends Component
     $this->kode = $this->editingKelompok->kode;
     $this->nama = $this->editingKelompok->nama;
     $this->deskripsi = $this->editingKelompok->deskripsi;
-    $this->prioritas_nasional = $this->editingKelompok->prioritas_nasional;
-    $this->target_konsumsi_harian = $this->editingKelompok->target_konsumsi_harian;
+    $this->ake_ketersediaan = $this->editingKelompok->ake_ketersediaan;
+    $this->skor_pph = $this->editingKelompok->skor_pph;
     $this->status_aktif = $this->editingKelompok->status_aktif;
     $this->showEditModal = true;
     }
@@ -132,8 +134,8 @@ class KelompokManagement extends Component
             'kode' => $this->kode,
             'nama' => $this->nama,
             'deskripsi' => $this->deskripsi,
-            'prioritas_nasional' => $this->prioritas_nasional,
-            'target_konsumsi_harian' => $this->target_konsumsi_harian,
+            'ake_ketersediaan' => $this->ake_ketersediaan ?: null,
+            'skor_pph' => $this->skor_pph ?: null,
             'status_aktif' => $this->status_aktif,
         ]);
 
@@ -147,8 +149,8 @@ class KelompokManagement extends Component
             'kode' => 'required|unique:kelompok,kode,' . $this->editingKelompok->id . '|regex:/^[A-Z0-9]+$/|max:10',
             'nama' => 'required|min:3',
             'deskripsi' => 'required|min:3',
-            'prioritas_nasional' => 'required|in:tinggi,sedang,rendah',
-            'target_konsumsi_harian' => 'nullable|numeric|min:0',
+            'ake_ketersediaan' => 'nullable|numeric|min:0|max:999999.99',
+            'skor_pph' => 'nullable|numeric|min:0|max:999999.99',
             'status_aktif' => 'boolean',
         ];
 
@@ -161,10 +163,12 @@ class KelompokManagement extends Component
             'nama.min' => 'Nama kelompok minimal 3 karakter.',
             'deskripsi.required' => 'Deskripsi kelompok wajib diisi.',
             'deskripsi.min' => 'Deskripsi kelompok minimal 3 karakter.',
-            'prioritas_nasional.required' => 'Prioritas nasional wajib dipilih.',
-            'prioritas_nasional.in' => 'Prioritas nasional harus salah satu dari: tinggi, sedang, rendah.',
-            'target_konsumsi_harian.numeric' => 'Target konsumsi harian harus berupa angka.',
-            'target_konsumsi_harian.min' => 'Target konsumsi harian tidak boleh negatif.',
+            'ake_ketersediaan.numeric' => 'AKE Ketersediaan harus berupa angka.',
+            'ake_ketersediaan.min' => 'AKE Ketersediaan minimal 0.',
+            'ake_ketersediaan.max' => 'AKE Ketersediaan maksimal 999999.99.',
+            'skor_pph.numeric' => 'Skor PPH harus berupa angka.',
+            'skor_pph.min' => 'Skor PPH minimal 0.',
+            'skor_pph.max' => 'Skor PPH maksimal 999999.99.',
         ];
 
         $this->validate($rules, $messages);
@@ -173,8 +177,8 @@ class KelompokManagement extends Component
             'kode' => $this->kode,
             'nama' => $this->nama,
             'deskripsi' => $this->deskripsi,
-            'prioritas_nasional' => $this->prioritas_nasional,
-            'target_konsumsi_harian' => $this->target_konsumsi_harian,
+            'ake_ketersediaan' => $this->ake_ketersediaan ?: null,
+            'skor_pph' => $this->skor_pph ?: null,
             'status_aktif' => $this->status_aktif,
         ]);
 
@@ -193,14 +197,14 @@ class KelompokManagement extends Component
 
     private function resetForm()
     {
-        $this->kode = '';
-        $this->nama = '';
-        $this->deskripsi = '';
-        $this->prioritas_nasional = '';
-        $this->target_konsumsi_harian = '';
-        $this->status_aktif = true;
-        $this->editingKelompok = null;
-        $this->resetErrorBag();
+    $this->kode = '';
+    $this->nama = '';
+    $this->deskripsi = '';
+    $this->ake_ketersediaan = '';
+    $this->skor_pph = '';
+    $this->status_aktif = true;
+    $this->editingKelompok = null;
+    $this->resetErrorBag();
     }
 
     // Auto uppercase kode when updated
