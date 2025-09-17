@@ -30,7 +30,7 @@ class LaporanNbmController extends Controller
             ->whereBetween('tahun', [$tahunAwal, $tahunAkhir])
             ->selectRaw('tahun,
                 ROUND(AVG(masukan), 0) as masukan,
-                ROUND(AVG(keluaran), 0) as keluaran,
+                ROUND(SUM(keluaran), 0) as keluaran,
                 ROUND(AVG(impor), 0) as impor,
                 ROUND(AVG(ekspor), 0) as ekspor,
                 ROUND(AVG(perubahan_stok), 0) as perubahanStok,
@@ -46,7 +46,7 @@ class LaporanNbmController extends Controller
                 ROUND(AVG(kalori_hari), 0) as energiKalori,
                 ROUND(AVG(protein_hari), 1) as proteinGram,
                 ROUND(AVG(lemak_hari), 1) as lemakGram,
-                ROUND(AVG(masukan), 0) as produksi')
+                ROUND(AVG(masukan) - AVG(impor) - AVG(perubahan_stok), 0) as produksi')
             ->groupBy('tahun')
             ->orderBy('tahun')
         ;
