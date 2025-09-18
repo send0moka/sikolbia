@@ -44,7 +44,7 @@
             </div>
 
             <!-- Two Column Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="searchForm()">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4" x-data="searchForm()">
                 <!-- Search Form - Left Column -->
                 <div class="lg:col-span-1">
                     <div class="bg-neutral-50 rounded-lg p-6 sticky top-24">
@@ -275,7 +275,6 @@
                                 .tg td:first-child {
                                     text-align: left;
                                     font-weight: 500;
-                                    background-color: #f9fafb;
                                     position: sticky;
                                     left: 0;
                                     z-index: 10;
@@ -299,7 +298,7 @@
                             </style>
 
                             <div class="table-container">
-                                <table class="tg">
+                                <table class="tg text-sm">
                                     <thead>
                                         <tr>
                                             <th class="tg-header" rowspan="2">Uraian</th>
@@ -320,94 +319,88 @@
                                     <tbody>
                                         <!-- A. Penyediaan -->
                                         <tr>
-                                            <td class="tg-subheader">A. Penyediaan (Ribu Ton)</td>
+                                            <td class="tg-subheader">A. Penyediaan <i class="text-xs">/ Supply</i> (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.produksi"></td>
+                                                <td class="tg-header" x-text="Number(result.penyediaan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td :colspan="results.length + 1">1. Produksi</td>
+                                            <td :colspan="results.length + 1">1. Produksi <i class="text-xs">/ Production</i></td>
                                         </tr>
                                         <tr>
-                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Masukan</td>
+                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Masukan <i class="text-xs">/ Input</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.masukan"></td>
+                                                <td x-text="Number(result.masukan) === 0 ? '-' : Number(result.masukan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Keluaran</td>
+                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Keluaran <i class="text-xs">/ Output</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.keluaran"></td>
+                                                <td x-text="Number(result.keluaran).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>2. Impor</td>
+                                            <td>2. Impor <i class="text-xs">/ Import</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.impor"></td>
+                                                <td x-text="Number(result.impor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>3. Ekspor</td>
+                                            <td>3. Ekspor <i class="text-xs">/ Export</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.ekspor"></td>
+                                                <td x-text="Number(result.ekspor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>4. Perubahan Stok</td>
+                                            <td>4. Perubahan Stok <i class="text-xs">/ Change in stocks</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.perubahanStok"></td>
+                                                <td x-text="Number(result.perubahanStok) === 0 ? '-' : Number(result.perubahanStok).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
                                             </template>
                                         </tr>
 
-                                        <!-- B. Pemakaian Dalam Negeri -->
+                                        <!-- B. Penggunaan -->
                                         <tr>
-                                            <td class="tg-subheader">B. Pemakaian Dalam Negeri (Ribu Ton)</td>
+                                            <td class="tg-subheader">B. Penggunaan <i class="text-xs">/ Utilization</i> (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.diolah"></td>
+                                                <td class="tg-header" x-text="result.diolah"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>1. Pakan</td>
+                                            <td>1. Pakan <i class="text-xs">/ Feed</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.pakan"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>2. Bibit</td>
+                                            <td>2. Bibit <i class="text-xs">/ Seed</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.bibit"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td :colspan="results.length + 1">3. Diolah untuk
+                                            <td :colspan="results.length + 1">3. Diolah untuk <i class="text-xs">/ Manufactured for</i> :
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Makanan</td>
+                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Makanan <i class="text-xs">/ Food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.diolahMakanan"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Bukan Makanan</td>
+                                            <td>&nbsp;&nbsp;&nbsp;&nbsp;- Bukan Makanan <i class="text-xs">/ Non food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.diolahBukanMakanan"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>4. Tercecer</td>
+                                            <td>4. Tercecer <i class="text-xs">/ Waste</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.tercecer"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>5. Penggunaan Lain</td>
-                                            <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.penggunaanLain"></td>
-                                            </template>
-                                        </tr>
-                                        <tr>
-                                            <td>6. Bahan Makanan</td>
+                                            <td>5. Bahan Makanan <i class="text-xs">/ Food Ingredients</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.bahanMakanan"></td>
                                             </template>
@@ -416,34 +409,34 @@
                                         <!-- C. Ketersediaan per Kapita -->
                                         <tr>
                                             <td class="tg-subheader" :colspan="results.length + 1">C. Ketersediaan per
-                                                Kapita</td>
+                                                Kapita <i class="text-xs">/ Per capita availability</i></td>
                                         </tr>
                                         <tr>
-                                            <td>- Kilogram per Tahun</td>
+                                            <td>- Kilogram per Tahun <i class="text-xs">/ Kilograms per Year</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.kgPerTahun"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>- Gram per Hari</td>
+                                            <td>- Gram per Hari <i class="text-xs">/ Grams per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.gramPerHari"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>- Energi Kalori per Hari</td>
+                                            <td>- Energi Kalori per Hari <i class="text-xs">/ Calories per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.energiKalori"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>- Protein Gram per Hari</td>
+                                            <td>- Protein Gram per Hari <i class="text-xs">/ Protein Grams per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.proteinGram"></td>
                                             </template>
                                         </tr>
                                         <tr>
-                                            <td>- Lemak Gram per Hari</td>
+                                            <td>- Lemak Gram per Hari <i class="text-xs">/ Fat Grams per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td x-text="result.lemakGram"></td>
                                             </template>
@@ -462,8 +455,8 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <span class="text-neutral-600">Rata-rata Produksi:</span>
-                                        <div class="font-semibold" x-text="getAverageProduksi() + ' ribu ton'"></div>
+                                        <span class="text-neutral-600">Rata-rata Penyediaan:</span>
+                                        <div class="font-semibold" x-text="getAveragePenyediaan() + ' ribu ton'"></div>
                                     </div>
                                     <div>
                                         <span class="text-neutral-600">Periode Data:</span>
@@ -482,7 +475,7 @@
                                 <ul class="list-disc list-inside mt-1 space-y-1">
                                     <li>Data ketersediaan dihitung berdasarkan Neraca Bahan Makanan (NBM) dengan
                                         metodologi BKP-Kementan</li>
-                                    <li>Satuan ketersediaan dalam kilogram per kapita per tahun, dengan data produksi
+                                    <li>Satuan ketersediaan dalam kilogram per kapita per tahun, dengan data penyediaan
                                         dalam ribu ton</li>
                                     <li><strong>Data Diperkaya:</strong> Termasuk indikator ekonomi (harga, inflasi,
                                         GDP), iklim (curah hujan, suhu, El Niño), dan kebijakan (impor, subsidi)</li>
@@ -714,25 +707,31 @@
                     // Add data rows with dynamic columns
                     const ketersediaanRow = ['Ketersediaan (kg/kapita/tahun)'];
                     this.results.forEach(result => {
-                        ketersediaanRow.push(parseFloat(result.ketersediaan));
+                        ketersediaanRow.push(parseFloat(result.kgPerTahun));
                     });
                     exportData.push(ketersediaanRow);
 
-                    const produksiRow = ['Produksi (ribu ton)'];
+                    const penyediaanRow = ['Penyediaan (ribu ton)'];
                     this.results.forEach(result => {
-                        produksiRow.push(parseInt(result.produksi));
+                        penyediaanRow.push(parseFloat(result.penyediaan));
                     });
-                    exportData.push(produksiRow);
+                    exportData.push(penyediaanRow);
+
+                    const keluaranRow = ['Keluaran (ribu ton)'];
+                    this.results.forEach(result => {
+                        keluaranRow.push(parseFloat(result.keluaran));
+                    });
+                    exportData.push(keluaranRow);
 
                     const imporRow = ['Impor (ribu ton)'];
                     this.results.forEach(result => {
-                        imporRow.push(parseInt(result.impor));
+                        imporRow.push(parseFloat(result.impor));
                     });
                     exportData.push(imporRow);
 
                     const eksporRow = ['Ekspor (ribu ton)'];
                     this.results.forEach(result => {
-                        eksporRow.push(parseInt(result.ekspor));
+                        eksporRow.push(parseFloat(result.ekspor));
                     });
                     exportData.push(eksporRow);
 
@@ -798,9 +797,9 @@
                     return avg.toFixed(1);
                 },
 
-                getAverageProduksi() {
+                getAveragePenyediaan() {
                     if (this.results.length === 0) return '0';
-                    const avg = this.results.reduce((sum, item) => sum + parseInt(item.produksi), 0) / this.results.length;
+                    const avg = this.results.reduce((sum, item) => sum + parseFloat(item.penyediaan), 0) / this.results.length;
                     return Math.round(avg).toLocaleString('id-ID');
                 },
 

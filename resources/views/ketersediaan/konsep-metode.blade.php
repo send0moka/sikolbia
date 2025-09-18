@@ -111,17 +111,39 @@
                             <h3 class="text-xl font-semibold text-neutral-800 mb-4">1. Penyediaan (Supply)</h3>
                             <div class="bg-green-50 p-6 rounded-lg border-l-4 border-green-500 mb-6">
                                 <p class="font-mono text-center text-xl mb-4 text-green-800">
-                                    <strong>Ps = P - St + I - E</strong>
+                                    <strong>Penyediaan = Keluaran + Impor - Ekspor - Perubahan Stok</strong>
                                 </p>
                                 <div class="text-sm space-y-2 text-green-700">
                                     <p><strong>dimana:</strong></p>
                                     <ul class="list-none space-y-1 ml-4">
-                                        <li>Ps = total penyediaan dalam negeri</li>
-                                        <li>P = produksi</li>
-                                        <li>St = stok akhir - stok awal</li>
-                                        <li>I = Impor</li>
-                                        <li>E = ekspor</li>
+                                        <li><strong>Keluaran:</strong> Output/hasil produksi yang tersedia</li>
+                                        <li><strong>Impor:</strong> Barang yang masuk dari luar negeri (menambah penyediaan)</li>
+                                        <li><strong>Ekspor:</strong> Barang yang keluar ke luar negeri (mengurangi penyediaan)</li>
+                                        <li><strong>Perubahan Stok:</strong> 
+                                            <ul class="ml-4 mt-1 space-y-1">
+                                                <li>• Nilai <strong>negatif (-)</strong> = stok berkurang = menambah penyediaan</li>
+                                                <li>• Nilai <strong>positif (+)</strong> = stok bertambah = mengurangi penyediaan</li>
+                                            </ul>
+                                        </li>
                                     </ul>
+                                </div>
+                                
+                                <div class="mt-4 p-4 bg-white rounded border border-green-200">
+                                    <h5 class="font-semibold text-green-900 mb-2">📊 Contoh Perhitungan:</h5>
+                                    <div class="font-mono text-sm text-green-800">
+                                        <p>Keluaran: 54.648,71 ribu ton</p>
+                                        <p>Impor: 0,03 ribu ton</p>
+                                        <p>Ekspor: 0,04 ribu ton</p>
+                                        <p>Perubahan Stok: 0,00 ribu ton</p>
+                                        <hr class="my-2 border-green-300">
+                                        <p><strong>Penyediaan = 54.648,71 + 0,03 - 0,04 - 0,00 = 54.648,70 ribu ton</strong></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 p-3 bg-green-100 rounded">
+                                    <p class="text-xs text-green-800">
+                                        <strong>Catatan:</strong> Kolom "Masukan" hanya sebagai data referensi dan tidak digunakan dalam perhitungan penyediaan.
+                                    </p>
                                 </div>
                             </div>
 
@@ -164,18 +186,32 @@
                                     <h3 class="text-lg font-semibold text-green-800 mb-4">Sisi Penyediaan (Supply)</h3>
                                     <ul class="space-y-3 text-green-700">
                                         <li>
-                                            <strong>Produksi:</strong> Hasil produksi dalam negeri dari sektor pertanian, peternakan, perikanan, dan industri pangan
+                                            <strong>Keluaran:</strong> Output/hasil produksi yang tersedia untuk distribusi dan konsumsi
                                         </li>
                                         <li>
-                                            <strong>Impor:</strong> Masuknya komoditas pangan dari luar negeri
+                                            <strong>Masukan:</strong> Input produksi (data referensi, tidak digunakan dalam perhitungan penyediaan)
                                         </li>
                                         <li>
-                                            <strong>Perubahan Stok:</strong> Pengurangan atau penambahan stok komoditas pangan (stok akhir - stok awal)
+                                            <strong>Impor:</strong> Masuknya komoditas pangan dari luar negeri (menambah penyediaan)
                                         </li>
                                         <li>
-                                            <strong>Ekspor:</strong> Keluarnya komoditas pangan ke luar negeri (dikurangi dari penyediaan)
+                                            <strong>Ekspor:</strong> Keluarnya komoditas pangan ke luar negeri (mengurangi penyediaan)
+                                        </li>
+                                        <li>
+                                            <strong>Perubahan Stok:</strong> 
+                                            <div class="ml-4 mt-2 space-y-1 text-sm">
+                                                <p>• <strong>Stok berkurang (-)</strong>: menambah penyediaan (stok dilepas untuk konsumsi)</p>
+                                                <p>• <strong>Stok bertambah (+)</strong>: mengurangi penyediaan (ada yang disimpan)</p>
+                                            </div>
                                         </li>
                                     </ul>
+                                    
+                                    <div class="mt-4 p-3 bg-white rounded border border-green-200">
+                                        <p class="text-sm font-semibold text-green-900 mb-2">🧮 Rumus Perhitungan:</p>
+                                        <p class="font-mono text-sm text-green-800">
+                                            Penyediaan = Keluaran + Impor - Ekspor - Perubahan Stok
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <!-- Sisi Penggunaan -->
