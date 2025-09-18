@@ -64,13 +64,13 @@ class LaporanNbmController extends Controller
 
             return [
                 'tahun' => (int) $row->tahun,
-                'penyediaan' => round($penyediaan, 2),
+                'penyediaan' => (int) $penyediaan,
                 'masukan' => (int) $row->masukan,
                 'keluaran' => (int) $row->keluaran,
                 'impor' => (float) $row->impor,
                 'ekspor' => (float) $row->ekspor,
                 'perubahanStok' => (float) $row->perubahanStok,
-                'penggunaan' => round($penggunaan, 2),
+                'penggunaan' => (int) $penggunaan,
                 'pakan' => (int) $row->pakan,
                 'bibit' => (int) $row->bibit,
                 'diolahMakanan' => (int) $row->diolahMakanan,
