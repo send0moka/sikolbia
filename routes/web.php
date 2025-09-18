@@ -91,6 +91,14 @@ Route::prefix('konsumsi')->name('konsumsi.')->group(function () {
     Route::get('per-kapita-setahun', function () {
         return view('konsumsi.per-kapita-setahun');
     })->name('per-kapita-setahun');
+
+    // Public API for Laporan Susenas (used by the public blade via Alpine.js)
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::get('kelompok-bps', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'kelompok'])->name('kelompok-bps');
+        Route::get('komoditi-bps', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'komoditi'])->name('komoditi-bps');
+        Route::get('laporan-susenas', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'query'])->name('laporan-susenas');
+        Route::get('years', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'years'])->name('years');
+    });
 });
 
 Route::middleware(['auth'])->group(function () {
