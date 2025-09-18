@@ -40,7 +40,7 @@
             </div>
 
             <!-- Two Column Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="searchForm()">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="searchForm()" x-init="init()">
                 <!-- Search Form - Left Column -->
                 <div class="lg:col-span-1">
                     <div class="bg-neutral-50 rounded-lg p-6 sticky top-24">
@@ -52,24 +52,13 @@
                                 <label for="kelompok" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Kelompok Pangan
                                 </label>
-                                <select x-model="filters.kelompok" 
+                                <select x-model="filters.kd_kelompokbps" 
                                         @change="loadKomoditi()"
                                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Pilih Kelompok</option>
-                                    <option value="padi-padian">Padi-padian</option>
-                                    <option value="umbi-umbian">Umbi-umbian</option>
-                                    <option value="ikan-udang-cumi">Ikan/Udang/Cumi/Kerang</option>
-                                    <option value="daging">Daging</option>
-                                    <option value="telur-susu">Telur dan Susu</option>
-                                    <option value="sayur-sayuran">Sayur-sayuran</option>
-                                    <option value="kacang-kacangan">Kacang-kacangan</option>
-                                    <option value="buah-buahan">Buah-buahan</option>
-                                    <option value="minyak-lemak">Minyak dan Lemak</option>
-                                    <option value="bahan-minuman">Bahan Minuman</option>
-                                    <option value="bumbu-bumbuan">Bumbu-bumbuan</option>
-                                    <option value="konsumsi-lainnya">Konsumsi Lainnya</option>
-                                    <option value="makanan-minuman-jadi">Makanan dan Minuman Jadi</option>
-                                    <option value="tembakau-sirih">Tembakau dan Sirih</option>
+                                    <template x-for="opt in kelompokOptions" :key="opt.value">
+                                        <option :value="opt.value" x-text="opt.label"></option>
+                                    </template>
                                 </select>
                             </div>
 
@@ -78,8 +67,8 @@
                                 <label for="komoditi" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Komoditi
                                 </label>
-                                <select x-model="filters.komoditi" 
-                                        :disabled="!filters.kelompok"
+                                <select x-model="filters.kd_komoditibps" 
+                                        :disabled="!filters.kd_kelompokbps"
                                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100">
                                     <option value="">Pilih Komoditi</option>
                                     <template x-for="komoditi in availableKomoditi" :key="komoditi.value">
@@ -106,7 +95,7 @@
                             <!-- Tahun Akhir -->
                             <div>
                                 <label for="tahun_akhir" class="block text-sm font-medium text-neutral-700 mb-2">
-                                    Tahun Akhir
+                                    Tahun Akhir <span class="text-neutral-400">(opsional)</span>
                                 </label>
                                 <select x-model="filters.tahun_akhir" 
                                         :disabled="!filters.tahun_awal"
@@ -196,11 +185,11 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span class="font-semibold text-neutral-700">Kelompok:</span>
-                                    <span class="ml-2 text-neutral-900" x-text="getKelompokLabel(filters.kelompok)"></span>
+                                    <span class="ml-2 text-neutral-900" x-text="applied.kelompokLabel"></span>
                                 </div>
                                 <div>
                                     <span class="font-semibold text-neutral-700">Komoditi:</span>
-                                    <span class="ml-2 text-neutral-900" x-text="getKomoditiLabel(filters.komoditi) || 'Semua Komoditi'"></span>
+                                    <span class="ml-2 text-neutral-900" x-text="applied.komoditiLabel || 'Semua Komoditi'"></span>
                                 </div>
                                 <div>
                                     <span class="font-semibold text-neutral-700">Sumber:</span>
@@ -208,7 +197,7 @@
                                 </div>
                                 <div>
                                     <span class="font-semibold text-neutral-700">Periode:</span>
-                                    <span class="ml-2 text-neutral-900" x-text="filters.tahun_awal + (filters.tahun_akhir && filters.tahun_akhir !== filters.tahun_awal ? ' - ' + filters.tahun_akhir : '')"></span>
+                                    <span class="ml-2 text-neutral-900" x-text="applied.periode"></span>
                                 </div>
                             </div>
                         </div>
@@ -282,30 +271,30 @@
                                         <td class="tg-subheader" :colspan="results.length + 1">Konsumsi seminggu (kapita/minggu)</td>
                                     </tr>
                                     <tr>
-                                        <td>- Kuantitas (Kg)</td>
+                                        <td x-text="`- Kuantitas (${unitLabel})`"></td>
                                         <template x-for="(result, index) in results" :key="index">
-                                            <td x-text="(parseFloat(result.konsumsi) * 7 / 1000).toFixed(4)"></td>
+                                            <td x-text="formatNumber(result.qtyWeek)"></td>
                                         </template>
                                     </tr>
                                     <tr>
                                         <td>- Nilai (Rp)</td>
                                         <template x-for="(result, index) in results" :key="index">
-                                            <td x-text="formatRupiah(Math.floor(Math.random() * 50000 + 15000))"></td>
+                                            <td x-text="formatRupiah(result.valueWeek || 0)"></td>
                                         </template>
                                     </tr>
                                     <tr>
                                         <td class="tg-subheader" :colspan="results.length + 1">Konsumsi setahun (kapita/tahun)</td>
                                     </tr>
                                     <tr>
-                                        <td>- Kuantitas (Kg)</td>
+                                        <td x-text="`- Kuantitas (${unitLabel})`"></td>
                                         <template x-for="(result, index) in results" :key="index">
-                                            <td x-text="(parseFloat(result.konsumsi) * 365 / 1000).toFixed(4)"></td>
+                                            <td x-text="formatNumber(toYearQty(result.qtyWeek))"></td>
                                         </template>
                                     </tr>
                                     <tr>
                                         <td>- Nilai (Rp)</td>
                                         <template x-for="(result, index) in results" :key="index">
-                                            <td x-text="formatRupiah(Math.floor(Math.random() * 2000000 + 800000))"></td>
+                                            <td x-text="formatRupiah(toYearValue(result.valueWeek))"></td>
                                         </template>
                                     </tr>
                                 </tbody>
@@ -318,15 +307,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div>
                                         <span class="font-medium text-neutral-700">Rata-rata Konsumsi Harian:</span>
-                                        <p class="text-neutral-900" x-text="getAverageConsumption() + ' g/kapita/hari'"></p>
+                                        <p class="text-neutral-900" x-text="getAverageConsumption() + ' ' + unitLabel + '/kapita/hari'"></p>
                                     </div>
                                     <div>
-                                        <span class="font-medium text-neutral-700">Rata-rata Energi:</span>
-                                        <p class="text-neutral-900" x-text="getAverageEnergy() + ' kkal'"></p>
-                                    </div>
-                                    <div>
-                                        <span class="font-medium text-neutral-700">Rata-rata Protein:</span>
-                                        <p class="text-neutral-900" x-text="getAverageProtein() + ' g'"></p>
+                                        <span class="font-medium text-neutral-700">Rata-rata Nilai Harian:</span>
+                                        <p class="text-neutral-900" x-text="getAverageDailyValue()"></p>
                                     </div>
                                 </div>
                             </div>
@@ -379,20 +364,32 @@
     <!-- Alpine.js Component -->
     <script>
         function searchForm() {
-            return {
+                    return {
                 filters: {
-                    kelompok: '',
-                    komoditi: '',
+                    kd_kelompokbps: '',
+                    kd_komoditibps: '',
                     tahun_awal: '',
                     tahun_akhir: ''
                 },
+                kelompokOptions: [],
                 availableKomoditi: [],
                 results: [],
                 loading: false,
                 hasSearched: false,
+                selectedKelompokLabel: '',
+                selectedKomoditiLabel: '',
+                applied: { kelompokLabel: '', komoditiLabel: '', periode: '' },
                 
-                // Generate years from 1993 to 2023
-                years: Array.from({length: 31}, (_, i) => 2023 - i),
+                get unitLabel() {
+                    // Use satuan from the first row if available; default to 'Kg'
+                    if (this.results && this.results.length > 0) {
+                        return this.results[0].satuan || 'Kg';
+                    }
+                    return 'Kg';
+                },
+                
+                // Years will be loaded from API (distinct tahun in DB)
+                years: [],
                 
                 get availableEndYears() {
                     if (!this.filters.tahun_awal) {
@@ -406,107 +403,40 @@
                 },
                 
                 get canSearch() {
-                    return this.filters.kelompok && this.filters.tahun_awal;
+                    return this.filters.kd_kelompokbps && this.filters.tahun_awal;
                 },
 
-                komoditiData: {
-                    'padi-padian': [
-                        {value: 'beras', label: 'Beras'},
-                        {value: 'jagung', label: 'Jagung'},
-                        {value: 'gandum', label: 'Gandum'},
-                        {value: 'tepung-beras', label: 'Tepung Beras'},
-                        {value: 'tepung-terigu', label: 'Tepung Terigu'}
-                    ],
-                    'umbi-umbian': [
-                        {value: 'singkong', label: 'Singkong'},
-                        {value: 'kentang', label: 'Kentang'},
-                        {value: 'ubi-jalar', label: 'Ubi Jalar'},
-                        {value: 'talas', label: 'Talas'},
-                        {value: 'sagu', label: 'Sagu'}
-                    ],
-                    'ikan-udang-cumi': [
-                        {value: 'ikan-segar', label: 'Ikan Segar'},
-                        {value: 'ikan-asin', label: 'Ikan Asin'},
-                        {value: 'udang', label: 'Udang'},
-                        {value: 'cumi', label: 'Cumi'},
-                        {value: 'kerang', label: 'Kerang'}
-                    ],
-                    'daging': [
-                        {value: 'daging-sapi', label: 'Daging Sapi'},
-                        {value: 'daging-ayam', label: 'Daging Ayam'},
-                        {value: 'daging-kambing', label: 'Daging Kambing'},
-                        {value: 'daging-babi', label: 'Daging Babi'}
-                    ],
-                    'telur-susu': [
-                        {value: 'telur-ayam', label: 'Telur Ayam'},
-                        {value: 'telur-bebek', label: 'Telur Bebek'},
-                        {value: 'susu-segar', label: 'Susu Segar'},
-                        {value: 'susu-kental', label: 'Susu Kental'},
-                        {value: 'susu-bubuk', label: 'Susu Bubuk'}
-                    ],
-                    'sayur-sayuran': [
-                        {value: 'bayam', label: 'Bayam'},
-                        {value: 'kangkung', label: 'Kangkung'},
-                        {value: 'sawi', label: 'Sawi'},
-                        {value: 'kol', label: 'Kol'},
-                        {value: 'wortel', label: 'Wortel'},
-                        {value: 'tomat', label: 'Tomat'},
-                        {value: 'cabai', label: 'Cabai'}
-                    ],
-                    'kacang-kacangan': [
-                        {value: 'kacang-tanah', label: 'Kacang Tanah'},
-                        {value: 'kacang-hijau', label: 'Kacang Hijau'},
-                        {value: 'kedelai', label: 'Kedelai'},
-                        {value: 'tahu', label: 'Tahu'},
-                        {value: 'tempe', label: 'Tempe'}
-                    ],
-                    'buah-buahan': [
-                        {value: 'pisang', label: 'Pisang'},
-                        {value: 'jeruk', label: 'Jeruk'},
-                        {value: 'apel', label: 'Apel'},
-                        {value: 'mangga', label: 'Mangga'},
-                        {value: 'pepaya', label: 'Pepaya'}
-                    ],
-                    'minyak-lemak': [
-                        {value: 'minyak-kelapa', label: 'Minyak Kelapa'},
-                        {value: 'minyak-sawit', label: 'Minyak Sawit'},
-                        {value: 'margarin', label: 'Margarin'},
-                        {value: 'mentega', label: 'Mentega'}
-                    ],
-                    'bahan-minuman': [
-                        {value: 'teh', label: 'Teh'},
-                        {value: 'kopi', label: 'Kopi'},
-                        {value: 'gula-pasir', label: 'Gula Pasir'},
-                        {value: 'gula-merah', label: 'Gula Merah'}
-                    ],
-                    'bumbu-bumbuan': [
-                        {value: 'bawang-merah', label: 'Bawang Merah'},
-                        {value: 'bawang-putih', label: 'Bawang Putih'},
-                        {value: 'kemiri', label: 'Kemiri'},
-                        {value: 'ketumbar', label: 'Ketumbar'},
-                        {value: 'garam', label: 'Garam'}
-                    ],
-                    'konsumsi-lainnya': [
-                        {value: 'mie-instan', label: 'Mie Instan'},
-                        {value: 'kerupuk', label: 'Kerupuk'},
-                        {value: 'emping', label: 'Emping'}
-                    ],
-                    'makanan-minuman-jadi': [
-                        {value: 'roti', label: 'Roti'},
-                        {value: 'kue', label: 'Kue'},
-                        {value: 'minuman-kemasan', label: 'Minuman Kemasan'}
-                    ],
-                    'tembakau-sirih': [
-                        {value: 'rokok-kretek', label: 'Rokok Kretek'},
-                        {value: 'rokok-putih', label: 'Rokok Putih'},
-                        {value: 'tembakau', label: 'Tembakau'},
-                        {value: 'sirih', label: 'Sirih'}
-                    ]
+                init() {
+                    this.loadKelompok();
+                    this.loadYears();
                 },
 
-                loadKomoditi() {
-                    this.availableKomoditi = this.komoditiData[this.filters.kelompok] || [];
-                    this.filters.komoditi = '';
+                async loadKelompok() {
+                    const resp = await fetch('/konsumsi/api/kelompok-bps');
+                    const json = await resp.json();
+                    this.kelompokOptions = json.data || [];
+                },
+                async loadYears() {
+                    try {
+                        const resp = await fetch('/konsumsi/api/years');
+                        const json = await resp.json();
+                        this.years = (json.data || []).map(y => parseInt(y));
+                    } catch (e) {
+                        console.error(e);
+                        this.years = [];
+                    }
+                },
+
+                async loadKomoditi() {
+                    this.availableKomoditi = [];
+                    this.filters.kd_komoditibps = '';
+                    this.selectedKelompokLabel = (this.kelompokOptions.find(k => k.value === this.filters.kd_kelompokbps) || {}).label || '';
+                    if (!this.filters.kd_kelompokbps) return;
+                    const url = new URL(window.location.origin + '/konsumsi/api/komoditi-bps');
+                    url.searchParams.set('kd_kelompokbps', this.filters.kd_kelompokbps);
+                    const resp = await fetch(url);
+                    const json = await resp.json();
+                    this.availableKomoditi = json.data || [];
                 },
 
                 validateYearRange() {
@@ -521,65 +451,51 @@
                 async searchData() {
                     this.loading = true;
                     this.hasSearched = true;
-                    
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // Generate sample data
-                    this.generateSampleData();
-                    
-                    this.loading = false;
-                },
+                    try {
+                        const url = new URL(window.location.origin + '/konsumsi/api/laporan-susenas');
+                        url.searchParams.set('kd_kelompokbps', this.filters.kd_kelompokbps);
+                        if (this.filters.kd_komoditibps) url.searchParams.set('kd_komoditibps', this.filters.kd_komoditibps);
+                        url.searchParams.set('tahun_awal', this.filters.tahun_awal);
+                        if (this.filters.tahun_akhir) url.searchParams.set('tahun_akhir', this.filters.tahun_akhir);
 
-                generateSampleData() {
-                    const startYear = parseInt(this.filters.tahun_awal);
-                    const endYear = parseInt(this.filters.tahun_akhir) || startYear;
-                    
-                    this.results = [];
-                    
-                    for (let year = startYear; year <= endYear; year++) {
-                        const kelompokLabel = this.getKelompokLabel(this.filters.kelompok);
-                        const komoditiLabel = this.getKomoditiLabel(this.filters.komoditi);
-                        
-                        this.results.push({
-                            tahun: year,
-                            kelompok: kelompokLabel,
-                            komoditi: komoditiLabel || 'Semua Komoditi',
-                            konsumsi: (Math.random() * 300 + 50).toFixed(1),
-                            energi: Math.floor(Math.random() * 1000 + 100),
-                            protein: (Math.random() * 30 + 5).toFixed(1)
-                        });
+                        const resp = await fetch(url);
+                        const json = await resp.json();
+                        this.results = (json.data || []).map(r => ({
+                            tahun: r.tahun,
+                            qtyWeek: r.qtyWeek,
+                            valueWeek: r.valueWeek,
+                            gizi: r.gizi,
+                            satuan: r.satuan,
+                        }));
+                        this.selectedKomoditiLabel = (this.availableKomoditi.find(k => k.value === this.filters.kd_komoditibps) || {}).label || '';
+                        // Lock summary labels/period until next search
+                        this.applied.kelompokLabel = this.selectedKelompokLabel;
+                        this.applied.komoditiLabel = this.selectedKomoditiLabel;
+                        this.applied.periode = this.filters.tahun_awal + (this.filters.tahun_akhir && this.filters.tahun_akhir !== this.filters.tahun_awal ? ' - ' + this.filters.tahun_akhir : '');
+                    } catch (e) {
+                        console.error(e);
+                        this.results = [];
+                    } finally {
+                        this.loading = false;
                     }
                 },
 
-                getKelompokLabel(value) {
-                    const labels = {
-                        'padi-padian': 'Padi-padian',
-                        'umbi-umbian': 'Umbi-umbian',
-                        'ikan-udang-cumi': 'Ikan/Udang/Cumi/Kerang',
-                        'daging': 'Daging',
-                        'telur-susu': 'Telur dan Susu',
-                        'sayur-sayuran': 'Sayur-sayuran',
-                        'kacang-kacangan': 'Kacang-kacangan',
-                        'buah-buahan': 'Buah-buahan',
-                        'minyak-lemak': 'Minyak dan Lemak',
-                        'bahan-minuman': 'Bahan Minuman',
-                        'bumbu-bumbuan': 'Bumbu-bumbuan',
-                        'konsumsi-lainnya': 'Konsumsi Lainnya',
-                        'makanan-minuman-jadi': 'Makanan dan Minuman Jadi',
-                        'tembakau-sirih': 'Tembakau dan Sirih'
-                    };
-                    return labels[value] || value;
+                // Helpers
+                toYearQty(qtyWeek) {
+                    if (!qtyWeek && qtyWeek !== 0) return null;
+                    // qtyWeek is per kapita per minggu in 'Satuan' (kg or liter, etc.)
+                    const weeks = 365 / 7; // 52.142857...
+                    return qtyWeek * weeks;
                 },
-
-                getKomoditiLabel(value) {
-                    if (!value) return '';
-                    
-                    for (const kategori of Object.values(this.komoditiData)) {
-                        const komoditi = kategori.find(k => k.value === value);
-                        if (komoditi) return komoditi.label;
-                    }
-                    return value;
+                toYearValue(valWeek) {
+                    if (!valWeek && valWeek !== 0) return 0;
+                    const weeks = 365 / 7;
+                    return Math.round(valWeek * weeks);
+                },
+                formatNumber(v) {
+                    if (v === null || v === undefined || Number.isNaN(v)) return '-';
+                    // Indonesian style: thousands dot, decimal comma, up to 2 decimals
+                    return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(v));
                 },
 
                 exportToExcel() {
@@ -590,8 +506,9 @@
                     const exportData = [];
                     
                     // Add header information
-                    exportData.push(['Kelompok :', this.getKelompokLabel(this.filters.kelompok)]);
-                    exportData.push(['Komoditi :', this.getKomoditiLabel(this.filters.komoditi) || 'Semua Komoditi']);
+                    exportData.push(['Kelompok :', this.applied.kelompokLabel || '-']);
+                    exportData.push(['Komoditi :', this.applied.komoditiLabel || 'Semua Komoditi']);
+                    exportData.push(['Periode :', this.applied.periode || '-']);
                     exportData.push(['Sumber :', 'SUSENAS, BPS']);
                     exportData.push(['']);
                     exportData.push(['Catatan:']);
@@ -620,16 +537,16 @@
                     exportData.push(weeklyHeaderRow);
                     
                     // Kuantitas (Kg) - seminggu
-                    const kgWeekRow = ['- Kuantitas (Kg)'];
+                    const kgWeekRow = [`- Kuantitas (${this.unitLabel})`];
                     this.results.forEach(result => {
-                        kgWeekRow.push((parseFloat(result.konsumsi) * 7 / 1000).toFixed(4));
+                        kgWeekRow.push(this.formatNumber(result.qtyWeek));
                     });
                     exportData.push(kgWeekRow);
                     
                     // Nilai (Rp) - seminggu
                     const rpWeekRow = ['- Nilai (Rp)'];
                     this.results.forEach(result => {
-                        rpWeekRow.push(this.formatRupiah(Math.floor(Math.random() * 50000 + 15000)));
+                        rpWeekRow.push(this.formatRupiah(result.valueWeek || 0));
                     });
                     exportData.push(rpWeekRow);
                     
@@ -641,16 +558,16 @@
                     exportData.push(yearlyHeaderRow);
                     
                     // Kuantitas (Kg) - setahun
-                    const kgYearRow = ['- Kuantitas (Kg)'];
+                    const kgYearRow = [`- Kuantitas (${this.unitLabel})`];
                     this.results.forEach(result => {
-                        kgYearRow.push((parseFloat(result.konsumsi) * 365 / 1000).toFixed(4));
+                        kgYearRow.push(this.formatNumber(this.toYearQty(result.qtyWeek)));
                     });
                     exportData.push(kgYearRow);
                     
                     // Nilai (Rp) - setahun
                     const rpYearRow = ['- Nilai (Rp)'];
                     this.results.forEach(result => {
-                        rpYearRow.push(this.formatRupiah(Math.floor(Math.random() * 2000000 + 800000)));
+                        rpYearRow.push(this.formatRupiah(this.toYearValue(result.valueWeek)));
                     });
                     exportData.push(rpYearRow);
                     
@@ -685,7 +602,7 @@
                     XLSX.utils.book_append_sheet(wb, ws, 'Data Susenas');
                     
                     // Generate filename
-                    const filename = `data-susenas-${this.filters.kelompok}-${Date.now()}.xlsx`;
+                    const filename = `data-susenas-${this.filters.kd_kelompokbps || 'all'}-${Date.now()}.xlsx`;
                     
                     // Save file
                     XLSX.writeFile(wb, filename);
@@ -700,26 +617,21 @@
 
                 getAverageConsumption() {
                     if (this.results.length === 0) return '0.0';
-                    const avg = this.results.reduce((sum, item) => sum + parseFloat(item.konsumsi), 0) / this.results.length;
-                    return avg.toFixed(1);
+                    // Average daily quantity = average of (weekly qty / 7)
+                    const avg = this.results.reduce((sum, item) => sum + (parseFloat(item.qtyWeek || 0) / 7), 0) / this.results.length;
+                    return avg.toFixed(4);
                 },
-
-                getAverageEnergy() {
-                    if (this.results.length === 0) return '0';
-                    const avg = this.results.reduce((sum, item) => sum + parseInt(item.energi), 0) / this.results.length;
-                    return Math.round(avg);
-                },
-
-                getAverageProtein() {
-                    if (this.results.length === 0) return '0.0';
-                    const avg = this.results.reduce((sum, item) => sum + parseFloat(item.protein), 0) / this.results.length;
-                    return avg.toFixed(1);
+                
+                getAverageDailyValue() {
+                    if (this.results.length === 0) return this.formatRupiah(0);
+                    const avg = this.results.reduce((sum, item) => sum + ((parseFloat(item.valueWeek || 0)) / 7), 0) / this.results.length;
+                    return this.formatRupiah(avg);
                 },
 
                 resetForm() {
                     this.filters = {
-                        kelompok: '',
-                        komoditi: '',
+                        kd_kelompokbps: '',
+                        kd_komoditibps: '',
                         tahun_awal: '',
                         tahun_akhir: ''
                     };
