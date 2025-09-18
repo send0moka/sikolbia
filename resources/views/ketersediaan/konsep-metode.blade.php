@@ -150,18 +150,34 @@
                             <h3 class="text-xl font-semibold text-neutral-800 mb-4">2. Penggunaan (Utilization)</h3>
                             <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500 mb-6">
                                 <p class="font-mono text-center text-xl mb-4 text-blue-800">
-                                    <strong>Pg = Pk + Bt + Id + Tc + K</strong>
+                                    <strong>Penggunaan = Pakan + Bibit + Diolah Makanan + Diolah Bukan Makanan + Tercecer + Penggunaan Lain + Bahan Makanan</strong>
                                 </p>
                                 <div class="text-sm space-y-2 text-blue-700">
                                     <p><strong>dimana:</strong></p>
                                     <ul class="list-none space-y-1 ml-4">
-                                        <li>Pg = total penggunaan</li>
-                                        <li>Pk = pakan</li>
-                                        <li>Bt = bibit</li>
-                                        <li>Id = industri</li>
-                                        <li>Tc = tercecer</li>
-                                        <li>K = ketersediaan bahan makanan</li>
+                                        <li><strong>Pakan:</strong> Penggunaan untuk makanan ternak</li>
+                                        <li><strong>Bibit:</strong> Penggunaan untuk benih atau bibit tanaman</li>
+                                        <li><strong>Diolah Makanan:</strong> Penggunaan untuk industri pengolahan makanan</li>
+                                        <li><strong>Diolah Bukan Makanan:</strong> Penggunaan untuk industri non-makanan</li>
+                                        <li><strong>Tercecer:</strong> Kehilangan selama proses penanganan, penyimpanan, dan distribusi</li>
+                                        <li><strong>Penggunaan Lain:</strong> Penggunaan untuk keperluan lainnya</li>
+                                        <li><strong>Bahan Makanan:</strong> Jumlah yang tersedia untuk konsumsi penduduk sebagai bahan makanan</li>
                                     </ul>
+                                </div>
+                                
+                                <div class="mt-4 p-4 bg-white rounded border border-blue-200">
+                                    <h5 class="font-semibold text-blue-900 mb-2">📊 Contoh Perhitungan:</h5>
+                                    <div class="font-mono text-sm text-blue-800">
+                                        <p>Pakan: 85,32 ribu ton</p>
+                                        <p>Bibit: 1.464,17 ribu ton</p>
+                                        <p>Diolah Makanan: 8.773,80 ribu ton</p>
+                                        <p>Diolah Bukan Makanan: 0,00 ribu ton</p>
+                                        <p>Tercecer: 2.732,44 ribu ton</p>
+                                        <p>Penggunaan Lain: 0,00 ribu ton</p>
+                                        <p>Bahan Makanan: 41.592,97 ribu ton</p>
+                                        <hr class="my-2 border-blue-300">
+                                        <p><strong>Penggunaan = 85,32 + 1.464,17 + 8.773,80 + 0,00 + 2.732,44 + 0,00 + 41.592,97 = 54.648,70 ribu ton</strong></p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -225,15 +241,28 @@
                                             <strong>Bibit:</strong> Penggunaan untuk benih atau bibit tanaman
                                         </li>
                                         <li>
-                                            <strong>Industri:</strong> Penggunaan untuk keperluan industri non-pangan
+                                            <strong>Diolah Makanan:</strong> Penggunaan untuk industri pengolahan makanan
+                                        </li>
+                                        <li>
+                                            <strong>Diolah Bukan Makanan:</strong> Penggunaan untuk industri non-makanan
                                         </li>
                                         <li>
                                             <strong>Tercecer:</strong> Kehilangan selama proses penanganan, penyimpanan, dan distribusi
                                         </li>
                                         <li>
-                                            <strong>Ketersediaan Bahan Makanan:</strong> Jumlah pangan yang tersedia untuk konsumsi penduduk
+                                            <strong>Penggunaan Lain:</strong> Penggunaan untuk keperluan lainnya
+                                        </li>
+                                        <li>
+                                            <strong>Bahan Makanan:</strong> Jumlah pangan yang tersedia untuk konsumsi penduduk
                                         </li>
                                     </ul>
+                                    
+                                    <div class="mt-4 p-3 bg-white rounded border border-blue-200">
+                                        <p class="text-sm font-semibold text-blue-900 mb-2">🧮 Rumus Perhitungan:</p>
+                                        <p class="font-mono text-xs text-blue-800">
+                                            Penggunaan = Pakan + Bibit + Diolah Makanan + Diolah Bukan Makanan + Tercecer + Penggunaan Lain + Bahan Makanan
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

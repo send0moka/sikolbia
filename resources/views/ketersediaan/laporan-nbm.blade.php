@@ -321,7 +321,7 @@
                                         <tr>
                                             <td class="tg-subheader">A. Penyediaan <i class="text-xs">/ Supply</i> (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td class="tg-header" x-text="Number(result.penyediaan).toLocaleString('id-ID')"></td>
+                                                <td class="tg-header" x-text="Number(result.penyediaan) === 0 ? '-' : Number(result.penyediaan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
@@ -336,19 +336,19 @@
                                         <tr>
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Keluaran <i class="text-xs">/ Output</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="Number(result.keluaran).toLocaleString('id-ID')"></td>
+                                                <td x-text="Number(result.keluaran) === 0 ? '-' : Number(result.keluaran).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>2. Impor <i class="text-xs">/ Import</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="Number(result.impor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
+                                                <td x-text="Number(result.impor) === 0 ? '-' : Number(result.impor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>3. Ekspor <i class="text-xs">/ Export</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="Number(result.ekspor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
+                                                <td x-text="Number(result.ekspor) === 0 ? '-' : Number(result.ekspor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></td>
                                             </template>
                                         </tr>
                                         <tr>
@@ -362,19 +362,19 @@
                                         <tr>
                                             <td class="tg-subheader">B. Penggunaan <i class="text-xs">/ Utilization</i> (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td class="tg-header" x-text="result.diolah"></td>
+                                                <td class="tg-header" x-text="Number(result.penggunaan) === 0 ? '-' : Number(result.penggunaan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>1. Pakan <i class="text-xs">/ Feed</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.pakan"></td>
+                                                <td x-text="Number(result.pakan) === 0 ? '-' : Number(result.pakan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>2. Bibit <i class="text-xs">/ Seed</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.bibit"></td>
+                                                <td x-text="Number(result.bibit) === 0 ? '-' : Number(result.bibit).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
@@ -384,25 +384,25 @@
                                         <tr>
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Makanan <i class="text-xs">/ Food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.diolahMakanan"></td>
+                                                <td x-text="Number(result.diolahMakanan) === 0 ? '-' : Number(result.diolahMakanan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Bukan Makanan <i class="text-xs">/ Non food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.diolahBukanMakanan"></td>
+                                                <td x-text="Number(result.diolahBukanMakanan) === 0 ? '-' : Number(result.diolahBukanMakanan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>4. Tercecer <i class="text-xs">/ Waste</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.tercecer"></td>
+                                                <td x-text="Number(result.tercecer) === 0 ? '-' : Number(result.tercecer).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>5. Bahan Makanan <i class="text-xs">/ Food Ingredients</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.bahanMakanan"></td>
+                                                <td x-text="Number(result.bahanMakanan) === 0 ? '-' : Number(result.bahanMakanan).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
 
@@ -414,31 +414,31 @@
                                         <tr>
                                             <td>- Kilogram per Tahun <i class="text-xs">/ Kilograms per Year</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.kgPerTahun"></td>
+                                                <td x-text="Number(result.kgPerTahun) === 0 ? '-' : Number(result.kgPerTahun).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>- Gram per Hari <i class="text-xs">/ Grams per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.gramPerHari"></td>
+                                                <td x-text="Number(result.gramPerHari) === 0 ? '-' : Number(result.gramPerHari).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>- Energi Kalori per Hari <i class="text-xs">/ Calories per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.energiKalori"></td>
+                                                <td x-text="Number(result.energiKalori) === 0 ? '-' : Number(result.energiKalori).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>- Protein Gram per Hari <i class="text-xs">/ Protein Grams per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.proteinGram"></td>
+                                                <td x-text="Number(result.proteinGram) === 0 ? '-' : Number(result.proteinGram).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td>- Lemak Gram per Hari <i class="text-xs">/ Fat Grams per Day</i></td>
                                             <template x-for="result in results" :key="result.tahun">
-                                                <td x-text="result.lemakGram"></td>
+                                                <td x-text="Number(result.lemakGram) === 0 ? '-' : Number(result.lemakGram).toLocaleString('id-ID')"></td>
                                             </template>
                                         </tr>
                                     </tbody>
