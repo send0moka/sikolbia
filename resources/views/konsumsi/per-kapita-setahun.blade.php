@@ -40,7 +40,7 @@
             </div>
 
             <!-- Two Column Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="searchForm()">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="searchForm()" x-init="init()">
                 <!-- Search Form - Left Column -->
                 <div class="lg:col-span-1">
                     <div class="bg-neutral-50 rounded-lg p-6 sticky top-24">
@@ -52,24 +52,14 @@
                                 <label class="block text-sm font-medium text-neutral-700 mb-2">
                                     Kelompok Pangan
                                 </label>
-                                <select x-model="filters.kelompok" 
-                                        @change="loadKomoditi()"
+                <select x-model="filters.kd_kelompokbps" 
+                    @change="loadKomoditi()"
+                    @focus="if(!kelompokOptions.length){ loadKelompok() }"
                                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Pilih Kelompok</option>
-                                    <option value="padi-padian">Padi-padian</option>
-                                    <option value="umbi-umbian">Umbi-umbian</option>
-                                    <option value="ikan-udang-cumi">Ikan/Udang/Cumi</option>
-                                    <option value="daging">Daging</option>
-                                    <option value="telur-susu">Telur dan Susu</option>
-                                    <option value="sayur-sayuran">Sayur-sayuran</option>
-                                    <option value="kacang-kacangan">Kacang-kacangan</option>
-                                    <option value="buah-buahan">Buah-buahan</option>
-                                    <option value="minyak-lemak">Minyak dan Lemak</option>
-                                    <option value="bahan-minuman">Bahan Minuman</option>
-                                    <option value="bumbu-bumbuan">Bumbu-bumbuan</option>
-                                    <option value="konsumsi-lainnya">Konsumsi Lainnya</option>
-                                    <option value="makanan-minuman-jadi">Makanan/Minuman Jadi</option>
-                                    <option value="tembakau-sirih">Tembakau dan Sirih</option>
+                                    <template x-for="opt in kelompokOptions" :key="opt.value">
+                                        <option :value="opt.value" x-text="opt.label"></option>
+                                    </template>
                                 </select>
                             </div>
 
@@ -78,8 +68,9 @@
                                 <label class="block text-sm font-medium text-neutral-700 mb-2">
                                     Komoditi
                                 </label>
-                                <select x-model="filters.komoditi" 
-                                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <select x-model="filters.kd_komoditibps" 
+                    :disabled="!filters.kd_kelompokbps"
+                    class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100">
                                     <option value="">Semua Komoditi</option>
                                     <template x-for="komoditi in availableKomoditi" :key="komoditi.value">
                                         <option :value="komoditi.value" x-text="komoditi.label"></option>
@@ -96,9 +87,7 @@
                                         @change="validateYearRange()"
                                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Pilih Tahun</option>
-                                    <template x-for="year in years" :key="year">
-                                        <option :value="year" x-text="year"></option>
-                                    </template>
+                                    <template x-for="year in years" :key="year"><option :value="year" x-text="year"></option></template>
                                 </select>
                             </div>
 
@@ -143,7 +132,7 @@
                         <div class="mt-8 pt-6 border-t border-neutral-200">
                             <h4 class="font-medium text-neutral-900 mb-3">Info Data</h4>
                             <div class="space-y-2 text-sm text-neutral-600">
-                                <div>• Data tersedia: 1993-2023</div>
+                                <div>• Data tersedia: <span x-text="periodeText"></span></div>
                                 <div>• Agregasi: Tahunan</div>
                                 <div>• Cakupan: Nasional</div>
                                 <div>• Sumber: BPS</div>
@@ -194,15 +183,15 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
                                     <span class="text-neutral-600">Kelompok:</span>
-                                    <div class="font-semibold" x-text="getKelompokLabel(filters.kelompok)"></div>
+                                    <div class="font-semibold" x-text="applied.kelompokLabel"></div>
                                 </div>
                                 <div>
                                     <span class="text-neutral-600">Komoditi:</span>
-                                    <div class="font-semibold" x-text="getKomoditiLabel(filters.komoditi) || 'Semua'"></div>
+                                    <div class="font-semibold" x-text="applied.komoditiLabel || 'Semua Komoditi'"></div>
                                 </div>
                                 <div>
                                     <span class="text-neutral-600">Periode:</span>
-                                    <div class="font-semibold" x-text="filters.tahun_akhir ? `${filters.tahun_awal}-${filters.tahun_akhir}` : filters.tahun_awal"></div>
+                                    <div class="font-semibold" x-text="applied.periode"></div>
                                 </div>
                                 <div>
                                     <span class="text-neutral-600">Sumber:</span>
@@ -242,10 +231,10 @@
                                         </tr>
                                         <tr>
                                             <td class="sticky left-0 z-10 bg-white px-6 py-4 text-sm font-medium text-neutral-900 border-r border-neutral-200">
-                                                - Kuantitas (Kg)
+                                                - Kuantitas (<span x-text="unitLabel"></span>/tahun)
                                             </td>
                                             <template x-for="(result, index) in results" :key="index">
-                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="(parseFloat(result.konsumsi) * 365 / 1000).toFixed(2)">
+                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="formatNumber(getQtyYear(result))">
                                                 </td>
                                             </template>
                                         </tr>
@@ -254,50 +243,20 @@
                                                 - Nilai (Rp)
                                             </td>
                                             <template x-for="(result, index) in results" :key="index">
-                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="formatRupiah(Math.floor(Math.random() * 2000000 + 800000))">
+                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="formatRupiah(getValueYear(result))">
                                                 </td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td class="sticky left-0 z-10 bg-white px-6 py-4 text-sm font-medium text-neutral-900 border-r border-neutral-200">
-                                                - Energi (kkal/hari)
+                                                - Gizi (per tahun)
                                             </td>
                                             <template x-for="(result, index) in results" :key="index">
-                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="parseInt(result.energi).toLocaleString('id-ID')">
+                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="formatNumber(getGiziYear(result))">
                                                 </td>
                                             </template>
                                         </tr>
-                                        <tr class="bg-neutral-50">
-                                            <td class="sticky left-0 z-10 bg-neutral-50 px-6 py-4 text-sm font-medium text-neutral-900 border-r border-neutral-200">
-                                                - Protein (g/hari)
-                                            </td>
-                                            <template x-for="(result, index) in results" :key="index">
-                                                <td class="px-6 py-4 text-sm text-neutral-900 text-center border-l border-neutral-200" x-text="parseFloat(result.protein).toFixed(1)">
-                                                </td>
-                                            </template>
-                                        </tr>
-                                        <tr>
-                                            <td class="sticky left-0 z-10 bg-white px-6 py-4 text-sm font-medium text-neutral-900 border-r border-neutral-200">
-                                                - % AKG Energi
-                                            </td>
-                                            <template x-for="(result, index) in results" :key="index">
-                                                <td class="px-6 py-4 text-sm text-center border-l border-neutral-200"
-                                                    :class="parseFloat(result.akg_energi) >= 80 ? 'text-green-600 font-semibold' : parseFloat(result.akg_energi) >= 60 ? 'text-yellow-600 font-semibold' : 'text-red-600 font-semibold'" 
-                                                    x-text="parseFloat(result.akg_energi).toFixed(1) + '%'">
-                                                </td>
-                                            </template>
-                                        </tr>
-                                        <tr class="bg-neutral-50">
-                                            <td class="sticky left-0 z-10 bg-neutral-50 px-6 py-4 text-sm font-medium text-neutral-900 border-r border-neutral-200">
-                                                - % AKG Protein
-                                            </td>
-                                            <template x-for="(result, index) in results" :key="index">
-                                                <td class="px-6 py-4 text-sm text-center border-l border-neutral-200"
-                                                    :class="parseFloat(result.akg_protein) >= 80 ? 'text-green-600 font-semibold' : parseFloat(result.akg_protein) >= 60 ? 'text-yellow-600 font-semibold' : 'text-red-600 font-semibold'" 
-                                                    x-text="parseFloat(result.akg_protein).toFixed(1) + '%'">
-                                                </td>
-                                            </template>
-                                        </tr>
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -305,21 +264,21 @@
                             <!-- Additional Data Summary -->
                             <div class="mt-6 bg-neutral-50 p-4 rounded-lg">
                                 <h5 class="font-medium text-neutral-900 mb-2">Ringkasan Data:</h5>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
                                     <div>
-                                        <span class="text-neutral-600">Rata-rata Konsumsi:</span>
-                                        <div class="font-semibold" x-text="getAverageConsumption() + ' kg/thn'"></div>
+                                        <span class="block text-neutral-600 min-h-10 leading-snug">Rata-rata Konsumsi:</span>
+                                        <div class="font-semibold" x-text="getAverageQtyYear()"></div>
                                     </div>
                                     <div>
-                                        <span class="text-neutral-600">Rata-rata Energi:</span>
-                                        <div class="font-semibold" x-text="getAverageEnergy() + ' kkal/hari'"></div>
+                                        <span class="block text-neutral-600 min-h-10 leading-snug">Rata-rata Nilai Konsumsi Harian:</span>
+                                        <div class="font-semibold" x-text="getAverageValueYear()"></div>
                                     </div>
                                     <div>
-                                        <span class="text-neutral-600">Rata-rata Protein:</span>
-                                        <div class="font-semibold" x-text="getAverageProtein() + ' g/hari'"></div>
+                                        <span class="block text-neutral-600 min-h-10 leading-snug">Rata-rata konsumsi gizi tahunan:</span>
+                                        <div class="font-semibold" x-text="getAverageGiziYear()"></div>
                                     </div>
                                     <div>
-                                        <span class="text-neutral-600">Periode Data:</span>
+                                        <span class="block text-neutral-600 min-h-10 leading-snug">Periode Data:</span>
                                         <div class="font-semibold" x-text="results.length + ' tahun'"></div>
                                     </div>
                                 </div>
@@ -352,364 +311,162 @@
                     </a>
                     <a href="{{ route('login') }}" class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">Manajemen Data</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Login untuk akses data lengkap</p>
+                        <p class="text-sm text-neutral-600 mt-1">Kelola data konsumsi (admin)</p>
                     </a>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Alpine.js Component -->
-    <script>
-        function searchForm() {
-            return {
-                filters: {
-                    kelompok: '',
-                    komoditi: '',
-                    tahun_awal: '',
-                    tahun_akhir: ''
-                },
-                availableKomoditi: [],
-                results: [],
-                loading: false,
-                hasSearched: false,
-                
-                // Generate years from 1993 to 2023
-                years: Array.from({length: 31}, (_, i) => 2023 - i),
-                
-                get availableEndYears() {
-                    if (!this.filters.tahun_awal) return [];
-                    return this.years.filter(year => year >= parseInt(this.filters.tahun_awal));
-                },
-                
-                get hasData() {
-                    return this.results.length > 0;
-                },
-                
-                get canSearch() {
-                    return this.filters.kelompok && this.filters.tahun_awal;
-                },
+            <!-- Alpine.js Component -->
+            <script>
+                window.searchForm = function() {
+                    return {
+                        filters: { kd_kelompokbps:'', kd_komoditibps:'', tahun_awal:'', tahun_akhir:'' },
+                        kelompokOptions: [],
+                        availableKomoditi: [],
+                        results: [],
+                        loading: false,
+                        hasSearched: false,
+                        selectedKelompokLabel: '',
+                        selectedKomoditiLabel: '',
+                        applied: { kelompokLabel: '', komoditiLabel: '', periode: '' },
 
-                komoditiData: {
-                    'padi-padian': [
-                        {value: 'beras', label: 'Beras'},
-                        {value: 'tepung-terigu', label: 'Tepung Terigu'},
-                        {value: 'jagung', label: 'Jagung'},
-                        {value: 'mie-instan', label: 'Mie Instan'},
-                        {value: 'roti', label: 'Roti'}
-                    ],
-                    'umbi-umbian': [
-                        {value: 'ubi-kayu', label: 'Ubi Kayu'},
-                        {value: 'ubi-jalar', label: 'Ubi Jalar'},
-                        {value: 'kentang', label: 'Kentang'},
-                        {value: 'sagu', label: 'Sagu'},
-                        {value: 'talas', label: 'Talas'}
-                    ],
-                    'ikan-udang-cumi': [
-                        {value: 'ikan-segar', label: 'Ikan Segar'},
-                        {value: 'ikan-asin', label: 'Ikan Asin'},
-                        {value: 'udang', label: 'Udang'},
-                        {value: 'cumi', label: 'Cumi'},
-                        {value: 'kerang', label: 'Kerang'}
-                    ],
-                    'daging': [
-                        {value: 'daging-sapi', label: 'Daging Sapi'},
-                        {value: 'daging-ayam', label: 'Daging Ayam'},
-                        {value: 'daging-kambing', label: 'Daging Kambing'},
-                        {value: 'daging-babi', label: 'Daging Babi'}
-                    ],
-                    'telur-susu': [
-                        {value: 'telur-ayam', label: 'Telur Ayam'},
-                        {value: 'telur-bebek', label: 'Telur Bebek'},
-                        {value: 'susu-segar', label: 'Susu Segar'},
-                        {value: 'susu-bubuk', label: 'Susu Bubuk'},
-                        {value: 'susu-kental', label: 'Susu Kental'}
-                    ],
-                    'sayur-sayuran': [
-                        {value: 'bayam', label: 'Bayam'},
-                        {value: 'kangkung', label: 'Kangkung'},
-                        {value: 'cabai', label: 'Cabai'},
-                        {value: 'tomat', label: 'Tomat'},
-                        {value: 'wortel', label: 'Wortel'}
-                    ],
-                    'kacang-kacangan': [
-                        {value: 'kacang-tanah', label: 'Kacang Tanah'},
-                        {value: 'kacang-hijau', label: 'Kacang Hijau'},
-                        {value: 'kedelai', label: 'Kedelai'},
-                        {value: 'tahu', label: 'Tahu'},
-                        {value: 'tempe', label: 'Tempe'}
-                    ],
-                    'buah-buahan': [
-                        {value: 'pisang', label: 'Pisang'},
-                        {value: 'jeruk', label: 'Jeruk'},
-                        {value: 'apel', label: 'Apel'},
-                        {value: 'pepaya', label: 'Pepaya'},
-                        {value: 'mangga', label: 'Mangga'}
-                    ],
-                    'minyak-lemak': [
-                        {value: 'minyak-goreng', label: 'Minyak Goreng'},
-                        {value: 'minyak-kelapa', label: 'Minyak Kelapa'},
-                        {value: 'mentega', label: 'Mentega'},
-                        {value: 'margarin', label: 'Margarin'}
-                    ],
-                    'bahan-minuman': [
-                        {value: 'gula-pasir', label: 'Gula Pasir'},
-                        {value: 'gula-merah', label: 'Gula Merah'},
-                        {value: 'teh', label: 'Teh'},
-                        {value: 'kopi', label: 'Kopi'}
-                    ],
-                    'bumbu-bumbuan': [
-                        {value: 'garam', label: 'Garam'},
-                        {value: 'bawang-merah', label: 'Bawang Merah'},
-                        {value: 'bawang-putih', label: 'Bawang Putih'},
-                        {value: 'kemiri', label: 'Kemiri'}
-                    ],
-                    'konsumsi-lainnya': [
-                        {value: 'kerupuk', label: 'Kerupuk'},
-                        {value: 'emping', label: 'Emping'},
-                        {value: 'abon', label: 'Abon'}
-                    ],
-                    'makanan-minuman-jadi': [
-                        {value: 'nasi-beli', label: 'Nasi Beli'},
-                        {value: 'minuman-kemasan', label: 'Minuman Kemasan'},
-                        {value: 'kue-basah', label: 'Kue Basah'}
-                    ],
-                    'tembakau-sirih': [
-                        {value: 'rokok-kretek', label: 'Rokok Kretek'},
-                        {value: 'rokok-putih', label: 'Rokok Putih'},
-                        {value: 'tembakau', label: 'Tembakau'},
-                        {value: 'sirih', label: 'Sirih'}
-                    ]
-                },
+                        years: [],
+                        get minYear() { if (!this.years.length) return null; return Math.min(...this.years); },
+                        get maxYear() { if (!this.years.length) return null; return Math.max(...this.years); },
+                        get periodeText() { if (!this.years.length) return '-'; return `${this.minYear}-${this.maxYear}`; },
 
-                loadKomoditi() {
-                    this.availableKomoditi = this.komoditiData[this.filters.kelompok] || [];
-                    this.filters.komoditi = '';
-                },
+                        get availableEndYears() { if (!this.filters.tahun_awal) return []; return this.years.filter(year => year >= parseInt(this.filters.tahun_awal)); },
+                        get hasData() { return this.results.length > 0; },
+                        get canSearch() { return !!this.filters.kd_kelompokbps && !!this.filters.tahun_awal; },
+                        get unitLabel() { return (this.results[0]?.satuan) || 'Kg'; },
 
-                validateYearRange() {
-                    // Reset tahun akhir jika kurang dari tahun awal
-                    if (this.filters.tahun_akhir && this.filters.tahun_awal) {
-                        if (parseInt(this.filters.tahun_akhir) < parseInt(this.filters.tahun_awal)) {
-                            this.filters.tahun_akhir = '';
+                        init() { this.loadKelompok(); this.loadYears(); },
+
+                        async loadKelompok(){
+                            try{ const resp = await fetch('/konsumsi/api/kelompok-bps'); const json = await resp.json(); this.kelompokOptions = json.data || []; }
+                            catch(e){ console.error('Error loadKelompok', e); this.kelompokOptions=[]; }
+                        },
+
+                        async loadKomoditi(){
+                            this.availableKomoditi=[];
+                            this.filters.kd_komoditibps='';
+                            this.selectedKelompokLabel=(this.kelompokOptions.find(k=>k.value===this.filters.kd_kelompokbps)||{}).label||'';
+                            if(!this.filters.kd_kelompokbps) return;
+                            try{
+                                const url=new URL(window.location.origin + '/konsumsi/api/komoditi-bps');
+                                url.searchParams.set('kd_kelompokbps', this.filters.kd_kelompokbps);
+                                const resp=await fetch(url);
+                                const json=await resp.json();
+                                this.availableKomoditi=json.data||[];
+                            } catch(e){ console.error('Error loadKomoditi', e); this.availableKomoditi=[]; }
+                        },
+
+                        async loadYears(){
+                            try{ const resp=await fetch('/konsumsi/api/years'); const json=await resp.json(); this.years=(json.data||[]).map(y=>parseInt(y)).sort((a,b)=>a-b); }
+                            catch(e){ console.error('Error loadYears', e); this.years=[]; }
+                        },
+
+                        validateYearRange(){
+                            if (this.filters.tahun_akhir && this.filters.tahun_awal) {
+                                if (parseInt(this.filters.tahun_akhir) < parseInt(this.filters.tahun_awal)) {
+                                    this.filters.tahun_akhir='';
+                                }
+                            }
+                        },
+
+                        async searchData(){
+                            this.loading=true; this.hasSearched=true;
+                            try{
+                                const url = new URL(window.location.origin + '/konsumsi/api/laporan-susenas');
+                                url.searchParams.set('kd_kelompokbps', this.filters.kd_kelompokbps);
+                                if (this.filters.kd_komoditibps) url.searchParams.set('kd_komoditibps', this.filters.kd_komoditibps);
+                                url.searchParams.set('tahun_awal', this.filters.tahun_awal);
+                                if (this.filters.tahun_akhir) url.searchParams.set('tahun_akhir', this.filters.tahun_akhir);
+                                const resp = await fetch(url);
+                                const json = await resp.json();
+                                this.results = (json.data || []).map(r => ({ tahun: r.tahun, qtyWeek: r.qtyWeek, valueWeek: r.valueWeek, gizi: r.gizi, satuan: r.satuan }));
+                                this.selectedKomoditiLabel=(this.availableKomoditi.find(k=>k.value===this.filters.kd_komoditibps)||{}).label||'';
+                                this.applied.kelompokLabel=this.selectedKelompokLabel;
+                                this.applied.komoditiLabel=this.selectedKomoditiLabel || 'Semua Komoditi';
+                                this.applied.periode=this.filters.tahun_awal + (this.filters.tahun_akhir && this.filters.tahun_akhir !== this.filters.tahun_awal ? ' - ' + this.filters.tahun_akhir : '');
+                            } catch(e){ console.error('Error searchData', e); this.results=[]; }
+                            finally { this.loading=false; }
+                        },
+
+                        // Annual conversions from weekly base
+                        weeksPerYear: 365/7,
+                        getQtyYear(r){ return (parseFloat(r.qtyWeek||0) * this.weeksPerYear); },
+                        getValueYear(r){ return (parseFloat(r.valueWeek||0) * this.weeksPerYear); },
+                        getGiziYear(r){ return (parseFloat(r.gizi||0) * this.weeksPerYear); },
+
+                        exportToExcel(){
+                            const wb = XLSX.utils.book_new();
+                            const exportData=[];
+                            exportData.push(['Kelompok :', this.applied.kelompokLabel || '-']);
+                            exportData.push(['Komoditi :', this.applied.komoditiLabel || 'Semua Komoditi']);
+                            exportData.push(['Periode :', this.applied.periode || '-']);
+                            exportData.push(['Sumber :', 'SUSENAS, BPS']);
+                            exportData.push(['']);
+                            exportData.push(['Catatan: Data konsumsi per kapita setahun']);
+                            exportData.push(['']);
+
+                            const headerRow=['Uraian'];
+                            for(let i=0;i<this.results.length;i++) headerRow.push('Tahun');
+                            exportData.push(headerRow);
+
+                            const yearRow=[''];
+                            this.results.forEach(result=>yearRow.push(result.tahun));
+                            exportData.push(yearRow);
+
+                            const yearlyHeaderRow=['Konsumsi setahun (kapita/tahun)'];
+                            for(let i=0;i<this.results.length;i++) yearlyHeaderRow.push('');
+                            exportData.push(yearlyHeaderRow);
+
+                            const qtyYearRow=[`- Kuantitas (${this.unitLabel}/tahun)`];
+                            this.results.forEach(result=>qtyYearRow.push(this.formatNumber(this.getQtyYear(result))));
+                            exportData.push(qtyYearRow);
+
+                            const valueYearRow=['- Nilai (Rp)'];
+                            this.results.forEach(result=>valueYearRow.push(this.formatRupiah(this.getValueYear(result))));
+                            exportData.push(valueYearRow);
+
+                            const giziYearRow=['- Gizi (per tahun)'];
+                            this.results.forEach(result=>giziYearRow.push(this.formatNumber(this.getGiziYear(result))));
+                            exportData.push(giziYearRow);
+
+                            const ws = XLSX.utils.aoa_to_sheet(exportData);
+                            if(!ws['!merges']) ws['!merges']=[];
+                            const numCols=this.results.length;
+                            // 0-based rows:
+                            // 7: headerRow (Uraian + Tahun), 8: yearRow, 9: yearlyHeaderRow
+                            ws['!merges'].push({s:{r:7,c:0},e:{r:8,c:0}}); // Uraian vertical merge
+                            if(numCols>1) ws['!merges'].push({s:{r:7,c:1},e:{r:7,c:numCols}}); // Tahun across years
+                            ws['!merges'].push({s:{r:9,c:0},e:{r:9,c:numCols}}); // Konsumsi setahun header
+                            const colWidths=[{width:35}];
+                            for(let i=0;i<numCols;i++) colWidths.push({width:15});
+                            ws['!cols']=colWidths;
+                            XLSX.utils.book_append_sheet(wb, ws, 'Data Setahun');
+                            const filename = `data-konsumsi-setahun-${this.filters.kd_kelompokbps || 'all'}-${Date.now()}.xlsx`;
+                            XLSX.writeFile(wb, filename);
+                        },
+
+                        formatRupiah(amount){ return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount); },
+                        formatNumber(v){ if (v===null||v===undefined||Number.isNaN(v)) return '-'; return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(v)); },
+
+                        getAverageQtyYear(){ if (!this.results.length) return `0 ${this.unitLabel}/thn`; const avg = this.results.reduce((s,i)=>s+this.getQtyYear(i),0)/this.results.length; return `${this.formatNumber(avg)} ${this.unitLabel}/thn`; },
+                        getAverageValueYear(){ if (!this.results.length) return this.formatRupiah(0)+' /thn'; const avg = this.results.reduce((s,i)=>s+this.getValueYear(i),0)/this.results.length; return this.formatRupiah(avg)+' /thn'; },
+                        getAverageDailyGizi(){ if (!this.results.length) return '0'; const avg = this.results.reduce((s,i)=>s+((parseFloat(i.gizi||0))/7),0)/this.results.length; return this.formatNumber(avg); },
+                        getAverageGiziYear(){ if (!this.results.length) return '0 /thn'; const avg = this.results.reduce((s,i)=>s+this.getGiziYear(i),0)/this.results.length; return this.formatNumber(avg)+' /thn'; },
+
+                        resetForm(){
+                            this.filters={ kd_kelompokbps:'', kd_komoditibps:'', tahun_awal:'', tahun_akhir:'' };
+                            this.availableKomoditi=[];
+                            this.results=[];
+                            this.hasSearched=false;
+                            this.selectedKomoditiLabel='';
+                            this.selectedKelompokLabel='';
                         }
                     }
-                },
-
-                async searchData() {
-                    this.loading = true;
-                    this.hasSearched = true;
-                    
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // Generate sample data
-                    this.generateSampleData();
-                    
-                    this.loading = false;
-                },
-
-                generateSampleData() {
-                    const startYear = parseInt(this.filters.tahun_awal);
-                    const endYear = parseInt(this.filters.tahun_akhir) || startYear;
-                    
-                    this.results = [];
-                    
-                    for (let year = startYear; year <= endYear; year++) {
-                        this.results.push({
-                            tahun: year,
-                            konsumsi: (Math.random() * 200 + 50).toFixed(1), // gram per hari, akan dikonversi ke kg per tahun
-                            energi: Math.floor(Math.random() * 300 + 100), // kkal per hari
-                            protein: (Math.random() * 15 + 2).toFixed(1), // gram per hari
-                            lemak: (Math.random() * 10 + 1).toFixed(1), // gram per hari
-                            karbohidrat: (Math.random() * 50 + 20).toFixed(1), // gram per hari
-                            akg_energi: (Math.random() * 40 + 60).toFixed(1), // % AKG Energi (60-100%)
-                            akg_protein: (Math.random() * 50 + 70).toFixed(1) // % AKG Protein (70-120%)
-                        });
-                    }
-                },
-
-                getKelompokLabel(value) {
-                    const labels = {
-                        'padi-padian': 'Padi-padian',
-                        'umbi-umbian': 'Umbi-umbian', 
-                        'ikan-udang-cumi': 'Ikan/Udang/Cumi',
-                        'daging': 'Daging',
-                        'telur-susu': 'Telur dan Susu',
-                        'sayur-sayuran': 'Sayur-sayuran',
-                        'kacang-kacangan': 'Kacang-kacangan',
-                        'buah-buahan': 'Buah-buahan',
-                        'minyak-lemak': 'Minyak dan Lemak',
-                        'bahan-minuman': 'Bahan Minuman',
-                        'bumbu-bumbuan': 'Bumbu-bumbuan',
-                        'konsumsi-lainnya': 'Konsumsi Lainnya',
-                        'makanan-minuman-jadi': 'Makanan/Minuman Jadi',
-                        'tembakau-sirih': 'Tembakau dan Sirih'
-                    };
-                    return labels[value] || value;
-                },
-
-                getKomoditiLabel(value) {
-                    if (!value) return '';
-                    
-                    for (const kategori of Object.values(this.komoditiData)) {
-                        const found = kategori.find(item => item.value === value);
-                        if (found) return found.label;
-                    }
-                    return value;
-                },
-
-                exportToExcel() {
-                    // Create a new workbook
-                    const wb = XLSX.utils.book_new();
-                    
-                    // Prepare data with headers and information
-                    const exportData = [];
-                    
-                    // Add header information
-                    exportData.push(['Kelompok :', this.getKelompokLabel(this.filters.kelompok)]);
-                    exportData.push(['Komoditi :', this.getKomoditiLabel(this.filters.komoditi) || 'Semua Komoditi']);
-                    exportData.push(['Sumber :', 'SUSENAS, BPS']);
-                    exportData.push(['']);
-                    exportData.push(['Catatan: Data konsumsi per kapita setahun']);
-                    exportData.push(['']);
-                    
-                    // Add table header with dynamic columns based on results length
-                    const headerRow = ['Uraian'];
-                    // Add "Tahun" headers for each column
-                    for (let i = 0; i < this.results.length; i++) {
-                        headerRow.push('Tahun');
-                    }
-                    exportData.push(headerRow);
-                    
-                    // Add year row
-                    const yearRow = [''];
-                    this.results.forEach(result => {
-                        yearRow.push(result.tahun);
-                    });
-                    exportData.push(yearRow);
-                    
-                    // Add consumption data rows with dynamic columns
-                    const yearlyHeaderRow = ['Konsumsi setahun (kapita/tahun)'];
-                    for (let i = 0; i < this.results.length; i++) {
-                        yearlyHeaderRow.push('');
-                    }
-                    exportData.push(yearlyHeaderRow);
-                    
-                    // Kuantitas (Kg) - setahun
-                    const kgYearRow = ['- Kuantitas (Kg)'];
-                    this.results.forEach(result => {
-                        kgYearRow.push((parseFloat(result.konsumsi) * 365 / 1000).toFixed(2));
-                    });
-                    exportData.push(kgYearRow);
-                    
-                    // Nilai (Rp) - setahun
-                    const rpYearRow = ['- Nilai (Rp)'];
-                    this.results.forEach(result => {
-                        rpYearRow.push(this.formatRupiah(Math.floor(Math.random() * 2000000 + 800000)));
-                    });
-                    exportData.push(rpYearRow);
-                    
-                    // Energi (kkal/hari)
-                    const energyDayRow = ['- Energi (kkal/hari)'];
-                    this.results.forEach(result => {
-                        energyDayRow.push(parseInt(result.energi));
-                    });
-                    exportData.push(energyDayRow);
-                    
-                    // Protein (g/hari)
-                    const proteinDayRow = ['- Protein (g/hari)'];
-                    this.results.forEach(result => {
-                        proteinDayRow.push(parseFloat(result.protein).toFixed(1));
-                    });
-                    exportData.push(proteinDayRow);
-                    
-                    // % AKG Energi
-                    const akgEnergiRow = ['- % AKG Energi'];
-                    this.results.forEach(result => {
-                        akgEnergiRow.push(parseFloat(result.akg_energi).toFixed(1) + '%');
-                    });
-                    exportData.push(akgEnergiRow);
-                    
-                    // % AKG Protein
-                    const akgProteinRow = ['- % AKG Protein'];
-                    this.results.forEach(result => {
-                        akgProteinRow.push(parseFloat(result.akg_protein).toFixed(1) + '%');
-                    });
-                    exportData.push(akgProteinRow);
-                    
-                    // Create worksheet
-                    const ws = XLSX.utils.aoa_to_sheet(exportData);
-                    
-                    // Define merge ranges for proper table layout with dynamic columns
-                    if (!ws['!merges']) ws['!merges'] = [];
-                    
-                    const numCols = this.results.length;
-                    
-                    // Merge cells for "Uraian" header (row 7, spans 2 rows)
-                    ws['!merges'].push({s: {r: 6, c: 0}, e: {r: 7, c: 0}});
-                    
-                    // Merge cells for "Tahun" header (row 7, spans all year columns)
-                    if (numCols > 1) {
-                        ws['!merges'].push({s: {r: 6, c: 1}, e: {r: 6, c: numCols}});
-                    }
-                    
-                    // Merge cells for category headers
-                    ws['!merges'].push({s: {r: 8, c: 0}, e: {r: 8, c: numCols}}); // Konsumsi setahun
-                    
-                    // Set column widths dynamically
-                    const colWidths = [{width: 25}]; // Uraian column
-                    for (let i = 0; i < numCols; i++) {
-                        colWidths.push({width: 15}); // Data columns
-                    }
-                    ws['!cols'] = colWidths;
-                    
-                    // Add worksheet to workbook
-                    XLSX.utils.book_append_sheet(wb, ws, 'Data Setahun');
-                    
-                    // Generate filename
-                    const filename = `data-konsumsi-setahun-${this.filters.kelompok}-${Date.now()}.xlsx`;
-                    
-                    // Save file
-                    XLSX.writeFile(wb, filename);
-                },
-
-                formatRupiah(amount) {
-                    return new Intl.NumberFormat('id-ID', {
-                        maximumFractionDigits: 2
-                    }).format(amount);
-                },
-
-                getAverageConsumption() {
-                    if (this.results.length === 0) return '0.0';
-                    const avg = this.results.reduce((sum, item) => sum + (parseFloat(item.konsumsi) * 365 / 1000), 0) / this.results.length;
-                    return avg.toFixed(1);
-                },
-
-                getAverageEnergy() {
-                    if (this.results.length === 0) return '0';
-                    const avg = this.results.reduce((sum, item) => sum + parseInt(item.energi), 0) / this.results.length;
-                    return Math.round(avg);
-                },
-
-                getAverageProtein() {
-                    if (this.results.length === 0) return '0.0';
-                    const avg = this.results.reduce((sum, item) => sum + parseFloat(item.protein), 0) / this.results.length;
-                    return avg.toFixed(1);
-                },
-
-                resetForm() {
-                    this.filters = {
-                        kelompok: '',
-                        komoditi: '',
-                        tahun_awal: '',
-                        tahun_akhir: ''
-                    };
-                    this.availableKomoditi = [];
-                    this.results = [];
-                    this.hasSearched = false;
                 }
-            }
-        }
-    </script>
+            </script>
 </x-layouts.landing>

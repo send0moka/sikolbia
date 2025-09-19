@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\TbKelompokbps;
 use App\Models\TbKomoditibps;
 use App\Models\TransaksiSusenas;
+use App\Models\Wilayah;
 
 class LaporanSusenasController extends Controller
 {
@@ -23,6 +24,27 @@ class LaporanSusenasController extends Controller
             ->pluck('tahun');
 
         return response()->json(['data' => $years]);
+    }
+
+    /**
+     * GET /konsumsi/api/stats
+     * Returns quick stats counts for sidebar: provinces, kelompok, komoditi.
+     */
+    public function stats()
+    {
+        // Provinces in this app are represented in table 'wilayah' with kategori id 1
+        $provinces = Wilayah::where('id_kategori', 1)->count();
+
+        $kelompok = TbKelompokbps::count();
+        $komoditi = TbKomoditibps::count();
+
+        return response()->json([
+            'data' => [
+                'provinces' => $provinces,
+                'kelompok' => $kelompok,
+                'komoditi' => $komoditi,
+            ]
+        ]);
     }
 
     /**

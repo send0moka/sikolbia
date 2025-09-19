@@ -134,10 +134,10 @@
                         <div class="mt-8 pt-6 border-t border-neutral-200">
                             <h4 class="font-medium text-neutral-900 mb-3">Informasi Data</h4>
                             <div class="space-y-2 text-sm text-neutral-600">
-                                <p>• Periode: 1993 - 2023</p>
-                                <p>• 34 Provinsi</p>
-                                <p>• 14 Kelompok Pangan</p>
-                                <p>• 215+ Komoditi</p>
+                                <p>• Periode: <span x-text="periodeText"></span></p>
+                                <p>• <span x-text="stats.provinces ?? '-'" ></span> Provinsi</p>
+                                <p>• <span x-text="stats.kelompok ?? '-'" ></span> Kelompok Pangan</p>
+                                <p>• <span x-text="stats.komoditi ?? '-'" ></span> Komoditi</p>
                             </div>
                         </div>
                     </div>
@@ -379,6 +379,7 @@
                 selectedKelompokLabel: '',
                 selectedKomoditiLabel: '',
                 applied: { kelompokLabel: '', komoditiLabel: '', periode: '' },
+                stats: { provinces: null, kelompok: null, komoditi: null },
                 
                 get unitLabel() {
                     // Use satuan from the first row if available; default to 'Kg'
@@ -390,6 +391,18 @@
                 
                 // Years will be loaded from API (distinct tahun in DB)
                 years: [],
+                get minYear() {
+                    if (!this.years || this.years.length === 0) return null;
+                    return this.years.reduce((min, y) => y < min ? y : min, this.years[0]);
+                },
+                get maxYear() {
+                    if (!this.years || this.years.length === 0) return null;
+                    return this.years.reduce((max, y) => y > max ? y : max, this.years[0]);
+                },
+                get periodeText() {
+                    if (!this.years || this.years.length === 0) return '-';
+                    return `${this.minYear} - ${this.maxYear}`;
+                },
                 
                 get availableEndYears() {
                     if (!this.filters.tahun_awal) {
@@ -409,6 +422,7 @@
                 init() {
                     this.loadKelompok();
                     this.loadYears();
+                    this.loadStats();
                 },
 
                 async loadKelompok() {
@@ -424,6 +438,17 @@
                     } catch (e) {
                         console.error(e);
                         this.years = [];
+                    }
+                },
+
+                async loadStats() {
+                    try {
+                        const resp = await fetch('/konsumsi/api/stats');
+                        const json = await resp.json();
+                        this.stats = json.data || { provinces: null, kelompok: null, komoditi: null };
+                    } catch (e) {
+                        console.error(e);
+                        this.stats = { provinces: null, kelompok: null, komoditi: null };
                     }
                 },
 
@@ -497,6 +522,10 @@
                     // Indonesian style: thousands dot, decimal comma, up to 2 decimals
                     return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(v));
                 },
+                formatInteger(v) {
+                    if (v === null || v === undefined || Number.isNaN(v)) return '-';
+                    return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(Number(v)));
+                },
 
                 exportToExcel() {
                     // Create a new workbook
@@ -550,6 +579,9 @@
                     });
                     exportData.push(rpWeekRow);
                     
+                    // spacer between weekly and yearly blocks
+                    exportData.push(['']);
+                    
                     // Add yearly consumption with dynamic columns
                     const yearlyHeaderRow = ['Konsumsi setahun (kapita/tahun)'];
                     for (let i = 0; i < this.results.length; i++) {
@@ -579,20 +611,24 @@
                     
                     const numCols = this.results.length;
                     
-                    // Merge cells for "Uraian" header (row 7, spans 2 rows)
-                    ws['!merges'].push({s: {r: 6, c: 0}, e: {r: 7, c: 0}});
-                    
-                    // Merge cells for "Tahun" header (row 7, spans all year columns)
+                    // Merge cells for table headers (0-based row indexes)
+                    // Rows built above after adding spacer:
+                    // 7: headerRow (Uraian + Tahun)
+                    // 8: yearRow
+                    // 9: weeklyHeaderRow
+                    // 10: kgWeekRow
+                    // 11: rpWeekRow
+                    // 12: spacer
+                    // 13: yearlyHeaderRow
+                    ws['!merges'].push({s: {r: 7, c: 0}, e: {r: 8, c: 0}}); // Uraian (vertical)
                     if (numCols > 1) {
-                        ws['!merges'].push({s: {r: 6, c: 1}, e: {r: 6, c: numCols}});
+                        ws['!merges'].push({s: {r: 7, c: 1}, e: {r: 7, c: numCols}}); // Tahun (horizontal)
                     }
+                    ws['!merges'].push({s: {r: 9, c: 0}, e: {r: 9, c: numCols}});  // Konsumsi seminggu
+                    ws['!merges'].push({s: {r: 13, c: 0}, e: {r: 13, c: numCols}}); // Konsumsi setahun
                     
-                    // Merge cells for category headers
-                    ws['!merges'].push({s: {r: 8, c: 0}, e: {r: 8, c: numCols}}); // Konsumsi seminggu
-                    ws['!merges'].push({s: {r: 11, c: 0}, e: {r: 11, c: numCols}}); // Konsumsi setahun
-                    
-                    // Set column widths dynamically
-                    const colWidths = [{width: 25}]; // Uraian column
+                    // Set column widths dynamically (wider first column for long headers)
+                    const colWidths = [{width: 35}]; // Uraian column
                     for (let i = 0; i < numCols; i++) {
                         colWidths.push({width: 15}); // Year columns
                     }

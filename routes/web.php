@@ -98,6 +98,7 @@ Route::prefix('konsumsi')->name('konsumsi.')->group(function () {
         Route::get('komoditi-bps', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'komoditi'])->name('komoditi-bps');
         Route::get('laporan-susenas', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'query'])->name('laporan-susenas');
         Route::get('years', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'years'])->name('years');
+        Route::get('stats', [App\Http\Controllers\Konsumsi\LaporanSusenasController::class, 'stats'])->name('stats');
     });
 });
 
