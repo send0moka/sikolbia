@@ -351,7 +351,7 @@
                                             <td>2. Impor <i class="text-xs">/ Import</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.impor) === 0 ? '-' : Number(result.impor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })">
+                                                    x-text="Number(result.impor) === 0 ? '-' : Number(result.impor).toLocaleString('id-ID')">
                                                 </td>
                                             </template>
                                         </tr>
@@ -359,7 +359,7 @@
                                             <td>3. Ekspor <i class="text-xs">/ Export</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.ekspor) === 0 ? '-' : Number(result.ekspor).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })">
+                                                    x-text="Number(result.ekspor) === 0 ? '-' : Number(result.ekspor).toLocaleString('id-ID')">
                                                 </td>
                                             </template>
                                         </tr>
@@ -367,7 +367,7 @@
                                             <td>4. Perubahan Stok <i class="text-xs">/ Change in stocks</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.perubahanStok) === 0 ? '-' : Number(result.perubahanStok).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })">
+                                                    x-text="Number(result.perubahanStok) === 0 ? '-' : Number(result.perubahanStok).toLocaleString('id-ID')">
                                                 </td>
                                             </template>
                                         </tr>

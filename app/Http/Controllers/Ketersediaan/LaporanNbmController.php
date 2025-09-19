@@ -31,7 +31,7 @@ class LaporanNbmController extends Controller
             ->selectRaw('
                 tahun,
                 ROUND(AVG(masukan), 2) as masukan,
-                ROUND(SUM(keluaran), 2) as keluaran,
+                ROUND(AVG(keluaran), 2) as keluaran,
                 ROUND(AVG(impor), 2) as impor,
                 ROUND(AVG(ekspor), 2) as ekspor,
                 ROUND(AVG(perubahan_stok), 2) as perubahanStok,
@@ -60,7 +60,7 @@ class LaporanNbmController extends Controller
 
         // Normalize keys to match frontend field names
         $results = $rows->map(function ($row) {
-            $penyediaan = $row->keluaran + $row->impor - $row->ekspor - $row->perubahanStok;
+            $penyediaan = $row->keluaran - $row->perubahanStok + $row->impor - $row->ekspor;
             $penggunaan = $row->pakan + $row->bibit + $row->diolahMakanan + $row->diolahBukanMakanan + $row->tercecer + $row->penggunaanLain + $row->bahanMakanan;
 
             return [

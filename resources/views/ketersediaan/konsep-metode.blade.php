@@ -111,32 +111,43 @@
                             <h3 class="text-xl font-semibold text-neutral-800 mb-4">1. Penyediaan (Supply)</h3>
                             <div class="bg-green-50 p-6 rounded-lg border-l-4 border-green-500 mb-6">
                                 <p class="font-mono text-center text-xl mb-4 text-green-800">
-                                    <strong>Penyediaan = Keluaran + Impor - Ekspor - Perubahan Stok</strong>
+                                    <strong>TS = O - ∆St + M - X</strong>
                                 </p>
                                 <div class="text-sm space-y-2 text-green-700">
                                     <p><strong>dimana:</strong></p>
                                     <ul class="list-none space-y-1 ml-4">
-                                        <li><strong>Keluaran:</strong> Output/hasil produksi yang tersedia</li>
-                                        <li><strong>Impor:</strong> Barang yang masuk dari luar negeri (menambah penyediaan)</li>
-                                        <li><strong>Ekspor:</strong> Barang yang keluar ke luar negeri (mengurangi penyediaan)</li>
-                                        <li><strong>Perubahan Stok:</strong> 
+                                        <li><strong>TS</strong> = Total Supply (Penyediaan)</li>
+                                        <li><strong>O</strong> = Output/produksi (keluaran)</li>
+                                        <li><strong>∆St</strong> = Perubahan stok (stock change)</li>
+                                        <li><strong>M</strong> = Import (impor)</li>
+                                        <li><strong>X</strong> = Export (ekspor)</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+                                    <h5 class="font-semibold text-blue-900 mb-2">📝 Penjelasan Komponen:</h5>
+                                    <ul class="text-blue-800 text-sm space-y-1">
+                                        <li><strong>O (Keluaran):</strong> Output/hasil produksi yang tersedia</li>
+                                        <li><strong>∆St (Perubahan Stok):</strong> 
                                             <ul class="ml-4 mt-1 space-y-1">
-                                                <li>• Nilai <strong>negatif (-)</strong> = stok berkurang = menambah penyediaan</li>
                                                 <li>• Nilai <strong>positif (+)</strong> = stok bertambah = mengurangi penyediaan</li>
+                                                <li>• Nilai <strong>negatif (-)</strong> = stok berkurang = menambah penyediaan</li>
                                             </ul>
                                         </li>
+                                        <li><strong>M (Impor):</strong> Barang yang masuk dari luar negeri (menambah penyediaan)</li>
+                                        <li><strong>X (Ekspor):</strong> Barang yang keluar ke luar negeri (mengurangi penyediaan)</li>
                                     </ul>
                                 </div>
                                 
                                 <div class="mt-4 p-4 bg-white rounded border border-green-200">
                                     <h5 class="font-semibold text-green-900 mb-2">📊 Contoh Perhitungan:</h5>
                                     <div class="font-mono text-sm text-green-800">
-                                        <p>Keluaran: 54.648,71 ribu ton</p>
-                                        <p>Impor: 0,03 ribu ton</p>
-                                        <p>Ekspor: 0,04 ribu ton</p>
-                                        <p>Perubahan Stok: 0,00 ribu ton</p>
+                                        <p>O (Keluaran): 54.648,71 ribu ton</p>
+                                        <p>∆St (Perubahan Stok): 0,00 ribu ton</p>
+                                        <p>M (Impor): 0,03 ribu ton</p>
+                                        <p>X (Ekspor): 0,04 ribu ton</p>
                                         <hr class="my-2 border-green-300">
-                                        <p><strong>Penyediaan = 54.648,71 + 0,03 - 0,04 - 0,00 = 54.648,70 ribu ton</strong></p>
+                                        <p><strong>TS = 54.648,71 - 0,00 + 0,03 - 0,04 = 54.648,70 ribu ton</strong></p>
                                     </div>
                                 </div>
                                 
