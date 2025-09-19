@@ -31,16 +31,17 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
-                        <!-- Logo -->
-                        <div class="flex-shrink-0 flex items-center">
+                        <!-- Logo (allow shrink; hide long title below lg to avoid overflow) -->
+                        <div class="flex items-center min-w-0">
                             <img src="/favicon.svg" alt="Logo" class="h-8 w-8 mr-3">
-                            <a href="{{ route('home') }}" class="text-xl font-semibold text-[#6a4c35] hover:text-[#782c7c] transition-colors">
+                            <!-- Always show full title; wrap and scale text so it fits on small screens -->
+                            <a href="{{ route('home') }}" class="block text-xl max-[1024px]:text-lg max-[768px]:text-base max-[420px]:text-sm font-semibold text-[#6a4c35] hover:text-[#782c7c] transition-colors leading-tight max-w-[55vw] md:max-w-[40vw] lg:max-w-none">
                                 Basis Data Konsumsi Pangan
                             </a>
                         </div>
 
-                        <!-- Navigation Links -->
-                        <div class="hidden sm:ml-8 sm:flex sm:space-x-8 sm:items-center">
+                        <!-- Navigation Links (show from md and up to avoid overflow on small widths/zoom) -->
+                        <div class="hidden md:ml-8 md:flex md:space-x-8 md:items-center">
                             <!-- Home -->
                             <a href="{{ route('home') }}" 
                                class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
@@ -153,8 +154,8 @@
                         </div>
                     </div>
 
-                    <!-- Mobile menu button -->
-                    <div class="sm:hidden flex items-center">
+                    <!-- Mobile menu button (visible below md) -->
+                    <div class="md:hidden flex items-center">
                         <button x-data x-on:click="$dispatch('toggle-mobile-menu')" 
                                 class="inline-flex items-center justify-center p-2 rounded-md text-neutral-400 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 transition-colors">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,12 +166,12 @@
                 </div>
             </div>
 
-            <!-- Mobile menu -->
+          <!-- Mobile menu (visible below md) -->
             <div x-data="{ open: false }" 
                  x-on:toggle-mobile-menu.window="open = !open"
                  x-show="open" 
                  x-transition
-                 class="sm:hidden bg-white border-t border-neutral-200">
+              class="md:hidden bg-white border-t border-neutral-200">
                 <div class="pt-2 pb-3 space-y-1">
                     <a href="{{ route('home') }}" 
                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 hover:border-[#2f8b3e] transition-colors">
