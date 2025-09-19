@@ -63,7 +63,7 @@
                             </div>
 
                             <!-- Pilih Komoditi -->
-                            <div>
+                            <div x-show="availableKomoditi.length > 0">
                                 <label for="komoditi" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Komoditi
                                 </label>
@@ -93,7 +93,7 @@
                             </div>
 
                             <!-- Tahun Akhir -->
-                            <div>
+                            <div x-show="filters.tahun_awal">
                                 <label for="tahun_akhir" class="block text-sm font-medium text-neutral-700 mb-2">
                                     Tahun Akhir <span class="text-neutral-400">(opsional)</span>
                                 </label>
@@ -189,7 +189,7 @@
                                 </div>
                                 <div>
                                     <span class="font-semibold text-neutral-700">Komoditi:</span>
-                                    <span class="ml-2 text-neutral-900" x-text="applied.komoditiLabel || 'Semua Komoditi'"></span>
+                                    <span class="ml-2 text-neutral-900" x-text="applied.komoditiLabel"></span>
                                 </div>
                                 <div>
                                     <span class="font-semibold text-neutral-700">Sumber:</span>
@@ -416,7 +416,8 @@
                 },
                 
                 get canSearch() {
-                    return this.filters.kd_kelompokbps && this.filters.tahun_awal;
+                    // Require kelompok, komoditi, and tahun_awal
+                    return !!this.filters.kd_kelompokbps && !!this.filters.kd_komoditibps && !!this.filters.tahun_awal;
                 },
 
                 init() {
@@ -453,6 +454,7 @@
                 },
 
                 async loadKomoditi() {
+                    // reset komoditi when kelompok changes
                     this.availableKomoditi = [];
                     this.filters.kd_komoditibps = '';
                     this.selectedKelompokLabel = (this.kelompokOptions.find(k => k.value === this.filters.kd_kelompokbps) || {}).label || '';
@@ -536,7 +538,7 @@
                     
                     // Add header information
                     exportData.push(['Kelompok :', this.applied.kelompokLabel || '-']);
-                    exportData.push(['Komoditi :', this.applied.komoditiLabel || 'Semua Komoditi']);
+                    exportData.push(['Komoditi :', this.applied.komoditiLabel]);
                     exportData.push(['Periode :', this.applied.periode || '-']);
                     exportData.push(['Sumber :', 'SUSENAS, BPS']);
                     exportData.push(['']);
@@ -674,6 +676,9 @@
                     this.availableKomoditi = [];
                     this.results = [];
                     this.hasSearched = false;
+                    this.selectedKelompokLabel = '';
+                    this.selectedKomoditiLabel = '';
+                    this.applied = { kelompokLabel: '', komoditiLabel: '', periode: '' };
                 }
             }
         }

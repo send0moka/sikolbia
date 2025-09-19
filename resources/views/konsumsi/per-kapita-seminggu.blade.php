@@ -323,7 +323,7 @@
                     return this.years.filter(year => year >= parseInt(this.filters.tahun_awal));
                 },
                 get hasData() { return this.results.length > 0; },
-                get canSearch() { return this.filters.kd_kelompokbps && this.filters.tahun_awal; },
+                get canSearch() { return !!this.filters.kd_kelompokbps && !!this.filters.kd_komoditibps && !!this.filters.tahun_awal; },
                 get unitLabel() { return (this.results[0]?.satuan) || 'Kg'; },
 
                 init() {
@@ -407,7 +407,7 @@
                     const wb = XLSX.utils.book_new();
                     const exportData = [];
                     exportData.push(['Kelompok :', this.applied.kelompokLabel || '-']);
-                    exportData.push(['Komoditi :', this.applied.komoditiLabel || 'Semua Komoditi']);
+                    exportData.push(['Komoditi :', this.applied.komoditiLabel]);
                     exportData.push(['Periode :', this.applied.periode || '-']);
                     exportData.push(['Sumber :', 'SUSENAS, BPS']);
                     exportData.push(['']);
@@ -454,7 +454,15 @@
                 getAverageDailyQty() { if (!this.results.length) return '0 /hari'; const avg = this.results.reduce((s,i)=>s+((parseFloat(i.qtyWeek||0))/7),0)/this.results.length; return `${this.formatNumber(avg)} ${this.unitLabel}/hari`; },
                 getAverageDailyValue() { if (!this.results.length) return this.formatRupiah(0)+' /hari'; const avg = this.results.reduce((s,i)=>s+((parseFloat(i.valueWeek||0))/7),0)/this.results.length; return 'Rp ' + this.formatRupiah(avg)+' /hari'; },
                 getAverageDailyGizi() { if (!this.results.length) return '0'; const avg = this.results.reduce((s,i)=>s+((parseFloat(i.gizi||0))/7),0)/this.results.length; return this.formatNumber(avg); },
-                resetForm() { this.filters = { kd_kelompokbps:'', kd_komoditibps:'', tahun_awal:'', tahun_akhir:'' }; this.availableKomoditi=[]; this.results=[]; this.hasSearched=false; }
+                resetForm() {
+                    this.filters = { kd_kelompokbps:'', kd_komoditibps:'', tahun_awal:'', tahun_akhir:'' };
+                    this.availableKomoditi = [];
+                    this.results = [];
+                    this.hasSearched = false;
+                    this.selectedKelompokLabel = '';
+                    this.selectedKomoditiLabel = '';
+                    this.applied = { kelompokLabel: '', komoditiLabel: '', periode: '' };
+                }
             }
         }
     </script>

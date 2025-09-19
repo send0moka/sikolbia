@@ -337,7 +337,7 @@
 
                         get availableEndYears() { if (!this.filters.tahun_awal) return []; return this.years.filter(year => year >= parseInt(this.filters.tahun_awal)); },
                         get hasData() { return this.results.length > 0; },
-                        get canSearch() { return !!this.filters.kd_kelompokbps && !!this.filters.tahun_awal; },
+                        get canSearch() { return !!this.filters.kd_kelompokbps && !!this.filters.kd_komoditibps && !!this.filters.tahun_awal; },
                         get unitLabel() { return (this.results[0]?.satuan) || 'Kg'; },
 
                         init() { this.loadKelompok(); this.loadYears(); },
@@ -387,7 +387,7 @@
                                 this.results = (json.data || []).map(r => ({ tahun: r.tahun, qtyWeek: r.qtyWeek, valueWeek: r.valueWeek, gizi: r.gizi, satuan: r.satuan }));
                                 this.selectedKomoditiLabel=(this.availableKomoditi.find(k=>k.value===this.filters.kd_komoditibps)||{}).label||'';
                                 this.applied.kelompokLabel=this.selectedKelompokLabel;
-                                this.applied.komoditiLabel=this.selectedKomoditiLabel || 'Semua Komoditi';
+                                this.applied.komoditiLabel=this.selectedKomoditiLabel;
                                 this.applied.periode=this.filters.tahun_awal + (this.filters.tahun_akhir && this.filters.tahun_akhir !== this.filters.tahun_awal ? ' - ' + this.filters.tahun_akhir : '');
                             } catch(e){ console.error('Error searchData', e); this.results=[]; }
                             finally { this.loading=false; }
@@ -403,7 +403,7 @@
                             const wb = XLSX.utils.book_new();
                             const exportData=[];
                             exportData.push(['Kelompok :', this.applied.kelompokLabel || '-']);
-                            exportData.push(['Komoditi :', this.applied.komoditiLabel || 'Semua Komoditi']);
+                            exportData.push(['Komoditi :', this.applied.komoditiLabel]);
                             exportData.push(['Periode :', this.applied.periode || '-']);
                             exportData.push(['Sumber :', 'SUSENAS, BPS']);
                             exportData.push(['']);
@@ -465,6 +465,7 @@
                             this.hasSearched=false;
                             this.selectedKomoditiLabel='';
                             this.selectedKelompokLabel='';
+                            this.applied = { kelompokLabel: '', komoditiLabel: '', periode: '' };
                         }
                     }
                 }
