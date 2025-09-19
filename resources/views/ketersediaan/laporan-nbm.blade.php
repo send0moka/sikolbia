@@ -738,101 +738,213 @@
                     const exportData = [];
 
                     // Add header information
-                    exportData.push(['Kelompok :', this.getKelompokLabel(this.filters.kelompok)]);
-                    exportData.push(['Komoditi :', this.getKomoditiLabel(this.filters.komoditi) || 'Semua Komoditi']);
-                    exportData.push(['Sumber :', 'Neraca Bahan Makanan, BKP-Kementan']);
+                    exportData.push(['Data NBM (Ketersediaan Per Kapita Per Tahun)']);
                     exportData.push(['']);
-                    exportData.push(['Catatan: Data ketersediaan dalam kg/kapita/tahun']);
+                    exportData.push(['Kelompok:', this.getKelompokLabel(this.filters.kelompok)]);
+                    exportData.push(['Komoditi:', this.getKomoditiLabel(this.filters.komoditi) || 'Semua Komoditi']);
+                    exportData.push(['Periode:', this.filters.tahun_awal + (this.filters.tahun_akhir && this.filters.tahun_akhir !== this.filters.tahun_awal ? ' - ' + this.filters.tahun_akhir : '')]);
+                    exportData.push(['Sumber:', 'Neraca Bahan Makanan, BKP-Kementan']);
                     exportData.push(['']);
 
-                    // Add table header with dynamic columns based on results length
-                    const headerRow = ['Uraian'];
-                    // Add "Tahun" headers for each column
+                    // Table headers
+                    const headerRow1 = ['Uraian'];
                     for (let i = 0; i < this.results.length; i++) {
-                        headerRow.push('Tahun');
+                        headerRow1.push('Tahun');
                     }
-                    exportData.push(headerRow);
+                    exportData.push(headerRow1);
 
-                    // Add year row
+                    // Year row with (s) and (ss) annotations
                     const yearRow = [''];
                     this.results.forEach(result => {
-                        yearRow.push(result.tahun);
+                        let yearLabel = result.tahun;
+                        if (result.tahun === '2023') yearLabel += ' (s)';
+                        if (result.tahun === '2024') yearLabel += ' (ss)';
+                        yearRow.push(yearLabel);
                     });
                     exportData.push(yearRow);
 
-                    // Add data rows with dynamic columns
-                    const ketersediaanRow = ['Ketersediaan (kg/kapita/tahun)'];
+                    // A. PENYEDIAAN SECTION
+                    const penyediaanHeaderRow = ['A. Penyediaan / Supply (Ribu Ton)'];
                     this.results.forEach(result => {
-                        ketersediaanRow.push(parseFloat(result.kgPerTahun));
+                        penyediaanHeaderRow.push(Number(result.penyediaan) === 0 ? '-' : Number(result.penyediaan));
                     });
-                    exportData.push(ketersediaanRow);
+                    exportData.push(penyediaanHeaderRow);
 
-                    const penyediaanRow = ['Penyediaan (ribu ton)'];
+                    // 1. Produksi
+                    exportData.push(['1. Produksi / Production'].concat(new Array(this.results.length).fill('')));
+                    
+                    // - Masukan
+                    const masukanRow = ['    - Masukan / Input'];
                     this.results.forEach(result => {
-                        penyediaanRow.push(parseFloat(result.penyediaan));
+                        masukanRow.push(Number(result.masukan) === 0 ? '-' : Number(result.masukan));
                     });
-                    exportData.push(penyediaanRow);
+                    exportData.push(masukanRow);
 
-                    const keluaranRow = ['Keluaran (ribu ton)'];
+                    // - Keluaran
+                    const keluaranRow = ['    - Keluaran / Output'];
                     this.results.forEach(result => {
-                        keluaranRow.push(parseFloat(result.keluaran));
+                        keluaranRow.push(Number(result.keluaran) === 0 ? '-' : Number(result.keluaran));
                     });
                     exportData.push(keluaranRow);
 
-                    const imporRow = ['Impor (ribu ton)'];
+                    // 2. Impor
+                    const imporRow = ['2. Impor / Import'];
                     this.results.forEach(result => {
-                        imporRow.push(parseFloat(result.impor));
+                        imporRow.push(Number(result.impor) === 0 ? '-' : Number(result.impor));
                     });
                     exportData.push(imporRow);
 
-                    const eksporRow = ['Ekspor (ribu ton)'];
+                    // 3. Ekspor
+                    const eksporRow = ['3. Ekspor / Export'];
                     this.results.forEach(result => {
-                        eksporRow.push(parseFloat(result.ekspor));
+                        eksporRow.push(Number(result.ekspor) === 0 ? '-' : Number(result.ekspor));
                     });
                     exportData.push(eksporRow);
+
+                    // 4. Perubahan Stok
+                    const perubahanStokRow = ['4. Perubahan Stok / Change in stocks'];
+                    this.results.forEach(result => {
+                        perubahanStokRow.push(Number(result.perubahanStok) === 0 ? '-' : Number(result.perubahanStok));
+                    });
+                    exportData.push(perubahanStokRow);
+
+                    // B. PENGGUNAAN SECTION
+                    const penggunaanHeaderRow = ['B. Penggunaan / Utilization (Ribu Ton)'];
+                    this.results.forEach(result => {
+                        penggunaanHeaderRow.push(Number(result.penggunaan) === 0 ? '-' : Number(result.penggunaan));
+                    });
+                    exportData.push(penggunaanHeaderRow);
+
+                    // 1. Pakan
+                    const pakanRow = ['1. Pakan / Feed'];
+                    this.results.forEach(result => {
+                        pakanRow.push(Number(result.pakan) === 0 ? '-' : Number(result.pakan));
+                    });
+                    exportData.push(pakanRow);
+
+                    // 2. Bibit
+                    const bibitRow = ['2. Bibit / Seed'];
+                    this.results.forEach(result => {
+                        bibitRow.push(Number(result.bibit) === 0 ? '-' : Number(result.bibit));
+                    });
+                    exportData.push(bibitRow);
+
+                    // 3. Diolah untuk
+                    exportData.push(['3. Diolah untuk / Manufactured for :'].concat(new Array(this.results.length).fill('')));
+                    
+                    // - Makanan
+                    const diolahMakananRow = ['    - Makanan / Food'];
+                    this.results.forEach(result => {
+                        diolahMakananRow.push(Number(result.diolahMakanan) === 0 ? '-' : Number(result.diolahMakanan));
+                    });
+                    exportData.push(diolahMakananRow);
+
+                    // - Bukan Makanan
+                    const diolahBukanMakananRow = ['    - Bukan Makanan / Non food'];
+                    this.results.forEach(result => {
+                        diolahBukanMakananRow.push(Number(result.diolahBukanMakanan) === 0 ? '-' : Number(result.diolahBukanMakanan));
+                    });
+                    exportData.push(diolahBukanMakananRow);
+
+                    // 4. Tercecer
+                    const tercecerRow = ['4. Tercecer / Waste'];
+                    this.results.forEach(result => {
+                        tercecerRow.push(Number(result.tercecer) === 0 ? '-' : Number(result.tercecer));
+                    });
+                    exportData.push(tercecerRow);
+
+                    // 5. Penggunaan Lain
+                    const penggunaanLainRow = ['5. Penggunaan Lain / Other Uses'];
+                    this.results.forEach(result => {
+                        penggunaanLainRow.push(Number(result.penggunaanLain) === 0 ? '-' : Number(result.penggunaanLain));
+                    });
+                    exportData.push(penggunaanLainRow);
+
+                    // 6. Bahan Makanan
+                    const bahanMakananRow = ['6. Bahan Makanan / Food Ingredients'];
+                    this.results.forEach(result => {
+                        bahanMakananRow.push(Number(result.bahanMakanan) === 0 ? '-' : Number(result.bahanMakanan));
+                    });
+                    exportData.push(bahanMakananRow);
+
+                    // C. KETERSEDIAAN PER KAPITA SECTION
+                    exportData.push(['C. Ketersediaan per Kapita / Per capita availability'].concat(new Array(this.results.length).fill('')));
+
+                    // - Kilogram per Tahun
+                    const kgPerTahunRow = ['- Kilogram per Tahun / Kilograms per Year'];
+                    this.results.forEach(result => {
+                        kgPerTahunRow.push(Number(result.kgPerTahun) === 0 ? '-' : Number(result.kgPerTahun));
+                    });
+                    exportData.push(kgPerTahunRow);
+
+                    // - Gram per Hari
+                    const gramPerHariRow = ['- Gram per Hari / Grams per Day'];
+                    this.results.forEach(result => {
+                        gramPerHariRow.push(Number(result.gramPerHari) === 0 ? '-' : Number(result.gramPerHari));
+                    });
+                    exportData.push(gramPerHariRow);
+
+                    // - Energi Kalori per Hari
+                    const energiKaloriRow = ['- Energi Kalori per Hari / Calories per Day'];
+                    this.results.forEach(result => {
+                        energiKaloriRow.push(Number(result.energiKalori) === 0 ? '-' : Number(result.energiKalori));
+                    });
+                    exportData.push(energiKaloriRow);
+
+                    // - Protein Gram per Hari
+                    const proteinGramRow = ['- Protein Gram per Hari / Protein Grams per Day'];
+                    this.results.forEach(result => {
+                        proteinGramRow.push(Number(result.proteinGram) === 0 ? '-' : Number(result.proteinGram));
+                    });
+                    exportData.push(proteinGramRow);
+
+                    // - Lemak Gram per Hari
+                    const lemakGramRow = ['- Lemak Gram per Hari / Fat Grams per Day'];
+                    this.results.forEach(result => {
+                        lemakGramRow.push(Number(result.lemakGram) === 0 ? '-' : Number(result.lemakGram));
+                    });
+                    exportData.push(lemakGramRow);
+
+                    // Add notes section
+                    exportData.push(['']);
+                    exportData.push(['Keterangan: (s) Angka Sementara, (ss) Angka Sangat Sementara']);
+                    exportData.push(['Mulai tahun 2017 menggunakan data produksi padi bersumber dari KSA, BPS']);
+                    exportData.push(['Note: (s) Preliminary Figures, (ss) Very Preliminary Figures']);
 
                     // Create worksheet
                     const ws = XLSX.utils.aoa_to_sheet(exportData);
 
-                    // Define merge ranges for proper table layout with dynamic columns
+                    // Define merge ranges for proper table layout
                     if (!ws['!merges']) ws['!merges'] = [];
 
                     const numCols = this.results.length;
 
-                    // Merge cells for "Uraian" header (row 7, spans 2 rows)
-                    ws['!merges'].push({
-                        s: {
-                            r: 6,
-                            c: 0
-                        },
-                        e: {
-                            r: 7,
-                            c: 0
-                        }
-                    });
-
-                    // Merge cells for "Tahun" header (row 7, spans all year columns)
-                    if (numCols > 1) {
+                    // Merge title
+                    if (numCols > 0) {
                         ws['!merges'].push({
-                            s: {
-                                r: 6,
-                                c: 1
-                            },
-                            e: {
-                                r: 6,
-                                c: numCols
-                            }
+                            s: { r: 0, c: 0 },
+                            e: { r: 0, c: numCols }
                         });
                     }
 
-                    // Set column widths dynamically
-                    const colWidths = [{
-                        width: 25
-                    }]; // Uraian column
+                    // Merge "Uraian" header (spans 2 rows)
+                    ws['!merges'].push({
+                        s: { r: 7, c: 0 },
+                        e: { r: 8, c: 0 }
+                    });
+
+                    // Merge "Tahun" header (spans all year columns)
+                    if (numCols > 1) {
+                        ws['!merges'].push({
+                            s: { r: 7, c: 1 },
+                            e: { r: 7, c: numCols }
+                        });
+                    }
+
+                    // Set column widths
+                    const colWidths = [{ width: 35 }]; // Uraian column
                     for (let i = 0; i < numCols; i++) {
-                        colWidths.push({
-                            width: 15
-                        }); // Year columns
+                        colWidths.push({ width: 15 }); // Year columns
                     }
                     ws['!cols'] = colWidths;
 
@@ -840,7 +952,7 @@
                     XLSX.utils.book_append_sheet(wb, ws, 'Data NBM');
 
                     // Generate filename
-                    const filename = `data-nbm-${this.filters.kelompok}-${Date.now()}.xlsx`;
+                    const filename = `data-nbm-${this.getKelompokLabel(this.filters.kelompok).replace(/[^a-zA-Z0-9]/g, '_')}-${this.filters.tahun_awal}${this.filters.tahun_akhir ? '_' + this.filters.tahun_akhir : ''}-${Date.now()}.xlsx`;
 
                     // Save file
                     XLSX.writeFile(wb, filename);
