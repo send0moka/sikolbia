@@ -495,6 +495,11 @@
                                 </table>
                             </div>
 
+                            <div class="mb-2 text-xs text-neutral-600">
+                                <strong>Keterangan:</strong> <span class="text-blue-600">(s)</span> Angka Sementara, <span class="text-blue-600">(ss)</span> Angka Sangat Sementara<br>
+                                <strong>Mulai tahun 2017</strong> menggunakan data produksi padi bersumber dari KSA, BPS<br>
+                                <i>Note: (s) Preliminary Figures, (ss) Very Preliminary Figures</i>
+                            </div>
                             <!-- Additional Data Summary -->
                             <div class="mt-6 bg-neutral-50 p-4 rounded-lg">
                                 <h5 class="font-medium text-neutral-900 mb-2">Ringkasan Data:</h5>
@@ -857,10 +862,18 @@
 
                 getTrend() {
                     if (this.results.length < 2) return 'Stabil';
+                    
+                    // Calculate slope using linear regression approach
                     const first = parseFloat(this.results[0].kgPerTahun);
                     const last = parseFloat(this.results[this.results.length - 1].kgPerTahun);
-                    if (last > first * 1.1) return 'Meningkat';
-                    if (last < first * 0.9) return 'Menurun';
+                    const numberOfYears = this.results.length - 1;
+                    
+                    // Calculate average slope (kg per year change)
+                    const slope = (last - first) / numberOfYears;
+                    
+                    // Determine trend based on slope threshold of ±1 kg/year
+                    if (slope > 1) return 'Meningkat';
+                    if (slope < -1) return 'Menurun';
                     return 'Stabil';
                 },
 
