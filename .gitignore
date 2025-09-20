@@ -25,9 +25,6 @@ yarn-error.log
 # IDE Helper files
 .phpstorm.meta.php
 
-docs*
-praproposal*
-
 /final_res
 
 # Python ML Environment
