@@ -18,12 +18,12 @@ from ml_models.production_model import NBMProductionModel
 from ml_models.data_loader import DataLoader
 from ml_models.data_preprocessing_monthly import DataPreprocessorMonthly
 
-# Configure logging
+# Configure logging - disabled for production
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.ERROR,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('api_logs.log'),
+        # logging.FileHandler('api_logs.log'),  # Disabled file logging
         logging.StreamHandler()
     ]
 )

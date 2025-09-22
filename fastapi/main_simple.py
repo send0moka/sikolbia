@@ -10,12 +10,12 @@ import traceback
 import os
 import sys
 
-# Configure logging
+# Configure logging - disabled for production
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.ERROR,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/api_logs.log'),
+        # logging.FileHandler('logs/api_logs.log'),  # Disabled file logging
         logging.StreamHandler()
     ]
 )
@@ -127,14 +127,14 @@ async def startup_event():
     global production_model, model_info
     
     try:
-        logger.info("Starting NBM Prediction API...")
-        logger.info("Model loading skipped in development mode")
+        # logger.info("Starting NBM Prediction API...")  # Disabled startup logging
+        # logger.info("Model loading skipped in development mode")  # Disabled startup logging
         # TODO: Implement model loading when models are containerized properly
         model_info = {
             "version": "1.0.0-development",
             "status": "mock"
         }
-        logger.info("API startup completed successfully")
+        # logger.info("API startup completed successfully")  # Disabled startup logging
     except Exception as e:
         logger.error(f"Startup failed: {str(e)}")
         # Don't fail startup for now, just log the error
