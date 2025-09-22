@@ -24,7 +24,6 @@ class DatabaseSeeder extends Seeder
             FaktorEksternalSeeder::class,
             KebijakanPanganSeeder::class,
             PolaMusimanSeeder::class,
-            TransaksiNbmRegionalSeeder::class,
             
             // Legacy BPS Seeders
             KelompokBpsSeeder::class,

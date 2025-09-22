@@ -23,8 +23,7 @@ class TransaksiNbmSeeder extends Seeder
         $columns = [
             'kode_kelompok', 'kode_komoditi', 'tahun', 'bulan', 'kuartal', 'periode_data', 'status_angka',
             'masukan', 'keluaran', 'impor', 'ekspor', 'perubahan_stok', 'pakan', 'bibit', 'makanan',
-            'bukan_makanan', 'tercecer', 'penggunaan_lain', 'bahan_makanan', 'kg_tahun', 'gram_hari',
-            'kalori_hari', 'protein_hari', 'lemak_hari', 'harga_produsen', 'harga_konsumen',
+            'bukan_makanan', 'tercecer', 'penggunaan_lain', 'bahan_makanan', 'harga_produsen', 'harga_konsumen',
             'inflasi_komoditi', 'nilai_tukar_usd', 'populasi_indonesia', 'gdp_per_kapita',
             'tingkat_kemiskinan', 'curah_hujan_mm', 'suhu_rata_celsius', 'indeks_el_nino',
             'luas_panen_ha', 'produktivitas_ton_ha', 'kebijakan_impor', 'subsidi_pemerintah',
@@ -57,9 +56,7 @@ class TransaksiNbmSeeder extends Seeder
             'masukan' => [12, 4], 'keluaran' => [12, 4], 'impor' => [12, 4], 'ekspor' => [12, 4],
             'perubahan_stok' => [12, 4], 'pakan' => [12, 4], 'bibit' => [12, 4], 'makanan' => [12, 4],
             'bukan_makanan' => [12, 4], 'tercecer' => [12, 4], 'penggunaan_lain' => [12, 4],
-            'bahan_makanan' => [12, 4], 'kg_tahun' => [12, 4], 'gram_hari' => [12, 4],
-            'kalori_hari' => [12, 4], 'protein_hari' => [12, 4], 'lemak_hari' => [10, 6],
-            'harga_produsen' => [12, 4], 'harga_konsumen' => [12, 4], 'inflasi_komoditi' => [8, 4],
+            'bahan_makanan' => [12, 4], 'harga_produsen' => [12, 4], 'harga_konsumen' => [12, 4], 'inflasi_komoditi' => [8, 4],
             'nilai_tukar_usd' => [10, 4], 'gdp_per_kapita' => [12, 2], 'tingkat_kemiskinan' => [5, 2],
             'curah_hujan_mm' => [8, 2], 'suhu_rata_celsius' => [5, 2], 'indeks_el_nino' => [6, 3],
             'luas_panen_ha' => [16, 2], 'produktivitas_ton_ha' => [8, 4], 'subsidi_pemerintah' => [15, 2],
@@ -89,7 +86,7 @@ class TransaksiNbmSeeder extends Seeder
 
             // Validate row format
             if (count($values) !== count($columns)) {
-                echo "Warning: Expected 42 values, got " . count($values) . " at line {$lineNumber}: " . json_encode($values) . "\n";
+                echo "Warning: Expected " . count($columns) . " values, got " . count($values) . " at line {$lineNumber}: " . json_encode($values) . "\n";
                 $skippedRows++;
                 continue;
             }

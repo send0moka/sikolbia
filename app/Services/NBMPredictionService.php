@@ -225,7 +225,7 @@ class NBMPredictionService
             ];
         }
         
-        $requiredFields = ['tahun', 'bulan', 'kelompok', 'komoditi', 'kalori_hari'];
+        $requiredFields = ['tahun', 'bulan', 'kelompok', 'komoditi', 'makanan'];
         
         foreach ($data as $index => $item) {
             foreach ($requiredFields as $field) {
@@ -252,10 +252,10 @@ class NBMPredictionService
                 ];
             }
             
-            if (!is_numeric($item['kalori_hari']) || $item['kalori_hari'] <= 0) {
+            if (!is_numeric($item['makanan']) || $item['makanan'] <= 0) {
                 return [
                     'valid' => false,
-                    'message' => "Invalid calorie value in data item {$index}"
+                    'message' => "Invalid makanan value in data item {$index}"
                 ];
             }
         }
@@ -274,7 +274,7 @@ class NBMPredictionService
                 'bulan' => (int) $item['bulan'],
                 'kelompok' => (string) $item['kelompok'],
                 'komoditi' => (string) $item['komoditi'],
-                'kalori_hari' => (float) $item['kalori_hari']
+                'makanan' => (float) $item['makanan']
             ];
         }, $data);
     }
@@ -300,7 +300,7 @@ class NBMPredictionService
                 MONTH(created_at) as bulan,
                 kelompok,
                 komoditi,
-                AVG(kalori_hari) as kalori_hari
+                AVG(makanan) as makanan
             ')
             ->groupBy('tahun', 'bulan', 'kelompok', 'komoditi')
             ->orderBy('tahun')

@@ -28,11 +28,6 @@ class TransaksiNbm extends Model
         'tercecer',
         'penggunaan_lain',
         'bahan_makanan',
-        'kg_tahun',
-        'gram_hari',
-        'kalori_hari',
-        'protein_hari',
-        'lemak_hari',
         'harga_produsen',
         'harga_konsumen',
         'inflasi_komoditi',
@@ -67,11 +62,6 @@ class TransaksiNbm extends Model
         'tercecer' => 'decimal:4',
         'penggunaan_lain' => 'decimal:4',
         'bahan_makanan' => 'decimal:4',
-        'kg_tahun' => 'decimal:4',
-        'gram_hari' => 'decimal:4',
-        'kalori_hari' => 'decimal:4',
-        'protein_hari' => 'decimal:4',
-        'lemak_hari' => 'decimal:6',
         'harga_produsen' => 'decimal:4',
         'harga_konsumen' => 'decimal:4',
         'inflasi_komoditi' => 'decimal:4',
@@ -135,6 +125,65 @@ class TransaksiNbm extends Model
             return ($this->kalori_hari * 365 * 1000000) / $this->populasi_indonesia;
         }
         return null;
+    }
+
+    // Computed properties for per capita availability
+    public function getKgTahunAttribute()
+    {
+        if (!$this->makanan || !$this->populasi_indonesia) {
+            return 0;
+        }
+        
+        // For yearly calculation, we need to get total makanan per year for this commodity
+        // If this is monthly data, we sum all months for the year
+        $totalMakananTahun = TransaksiNbm::where('kode_komoditi', $this->kode_komoditi)
+            ->where('tahun', $this->tahun)
+            ->where('validation_status', 'verified')
+            ->where('outlier_flag', 0)
+            ->sum('makanan');
+        
+        // Convert total makanan (ribu ton) to kg per capita per year
+        // makanan is in thousand tons, convert to tons then to kg
+        $makananTons = $totalMakananTahun * 1000;
+        $makananKg = $makananTons * 1000;
+        
+        return round($makananKg / $this->populasi_indonesia, 4);
+    }
+
+    public function getGramHariAttribute()
+    {
+        // Convert kg per year to gram per day
+        return round($this->kg_tahun * 1000 / 365, 4);
+    }
+
+    public function getKaloriHariAttribute()
+    {
+        if (!$this->komoditi) {
+            return 0;
+        }
+        
+        // Calculate calories per day: (gram per day / 100) * calories per 100g
+        return round(($this->gram_hari / 100) * $this->komoditi->kalori_per_100g, 4);
+    }
+
+    public function getProteinHariAttribute()
+    {
+        if (!$this->komoditi) {
+            return 0;
+        }
+        
+        // Calculate protein per day: (gram per day / 100) * protein per 100g
+        return round(($this->gram_hari / 100) * $this->komoditi->protein_per_100g, 4);
+    }
+
+    public function getLemakHariAttribute()
+    {
+        if (!$this->komoditi) {
+            return 0;
+        }
+        
+        // Calculate fat per day: (gram per day / 100) * fat per 100g
+        return round(($this->gram_hari / 100) * $this->komoditi->lemak_per_100g, 6);
     }
 
     // Static methods

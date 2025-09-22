@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('periode_data', ['bulanan', 'kuartalan', 'tahunan'])->default('tahunan')->after('kuartal');
 
             // Economic Indicators
-            $table->decimal('harga_produsen', 12, 4)->nullable()->after('lemak_hari');
+            $table->decimal('harga_produsen', 12, 4)->nullable()->after('bahan_makanan');
             $table->decimal('harga_konsumen', 12, 4)->nullable()->after('harga_produsen');
             $table->decimal('inflasi_komoditi', 8, 4)->nullable()->after('harga_konsumen');
             $table->decimal('nilai_tukar_usd', 10, 4)->nullable()->after('inflasi_komoditi');

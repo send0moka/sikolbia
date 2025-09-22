@@ -29,11 +29,6 @@ return new class extends Migration
             $table->decimal('tercecer', 12, 4)->nullable();
             $table->decimal('penggunaan_lain', 12, 4)->nullable();
             $table->decimal('bahan_makanan', 12, 4)->nullable();
-            $table->decimal('kg_tahun', 12, 4)->nullable();
-            $table->decimal('gram_hari', 12, 4)->nullable();
-            $table->decimal('kalori_hari', 12, 4)->nullable();
-            $table->decimal('protein_hari', 12, 4)->nullable();
-            $table->decimal('lemak_hari', 10, 6)->nullable();
             $table->timestamps();
         });
     }
