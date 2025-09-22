@@ -67,7 +67,7 @@ class TransaksiNbmSeeder extends Seeder
         ];
 
         // Open the SQL file
-        $filePath = base_path('database/seeders/transaksi_nbm.sql');
+        $filePath = base_path('database/seeders/transaksi_nbms.sql');
         $file = fopen($filePath, 'r');
         if ($file === false) {
             echo "Error: Could not open file {$filePath}\n";
