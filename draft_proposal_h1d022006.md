@@ -93,7 +93,7 @@ Dengan jumlah penduduk lebih dari 270 juta jiwa, Indonesia menghadapi tantangan 
 
 Sistem prediksi konsumsi pangan yang akurat menjadi kebutuhan mendesak dalam mendukung pencapaian target Sustainable Development Goals (SDGs) nomor 2 tentang Zero Hunger. Metode prediksi konvensional yang saat ini digunakan Badan Pangan Nasional memiliki akurasi terbatas (MAPE 15-20%) dan tidak mampu menangkap kompleksitas pola temporal konsumsi pangan (Sarku et al., 2023). Studi komparatif menunjukkan bahwa Indonesia memiliki prediction accuracy terendah untuk food consumption forecasting dibandingkan negara berkembang lainnya yang telah mengimplementasikan machine learning approaches (Asian Development Bank, 2023).
 
-Deep learning, khususnya ensemble methods yang mengintegrasikan Long Short-Term Memory (LSTM) dengan robust regression algorithms, telah terbukti superior dalam time series forecasting dengan kemampuan menangkap long-term dependencies dan seasonal patterns yang kompleks. Penelitian di negara berkembang lainnya menunjukkan bahwa LSTM-enhanced ensemble approaches dapat meningkatkan akurasi prediksi konsumsi pangan dengan MAPE ≤ 9% (Verma et al., 2024). Data Neraca Bahan Makanan (NBM) Indonesia yang telah terakumulasi selama lebih dari 30 tahun (1993-2024) menyediakan foundation yang kuat untuk pengembangan predictive model berbasis machine learning ensemble.
+Deep learning, khususnya ensemble methods yang mengintegrasikan Long Short-Term Memory (LSTM) dengan robust regression algorithms, telah terbukti superior dalam time series forecasting dengan kemampuan menangkap long-term dependencies dan seasonal patterns yang kompleks. Penelitian di negara berkembang lainnya menunjukkan bahwa LSTM-enhanced ensemble approaches dapat meningkatkan akurasi prediksi konsumsi pangan dengan MAPE < 10% (Verma et al., 2024). Data Neraca Bahan Makanan (NBM) Indonesia yang telah terakumulasi selama lebih dari 30 tahun (1993-2024) menyediakan foundation yang kuat untuk pengembangan predictive model berbasis machine learning ensemble.
 
 ## 1.2 Studi Pendahuluan dan Urgensi Masalah
 
@@ -101,7 +101,7 @@ Eksplorasi awal data NBM Indonesia mengungkap volatilitas konsumsi kalori yang m
 
 Ketidakakuratan prediksi konsumsi pangan berimplikasi pada economic losses yang signifikan. Kementerian Pertanian melaporkan kerugian Rp 2,3 triliun akibat misallocation resources dalam program ketahanan pangan periode 2020-2022, di mana 34% target tidak tercapai karena underestimation konsumsi kalori regional (Kementerian Pertanian, 2023). Gap teknologi ini berdampak pada delayed response terhadap food security crisis, seperti yang terjadi pada shortage beras 2023 yang baru terdeteksi 4 bulan setelah tren penurunan konsumsi dimulai.
 
-Initial testing menggunakan subset data NBM (2015-2023) dengan LSTM-enhanced ensemble architecture menunjukkan promising results dengan MAPE 8,88% untuk 12-month ahead prediction, significantly outperform linear regression (MAPE 18,7%) dan ARIMA (MAPE 15,4%) yang saat ini digunakan. Hasil ini mengonfirmasi potensi implementasi full-scale ensemble model dengan LSTM integration untuk national-level food consumption prediction.
+Studi literatur menunjukkan bahwa LSTM-enhanced ensemble approaches memiliki potensi besar untuk meningkatkan akurasi prediksi konsumsi pangan. Penelitian Cahyani et al. (2023) pada komoditas beras Indonesia mencapai MAPE 8,2%, sementara Verma et al. (2024) melaporkan peningkatan akurasi hingga 30% dibandingkan metode tradisional dalam agricultural forecasting. Potensi ini mengindikasikan bahwa implementasi LSTM ensemble untuk national-level food consumption prediction dapat memberikan improvement signifikan dibandingkan metode konvensional yang saat ini digunakan.
 
 ## 1.3 Rumusan Masalah
 
@@ -111,7 +111,7 @@ Berdasarkan latar belakang yang telah diuraikan, rumusan masalah dalam penelitia
 
 2. Bagaimana melakukan preprocessing data NBM dengan teknik StandardScaler, RobustScaler, dan sequence generation yang tepat untuk meningkatkan akurasi prediksi ensemble model?
 
-3. Bagaimana mengoptimalkan performa LSTM-enhanced ensemble model dalam memprediksi konsumsi kalori harian dengan target akurasi MAPE < 9% menggunakan metrik evaluasi RMSE, MAE, dan R-squared?
+3. Bagaimana mengoptimalkan performa LSTM-enhanced ensemble model dalam memprediksi konsumsi kalori harian dengan target akurasi MAPE < 10% menggunakan metrik evaluasi RMSE, MAE, dan R-squared?
 
 4. Bagaimana mengintegrasikan ensemble model yang telah divalidasi ke dalam sistem informasi berbasis web dengan arsitektur Laravel-FastAPI dan containerization untuk memberikan layanan prediksi real-time?
 
@@ -127,7 +127,7 @@ Adapun batasan dari penelitian ini adalah sebagai berikut:
 
 4. Implementasi sistem informasi menggunakan framework Laravel untuk frontend web interface dan FastAPI untuk backend machine learning service dengan database MySQL, dilengkapi dengan Docker containerization untuk deployment yang scalable.
 
-5. Evaluasi model mencakup metrik RMSE, MAE, dan MAPE untuk mengukur akurasi prediksi dengan target MAPE ≤ 9%.
+5. Evaluasi model mencakup metrik RMSE, MAE, dan MAPE untuk mengukur akurasi prediksi dengan target MAPE < 10% berdasarkan standard industry dan literatur terkait.
 
 6. Penelitian ini tidak mencakup pengembangan mobile application, hanya fokus pada sistem berbasis web.
 
@@ -139,7 +139,7 @@ Adapun tujuan dari penelitian ini adalah sebagai berikut:
 
 2. Melakukan preprocessing dan feature engineering pada data NBM menggunakan StandardScaler dan RobustScaler untuk optimalisasi performa ensemble model dalam prediksi konsumsi kalori.
 
-3. Mengevaluasi performa LSTM-enhanced ensemble model dalam memprediksi konsumsi kalori harian menggunakan metrik evaluasi RMSE, MAE, dan MAPE dengan target akurasi 9% atau lebih baik.
+3. Mengevaluasi performa LSTM-enhanced ensemble model dalam memprediksi konsumsi kalori harian menggunakan metrik evaluasi RMSE, MAE, dan MAPE dengan target akurasi MAPE < 10% berdasarkan benchmarks dari literatur terkait.
 
 4. Mengintegrasikan ensemble model yang telah dilatih ke dalam sistem informasi berbasis web dengan arsitektur Laravel-FastAPI dan Docker containerization untuk memberikan prediksi konsumsi kalori secara real-time.
 
@@ -173,7 +173,7 @@ Data yang digunakan adalah data sekunder NBM Indonesia dari Badan Pangan Nasiona
 
 ## 1.8 Luaran
 
-Penelitian ini diharapkan dapat menghasilkan LSTM-enhanced ensemble model yang akurat dan efisien untuk prediksi konsumsi kalori harian dengan target MAPE ≤ 9%, bertujuan untuk mendukung perencanaan ketahanan pangan nasional. Model ini akan dilengkapi dengan sistem informasi berbasis web yang mengintegrasikan Laravel frontend dengan FastAPI backend dan Docker containerization, memungkinkan stakeholder ketahanan pangan untuk melakukan prediksi konsumsi kalori secara konsisten dan akurat.
+Penelitian ini diharapkan dapat menghasilkan LSTM-enhanced ensemble model yang akurat dan efisien untuk prediksi konsumsi kalori harian dengan target MAPE < 10%, bertujuan untuk mendukung perencanaan ketahanan pangan nasional. Target ini ditetapkan berdasarkan standard akurasi yang diterima dalam agricultural forecasting dan benchmarks dari penelitian sejenis (Verma et al., 2024; Cahyani et al., 2023). Model ini akan dilengkapi dengan sistem informasi berbasis web yang mengintegrasikan Laravel frontend dengan FastAPI backend dan Docker containerization, memungkinkan stakeholder ketahanan pangan untuk melakukan prediksi konsumsi kalori secara konsisten dan akurat.
 
 Sistem yang dikembangkan akan memberikan pengambil kebijakan akses kepada informasi prediksi yang jelas dan real-time melalui dashboard visualisasi interaktif dengan session management dan caching optimization, sehingga membantu mereka dalam membuat keputusan yang lebih baik dalam perencanaan ketahanan pangan. Luaran penelitian juga mencakup dokumentasi teknis implementasi ensemble methods dan best practices untuk deployment containerized ML applications di konteks food security.
 
@@ -264,7 +264,7 @@ Lack of integrated systems yang menggabungkan predictive models dengan user-frie
 
 Kerangka konseptual penelitian ini menggambarkan alur systematic dari data preprocessing hingga deployment of integrated predictive system. Framework penelitian mengadopsi CRISP-DM methodology dengan specific focus pada LSTM implementation dan microservices architecture (Schröer et al., 2021).
 
-Input utama penelitian berupa historical NBM data (1993-2024) yang mencakup time series calorie consumption per capita, akan diproses melalui comprehensive data preparation phase meliputi normalization, feature scaling, dan sequence generation. LSTM model kemudian akan dilatih dengan optimal hyperparameter configuration untuk mencapai target accuracy MAPE < 10%.
+Input utama penelitian berupa historical NBM data (1993-2024) yang mencakup time series calorie consumption per capita, akan diproses melalui comprehensive data preparation phase meliputi normalization, feature scaling, dan sequence generation. LSTM ensemble model akan dikembangkan dan dilatih dengan optimal hyperparameter configuration untuk mencapai target accuracy MAPE < 10%.
 
 Model yang telah validated akan diintegrasikan dalam microservices architecture dengan Laravel frontend service untuk user interface dan dashboard visualization, FastAPI backend service untuk ML model serving, dan MySQL database untuk data persistence. Architecture ini memungkinkan scalable deployment dan real-time prediction capabilities yang mendukung evidence-based decision making dalam food security planning (Nugroho et al., 2021).
 
@@ -293,7 +293,7 @@ Metodologi ini terdiri dari enam fase yang saling terkait dan bersifat iterative
 
 Fase pertama dari metodologi CRISP-DM fokus pada pemahaman mendalam terhadap konteks ketahanan pangan Indonesia dan specific requirements untuk sistem prediksi yang akan dikembangkan. Tahap ini dimulai dengan analisis stakeholder untuk mengidentifikasi pihak-pihak kunci seperti Badan Pangan Nasional, Kementerian Pertanian, dan para pengambil kebijakan, serta memahami proses decision-making mereka dalam perencanaan ketahanan pangan.
 
-Problem definition dilakukan secara sistematis untuk clearly define prediction requirements, menetapkan target akurasi MAPE kurang dari 10%, dan menentukan prediction horizon 12-24 bulan ke depan. Success criteria ditetapkan mencakup measurable objectives untuk technical performance melalui accuracy metrics dan business impact dalam bentuk improved planning efficiency. Risk assessment juga dilakukan untuk mengidentifikasi potential challenges dalam data quality, model complexity, dan integration requirements.
+Problem definition dilakukan secara sistematis untuk clearly define prediction requirements, menetapkan target akurasi MAPE kurang dari 10% berdasarkan industry benchmarks, dan menentukan prediction horizon 12-24 bulan ke depan. Success criteria ditetapkan mencakup measurable objectives untuk technical performance melalui accuracy metrics dan business impact dalam bentuk improved planning efficiency. Risk assessment juga dilakukan untuk mengidentifikasi potential challenges dalam data quality, model complexity, dan integration requirements.
 
 Output dari fase ini berupa business requirements document yang mendetailkan functional dan non-functional requirements sistem prediksi. Dokumen ini menjadi acuan utama untuk seluruh tahap pengembangan selanjutnya dan memastikan alignment antara technical solution dengan business needs.
 
@@ -315,19 +315,13 @@ Feature engineering dilakukan untuk menciptakan variabel-variabel yang dapat men
 
 Rolling statistics berupa moving averages dan rolling standard deviations dengan window 3, 6, dan 12 bulan dibuat untuk trend smoothing dan noise reduction. External variables integration dilakukan dengan menambahkan economic indicators seperti GDP growth dan inflation rate, weather data berupa temperature dan precipitation, serta policy variables sebagai exogenous features yang dapat mempengaruhi konsumsi kalori.
 
-Data preprocessing khusus untuk ensemble model meliputi normalization menggunakan StandardScaler untuk ensuring normal distribution dan RobustScaler untuk reducing outlier impact, providing more stable input untuk ensemble components. Feature scaling strategy menggunakan combination approach where StandardScaler applied untuk temporal features dan RobustScaler untuk external variables yang prone to outliers. Sequence generation dilakukan melalui creation of sliding windows dengan configurable window size, defaulting ke 12 bulan untuk time series input preparation. Train-validation-test split menggunakan TimeSeriesSplit dengan chronological ordering untuk avoiding data leakage yang umum terjadi pada time series analysis.
+Data preprocessing untuk ensemble model akan meliputi normalization menggunakan appropriate scaling techniques untuk ensuring stable input dan optimal performance. Feature scaling strategy akan disesuaikan dengan karakteristik data temporal dan external variables. Sequence generation akan dilakukan melalui sliding window approach dengan window size yang akan ditentukan melalui eksperimen. Train-validation-test split akan menggunakan time series split dengan chronological ordering untuk avoiding data leakage.
 
 ### 3.3.4 Modeling
 
 Desain arsitektur model LSTM-enhanced ensemble dimulai dengan pemilihan hybrid approach yang menggabungkan LSTM untuk temporal pattern extraction dengan robust regression algorithms untuk final prediction. Base learners mencakup HuberRegressor untuk outlier resistance, LinearRegression untuk baseline comparison, dan LSTM networks untuk capturing temporal dependencies. Ensemble integration menggunakan weighted averaging atau stacking approaches untuk optimal combination.
 
-Hyperparameter optimization dilakukan secara systematic menggunakan GridSearchCV dengan TimeSeriesSplit cross-validation. Parameter yang dioptimasi meliputi:
-- Learning rate: 0.001, 0.01, 0.1 (untuk LSTM components)
-- Batch size: 16, 32, 64, 128 (untuk LSTM training)
-- Epochs: 50, 100, 200 (untuk LSTM training)
-- Window size: 6, 12, 18, 24 bulan (untuk sequence generation)
-- HuberRegressor epsilon: 1.35, 1.5, 2.0 (untuk outlier threshold)
-- Ensemble weights: optimized through grid search
+Hyperparameter optimization dilakukan secara systematic menggunakan grid search approach dengan time series cross-validation. Parameter yang akan dioptimasi meliputi learning rate, batch size, epochs, window size untuk sequence generation, serta parameter ensemble seperti model weights dan voting mechanisms. Strategi training akan mengimplementasikan early stopping untuk preventing overfitting dan learning rate scheduling untuk adaptive adjustment.
 
 Model training strategy mengimplementasikan early stopping untuk preventing overfitting dengan patience 20 epochs, learning rate scheduling menggunakan ReduceLROnPlateau untuk adaptive adjustment, dan time series cross-validation dengan expanding window approach untuk robust performance estimation. Ensemble methods juga dieksplorasi untuk improving prediction stability melalui kombinasi multiple model configurations.
 
@@ -345,7 +339,7 @@ Implementasi menggunakan scikit-learn untuk ensemble components dan TensorFlow/K
 Evaluasi performa model menggunakan multiple metrics untuk comprehensive assessment:
 - **Root Mean Square Error (RMSE)** untuk measuring prediction accuracy dengan emphasis pada large errors
 - **Mean Absolute Error (MAE)** memberikan robust metric untuk average prediction deviation
-- **Mean Absolute Percentage Error (MAPE)** menjadi metric utama dengan target ≤ 9% untuk business acceptability (based on preliminary results showing 8.88% achievement)
+- **Mean Absolute Percentage Error (MAPE)** menjadi metric utama dengan target < 10% untuk business acceptability berdasarkan standard industry practices dan benchmarks dari literatur terkait
 - **R-squared** untuk measuring explained variance proportion
 - **Directional Accuracy** untuk percentage of correct trend predictions
 
@@ -355,13 +349,9 @@ Robustness testing mencakup stress testing untuk evaluasi performa under extreme
 
 ### 3.3.6 Deployment
 
-Implementasi sistem menggunakan containerized microservices architecture dengan separation of concerns yang jelas. Frontend service dikembangkan menggunakan Laravel 12 framework dengan Livewire reactive components untuk real-time user interaction, responsive web interface, user authentication system dengan role-based access control, interactive dashboard dengan dynamic charts, historical data visualization, dan export functionality untuk prediction reports dalam format PDF dan Excel.
+Implementasi sistem akan menggunakan containerized microservices architecture dengan separation of concerns yang jelas. Frontend service akan dikembangkan menggunakan Laravel framework dengan reactive components untuk user interaction, responsive web interface, dan user authentication system. Backend ML service akan menggunakan FastAPI framework untuk model serving dengan RESTful API endpoints, model loading optimization, dan input validation pipeline.
 
-Backend ML service menggunakan FastAPI framework untuk model serving dengan RESTful API endpoints di /predict dan /health, ensemble model loading optimization, input validation pipeline, asynchronous processing untuk handling multiple concurrent requests, dan automatic OpenAPI documentation generation. Redis caching layer diimplementasikan untuk session management, prediction results caching, dan performance optimization.
-
-Database layer menggunakan MySQL dengan normalized schema untuk NBM historical data storage, user management tables, prediction results logging, dan comprehensive audit trails. Docker containerization menggunakan multi-container setup dengan Docker Compose, memungkinkan independent service scaling, consistent deployment environments, dan easier development-to-production transitions.
-
-Integration architecture menggunakan JSON-based RESTful communication dengan proper error handling, model versioning support untuk A/B testing capabilities, comprehensive monitoring dan logging system untuk tracking prediction accuracy dan system performance, serta security implementation melalui JWT authentication, HTTPS encryption, dan input sanitization.
+Database layer akan menggunakan MySQL dengan normalized schema untuk data storage, user management, dan prediction results logging. Containerization akan menggunakan Docker untuk consistent deployment environments dan easier development-to-production transitions. Integration architecture akan menggunakan JSON-based RESTful communication dengan proper error handling dan security implementation.
 
 ## 3.4 Instrumen dan Teknik Pengumpulan Data
 
@@ -380,18 +370,18 @@ Visualization techniques menggunakan time series plots untuk trend analysis, per
 
 ## 3.6 Jadwal Penelitian
 
-Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu yang intensif dan efisien:
+Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu yang realistis dan terukur:
 
-| **Tahap Penelitian** | **Bulan 1** | **Bulan 2** | **Bulan 3** |
-|---------------------|-------------|-------------|-------------|
-| **Business Understanding** | ████████ |  |  |
-| **Data Understanding** | ████ | ████ |  |
-| **Data Preparation** |  | ████████ |  |
-| **Modeling (LSTM Development)** |  | ████ | ████ |
-| **Hyperparameter Tuning** |  |  | ████████ |
-| **Evaluation & Testing** |  |  | ████████ |
-| **System Integration** |  | ████ | ████████ |
-| **Documentation** | ████ | ████ | ████████ |
+| **Tahap Penelitian** | **Minggu 1-2** | **Minggu 3-4** | **Minggu 5-6** | **Minggu 7-8** | **Minggu 9-10** | **Minggu 11-12** |
+|---------------------|----------------|----------------|----------------|----------------|-----------------|------------------|
+| **Business Understanding** | ████████ | ████ |  |  |  |  |
+| **Data Collection & Understanding** | ████ | ████████ | ████ |  |  |  |
+| **Data Preparation & EDA** |  | ████ | ████████ | ████ |  |  |
+| **LSTM Model Development** |  |  | ████ | ████████ | ████ |  |
+| **Ensemble Integration** |  |  |  | ████ | ████████ | ████ |
+| **Model Evaluation & Testing** |  |  |  |  | ████ | ████████ |
+| **System Integration** |  |  |  | ████ | ████ | ████ |
+| **Documentation & Report** | ████ | ████ | ████ | ████ | ████ | ████████ |
 
 ---
 
