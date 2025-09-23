@@ -67,6 +67,11 @@ create_efficient_seeder.py
 .ipynb_checkpoints/
 *.ipynb
 
+# Windows ADS (Mark of the Web) artifacts that break checkouts on Windows
+# These can appear if ADS got exported as real files (e.g. via some archivers)
+*:[Zz]one.Identifier*
+
+
 # Debug Files
 debug_api.php
 debug_layouts.php
