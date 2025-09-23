@@ -42,6 +42,8 @@
     .preview-table { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: 100%; min-width: 0; }
     .preview-table th, .preview-table td { border:1px solid #e5e7eb; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .preview-table thead th { background:#f3f4f6; }
+    /* Modal blur fallback */
+    body.modal-open > *:not(.modal-root) { filter: blur(6px); transition: filter .15s ease; }
     </style>
 
     <div class="py-12 bg-white">
@@ -94,6 +96,16 @@
                 const wilayahs = Array.isArray(this.allData.wilayahs) ? this.allData.wilayahs : [];
                 this.provinsis = wilayahs.map(p => ({ id: p.id, nama: p.nama }));
                 this.kabupatens = wilayahs.flatMap(p => (Array.isArray(p.kabupaten) ? p.kabupaten : []).map(k => ({ id: k.id, nama: k.nama, id_parent: k.id_parent })));
+
+                // Warn on reload/close only when results exist
+                window.addEventListener('beforeunload', (e) => {
+                    try {
+                        if (this.storedResults && this.storedResults.length > 0) {
+                            e.preventDefault();
+                            e.returnValue = '';
+                        }
+                    } catch (_) { /* noop */ }
+                });
             },
 
             // Sources
@@ -121,6 +133,9 @@
             selectedForRemoval: [],
             storedResults: [],
             selectedResultIndex: null,
+            // Result selection management
+            selectedResultIds: [],
+            showClearConfirm: false,
             activeResultTab: 'tabel',
             showLegend: false,
 
@@ -185,6 +200,58 @@
             },
             selectAllKabupaten(){ if(!this.selectedProvinsiId) return; this.selection.kabupaten_ids = this.kabupatenOfSelectedProvinsi.map(k=>k.id); },
             clearKabupaten(){ if(!this.selectedProvinsiId) { this.selection.kabupaten_ids=[]; return; } const ids = this.kabupatenOfSelectedProvinsi.map(k=>k.id); this.selection.kabupaten_ids = this.selection.kabupaten_ids.filter(id=>!ids.includes(id)); },
+
+            // Results list helpers (organize/delete)
+            selectStoredResult(index){
+                if (index == null || index < 0 || index >= this.storedResults.length) {
+                    this.selectedResultIndex = null;
+                    return;
+                }
+                this.selectedResultIndex = index;
+                // Keep current tab; render chart only if on grafik
+                if (this.activeResultTab === 'grafik') {
+                    this.$nextTick(()=> this.renderChart());
+                }
+            },
+
+            toggleResultSelection(id, checked){
+                const nid = Number(id);
+                if (checked) {
+                    if (!this.selectedResultIds.includes(nid)) this.selectedResultIds.push(nid);
+                } else {
+                    this.selectedResultIds = this.selectedResultIds.filter(x => x !== nid);
+                }
+            },
+
+            removeSelectedResults(){
+                if (this.selectedResultIds.length === 0) return;
+                const ids = new Set(this.selectedResultIds.map(Number));
+                const prevSelectedId = (this.selectedResultIndex !== null && this.storedResults[this.selectedResultIndex]) ? this.storedResults[this.selectedResultIndex].id : null;
+                this.storedResults = this.storedResults.filter(r => !ids.has(Number(r.id)));
+                this.selectedResultIds = [];
+                if (this.storedResults.length === 0) {
+                    this.selectedResultIndex = null;
+                    if (window.myChartLahan && typeof window.myChartLahan.destroy === 'function') window.myChartLahan.destroy();
+                    return;
+                }
+                // Select nearest valid index
+                let newIndex = null;
+                if (prevSelectedId != null) newIndex = this.storedResults.findIndex(r => Number(r.id) === Number(prevSelectedId));
+                if (newIndex === -1 || newIndex === null) newIndex = Math.min(this.selectedResultIndex ?? 0, this.storedResults.length - 1);
+                this.selectStoredResult(newIndex);
+            },
+
+            clearAllResults(){
+                if (this.storedResults.length === 0) return;
+                this.showClearConfirm = true;
+            },
+            clearAllResultsConfirmed(){
+                this.storedResults = [];
+                this.selectedResultIds = [];
+                this.selectedResultIndex = null;
+                this.showClearConfirm = false;
+                if (window.myChartLahan && typeof window.myChartLahan.destroy === 'function') window.myChartLahan.destroy();
+            },
 
             async fetchData(){
                 if(this.selections.length===0){ alert('Silakan tambahkan data terlebih dahulu.'); return; }
@@ -403,6 +470,34 @@
                     </div>
                 </section>
 
+                <!-- Modal: Confirm clear all results (teleported) -->
+                <template x-teleport="body">
+                    <div x-show="showClearConfirm" x-transition.opacity class="modal-root fixed inset-0 z-[1000] flex items-center justify-center">
+                        <div class="fixed inset-0 bg-black/40" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);" @click="showClearConfirm=false"></div>
+                        <div class="relative bg-white rounded-lg shadow-xl border border-neutral-200 w-full max-w-md mx-4">
+                            <div class="p-5">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.73-3l-6.93-12a2 2 0 00-3.46 0l-6.93 12a2 2 0 001.73 3z"/></svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-neutral-900">Kosongkan semua hasil?</h3>
+                                        <p class="mt-1 text-sm text-neutral-600">Tindakan ini akan menghapus semua hasil yang tersimpan di panel saat ini dan tidak dapat dibatalkan.</p>
+                                    </div>
+                                </div>
+                                <div class="mt-5 flex items-center justify-end gap-2">
+                                    <button type="button" @click="showClearConfirm=false" class="px-3 py-2 text-sm rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-50">Batal</button>
+                                    <button type="button" @click="clearAllResultsConfirmed()" class="px-3 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700">Hapus Semua</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- lock scroll and ensure body blur fallback if needed -->
+                        <div class="hidden" x-init="document.body.style.overflow='hidden'; document.body.classList.add('modal-open')"
+                             x-effect="if(showClearConfirm){document.body.style.overflow='hidden'; document.body.classList.add('modal-open')} else {document.body.style.overflow=''; document.body.classList.remove('modal-open')}"
+                        ></div>
+                    </div>
+                </template>
+
                 <!-- Step 2: Konfigurasi Tampilan -->
                 <section class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
                     <h2 class="text-2xl font-bold text-neutral-800 mb-1 flex items-center">
@@ -604,15 +699,33 @@
                     <p class="text-neutral-600 mb-6 ml-11">Hasil dari data yang telah Anda pilih.</p>
 
                     <div class="flex gap-6">
-                        <!-- Left: result list -->
+                        <!-- Left: result list + actions -->
                         <div class="w-48 flex-shrink-0">
-                            <div class="text-sm text-neutral-500 mb-2">Hasil Pencarian</div>
-                            <div class="space-y-2">
-                                <template x-for="(res, idx) in storedResults" :key="res.id">
-                                    <button @click="selectedResultIndex=idx; activeResultTab='tabel'; $nextTick(()=>renderChart());" class="w-full text-left px-3 py-2 rounded-md" :class="{'bg-blue-600 text-white': selectedResultIndex===idx, 'bg-white border text-neutral-700': selectedResultIndex!==idx}">
-                                        <div class="font-medium" x-text="'Hasil ' + (idx+1)"></div>
-                                        <div class="text-xs opacity-80" x-text="res.timestamp"></div>
+                            <div class="bg-white rounded-lg border overflow-hidden flex flex-col">
+                                <div class="p-2 border-b bg-neutral-50 flex items-center gap-1">
+                                    <button type="button" @click="removeSelectedResults()" :disabled="selectedResultIds.length===0"
+                                            class="px-2 py-1 rounded text-xs font-medium"
+                                            :class="selectedResultIds.length===0 ? 'bg-rose-200 text-white cursor-not-allowed' : 'bg-rose-500 text-white hover:bg-rose-600'">
+                                        Hapus Dipilih
                                     </button>
+                                    <button type="button" @click="clearAllResults()" :disabled="storedResults.length===0" title="Kosongkan semua hasil"
+                                            class="px-2 py-1 rounded text-xs font-medium ml-auto"
+                                            :class="storedResults.length===0 ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-neutral-700 text-white hover:bg-neutral-800'">
+                                        Kosongkan
+                                    </button>
+                                </div>
+
+                                <template x-for="(res, idx) in storedResults" :key="res.id">
+                                    <div class="flex items-start border-b border-neutral-200 last:border-b-0">
+                                        <label class="p-3 pr-2">
+                                            <input type="checkbox" class="rounded" :checked="selectedResultIds.includes(res.id)" @click.stop @change="toggleResultSelection(res.id, $event.target.checked)">
+                                        </label>
+                                        <button @click="selectStoredResult(idx)" :class="{'bg-blue-600 text-white': selectedResultIndex===idx, 'bg-white text-neutral-700 hover:bg-neutral-50': selectedResultIndex!==idx}"
+                                                class="flex-1 px-2 py-3 text-left transition-colors">
+                                            <div class="font-medium text-sm" x-text="'Hasil ' + (idx+1)"></div>
+                                            <div class="text-xs opacity-75 mt-1" x-text="res.timestamp"></div>
+                                        </button>
+                                    </div>
                                 </template>
                             </div>
                         </div>

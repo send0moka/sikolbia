@@ -281,6 +281,16 @@
                     // Reset kabupaten selection when province changes
                     this.selection.kabupaten_ids = [];
                 });
+
+                // Warn user before reloading/closing the page if results are present
+                window.addEventListener('beforeunload', (e) => {
+                    try {
+                        if (this.storedResults && this.storedResults.length > 0) {
+                            e.preventDefault();
+                            e.returnValue = '';
+                        }
+                    } catch (_) { /* noop */ }
+                });
             },
             // Data sources from Controller
             allData: {
@@ -332,6 +342,10 @@
             searchResults: [],
             storedResults: [],
             selectedResultIndex: null,
+            // Manage selection of stored results for deletion
+            selectedResultIds: [],
+            // Modal state
+            showClearConfirm: false,
             // Grafik helpers
             selectedProvinceForScroll: null,
             showLegend: false,
@@ -436,11 +450,81 @@
             },
 
             selectStoredResult(index) {
+                if (index == null || index < 0 || index >= this.storedResults.length) {
+                    this.selectedResultIndex = null;
+                    this.searchResults = { data: [], columnOrder: [], config: {} };
+                    return;
+                }
                 this.selectedResultIndex = index;
                 this.searchResults = this.storedResults[index].results;
                 // Re-render chart if grafik tab is active
                 if (this.activeResultTab === 'grafik') {
                     this.$nextTick(() => this.renderChart());
+                }
+            },
+
+            // Toggle checkbox for a stored result id
+            toggleResultSelection(id, checked) {
+                const numericId = Number(id);
+                if (checked) {
+                    if (!this.selectedResultIds.includes(numericId)) this.selectedResultIds.push(numericId);
+                } else {
+                    this.selectedResultIds = this.selectedResultIds.filter(rid => rid !== numericId);
+                }
+            },
+
+            // Remove all results currently checked
+            removeSelectedResults() {
+                if (this.selectedResultIds.length === 0) return;
+                const idsToRemove = new Set(this.selectedResultIds.map(Number));
+                const prevSelectedId = this.selectedResultIndex !== null && this.storedResults[this.selectedResultIndex]
+                    ? this.storedResults[this.selectedResultIndex].id
+                    : null;
+
+                // Build a new array excluding selected ids
+                const newResults = this.storedResults.filter(r => !idsToRemove.has(Number(r.id)));
+                this.storedResults = newResults;
+                this.selectedResultIds = [];
+
+                if (this.storedResults.length === 0) {
+                    // Nothing left
+                    this.selectedResultIndex = null;
+                    this.searchResults = { data: [], columnOrder: [], config: {} };
+                    // Destroy chart if exists
+                    if (window.myChart && typeof window.myChart.destroy === 'function') {
+                        window.myChart.destroy();
+                    }
+                    return;
+                }
+
+                // Determine new selected index
+                let newIndex = null;
+                if (prevSelectedId != null) {
+                    newIndex = this.storedResults.findIndex(r => Number(r.id) === Number(prevSelectedId));
+                }
+                if (newIndex === -1 || newIndex === null) {
+                    // Select closest valid index (previous index or last item)
+                    newIndex = Math.min(this.selectedResultIndex ?? 0, this.storedResults.length - 1);
+                }
+                this.selectStoredResult(newIndex);
+            },
+
+            // Clear all stored results (confirm handled by modal)
+            clearAllResults() {
+                if (this.storedResults.length === 0) return;
+                this.showClearConfirm = true;
+            },
+
+            clearAllResultsConfirmed() {
+                // Perform actual clearing
+                this.storedResults = [];
+                this.selectedResultIds = [];
+                this.selectedResultIndex = null;
+                this.searchResults = { data: [], columnOrder: [], config: {} };
+                this.activeResultTab = 'tabel';
+                this.showClearConfirm = false;
+                if (window.myChart && typeof window.myChart.destroy === 'function') {
+                    window.myChart.destroy();
                 }
             },
 
@@ -499,6 +583,7 @@
                     };
                     this.storedResults.push(resultData);
                     this.selectedResultIndex = this.storedResults.length - 1;
+                    // beforeunload handler reads storedResults at event time; no rebind necessary
                     // Optional: render chart if you have chart data
                     // this.renderChart(results); 
 
@@ -1418,6 +1503,47 @@
     </div>
 </section>
 
+<!-- Modal: Confirm clear all results (teleported to body to avoid clipping/contain issues) -->
+<template x-teleport="body">
+    <div x-show="showClearConfirm" x-transition.opacity class="modal-root fixed inset-0 z-[1000] flex items-center justify-center">
+        <!-- backdrop -->
+        <div class="fixed inset-0 bg-black/40" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);" @click="showClearConfirm = false"></div>
+        <!-- dialog -->
+        <div class="relative bg-white rounded-lg shadow-xl border border-neutral-200 w-full max-w-md mx-4">
+            <div class="p-5">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 mt-0.5">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.73-3l-6.93-12a2 2 0 00-3.46 0l-6.93 12a2 2 0 001.73 3z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-neutral-900">Kosongkan semua hasil?</h3>
+                        <p class="mt-1 text-sm text-neutral-600">Tindakan ini akan menghapus semua hasil yang tersimpan di panel saat ini dan tidak dapat dibatalkan.</p>
+                    </div>
+                </div>
+                <div class="mt-5 flex items-center justify-end gap-2">
+                    <button type="button" @click="showClearConfirm = false" class="px-3 py-2 text-sm rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-50">Batal</button>
+                    <button type="button" @click="clearAllResultsConfirmed()" class="px-3 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700">Hapus Semua</button>
+                </div>
+            </div>
+        </div>
+        <!-- prevent scrolling and toggle body blur class behind modal -->
+        <div class="hidden"
+             x-init="document.body.style.overflow='hidden'; document.body.classList.add('modal-open')"
+             x-effect="if(showClearConfirm){document.body.style.overflow='hidden'; document.body.classList.add('modal-open')} else {document.body.style.overflow=''; document.body.classList.remove('modal-open')}"
+        ></div>
+        <span class="sr-only" aria-live="assertive">Dialog konfirmasi terbuka</span>
+        <div @keydown.escape.window="showClearConfirm = false"></div>
+    </div>
+</template>
+
+<style>
+/* Fallback blur for browsers without backdrop-filter support (e.g., some Firefox versions) */
+body.modal-open > *:not(.modal-root) {
+    filter: blur(6px);
+    transition: filter 0.15s ease;
+}
+</style>
+
                 <!-- Step 2: Konfigurasi Tampilan -->
 <section class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
     <h2 class="text-2xl font-bold text-neutral-800 mb-1 flex items-center">
@@ -1657,14 +1783,38 @@
     <div class="flex gap-6">
         <!-- Left Sidebar - Result Selection -->
         <div class="w-48 flex-shrink-0">
-            <div class="bg-white rounded-lg border overflow-hidden">
-                <template x-for="(result, index) in storedResults" :key="result.id">
-                    <button @click="selectStoredResult(index)" 
-                            :class="{'bg-blue-600 text-white': selectedResultIndex === index, 'bg-white text-neutral-700 hover:bg-neutral-50': selectedResultIndex !== index}"
-                            class="w-full px-4 py-3 text-left border-b border-neutral-200 last:border-b-0 transition-colors">
-                        <div class="font-medium text-sm" x-text="`Result #${index + 1}`"></div>
-                        <div class="text-xs opacity-75 mt-1" x-text="result.timestamp"></div>
+            <div class="bg-white rounded-lg border overflow-hidden flex flex-col">
+                <!-- Result actions -->
+                <div class="p-2 border-b bg-neutral-50 flex items-center gap-1">
+                    <button type="button" @click="removeSelectedResults()" :disabled="selectedResultIds.length === 0"
+                            class="px-2 py-1 rounded text-xs font-medium"
+                            :class="selectedResultIds.length === 0 ? 'bg-red-200 text-white cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700'">
+                        Hapus Dipilih
                     </button>
+                    <button type="button" @click="showClearConfirm = true" :disabled="storedResults.length === 0" title="Kosongkan semua hasil"
+                            class="px-2 py-1 rounded text-xs font-medium ml-auto"
+                            :class="storedResults.length === 0 ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed' : 'bg-neutral-700 text-white hover:bg-neutral-800'">
+                        Kosongkan
+                    </button>
+                </div>
+
+                <!-- Result list with checkboxes -->
+                <template x-for="(result, index) in storedResults" :key="result.id">
+                    <div class="flex items-start border-b border-neutral-200 last:border-b-0">
+                        <label class="p-3 pr-2">
+                            <input type="checkbox" class="rounded" :checked="selectedResultIds.includes(result.id)"
+                                   @click.stop
+                                   @change="toggleResultSelection(result.id, $event.target.checked)">
+                        </label>
+                        <button @click="selectStoredResult(index)"
+                                :class="{'bg-blue-600 text-white': selectedResultIndex === index, 'bg-white text-neutral-700 hover:bg-neutral-50': selectedResultIndex !== index}"
+                                class="flex-1 px-2 py-3 text-left transition-colors">
+                            <div class="font-medium text-sm flex items-center justify-between">
+                                <span x-text="`Result #${index + 1}`"></span>
+                            </div>
+                            <div class="text-xs opacity-75 mt-1" x-text="result.timestamp"></div>
+                        </button>
+                    </div>
                 </template>
             </div>
         </div>
