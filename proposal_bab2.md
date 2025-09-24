@@ -193,35 +193,140 @@ Sistem yang dikembangkan akan memberikan pengambil kebijakan akses kepada inform
 
 Ketahanan pangan didefinisikan sebagai kondisi terpenuhinya pangan bagi negara sampai dengan perseorangan, yang tercermin dari tersedianya pangan yang cukup, baik jumlah maupun mutunya, aman, beragam, bergizi, merata, dan terjangkau serta tidak bertentangan dengan agama, keyakinan, dan budaya masyarakat untuk dapat hidup sehat, aktif, dan produktif secara berkelanjutan (Badan Pangan Nasional, 2022). Konsep ini mencakup empat pilar utama: ketersediaan (availability), keterjangkauan (accessibility), pemanfaatan (utilization), dan stabilitas (stability) yang saling berinteraksi dalam sistem pangan nasional (FAO, 2023).
 
+Neraca Bahan Makanan (NBM) menggunakan formula dasar untuk menghitung konsumsi per kapita sebagai berikut:
+
+$$\text{Konsumsi per kapita} = \frac{\text{Ketersediaan Bersih}}{\text{Jumlah Penduduk} \times 365 \text{ hari}}$$
+
+Ketersediaan Bersih dihitung dengan persamaan:
+
+$$\text{Ketersediaan Bersih} = \text{Produksi} + \text{Impor} - \text{Ekspor} \pm \Delta\text{Stok} - \text{Non-Food Uses}$$
+
+di mana $\Delta\text{Stok}$ adalah perubahan stok (positif jika berkurang, negatif jika bertambah) dan Non-Food Uses merupakan penggunaan untuk pakan ternak, industri, dan lain sebagainya.
+
+Konversi ke kalori menggunakan faktor konversi energi:
+
+$$\text{Kalori per kapita per hari} = \frac{\text{Konsumsi per kapita (kg/hari)} \times \text{Faktor Konversi Energi (kkal/100g)}}{10}$$
+
 Neraca Bahan Makanan (NBM) merupakan instrumen penting dalam monitoring ketahanan pangan yang menyajikan gambaran menyeluruh tentang situasi pangan suatu negara dalam kurun waktu tertentu (Pusat Data dan Sistem Informasi Pertanian, 2024). NBM mengintegrasikan data produksi, impor, ekspor, perubahan stok, dan penggunaan untuk pakan ternak serta industri, sehingga menghasilkan angka konsumsi per kapita yang akurat. Data NBM Indonesia telah dikompilasi sejak tahun 1993 dan mencakup lebih dari 60 komoditas pangan utama dengan parameter konsumsi kalori, protein, dan lemak per kapita per hari.
 
 ### 2.2 Time Series Forecasting dan Prediksi Konsumsi Pangan
 
-Time Series Forecasting adalah teknik analisis data historis yang diamati dalam urutan waktu tertentu untuk memprediksi nilai-nilai masa depan (Torres et al., 2021). Dalam konteks ketahanan pangan, Forecasting konsumsi memiliki karakteristik unik berupa Seasonal Patterns yang dipengaruhi oleh faktor musim panen, hari raya keagamaan, dan kondisi ekonomi makro. Konsumsi pangan menunjukkan pola temporal yang kompleks dengan komponen trend jangka panjang, Seasonal cycle, dan irregular fluctuations yang memerlukan pendekatan Modeling yang sophisticated (Noureddine et al., 2023).
+Time Series Forecasting adalah teknik analisis data historis yang diamati dalam urutan waktu tertentu untuk memprediksi nilai-nilai masa depan (Torres et al., 2021). Model ARIMA (Autoregressive Integrated Moving Average) dapat dinyatakan sebagai ARIMA(p,d,q) dengan persamaan:
 
-Metode konvensional seperti ARIMA (Autoregressive Integrated Moving Average) dan exponential smoothing telah lama digunakan untuk prediksi konsumsi pangan, namun memiliki keterbatasan dalam menangkap non-Linear relationships dan Long-term Dependencies yang karakteristik pada data konsumsi pangan (Siami Namini et al., 2021). Keterbatasan ini mendorong pengembangan pendekatan Machine Learning yang lebih advanced untuk meningkatkan akurasi prediksi.
+$$(1-\phi_1L-\phi_2L^2-...-\phi_pL^p)(1-L)^d X_t = (1+\theta_1L+\theta_2L^2+...+\theta_qL^q)\epsilon_t$$
+
+di mana $L$ adalah lag operator, $\phi_i$ adalah autoregressive parameters, $\theta_j$ adalah moving average parameters, $d$ adalah degree of differencing, dan $\epsilon_t$ adalah white noise error term.
+
+Exponential Smoothing menggunakan weighted average dari observasi masa lalu dengan formula:
+
+$$S_t = \alpha X_t + (1-\alpha)S_{t-1}$$
+
+di mana $S_t$ adalah smoothed value pada waktu $t$, $\alpha$ adalah smoothing parameter (0 < α < 1), dan $X_t$ adalah actual value pada waktu $t$.
+
+Dalam konteks ketahanan pangan, Forecasting konsumsi memiliki karakteristik unik berupa Seasonal Patterns yang dipengaruhi oleh faktor musim panen, hari raya keagamaan, dan kondisi ekonomi makro. Konsumsi pangan menunjukkan pola temporal yang kompleks dengan komponen trend jangka panjang, Seasonal cycle, dan irregular fluctuations yang memerlukan pendekatan Modeling yang sophisticated (Noureddine et al., 2023).
+
+Metode konvensional seperti ARIMA dan exponential smoothing telah lama digunakan untuk prediksi konsumsi pangan, namun memiliki keterbatasan dalam menangkap non-Linear relationships dan Long-term Dependencies yang karakteristik pada data konsumsi pangan (Siami Namini et al., 2021). Keterbatasan ini mendorong pengembangan pendekatan Machine Learning yang lebih advanced untuk meningkatkan akurasi prediksi.
 
 ### 2.3 Neural Network dan Deep Learning
 
-Neural Network adalah computational Model yang terinspirasi dari struktur dan fungsi jaringan syaraf biologis, terdiri dari nodes (neurons) yang saling terhubung dan mampu belajar pola kompleks dari data training (Benos et al., 2021). Deep Learning merupakan subset dari Machine Learning yang menggunakan Neural Networks dengan multiple hidden layers untuk ekstraksi fitur hierarkis dan pembelajaran representasi yang sophisticated.
+Neural Network adalah computational Model yang terinspirasi dari struktur dan fungsi jaringan syaraf biologis, terdiri dari nodes (neurons) yang saling terhubung dan mampu belajar pola kompleks dari data training (Benos et al., 2021). Forward Propagation pada fully connected layer dinyatakan dengan persamaan:
 
-Arsitektur Deep Learning telah terbukti Superior dalam menangani high-dimensional data dan complex pattern recognition tasks, termasuk aplikasi dalam agricultural domain (Opara et al., 2024). Keunggulan utama Deep Learning terletak pada kemampuan automatic feature extraction, yang mengeliminasi kebutuhan manual feature engineering yang time-consuming dan subjective dalam traditional Machine Learning Approaches.
+$$z^{[l]} = W^{[l]}a^{[l-1]} + b^{[l]}$$
+
+$$a^{[l]} = g^{[l]}(z^{[l]})$$
+
+di mana $z^{[l]}$ adalah linear output layer ke-$l$, $W^{[l]}$ adalah weight matrix layer ke-$l$, $a^{[l-1]}$ adalah activation dari layer sebelumnya, $b^{[l]}$ adalah bias vector, dan $g^{[l]}$ adalah activation function.
+
+Activation Functions yang umum digunakan meliputi Sigmoid $\sigma(z) = \frac{1}{1+e^{-z}}$, Tanh $\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$, dan ReLU $\text{ReLU}(z) = \max(0, z)$.
+
+Backpropagation untuk update weights menggunakan persamaan:
+
+$$\frac{\partial L}{\partial W^{[l]}} = \frac{\partial L}{\partial z^{[l]}} \cdot \frac{\partial z^{[l]}}{\partial W^{[l]}} = \delta^{[l]} \cdot (a^{[l-1]})^T$$
+
+$$W^{[l]} := W^{[l]} - \alpha \frac{\partial L}{\partial W^{[l]}}$$
+
+di mana $L$ adalah loss function, $\delta^{[l]}$ adalah error signal layer ke-$l$, dan $\alpha$ adalah learning rate.
+
+Deep Learning merupakan subset dari Machine Learning yang menggunakan Neural Networks dengan multiple hidden layers untuk ekstraksi fitur hierarkis dan pembelajaran representasi yang sophisticated. Arsitektur Deep Learning telah terbukti Superior dalam menangani high-dimensional data dan complex pattern recognition tasks, termasuk aplikasi dalam agricultural domain (Opara et al., 2024). Keunggulan utama Deep Learning terletak pada kemampuan automatic feature extraction, yang mengeliminasi kebutuhan manual feature engineering yang time-consuming dan subjective dalam traditional Machine Learning Approaches.
 
 ### 2.4 Long Short-term Memory (LSTM) dan Ensemble Methods
 
 Long Short-term Memory (LSTM) adalah specialized recurrent Neural Network architecture yang dirancang untuk mengatasi vanishing gradient problem dalam traditional RNNs, sehingga mampu menangkap Long-term Dependencies dalam sequential data (Kong et al., 2025). LSTM memiliki cell state mechanism yang memungkinkan selective retention dan forgetting informasi melalui three gates: forget gate, input gate, dan output gate.
 
-Forget Gate menentukan informasi mana yang akan dihapus dari cell state, menggunakan sigmoid function untuk menghasilkan nilai antara 0 dan 1. Input Gate memutuskan nilai-nilai baru mana yang akan disimpan dalam cell state, terdiri dari sigmoid layer yang menentukan nilai mana yang akan di-update dan tanh layer yang menciptakan vektor kandidat nilai baru. Output Gate menentukan bagian mana dari cell state yang akan menjadi output, menggunakan sigmoid function untuk memutuskan bagian cell state mana yang akan di-output.
+Forget Gate menentukan informasi mana yang akan dihapus dari cell state dengan persamaan:
 
-Dalam konteks ensemble learning untuk Time Series Forecasting, LSTM dapat dikombinasikan dengan Robust Regression Algorithms seperti HuberRegressor untuk meningkatkan stability dan outlier resistance (Benos et al., 2021). HuberRegressor menggunakan Huber loss function yang menggabungkan MSE untuk error kecil dan MAE untuk error besar, memberikan Robustness terhadap outliers sambil maintaining efficiency untuk normal data points.
+$$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$$
 
-LSTM enhanced ensemble approach menggabungkan temporal pattern recognition capabilities dari LSTM dengan Robust statistical properties dari Regression Algorithms. Ensemble Methods dapat menggunakan LSTM sebagai feature extractor untuk temporal Dependencies, kemudian mengintegrasikan hasilnya dengan traditional Forecasting methods melalui weighted averaging atau stacking Approaches (Torres et al., 2021).
+di mana $f_t$ adalah forget gate output pada waktu $t$, $\sigma$ adalah sigmoid function, $W_f$ adalah weight matrix untuk forget gate, $h_{t-1}$ adalah hidden state sebelumnya, $x_t$ adalah input pada waktu $t$, dan $b_f$ adalah bias vector untuk forget gate.
+
+Input Gate memutuskan nilai-nilai baru mana yang akan disimpan dalam cell state:
+
+$$i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$$
+
+$$\tilde{C_t} = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$$
+
+di mana $i_t$ adalah input gate output, $\tilde{C_t}$ adalah kandidat nilai cell state baru, $W_i, W_C$ adalah weight matrices, dan $b_i, b_C$ adalah bias vectors.
+
+Cell State Update menggabungkan informasi lama dan baru:
+
+$$C_t = f_t * C_{t-1} + i_t * \tilde{C_t}$$
+
+Output Gate menentukan bagian cell state yang akan menjadi output:
+
+$$o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$$
+
+$$h_t = o_t * \tanh(C_t)$$
+
+di mana $o_t$ adalah output gate dan $h_t$ adalah hidden state output pada waktu $t$.
+
+Dalam konteks ensemble learning untuk Time Series Forecasting, LSTM dapat dikombinasikan dengan Robust Regression Algorithms seperti HuberRegressor. HuberRegressor menggunakan Huber loss function yang menggabungkan MSE untuk error kecil dan MAE untuk error besar:
+
+$$L_\delta(y, f(x)) = \begin{cases} 
+\frac{1}{2}(y - f(x))^2 & \text{untuk } |y - f(x)| \leq \delta \\
+\delta|y - f(x)| - \frac{1}{2}\delta^2 & \text{untuk } |y - f(x)| > \delta
+\end{cases}$$
+
+di mana $y$ adalah nilai aktual, $f(x)$ adalah nilai prediksi, dan $\delta$ adalah threshold parameter (biasanya 1.35).
+
+LSTM enhanced ensemble approach menggabingkan temporal pattern recognition capabilities dari LSTM dengan Robust statistical properties dari Regression Algorithms. Ensemble prediction dihitung menggunakan weighted averaging:
+
+$$\hat{y}_{ensemble} = \sum_{i=1}^{n} w_i \cdot \hat{y}_i$$
+
+dengan constraint $\sum_{i=1}^{n} w_i = 1$ dan $w_i \geq 0$, di mana $\hat{y}_{ensemble}$ adalah prediksi ensemble, $w_i$ adalah weight untuk model ke-$i$, $\hat{y}_i$ adalah prediksi dari model ke-$i$, dan $n$ adalah jumlah model dalam ensemble.
+
+Adam Optimizer yang umum digunakan untuk training LSTM menggunakan persamaan:
+
+$$m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t$$
+
+$$v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2$$
+
+$$\hat{m}_t = \frac{m_t}{1-\beta_1^t}$$
+
+$$\hat{v}_t = \frac{v_t}{1-\beta_2^t}$$
+
+$$\theta_{t+1} = \theta_t - \frac{\alpha}{\sqrt{\hat{v}_t} + \epsilon}\hat{m}_t$$
+
+di mana $g_t$ adalah gradient pada step $t$, $m_t, v_t$ adalah first dan second moment estimates, $\beta_1, \beta_2$ adalah decay rates (biasanya 0.9 dan 0.999), $\alpha$ adalah learning rate, dan $\epsilon$ adalah small constant untuk numerical stability.
 
 Hyperparameter optimization dalam ensemble setting mencakup not only LSTM-specific parameters (learning rate, batch size, epochs, window size) tetapi juga ensemble configuration seperti Model weights, voting mechanisms, dan regularization parameters untuk preventing overfitting across multiple Models.
 
 ### 2.5 Metrik Evaluasi Model Prediksi
 
-Evaluasi performa Model prediksi menggunakan multiple metrics untuk memastikan comprehensive assessment. Root Mean Square Error (RMSE) mengukur Standard deviation dari residuals dan memberikan penalty yang lebih besar untuk large errors, sehingga sensitif terhadap outliers (Verma et al., 2024). Mean Absolute Error (MAE) memberikan Average magnitude of errors tanpa mempertimbangkan direction, sehingga lebih Robust terhadap outliers dibandingkan RMSE.
+Evaluasi performa Model prediksi menggunakan multiple metrics untuk memastikan comprehensive assessment. Root Mean Square Error (RMSE) mengukur Standard deviation dari residuals dan memberikan penalty yang lebih besar untuk large errors:
+
+$$RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$
+
+di mana $y_i$ adalah nilai aktual, $\hat{y}_i$ adalah nilai prediksi, dan $n$ adalah jumlah observasi.
+
+Mean Absolute Error (MAE) memberikan Average magnitude of errors tanpa mempertimbangkan direction:
+
+$$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$$
+
+Mean Absolute Percentage Error (MAPE) mengukur akurasi dalam bentuk persentase, memudahkan interpretasi:
+
+$$MAPE = \frac{100\%}{n}\sum_{i=1}^{n}\left|\frac{y_i - \hat{y}_i}{y_i}\right|$$
+
+RMSE lebih sensitif terhadap outliers dibandingkan MAE karena menggunakan squared errors, sementara MAE lebih Robust terhadap outliers dan memberikan equal weight untuk semua errors (Verma et al., 2024). MAPE memberikan interpretasi yang intuitif dalam bentuk persentase error, namun dapat menghasilkan nilai infinite atau sangat besar ketika nilai aktual mendekati nol.
 
 ### 2.6 Arsitektur Sistem Laravel-FastAPI dan Containerization
 
