@@ -62,7 +62,9 @@ class LaporanNbmController extends Controller
             $penggunaan = $row->pakan + $row->bibit + $row->diolahMakanan + $row->diolahBukanMakanan + $row->tercecer + $row->penggunaanLain + $row->bahanMakanan;
 
             // Calculate per capita nutrition values manually
-            $kgPerTahun = $row->avg_populasi ? round(($row->total_makanan * 1000 * 1000) / $row->avg_populasi, 1) : 0;
+            // Use bahan_makanan for per capita calculation as it contains the actual consumption data
+            $consumptionData = $row->bahanMakanan > 0 ? $row->bahanMakanan : $row->total_makanan;
+            $kgPerTahun = $row->avg_populasi ? round(($consumptionData * 1000 * 1000) / $row->avg_populasi, 1) : 0;
             $gramPerHari = round($kgPerTahun * 1000 / 365, 1);
             
             // Calculate average nutrition values for this group/commodity combination
