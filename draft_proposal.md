@@ -103,12 +103,14 @@ Jehian Athaya Tsani Az Zuhry
 
 - Gambar 1. Tahapan Research and Development (17)
 - Gambar 2. Diagram Alur CRISP-DM (19)
+- Gambar 3. Struktur Sel LSTM (10)
 
 ---
 
 ## DAFTAR TABEL
 
-- Tabel 1. Jadwal Penelitian (26)
+- Tabel 1. Penelitian Sejenis (15)
+- Tabel 2. Jadwal Penelitian (26)
 
 ---
 
@@ -276,7 +278,9 @@ Deep Learning merupakan subset dari machine learning yang menggunakan neural net
 
 ### 2.4 Long Short-term Memory (LSTM) dan Metode Ensemble
 
-Long Short-term Memory (LSTM) adalah specialized recurrent Neural Network architecture yang dirancang untuk mengatasi vanishing gradient problem dalam traditional RNNs, sehingga mampu menangkap Long-term Dependencies dalam sequential data (Kong et al., 2025). LSTM memiliki cell state mechanism yang memungkinkan selective retention dan forgetting informasi melalui three gates: forget gate, input gate, dan output gate.
+Long Short-term Memory (LSTM) adalah specialized recurrent Neural Network architecture yang dirancang untuk mengatasi vanishing gradient problem dalam traditional RNNs, sehingga mampu menangkap Long-term Dependencies dalam sequential data (Kong et al., 2025). LSTM memiliki cell state mechanism yang memungkinkan selective retention dan forgetting informasi melalui three gates: forget gate, input gate, dan output gate. Struktur sel LSTM secara detail dapat dilihat pada Gambar 3 yang menunjukkan interaksi antar komponen dalam arsitektur LSTM.
+
+![Gambar 3. Struktur Sel LSTM](diagram)
 
 **Forget Gate** menentukan informasi mana yang akan dihapus dari cell state dengan persamaan (13) yang ditunjukkan sebagai berikut:
 
@@ -395,6 +399,18 @@ Kong et al. (2025) dalam survei menyeluruh terbaru teridentifikasi bahwa variasi
 Penelitian dalam negeri mengenai prediksi konsumsi pangan masih sebagian besar menggunakan metode statistik konvensional. Cahyani et al. (2023) menerapkan LSTM untuk prediksi harga bahan pokok nasional dan berhasil mencapai MAPE 8,2% untuk komoditas beras, yang menunjukkan potensi penerapan LSTM dalam sistem pangan Indonesia. Akan tetapi, penelitian tersebut hanya terfokus pada forecasting harga dan belum mencakup forecasting konsumsi.
 
 Fadila & Putri (2023) melakukan analisis perkembangan ketahanan pangan di Indonesia menggunakan big data, namun fokus pada analisis deskriptif daripada pemodelan prediktif. Penelitian tersebut mengidentifikasi ketersediaan dan kualitas data menjadi tantangan besar dalam pengembangan sistem prediksi lanjutan untuk ketahanan pangan Indonesia.
+
+Ringkasan penelitian sejenis yang terkait dengan prediksi konsumsi pangan dan penerapan LSTM dapat dilihat pada Tabel 1 yang menunjukkan perbandingan hasil penelitian terdahulu dengan pendekatan yang akan digunakan dalam penelitian ini.
+
+**Tabel 1. Penelitian Sejenis**
+
+| No | Peneliti (Tahun) | Judul | Hasil | Perbedaan |
+|----|-------------------|-------|-------|-----------|
+| 1 | Cahyani et al. (2023) | Implementasi Metode Long Short Term Memory (LSTM) untuk Memprediksi Harga Bahan Pokok Nasional | MAPE 8,2% untuk prediksi harga beras | Fokus pada prediksi harga, bukan konsumsi kalori; tidak menggunakan metode ensemble |
+| 2 | Fadila & Putri (2023) | Analisis Perkembangan Ketahanan Pangan di Indonesia: Pendekatan Menggunakan Big Data dan Data Mining | Analisis deskriptif ketahanan pangan menggunakan big data | Tidak melakukan pemodelan prediktif; hanya analisis deskriptif |
+| 3 | Adhany et al. (2025) | Prediksi Padi Menggunakan Algoritma Long Short Term Memory | MAPE 12,4% untuk prediksi produksi gandum di China | Fokus pada produksi komoditas tunggal; tidak menggunakan data NBM Indonesia |
+| 4 | Sun et al. (2024) | Agricultural Commodity Price Prediction Model Based on Secondary Decomposition and LSTM | MAPE 9,7% untuk prediksi harga pangan di India | Fokus pada harga komoditas; tidak menggunakan ensemble method untuk konsumsi |
+| 5 | Serrano et al. (2024) | Statistical Comparison of Time Series Models for Brazilian Monthly Energy Demand | MAPE 14,8% menggunakan metode statistik tradisional | Menggunakan metode konvensional; tidak menerapkan deep learning |
 
 ### 2.10 Gap Analysis
 
@@ -692,9 +708,9 @@ Performance optimization menggunakan caching strategies, database indexing, dan 
 
 ### 3.4 Jadwal Penelitian
 
-Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu sebagai berikut.
+Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu yang sistematis untuk memastikan setiap tahap RnD dapat dilaksanakan secara optimal. Rincian jadwal pelaksanaan penelitian dapat dilihat pada Tabel 2 yang menunjukkan timeline dan distribusi kegiatan penelitian dari bulan November 2025 hingga Januari 2026.
 
-**Tabel 1. Jadwal Penelitian**
+**Tabel 2. Jadwal Penelitian**
 
 | Tahap Penelitian | November 2025 | Desember 2025 | Januari 2026 |
 |------------------|---------------|---------------|--------------|
