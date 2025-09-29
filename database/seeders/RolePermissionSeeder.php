@@ -65,6 +65,11 @@ class RolePermissionSeeder extends Seeder
             'create komoditibps',
             'edit komoditibps',
             'delete komoditibps',
+            
+            // ML Dashboard permissions
+            'view ml_dashboard',
+            'manage ml_models',
+            'view ml_predictions',
         ];
 
         foreach ($permissions as $permission) {
@@ -120,6 +125,11 @@ class RolePermissionSeeder extends Seeder
             'create komoditibps',
             'edit komoditibps',
             'delete komoditibps',
+            
+            // ML Dashboard permissions
+            'view ml_dashboard',
+            'manage ml_models',
+            'view ml_predictions',
         ]);
 
         // Create a superadmin user if it doesn't exist

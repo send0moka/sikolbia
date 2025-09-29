@@ -253,6 +253,11 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
         return view('prediksi.index');
     })->name('prediksi-nbm');
     
+    // ML Model Dashboard - Enhanced monitoring and evaluation interface
+    Route::middleware(['permission:view dashboard'])->get('ml-dashboard', function () {
+        return view('admin.ml-dashboard');
+    })->name('ml-dashboard');
+    
     Route::get('prediksi-nbm/api/health', [App\Http\Controllers\NBMPredictionController::class, 'health'])->name('prediksi-nbm.api.health');
     Route::post('prediksi-nbm/api/predict', [App\Http\Controllers\NBMPredictionController::class, 'predict'])->name('prediksi-nbm.api.predict');
     Route::get('prediksi-nbm/api/stats', [App\Http\Controllers\NBMPredictionController::class, 'modelStats'])->name('prediksi-nbm.api.stats');
