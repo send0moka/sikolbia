@@ -75,6 +75,12 @@
                     <flux:navlist.item icon="cpu-chip" :href="route('admin.prediksi-nbm')" :current="request()->routeIs('admin.prediksi-nbm')" wire:navigate class="group active-icon">
                         <span class="nav-link-text transition-colors {{ request()->routeIs('admin.prediksi-nbm') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Prediksi Konsumsi NBM') }}</span>
                     </flux:navlist.item>
+                    
+                    @can('view dashboard')
+                    <flux:navlist.item icon="chart-bar-square" :href="route('admin.ml-dashboard')" :current="request()->routeIs('admin.ml-dashboard')" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.ml-dashboard') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('ML Model Dashboard') }}</span>
+                    </flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
             </flux:navlist>
 
