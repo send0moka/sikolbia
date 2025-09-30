@@ -400,7 +400,7 @@
                                             <td>2. Bibit <i class="text-xs">/ Seed</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.bibit) < 0.0001 ? '-' : Number(result.bibit).toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 3})">
+                                                    x-text="Number(result.bibit) === 0 ? '-' : Math.round(Number(result.bibit)).toLocaleString('id-ID')">
                                                 </td>
                                             </template>
                                         </tr>
@@ -413,7 +413,7 @@
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Makanan <i class="text-xs">/ Food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.diolahMakanan) < 0.0001 ? '-' : Number(result.diolahMakanan).toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 3})">
+                                                    x-text="Number(result.diolahMakanan) < 0 ? '-' : Number(result.diolahMakanan).toLocaleString('id-ID')">
                                                 </td>
                                             </template>
                                         </tr>
