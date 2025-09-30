@@ -185,10 +185,16 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">🔮 Make Prediction</h2>
-                <button wire:click="loadSampleData" 
-                        class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-300 hover:border-blue-400 rounded-md transition-colors duration-200">
-                    Load Sample Data
-                </button>
+                <div class="flex gap-2">
+                    <button wire:click="resetPredictionForm" 
+                            class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 border border-gray-300 hover:border-gray-400 rounded-md transition-colors duration-200">
+                        Reset Form
+                    </button>
+                    <button wire:click="loadSampleData" 
+                            class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-300 hover:border-blue-400 rounded-md transition-colors duration-200">
+                        Load Sample Data
+                    </button>
+                </div>
             </div>
 
             <div class="mb-6">
@@ -235,12 +241,22 @@
                                         </select>
                                     </td>
                                     <td class="px-4 py-4">
-                                        <input type="text" wire:model="predictionData.{{ $index }}.kelompok" placeholder="e.g. Cereals"
-                                               class="w-32 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" />
+                                        <select wire:model="predictionData.{{ $index }}.kelompok" 
+                                                class="w-48 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                                            <option value="">Pilih Kelompok</option>
+                                            @foreach($kelompokOptions as $option)
+                                                <option value="{{ $option['label'] }}">{{ $option['label'] }}</option>
+                                            @endforeach
+                                        </select>
                                     </td>
                                     <td class="px-4 py-4">
-                                        <input type="text" wire:model="predictionData.{{ $index }}.komoditi" placeholder="e.g. Rice"
-                                               class="w-32 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" />
+                                        <select wire:model="predictionData.{{ $index }}.komoditi" 
+                                                class="w-48 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                                            <option value="">Pilih Komoditi</option>
+                                            @foreach($komoditiOptions as $option)
+                                                <option value="{{ $option['label'] }}">{{ $option['label'] }}</option>
+                                            @endforeach
+                                        </select>
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="number" wire:model="predictionData.{{ $index }}.kalori_hari" step="0.1" min="0" max="1000"
@@ -265,6 +281,9 @@
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-600 dark:text-gray-400">
                         {{ count($predictionData) }} of 6 required data points
+                        @if(count($predictionData) === 6)
+                            <span class="text-green-600 font-medium ml-2">✅ Ready for prediction</span>
+                        @endif
                     </div>
                     
                     @if(count($predictionData) < 6)
@@ -278,6 +297,7 @@
                         <button wire:click="makePrediction" 
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-not-allowed"
+                                onclick="console.log('Make Prediction clicked!'); console.log('Prediction data:', @js($predictionData))"
                                 class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                             <span wire:loading.remove>🔮 Make Prediction</span>
                             <span wire:loading>Processing...</span>
@@ -324,6 +344,17 @@
                             <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                 Prediction generated at: {{ $predictionResult['timestamp'] ?? now()->format('Y-m-d H:i:s') }}
                             </p>
+                            
+                            @if(isset($predictionResult['input_summary']))
+                                <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        <strong>Input Analysis:</strong><br>
+                                        Total Input: {{ number_format($predictionResult['input_summary']['total_input_calories'], 1) }} kkal/day<br>
+                                        Average Input: {{ number_format($predictionResult['input_summary']['average_input_calories'], 1) }} kkal/day<br>
+                                        Method: {{ $predictionResult['model_info']['method'] ?? 'LSTM Enhanced Ensemble' }}
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -400,19 +431,51 @@
 
 <script>
     document.addEventListener('livewire:initialized', () => {
+        console.log('ML Dashboard loaded');
+        
+        // Listen for Livewire errors
+        Livewire.on('livewire:exception', (event) => {
+            console.error('Livewire error:', event);
+        });
+        
+        // Listen for validation errors
+        document.addEventListener('livewire:validation-error', (event) => {
+            console.error('Validation error:', event.detail);
+        });
+        
         Livewire.on('show-toast', (event) => {
-            // Simple toast notification - could be enhanced with toast library
+            console.log('Toast event received:', event);
+            
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.toast-notification');
+            existingToasts.forEach(toast => toast.remove());
+            
+            // Create toast notification
             const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 ${
+            toast.className = `toast-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transform transition-all duration-300 ${
                 event.type === 'success' ? 'bg-green-600' : 
                 event.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
             }`;
-            toast.textContent = event.message;
+            toast.textContent = event.message || 'Action completed';
+            
+            // Add to DOM
             document.body.appendChild(toast);
             
+            // Show toast with animation
             setTimeout(() => {
-                toast.remove();
-            }, 5000);
+                toast.classList.add('translate-x-0');
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 3000);
         });
     });
 </script>
