@@ -39,7 +39,7 @@ class LaporanNbmController extends Controller
                 ROUND(SUM(pakan), 2) as pakan,
                 ROUND(SUM(bibit), 2) as bibit,
                 ROUND(SUM(makanan), 2) as diolahMakanan,
-                ROUND(SUM(bukan_makanan), 2) as diolahBukanMakanan,
+                ROUND(SUM(bukan_makanan), 3) as diolahBukanMakanan,
                 ROUND(SUM(tercecer), 2) as tercecer,
                 SUM(penggunaan_lain) as penggunaanLain,
                 ROUND(SUM(bahan_makanan), 2) as bahanMakanan,

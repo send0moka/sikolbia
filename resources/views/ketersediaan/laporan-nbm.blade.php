@@ -413,7 +413,7 @@
                                             <td>&nbsp;&nbsp;&nbsp;&nbsp;- Makanan <i class="text-xs">/ Food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.diolahMakanan) < 0 ? '-' : Number(result.diolahMakanan).toLocaleString('id-ID')">
+                                                    x-text="Number(result.diolahMakanan) === 0 ? '-' : Number(result.diolahMakanan).toLocaleString('id-ID')">
                                                 </td>
                                             </template>
                                         </tr>
@@ -422,8 +422,8 @@
                                                     food</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.diolahBukanMakanan) < 0.0001 
-                                                        ? '-' 
+                                                    x-text="Number(result.diolahBukanMakanan) === 0 || Number(result.diolahBukanMakanan) < 0.0001 
+                                                        ? (Number(result.diolahBukanMakanan) === 0 ? '-' : Number(result.diolahBukanMakanan).toLocaleString('id-ID', {minimumFractionDigits: 3, maximumFractionDigits: 3}))
                                                         : (
                                                             Number(result.diolahBukanMakanan) % 1 === 0
                                                                 ? Number(result.diolahBukanMakanan).toLocaleString('id-ID')
