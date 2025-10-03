@@ -351,7 +351,7 @@
                                             <td>2. Impor <i class="text-xs">/ Import</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.impor) === 0 ? '-' : Number(result.impor).toLocaleString('id-ID')">
+                                                    x-text="Number(result.impor) === 0 ? '-' : Number(result.impor).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                                 </td>
                                             </template>
                                         </tr>
@@ -359,13 +359,7 @@
                                             <td>3. Ekspor <i class="text-xs">/ Export</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.ekspor) === 0 
-                                                        ? '-' 
-                                                        : (
-                                                            Number(result.ekspor) % 1 === 0 
-                                                                ? Number(result.ekspor).toLocaleString('id-ID') 
-                                                                : Number(result.ekspor).toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 3})
-                                                          )">
+                                                    x-text="Number(result.ekspor) === 0 ? '-' : Number(result.ekspor).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                                 </td>
                                             </template>
                                         </tr>
@@ -400,7 +394,7 @@
                                             <td>2. Bibit <i class="text-xs">/ Seed</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.bibit) === 0 ? '-' : Math.round(Number(result.bibit)).toLocaleString('id-ID')">
+                                                    x-text="Number(result.bibit) === 0 ? '-' : Number(result.bibit).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                                 </td>
                                             </template>
                                         </tr>
@@ -436,7 +430,7 @@
                                             <td>4. Tercecer <i class="text-xs">/ Waste</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.tercecer) === 0 ? '-' : Number(result.tercecer).toLocaleString('id-ID')">
+                                                    x-text="Number(result.tercecer) === 0 ? '-' : Number(result.tercecer).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                                 </td>
                                             </template>
                                         </tr>
@@ -444,7 +438,7 @@
                                             <td>5. Penggunaan Lain <i class="text-xs">/ Other Uses</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.penggunaanLain) < 0.0001 ? '-' : Number(result.penggunaanLain).toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 3})">
+                                                    x-text="Number(result.penggunaanLain) === 0 ? '-' : Number(result.penggunaanLain).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                                 </td>
                                             </template>
                                         </tr>
