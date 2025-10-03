@@ -211,10 +211,8 @@ Route::middleware(['auth'])->prefix('admin/benih-pupuk')->name('admin.benih-pupu
     // Template download route
     Route::get('download-template', [App\Http\Controllers\Admin\BenihPupukExportController::class, 'downloadTemplate'])->name('download-template');
     
-    // Export routes - using direct names without duplicate prefix
-    Route::get('export/excel', [App\Http\Controllers\BenihPupukController::class, 'exportExcel'])->name('export.excel');
-    Route::get('export/csv', [App\Http\Controllers\BenihPupukController::class, 'exportCsv'])->name('export.csv');
-    Route::get('export/pdf', [App\Http\Controllers\BenihPupukController::class, 'exportPdf'])->name('export.pdf');
+    // Export routes - unified export (Excel). CSV/PDF can be added later if needed.
+    Route::post('export/excel', [App\Http\Controllers\PertanianReportExportController::class, 'export'])->defaults('moduleType','benih-pupuk')->name('export.excel');
 });
 
 // Export download route for Livewire - OUTSIDE auth middleware for download functionality
@@ -272,14 +270,27 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
     })->name('konsep-transaksi-susenas');
 });
 
-// Benih & Pupuk Routes (Public Access)
+// Unified Pertanian Report Routes (Public Access)
 Route::prefix('pertanian')->name('pertanian.')->group(function () {
-    Route::get('benih-pupuk', [App\Http\Controllers\BenihPupukController::class, 'index'])->name('benih-pupuk');
-    Route::get('iklim-opt-dpi', [App\Http\Controllers\IklimOptDpiController::class, 'index'])->name('iklim-opt-dpi');
-    Route::get('lahan', [App\Http\Controllers\LahanController::class, 'index'])->name('lahan');
-    Route::get('daftar-alamat', function () {
-        return view('pertanian.daftar-alamat');
-    })->name('daftar-alamat');
+    // Dynamic report page (moduleType: lahan | benih-pupuk | iklim-opt-dpi)
+    Route::get('{moduleType}', [App\Http\Controllers\PertanianReportController::class, 'index'])
+        ->whereIn('moduleType', ['lahan','benih-pupuk','iklim-opt-dpi'])
+        ->name('report');
+
+    // Dynamic filter endpoint (expects JSON selections + config, returns headers & rows)
+    Route::post('{moduleType}/filter', [App\Http\Controllers\PertanianReportController::class, 'filter'])
+        ->whereIn('moduleType', ['lahan','benih-pupuk','iklim-opt-dpi'])
+        ->name('report.filter');
+
+    // Existing daftar-alamat page retained
+    Route::get('daftar-alamat', function () { return view('pertanian.daftar-alamat'); })->name('daftar-alamat');
+});
+
+// Unified export route and legacy aliases
+Route::prefix('pertanian')->name('pertanian.')->group(function () {
+    Route::post('{moduleType}/export', [App\Http\Controllers\PertanianReportExportController::class, 'export'])
+        ->whereIn('moduleType', ['lahan','benih-pupuk','iklim-opt-dpi'])
+        ->name('report.export');
 });
 
 // API Routes for Dashboard Komoditas (without web middleware)
@@ -296,43 +307,64 @@ Route::middleware([])->group(function () {
     });
 });
 
-// API Routes for Benih Pupuk
+// API Routes for Benih Pupuk (compat layer to unified controller)
 Route::prefix('api/benih-pupuk')->name('api.benih-pupuk.')->group(function () {
-    Route::get('topiks', [App\Http\Controllers\BenihPupukController::class, 'getTopiks'])->name('topiks');
-    Route::get('variabels/{topik}', [App\Http\Controllers\BenihPupukController::class, 'getVariabelsByTopik'])->name('variabels');
-    Route::post('klasifikasis', [App\Http\Controllers\BenihPupukController::class, 'getKlasifikasiByVariabels'])->name('klasifikasis');
-    Route::get('wilayahs', [App\Http\Controllers\BenihPupukController::class, 'getWilayahs'])->name('wilayahs');
-    Route::get('provinces', [App\Http\Controllers\BenihPupukController::class, 'getProvinces'])->name('provinces');
-    Route::get('kabupaten/{province}', [App\Http\Controllers\BenihPupukController::class, 'getKabupatenByProvince'])->name('kabupaten');
-    Route::get('bulans', [App\Http\Controllers\BenihPupukController::class, 'getBulans'])->name('bulans');
-    Route::get('years', [App\Http\Controllers\BenihPupukController::class, 'getAvailableYears'])->name('years');
-    Route::post('search', [App\Http\Controllers\BenihPupukController::class, 'search'])->name('search');
-    Route::post('filter', [App\Http\Controllers\BenihPupukController::class, 'filter'])->name('filter');
-    Route::post('export', [App\Http\Controllers\BenihPupukController::class, 'exportExcel'])->name('export');
-    Route::get('sample-data', [App\Http\Controllers\BenihPupukController::class, 'getSampleData'])->name('sample-data');
+    // Unified data endpoints
+    Route::get('topiks', [App\Http\Controllers\PertanianReportController::class, 'topiks'])->defaults('moduleType','benih-pupuk')->name('topiks');
+    // Preserve route shape with {topik} by mapping to query param expected by controller
+    Route::get('variabels/{topik}', function (\Illuminate\Http\Request $request, $topik) {
+        $request->merge(['topik_id' => $topik]);
+        return app(App\Http\Controllers\PertanianReportController::class)->variabels($request, 'benih-pupuk');
+    })->name('variabels');
+    Route::post('klasifikasis', [App\Http\Controllers\PertanianReportController::class, 'klasifikasis'])->defaults('moduleType','benih-pupuk')->name('klasifikasis');
+
+    // Wilayah helpers (module-agnostic)
+    Route::get('wilayahs', [App\Http\Controllers\PertanianReportController::class, 'wilayahs'])->name('wilayahs');
+    Route::get('provinces', [App\Http\Controllers\PertanianReportController::class, 'provinces'])->name('provinces');
+    Route::get('kabupaten/{province}', [App\Http\Controllers\PertanianReportController::class, 'kabupaten'])->name('kabupaten');
+
+    // Temporal helpers
+    Route::get('bulans', [App\Http\Controllers\PertanianReportController::class, 'bulans'])->defaults('moduleType','benih-pupuk')->name('bulans');
+    Route::get('years', [App\Http\Controllers\PertanianReportController::class, 'years'])->defaults('moduleType','benih-pupuk')->name('years');
+
+    // Filter/alias for backward compatibility
+    Route::post('filter', [App\Http\Controllers\PertanianReportController::class, 'filter'])->defaults('moduleType','benih-pupuk')->name('filter');
+    Route::post('search', [App\Http\Controllers\PertanianReportController::class, 'filter'])->defaults('moduleType','benih-pupuk')->name('search');
+    // Legacy export now points to unified export
+    Route::post('export', [App\Http\Controllers\PertanianReportExportController::class, 'export'])->defaults('moduleType','benih-pupuk')->name('export');
+    // Unified sample-data for quick sanity check
+    Route::get('sample-data', [App\Http\Controllers\PertanianReportController::class, 'sampleData'])->defaults('moduleType','benih-pupuk')->name('sample-data');
 });
 
 
 
-// API Routes for Iklim OPT DPI
+// API Routes for Iklim OPT DPI (compat layer)
 Route::prefix('api/iklim-opt-dpi')->name('api.iklim-opt-dpi.')->group(function () {
-    Route::get('topiks', [App\Http\Controllers\IklimOptDpiController::class, 'getTopiks'])->name('topiks');
-    Route::get('variabels/{topik}', [App\Http\Controllers\IklimOptDpiController::class, 'getVariabelsByTopik'])->name('variabels');
-    Route::post('klasifikasis', [App\Http\Controllers\IklimOptDpiController::class, 'getKlasifikasiByVariabels'])->name('klasifikasis');
-    Route::get('provinces', [App\Http\Controllers\IklimOptDpiController::class, 'getProvinces'])->name('provinces');
-    Route::get('years', [App\Http\Controllers\IklimOptDpiController::class, 'getAvailableYears'])->name('years');
-    Route::post('filter', [App\Http\Controllers\IklimOptDpiController::class, 'filter'])->name('filter');
-    Route::post('search', [App\Http\Controllers\IklimOptDpiController::class, 'search'])->name('search');
+    Route::get('topiks', [App\Http\Controllers\PertanianReportController::class, 'topiks'])->defaults('moduleType','iklim-opt-dpi')->name('topiks');
+    Route::get('variabels/{topik}', function (\Illuminate\Http\Request $request, $topik) {
+        $request->merge(['topik_id' => $topik]);
+        return app(App\Http\Controllers\PertanianReportController::class)->variabels($request, 'iklim-opt-dpi');
+    })->name('variabels');
+    Route::post('klasifikasis', [App\Http\Controllers\PertanianReportController::class, 'klasifikasis'])->defaults('moduleType','iklim-opt-dpi')->name('klasifikasis');
+    Route::get('provinces', [App\Http\Controllers\PertanianReportController::class, 'provinces'])->name('provinces');
+    Route::get('years', [App\Http\Controllers\PertanianReportController::class, 'years'])->defaults('moduleType','iklim-opt-dpi')->name('years');
+    Route::post('filter', [App\Http\Controllers\PertanianReportController::class, 'filter'])->defaults('moduleType','iklim-opt-dpi')->name('filter');
+    Route::post('search', [App\Http\Controllers\PertanianReportController::class, 'filter'])->defaults('moduleType','iklim-opt-dpi')->name('search');
+    Route::get('sample-data', [App\Http\Controllers\PertanianReportController::class, 'sampleData'])->defaults('moduleType','iklim-opt-dpi')->name('sample-data');
 });
 
-// API Routes for Lahan
+// API Routes for Lahan (compat layer)
 Route::prefix('api/lahan')->name('api.lahan.')->group(function () {
-    Route::get('topiks', [App\Http\Controllers\LahanController::class, 'getTopiks'])->name('topiks');
-    Route::get('variabels/{topik}', [App\Http\Controllers\LahanController::class, 'getVariabelsByTopik'])->name('variabels');
-    Route::post('klasifikasis', [App\Http\Controllers\LahanController::class, 'getKlasifikasiByVariabels'])->name('klasifikasis');
-    Route::get('provinces', [App\Http\Controllers\LahanController::class, 'getProvinces'])->name('provinces');
-    Route::get('years', [App\Http\Controllers\LahanController::class, 'getAvailableYears'])->name('years');
-    Route::post('filter', [App\Http\Controllers\LahanController::class, 'filter'])->name('filter');
+    Route::get('topiks', [App\Http\Controllers\PertanianReportController::class, 'topiks'])->defaults('moduleType','lahan')->name('topiks');
+    Route::get('variabels/{topik}', function (\Illuminate\Http\Request $request, $topik) {
+        $request->merge(['topik_id' => $topik]);
+        return app(App\Http\Controllers\PertanianReportController::class)->variabels($request, 'lahan');
+    })->name('variabels');
+    Route::post('klasifikasis', [App\Http\Controllers\PertanianReportController::class, 'klasifikasis'])->defaults('moduleType','lahan')->name('klasifikasis');
+    Route::get('provinces', [App\Http\Controllers\PertanianReportController::class, 'provinces'])->name('provinces');
+    Route::get('years', [App\Http\Controllers\PertanianReportController::class, 'years'])->defaults('moduleType','lahan')->name('years');
+    Route::post('filter', [App\Http\Controllers\PertanianReportController::class, 'filter'])->defaults('moduleType','lahan')->name('filter');
+    Route::get('sample-data', [App\Http\Controllers\PertanianReportController::class, 'sampleData'])->defaults('moduleType','lahan')->name('sample-data');
 });
 
 Route::prefix('api')->name('api.')->group(function () {

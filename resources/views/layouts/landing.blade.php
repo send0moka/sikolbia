@@ -129,11 +129,11 @@
                                  x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                                 <div class="py-1">
-                                    <a href="{{ route('pertanian.benih-pupuk') }}"
+                                    <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}"
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Laporan Benih & Pupuk
                                     </a>
-                                    <a href="{{ route('pertanian.iklim-opt-dpi') }}"
+                                    <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}"
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Data Iklim, dan OPT DPI
                                     </a>

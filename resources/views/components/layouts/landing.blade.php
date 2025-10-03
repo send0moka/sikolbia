@@ -126,15 +126,15 @@
                                      @click.outside="open = false"
                                      class="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                     <div class="py-1">
-                                        <a href="{{ route('pertanian.benih-pupuk') }}" 
+                                        <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Benih dan Pupuk
                                         </a>
-                                        <a href="{{ route('pertanian.iklim-opt-dpi') }}"
+                                        <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Iklim, dan OPT DPI
                                         </a>
-                                        <a href="{{ route('pertanian.lahan') }}"
+                                        <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Lahan
                                         </a>
@@ -242,15 +242,15 @@
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="pl-6 space-y-1 bg-[#efefa4]/10">
-                            <a href="{{ route('pertanian.benih-pupuk') }}" 
+                            <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Benih dan Pupuk
                             </a>
-                            <a href="{{ route('pertanian.iklim-opt-dpi') }}"
+                            <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}"
                                  class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Iklim, dan OPT DPI
                             </a>
-                            <a href="{{ route('pertanian.lahan') }}"
+                            <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                  class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Lahan
                             </a>
@@ -410,7 +410,7 @@
                         <h4 class="text-lg font-semibold mb-4 text-[#efefa4] border-b border-[#efefa4]/30 pb-2">Pertanian</h4>
                         <ul class="space-y-2 text-sm">
                             <li>
-                                <a href="{{ route('pertanian.benih-pupuk') }}" 
+                                <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -419,7 +419,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('pertanian.iklim-opt-dpi') }}" 
+                                <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}" 
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -428,7 +428,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('pertanian.lahan') }}" 
+                                <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}" 
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
