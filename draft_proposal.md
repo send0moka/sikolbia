@@ -447,75 +447,63 @@ Penelitian ini menggunakan pendekatan kuantitatif eksperimental dengan metode Re
 
 Research and Development (RnD) adalah metode penelitian yang bertujuan untuk menghasilkan produk tertentu dan menguji keefektifan produk tersebut (Okpatrioka, 2023). RnD merupakan proses atau langkah-langkah untuk mengembangkan suatu produk baru atau menyempurnakan produk yang telah ada, yang dapat dipertanggungjawabkan. Dalam konteks penelitian ini, produk yang dikembangkan berupa sistem prediksi konsumsi kalori berbasis LSTM yang terintegrasi dengan antarmuka web.
 
+Jenis penelitian ini termasuk applied research yang fokus pada penerapan praktis algoritma LSTM untuk menyelesaikan masalah nyata dalam ketahanan pangan Indonesia. Penelitian mengadopsi experimental design dengan controlled variables untuk menguji performa berbagai konfigurasi model LSTM dan membandingkannya dengan metode baseline yang saat ini digunakan.
+
+### 3.2 Tahapan Metode Research and Development (RnD)
+
 Tahapan RnD terdiri dari sepuluh tahap sistematis sebagaimana ditunjukkan pada Gambar 2. Diagram alur tahapan RnD dapat dilihat pada Gambar 2 yang menunjukkan proses pengembangan sistematis dari penelitian awal hingga diseminasi produk final.
 
 ![Gambar 2. Tahapan Research and Development]
 
-Tahapan RnD yang dilakukan meliputi:
+Setiap tahap RnD dalam penelitian ini dijelaskan sebagai berikut:
 
 **a. Research and Collection Preliminary**
 
-Melakukan kajian pustaka terkait metode prediksi, mengidentifikasi kebutuhan pengguna sistem, serta mengumpulkan data historis NBM sebagai bahan analisis.
+Tahap ini melakukan kajian pustaka mendalam terkait metode prediksi time series, algoritma LSTM, dan ensemble learning dalam konteks prediksi konsumsi pangan. Identifikasi kebutuhan pengguna sistem dilakukan melalui analisis stakeholder dan review dokumen kebijakan ketahanan pangan. Pengumpulan data historis NBM Indonesia periode 1993-2024 sebagai foundation dataset untuk pengembangan model.
 
 **b. Research Planning**
 
-Menyusun blueprint arsitektur sistem, menentukan algoritma yang akan digunakan, dan merancang kerangka metodologi penelitian.
+Menyusun blueprint arsitektur sistem prediksi yang mencakup komponen machine learning dan web interface. Menentukan algoritma utama (LSTM enhanced ensemble) dan teknologi pendukung (Laravel, FastAPI, Docker). Merancang kerangka metodologi penelitian dengan mengadopsi CRISP-DM sebagai framework pengembangan model machine learning.
 
 **c. Early Product Development**
 
-Membangun struktur model LSTM ensemble dan merancang antarmuka aplikasi berbasis web.
+Membangun struktur dasar model LSTM ensemble dan merancang antarmuka aplikasi berbasis web. Implementasi preprocessing pipeline untuk data NBM dan pengembangan baseline models untuk comparison. Tahap ini menghasilkan prototipe awal sistem prediksi.
 
 **d. Expert Validation**
 
-Melakukan evaluasi rancangan bersama pakar di bidangnya dan mengonfirmasi kesesuaian konsep dengan kebutuhan pengguna.
+Melakukan evaluasi rancangan sistem bersama pakar machine learning dan domain expert ketahanan pangan. Validasi mencakup review arsitektur model, kesesuaian preprocessing techniques, dan relevansi dengan kebutuhan praktis dalam perencanaan ketahanan pangan.
 
 **e. Product Revision**
 
-Melakukan penyempurnaan rancangan berdasarkan saran dari proses validasi sebelumnya.
+Melakukan penyempurnaan rancangan berdasarkan feedback dari tahap validasi. Revisi dapat mencakup modifikasi arsitektur model, perbaikan preprocessing pipeline, atau penyesuaian user interface sesuai dengan saran expert.
 
-**f. Early Test**
+**f. Early Test (Implementasi dan Uji Coba Model)**
 
-Mengimplementasikan prototipe sistem dan melakukan pengujian terhadap kinerja model prediksi.
+Tahap ini merupakan implementasi lengkap model LSTM enhanced ensemble dengan metodologi CRISP-DM. Detail tahapan implementasi LSTM akan dijelaskan pada subbab 3.3. Pengujian dilakukan terhadap performa model menggunakan data training dan validation dengan metrik evaluasi RMSE, MAE, dan MAPE.
 
 **g. Product Revision**
 
-Menyempurnakan sistem berdasarkan temuan dari tahap pengujian awal.
+Menyempurnakan model dan sistem berdasarkan hasil pengujian tahap sebelumnya. Optimisasi hyperparameter, perbaikan ensemble configuration, dan enhancement user interface berdasarkan hasil testing.
 
 **h. Field Test**
 
-Melakukan pengujian komprehensif menggunakan data aktual dalam kondisi nyata.
+Melakukan pengujian komprehensif menggunakan data testing (2020-2024) dalam kondisi real-world scenarios. Testing mencakup accuracy assessment, sistem performance, dan usability evaluation dengan potential users.
 
 **i. Final Product Revision**
 
-Melakukan penyempurnaan akhir sistem berdasarkan evaluasi dari uji coba lapangan.
+Melakukan penyempurnaan akhir sistem berdasarkan evaluasi dari uji coba lapangan. Finalisasi model configuration, sistem deployment, dan dokumentasi lengkap untuk production use.
 
 **j. Dissemination**
 
-Menyusun dokumentasi lengkap dan melakukan peluncuran sistem yang telah final.
+Menyusun dokumentasi lengkap sistem, panduan penggunaan, dan laporan penelitian. Persiapan untuk knowledge transfer dan potential adoption oleh stakeholder terkait dalam perencanaan ketahanan pangan.
 
-Algoritma LSTM diimplementasikan secara spesifik pada tahap ke-6 (Uji Coba Produk) dalam kerangka RnD. LSTM merupakan arsitektur neural network khusus yang dirancang untuk mengatasi masalah vanishing gradient dalam RNN tradisional, sehingga mampu menangkap long-term dependencies dalam data sequential (Ashari & Suhendar, 2024).
+### 3.3 Implementasi Model LSTM Enhanced Ensemble (Tahap Early Test RnD)
 
-Pada tahap implementasi ini, arsitektur LSTM enhanced ensemble dikembangkan dengan komponen-komponen utama meliputi:
-
-a. Normalisasi data menggunakan StandardScaler dan RobustScaler untuk menangani outliers
-b. Pembuatan sequence dengan sliding window approach untuk time series sequences
-c. Arsitektur multi-layer LSTM dilengkapi dropout regularization dan batch normalization
-d. Kombinasi LSTM dengan HuberRegressor sebagai ensemble method untuk prediksi yang robust
-e. Optimasi hyperparameter melalui grid search dan random search untuk konfigurasi optimal
-
-Implementasi LSTM menggunakan kerangka kerja TensorFlow/Keras dengan optimisasi memory usage dan computational efficiency. Model training menggunakan early stopping mechanism dan learning rate scheduling untuk mencegah overfitting dan memastikan convergence yang optimal.
-
-Jenis penelitian ini termasuk applied research yang fokus pada penerapan praktis algoritma LSTM untuk menyelesaikan masalah nyata dalam ketahanan pangan Indonesia. Penelitian mengadopsi experimental design dengan controlled variables untuk menguji performa berbagai konfigurasi model LSTM dan membandingkannya dengan metode baseline yang saat ini digunakan. Pendekatan eksperimental memungkinkan isolasi variabel-variabel yang mempengaruhi akurasi prediksi sehingga dapat diidentifikasi konfigurasi optimal untuk implementasi.
-
-### 3.2 Kerangka Kerja CRISP-DM
-
-Penelitian ini mengadopsi metodologi CRISP-DM (Cross-Industry Standard Process for Data Mining) sebagai kerangka kerja utama pengembangan. CRISP-DM dipilih karena telah terbukti efektif dalam proyek machine learning dan memberikan structured yang memastikan systematic progression dari business understanding hingga successful deployment (Schröer et al., 2021).
-
-Metodologi CRISP-DM dapat dilihat pada Gambar 3 yang menunjukkan enam fase yang saling terkait dan bersifat iteratif, memungkinkan perbaikan berdasarkan hasil evaluasi pada setiap tahap. Sifat iteratif dari CRISP-DM sangat sesuai dengan karakteristik pengembangan model machine learning yang memerlukan eksperimen berulang untuk mencapai performa optimal (Singgalen, 2023). Kerangka kerja ini juga memastikan bahwa aspek bisnis dan teknis mendapat perhatian seimbang sepanjang proses pengembangan.
+Implementasi model LSTM enhanced ensemble dilakukan pada tahap ke-6 (Early Test) dalam kerangka RnD menggunakan metodologi CRISP-DM sebagai framework pengembangan. CRISP-DM dipilih sebagai systematic approach untuk memastikan structured progression dari data understanding hingga model deployment (Schröer et al., 2021).
 
 ![Gambar 3. Diagram Alur CRISP-DM]
 
-### 3.3 Tahapan Penelitian
+Tahapan implementasi LSTM mengikuti framework CRISP-DM sebagai berikut:
 
 **a. Business Understanding**
 
@@ -531,10 +519,6 @@ di mana yᵢ adalah nilai aktual konsumsi kalori, ŷᵢ adalah nilai prediksi, d
 
 Kriteria sukses ditetapkan mencakup measurable objectives untuk performa teknis melalui metrik akurasi dan dampak bisnis dalam bentuk improved planning efficiency. Risk assessment juga dilakukan untuk mengidentifikasi potensi tantangan dalam kualitas data, model complexity, dan integration requirements.
 
-Instrumen pengumpulan data pada tahap ini meliputi wawancara terstruktur dengan stakeholder, analisis dokumen kebijakan ketahanan pangan, dan review literatur terkait sistem prediksi konsumsi pangan. Teknik analisis menggunakan kerangka kerja analisis dan requirement engineering untuk memastikan pemahaman komprehensif.
-
-Output dari fase ini berupa dokumen business requirements yang mendetailkan kebutuhan fungsional dan non-fungsional sistem prediksi. Dokumen ini menjadi acuan utama untuk seluruh tahap pengembangan selanjutnya dan memastikan keselarasan antara solusi teknikal dengan kebutuhan bisnis.
-
 **b. Data Understanding**
 
 Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional. Dataset mencakup 31 tahun data historis dengan 372 data points bulanan, memberikan foundation yang solid untuk pengembangan Model prediksi Time Series. Target variable dalam penelitian ini adalah konsumsi kalori per kapita per hari yang diukur dalam satuan kkal/kapita/hari.
@@ -546,8 +530,6 @@ Kalori per kapita per hari = (Konsumsi per kapita (kg/hari) × Faktor Konversi E
 ```
 
 Data quality assessment menunjukkan adanya missing values yang diestimasi kurang dari 5%, outliers akibat economic shocks, dan potential measurement errors yang memerlukan treatment khusus.
-
-Instrumen pengumpulan data meliputi akses ke database resmi Badan Pangan Nasional, API dari Pusat Data dan Sistem Informasi Pertanian, serta data sekunder dari BPS dan Bank Indonesia untuk economic indicators. Teknik pengumpulan menggunakan automated data extraction dengan validation protocol dan manual verification untuk ensuring data integrity.
 
 Exploratory Data Analysis (EDA) dilakukan untuk memahami karakteristik dataset secara komprehensif menggunakan statistical measures sebagaimana ditunjukkan pada persamaan (30) berikut:
 
@@ -605,8 +587,6 @@ z = (x − μ) / σ ... (36)
 z = (x − median) / (Q₃ − Q₁) ... (37)
 ```
 
-Instrumen untuk data preparation meliputi Python libraries (Pandas, NumPy, Scikit-learn), preprocessing pipelines otomatis, dan kerangka kerja validasi data. Teknik analisis menggunakan statistical testing untuk distribution normality, feature importance analysis, dan correlation assessment untuk feature selection.
-
 Sequence generation menggunakan sliding window dengan window size yang akan dioptimasi melalui grid search. Train-validation-test split menggunakan chronological split: 70% training (1993-2015), 15% validation (2016-2019), 15% testing (2020-2024).
 
 **d. Modeling**
@@ -650,8 +630,6 @@ Lδ(y, f(x)) = { ½(y − f(x))²                  untuk |y − f(x)| ≤ δ
               { δ|y − f(x)| − ½δ²             untuk |y − f(x)| > δ ... (45)
 ```
 
-Instrumen model meliputi TensorFlow/Keras untuk LSTM implementation, Scikit-learn untuk metode ensemble, dan Optuna untuk hyperparameter optimization. Teknik analisis menggunakan time series cross-validation dengan expanding window, early stopping dengan patience mechanism, dan learning rate scheduling.
-
 Adam Optimizer digunakan untuk training dengan persamaan (46) yang disajikan sebagai berikut:
 
 ```
@@ -671,45 +649,37 @@ Baseline model dikembangkan untuk comparison purposes, mencakup:
 
 Evaluasi performa model menggunakan multiple metrics untuk comprehensive assessment.
 
-- Root Mean Square Error (RMSE) untuk measuring prediction accuracy dengan emphasis pada large errors sebagaimana ditunjukkan pada persamaan (47) berikut:
+Root Mean Square Error (RMSE) untuk measuring prediction accuracy dengan emphasis pada large errors sebagaimana ditunjukkan pada persamaan (47) berikut:
 
 ```
 RMSE = √(1/n Σ(yᵢ − ŷᵢ)²) (i=1 to n) ... (47)
 ```
 
-- Mean Absolute Error (MAE) memberikan robust metric untuk average prediction deviation sebagaimana disajikan pada persamaan (48):
+Mean Absolute Error (MAE) memberikan robust metric untuk average prediction deviation sebagaimana disajikan pada persamaan (48):
 
 ```
 MAE = (1/n) Σ|yᵢ − ŷᵢ| (i=1 to n) ... (48)
 ```
 
-- Mean Absolute Percentage Error (MAPE) menjadi metric utama dengan target < 10% untuk business acceptability berdasarkan praktik standar industri dan benchmarks dari literatur terkait dengan persamaan (49) yang ditunjukkan sebagai berikut:
+Mean Absolute Percentage Error (MAPE) menjadi metric utama dengan target < 10% untuk business acceptability berdasarkan praktik standar industri dan benchmarks dari literatur terkait dengan persamaan (49) yang ditunjukkan sebagai berikut:
 
 ```
 MAPE = (100%/n) Σ|(yᵢ − ŷᵢ)/yᵢ| (i=1 to n) ... (49)
 ```
 
-- R-Squared untuk measuring explained variance proportion sebagaimana disajikan pada persamaan (50):
+R-Squared untuk measuring explained variance proportion sebagaimana disajikan pada persamaan (50):
 
 ```
 R² = 1 − (SSres/SStot) = 1 − (Σ(yᵢ − ŷᵢ)² / Σ(yᵢ − ȳ)²) (i=1 to n) ... (50)
 ```
 
-- Directional Accuracy untuk percentage of correct trend predictions dengan persamaan (51) yang ditunjukkan sebagai berikut:
+Directional Accuracy untuk percentage of correct trend predictions dengan persamaan (51) yang ditunjukkan sebagai berikut:
 
 ```
 DA = (1/(n−1)) ΣI[(yᵢ − ŷᵢ₋₁)(ŷᵢ − ŷᵢ₋₁) > 0] (i=1 to n) ... (51)
 ```
 
 di mana I[·] adalah indicator function.
-
-Instrumen evaluasi meliputi kerangka kerja statistical testing (SciPy), visualization tools (Matplotlib, Seaborn), dan model interpretability libraries (SHAP, LIME). Teknik analisis menggunakan paired t-test untuk statistical significance dengan persamaan (52) yang disajikan sebagai berikut:
-
-```
-t = d̄ / (sd/√n) ... (52)
-```
-
-di mana d̄ adalah mean difference dan sd adalah standard deviation of differences.
 
 Validation strategy menggunakan time series cross-validation dengan expanding window, walk-forward validation untuk real-world simulation, dan robustness testing under extreme scenarios. Model interpretability analysis menggunakan SHAP values untuk feature importance dan residual analysis untuk error pattern identification.
 
@@ -723,8 +693,6 @@ Arsitektur sistem menggunakan request-response pattern:
 - Model inference → Prediction result
 - Response → Frontend display
 
-Instrumen deployment meliputi Docker containerization tools, CI/CD pipelines (GitHub Actions), dan kerangka kerja monitoring (Prometheus, Grafana). Teknik implementasi menggunakan automated deployment scripts, environment configuration management, dan security best practices.
-
 Performance optimization menggunakan caching strategies, database indexing, dan API rate limiting. Security implementation meliputi authentication, input validation, dan secure communication protocols. Monitoring dan logging menggunakan structured logging untuk system observability dan performance tracking.
 
 ### 3.4 Jadwal Penelitian
@@ -733,17 +701,18 @@ Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu yang 
 
 **Tabel 2. Jadwal Penelitian**
 
-| Tahap Penelitian | November 2025 | Desember 2025 | Januari 2026 |
-|------------------|---------------|---------------|--------------|
-| Penelitian dan Pengumpulan Data | ✓ | | |
-| Perencanaan dan Pengembangan Desain Produk | ✓ | ✓ | |
-| Validasi dan Revisi Desain | | ✓ | |
-| Uji Coba Produk (Implementasi LSTM) | | ✓ | |
-| Revisi Produk | | ✓ | |
-| Uji Coba Pemakaian (Testing Sistem) | | | ✓ |
-| Revisi Produk Final | | | ✓ |
-| Pengujian | | | ✓ |
-| Dokumentasi dan Laporan | | | ✓ |
+| Tahap RnD | November 2025 | Desember 2025 | Januari 2026 |
+|-----------|---------------|---------------|--------------|
+| a. Research and Collection Preliminary | ✓ | | |
+| b. Research Planning | ✓ | | |
+| c. Early Product Development | ✓ | ✓ | |
+| d. Expert Validation | | ✓ | |
+| e. Product Revision | | ✓ | |
+| f. Early Test (Implementasi dan Uji Coba Model) | | ✓ | ✓ |
+| g. Product Revision | | | ✓ |
+| h. Field Test | | | ✓ |
+| i. Final Product Revision | | | ✓ |
+| j. Dissemination | | | ✓ |
 
 ---
 
