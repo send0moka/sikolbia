@@ -42,7 +42,7 @@ class LaporanNbmController extends Controller
                 ROUND(SUM(bukan_makanan), 3) as diolahBukanMakanan,
                 ROUND(SUM(tercecer), 2) as tercecer,
                 ROUND(SUM(penggunaan_lain), 2) as penggunaanLain,
-                ROUND(SUM(bahan_makanan)) as bahanMakanan,
+                ROUND(SUM(bahan_makanan), 2) as bahanMakanan,
                 AVG(populasi_indonesia) as avg_populasi,
                 SUM(makanan) as total_makanan
             ')
@@ -97,20 +97,20 @@ class LaporanNbmController extends Controller
 
             return [
                 'tahun' => (int) $row->tahun,
-                'penyediaan' => round($penyediaan),
+                'penyediaan' => round($penyediaan, 2),
                 'masukan' => round($row->masukan),
                 'keluaran' => round($row->keluaran),
                 'impor' => (float) $row->impor,
                 'ekspor' => (float) $row->ekspor,
                 'perubahanStok' => (float) $row->perubahanStok,
-                'penggunaan' => round($penggunaan),
+                'penggunaan' => round($penggunaan, 2),
                 'pakan' => round($row->pakan),
                 'bibit' => (float) $row->bibit,
                 'diolahMakanan' => round($row->diolahMakanan),
                 'diolahBukanMakanan' => (float) $row->diolahBukanMakanan,
                 'tercecer' => (float) $row->tercecer,
                 'penggunaanLain' => (float) $row->penggunaanLain,
-                'bahanMakanan' => round($row->bahanMakanan),
+                'bahanMakanan' => round($row->bahanMakanan, 2),
                 'kgPerTahun' => (float) $kgPerTahun,
                 'gramPerHari' => (float) $gramPerHari,
                 'energiKalori' => (float) $energiKalori,

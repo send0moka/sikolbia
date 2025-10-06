@@ -323,7 +323,7 @@
                                                 (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td class="tg-header"
-                                                    x-text="Number(result.penyediaan) === 0 ? '-' : Number(result.penyediaan).toLocaleString('id-ID')">
+                                                    x-text="Number(result.penyediaan) < 0.001 ? '-' : Number(result.penyediaan).toFixed(2)">
                                                 </td>
                                             </template>
                                         </tr>
@@ -378,7 +378,7 @@
                                                     Utilization</i> (Ribu Ton)</td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td class="tg-header"
-                                                    x-text="Number(result.penggunaan) === 0 ? '-' : Number(result.penggunaan).toLocaleString('id-ID')">
+                                                    x-text="Number(result.penggunaan) < 0.001 ? '-' : Number(result.penggunaan).toFixed(2)">
                                                 </td>
                                             </template>
                                         </tr>
@@ -446,7 +446,7 @@
                                             <td>6. Bahan Makanan <i class="text-xs">/ Food Ingredients</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.bahanMakanan) < 0.0001 ? '-' : Math.round(Number(result.bahanMakanan)).toLocaleString('id-ID')">
+                                                    x-text="Number(result.bahanMakanan) < 0.001 ? '-' : Number(result.bahanMakanan).toFixed(2)">
                                                 </td>
                                             </template>
                                         </tr>
@@ -772,7 +772,7 @@
                     // A. PENYEDIAAN SECTION
                     const penyediaanHeaderRow = ['A. Penyediaan / Supply (Ribu Ton)'];
                     this.results.forEach(result => {
-                        penyediaanHeaderRow.push(Number(result.penyediaan) === 0 ? '-' : Number(result.penyediaan));
+                        penyediaanHeaderRow.push(Number(result.penyediaan) < 0.001 ? '-' : Number(result.penyediaan).toFixed(2));
                     });
                     exportData.push(penyediaanHeaderRow);
 
@@ -817,7 +817,7 @@
                     // B. PENGGUNAAN SECTION
                     const penggunaanHeaderRow = ['B. Penggunaan / Utilization (Ribu Ton)'];
                     this.results.forEach(result => {
-                        penggunaanHeaderRow.push(Number(result.penggunaan) === 0 ? '-' : Number(result.penggunaan));
+                        penggunaanHeaderRow.push(Number(result.penggunaan) < 0.001 ? '-' : Number(result.penggunaan).toFixed(2));
                     });
                     exportData.push(penggunaanHeaderRow);
 
@@ -869,7 +869,7 @@
                     // 6. Bahan Makanan
                     const bahanMakananRow = ['6. Bahan Makanan / Food Ingredients'];
                     this.results.forEach(result => {
-                        bahanMakananRow.push(Number(result.bahanMakanan) === 0 ? '-' : Number(result.bahanMakanan));
+                        bahanMakananRow.push(Number(result.bahanMakanan) < 0.001 ? '-' : Number(result.bahanMakanan).toFixed(2));
                     });
                     exportData.push(bahanMakananRow);
 
