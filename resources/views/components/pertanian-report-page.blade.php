@@ -3,195 +3,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Add SheetJS library for Excel export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    
     <style>
-        
-        /* Custom CSS untuk Pemilihan Tipe Layout Tabel */
-        .table-layout-radio:hover {transform: translateY(-1px);box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);}
-        .table-preview {transition: all 0.2s ease-in-out;}
-        .table-layout-radio:hover .table-preview {transform: scale(1.02);}
-        .preview-table th, .preview-table td {font-size: 10px;padding: 4px 6px;}
-
-        /* ============================================================== */
-        /* ==  CUSTOM CSS UNTUK TABEL DENGAN DYNAMIC HEADER BERTINGKAT == */
-        /* ============================================================== */
-
-        /* Container parent untuk membatasi overflow */
-        .table-tab-content {width: 100%;max-width: 100%;overflow: hidden;position: relative;}
-
-        /* Tambahan CSS untuk memastikan tidak ada element yang keluar dari container */
-        .table-tab-content * {box-sizing: border-box;}
-
-        /* CSS untuk flex container utama */
-        .main-content-flex {overflow: hidden;max-width: 100%;}
-        .sticky-table-container {
-            position: relative;
-            /* FIX 1: Mengatasi overflow dengan scrollbar horizontal & vertikal */
-            overflow: auto;
-            max-height: 500px; /* Atur tinggi maksimal tabel sebelum scroll */
-            max-width: 100%;
-            width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-            /* Tambahan untuk memastikan container tidak melampaui parent */
-            box-sizing: border-box;
-            /* Tambahan constraint untuk memaksa scroll horizontal */
-            contain: layout paint;
-            /* Promote to its own layer for smoother scrolling */
-            will-change: transform;
-            transform: translateZ(0);
-        }
-        .sticky-table {
-            /* FIX 3: Mengubah cara render border agar tidak hilang saat scroll */
-            border-collapse: separate;
-            border-spacing: 0;
-            /* Menggunakan min-width untuk memastikan tabel bisa scroll horizontal */
-            width: 100%;
-            min-width: max-content;
-            /* Menghapus table-layout fixed agar kolom bisa auto-size */
-            table-layout: auto;
-        }
-        /* Mengatur border & padding individual untuk setiap sel */
-        .sticky-table th,
-        .sticky-table td {
-            border-bottom: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
-            white-space: nowrap;
-            padding: 0.5rem 0.75rem;
-            text-align: center;
-            vertical-align: middle;
-            /* Tambahan untuk memastikan border konsisten */
-            box-sizing: border-box;
-        }
-        /* Default align kanan untuk data numerik */
-        .sticky-table td {
-            text-align: right;
-        }
-        .sticky-table th:first-child,
-        .sticky-table td:first-child {
-            text-align: left;
-        }
-
-        /* Hapus border kanan di kolom paling akhir agar rapi */
-        .sticky-table th:last-child,
-        .sticky-table td:last-child {
-            border-right: none;
-        }
-
-
-        /* === LOGIKA STICKY HEADER YANG SUDAH DISEMPURNAKAN === */
-
-        /* Pengaturan umum untuk semua header di <thead> */
-        .sticky-table thead th {
-            position: sticky;
-            background-color: #f9fafb;
-            z-index: 2; /* keep minimal to reduce compositing cost */
-            will-change: top;
-            backface-visibility: hidden;
-            /* Memastikan border tetap konsisten saat sticky */
-            border-bottom: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
-        }
-
-        /* PERBAIKAN: CSS untuk memastikan border tidak hilang saat scroll */
-        .sticky-table thead th::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            left: 0;
-            height: 1px;
-            background-color: #e5e7eb;
-            z-index: 1;
-        }
-
-        .sticky-table thead th::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 1px;
-            background-color: #e5e7eb;
-            z-index: 1;
-        }
-
-        /* CSS khusus untuk header Wilayah yang sticky */
-        .sticky-table .sticky-wilayah-header {
-            position: sticky !important;
-            left: 0 !important;
-            background-color: #f9fafb !important;
-            z-index: 4 !important; /* slightly above other headers */
-            border-right: 1px solid #e5e7eb !important;
-            font-weight: 600 !important;
-            /* Remove shadow to reduce paint work */
-            box-shadow: none !important;
-            will-change: left, top;
-            backface-visibility: hidden;
-        }
-
-        /* CSS untuk kolom data wilayah (kolom pertama dalam tbody) */
-        .sticky-table tbody td:first-child {
-            position: sticky !important;
-            left: 0 !important;
-            background-color: #ffffff !important;
-            z-index: 1 !important; /* under headers */
-            font-weight: 500 !important;
-            border-right: 1px solid #e5e7eb !important;
-            box-shadow: none !important;
-            will-change: left;
-            backface-visibility: hidden;
-        }
-
-        /* FIX 2 (Dinamis): posisi 'top' tiap baris header memakai CSS variables */
-        /* Variabel akan di-set via JS berdasarkan tinggi aktual tiap baris thead */
-        .sticky-table-container { 
-            --row-top-1: 0px; 
-            --row-top-2: 0px; 
-            --row-top-3: 0px; 
-            --row-top-4: 0px; 
-            --row-top-5: 0px; 
-            --row-top-6: 0px; 
-            --row-top-7: 0px; 
-            --row-top-8: 0px; 
-        }
-        .sticky-table thead th[data-row-index="1"] { top: var(--row-top-1, 0px); }
-        .sticky-table thead th[data-row-index="2"] { top: var(--row-top-2, 0px); }
-        .sticky-table thead th[data-row-index="3"] { top: var(--row-top-3, 0px); }
-        .sticky-table thead th[data-row-index="4"] { top: var(--row-top-4, 0px); }
-        .sticky-table thead th[data-row-index="5"] { top: var(--row-top-5, 0px); }
-        .sticky-table thead th[data-row-index="6"] { top: var(--row-top-6, 0px); }
-        .sticky-table thead th[data-row-index="7"] { top: var(--row-top-7, 0px); }
-        .sticky-table thead th[data-row-index="8"] { top: var(--row-top-8, 0px); }
-
-        /* Pastikan header Wilayah mengikuti barisnya sendiri */
-        .sticky-table .sticky-wilayah-header[data-row-index="1"] { top: var(--row-top-1, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="2"] { top: var(--row-top-2, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="3"] { top: var(--row-top-3, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="4"] { top: var(--row-top-4, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="5"] { top: var(--row-top-5, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="6"] { top: var(--row-top-6, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="7"] { top: var(--row-top-7, 0px) !important; }
-        .sticky-table .sticky-wilayah-header[data-row-index="8"] { top: var(--row-top-8, 0px) !important; }
-
-        /* Fallback untuk header kolom pertama yang bukan header Wilayah */
-        .sticky-table thead th:first-child:not(.sticky-wilayah-header) {
-            position: sticky;
-            left: 0;
-            background-color: #f9fafb;
-            z-index: 80;
-            border-right: 1px solid #e5e7eb;
-            box-shadow: 1px 0 2px rgba(0, 0, 0, 0.06);
-        }
-
-        /* Efek hover agar lebih jelas */
-        .sticky-table tbody tr:hover td {background-color: #f3f4f6;}
-        .sticky-table tbody tr:hover td:first-child {background-color: #eff6ff; /* Warna hover berbeda untuk kolom sticky */ }
-
-        /* Modal blur fallback (when backdrop-filter is limited) */
-        body.modal-open > *:not(.modal-root) {filter: blur(6px);transition: filter .15s ease;}
-
+        /* Alpine cloak to prevent flicker */
+        [x-cloak] { display: none !important; }
     </style>
 
 <!-- Main Content -->
@@ -233,524 +47,6 @@
         </div>
 
     <!-- Two Column Layout -->
-    <script>
-        function pertanianReportForm(config) {
-            return {
-                moduleType: config.moduleType,
-                allData: config.initialData || { topiks: [], variabels: [], klasifikasis: [], tahuns: [], bulans: [], wilayahs: [] },
-
-                init() {
-                    this.$watch('wilayahLevel', () => {
-                        this.selectedProvinsiId = null;
-                        this.$nextTick(() => this.syncHeights());
-                    });
-                    this.$watch('selectedProvinsiId', () => {
-                        this.selection.kabupaten_ids = [];
-                        this.$nextTick(() => this.syncHeights());
-                    });
-
-                    // Warn user before reload/close if there are stored results
-                    window.addEventListener('beforeunload', (e) => {
-                        try {
-                            if (!this.skipUnloadPrompt && this.storedResults && this.storedResults.length > 0) {
-                                e.preventDefault();
-                                e.returnValue = '';
-                            }
-                        } catch (_) { /* noop */ }
-                    });
-
-                    // Equalize Wilayah container height with layout container
-                    this.$nextTick(() => this.setupHeightSync());
-                },
-
-                // Form state
-                selection: {
-                    topik_id: null,
-                    variabel_id: null,
-                    klasifikasi_ids: [],
-                    tahun_ids: [],
-                    bulan_ids: [],
-                    provinsi_ids: [],
-                    kabupaten_ids: [],
-                    tata_letak: 'tipe_1',
-                    wilayah: { selected_provinsi: null },
-                },
-
-                wilayahLevel: 'nasional', // 'nasional' or 'provinsi'
-                selectedProvinsiId: null,
-
-                // Search inputs
-                search: { topik: '', variabel: '', klasifikasi: '', tahun: '', bulan: '', wilayah: '' },
-
-                // UI state
-                isProcessing: false,
-                activeTab: 'tabel',
-                activeResultTab: 'tabel',
-                selections: [],
-                selectedForRemoval: [],
-                searchResults: { headers: [], rows: [], config: {} },
-                storedResults: [],
-                selectedResultIndex: null,
-                // Result management
-                selectedResultIds: [],
-                showClearConfirm: false,
-                // Grafik helpers
-                selectedProvinceForScroll: null,
-                showLegend: false,
-                // Control beforeunload prompt during safe actions (e.g., export)
-                skipUnloadPrompt: false,
-
-                // Height sync helpers
-                setupHeightSync() {
-                    try {
-                        const layoutEl = this.$refs.layoutBox;
-                        if (!layoutEl) return;
-                        const ro = new ResizeObserver(() => this.syncHeights());
-                        ro.observe(layoutEl);
-                        window.addEventListener('resize', () => this.syncHeights());
-                        this.syncHeights();
-                    } catch (_) { /* noop */ }
-                },
-                syncHeights() {
-                    try {
-                        const layoutEl = this.$refs.layoutBox;
-                        const wilayahEl = this.$refs.wilayahBox;
-                        if (!layoutEl || !wilayahEl) return;
-                        const target = layoutEl.offsetHeight;
-                        wilayahEl.style.height = target + 'px';
-                        // adjust all scroll areas inside wilayah
-                        const scrollEls = wilayahEl.querySelectorAll('[data-wilayah-scroll]');
-                        const contRect = wilayahEl.getBoundingClientRect();
-                        const styles = getComputedStyle(wilayahEl);
-                        const padB = parseFloat(styles.paddingBottom || '0');
-                        scrollEls.forEach((scrollEl) => {
-                            const scrollRect = scrollEl.getBoundingClientRect();
-                            const topOffset = scrollRect.top - contRect.top;
-                            const desired = Math.max(120, target - topOffset - padB);
-                            scrollEl.style.height = desired + 'px';
-                            scrollEl.style.maxHeight = desired + 'px';
-                            scrollEl.style.overflowY = 'auto';
-                        });
-                    } catch (_) { /* noop */ }
-                },
-
-                // Methods
-                selectTopik(id) {
-                    this.selection.topik_id = id;
-                    this.selection.variabel_id = null;
-                    this.selection.klasifikasi_ids = [];
-                },
-
-                selectVariabel(id) {
-                    this.selection.variabel_id = id;
-                    this.selection.klasifikasi_ids = [];
-                },
-
-                isSelectionValid() {
-                    const hasKlasifikasiOptions = this.filteredKlasifikasi.length > 0;
-                    const isKlasifikasiValid = !hasKlasifikasiOptions || (hasKlasifikasiOptions && this.selection.klasifikasi_ids.length > 0);
-
-                    const requireBulan = this.moduleType !== 'lahan';
-                    const bulanOk = requireBulan ? this.selection.bulan_ids.length > 0 : true;
-
-                    return this.selection.topik_id &&
-                        this.selection.variabel_id &&
-                        isKlasifikasiValid &&
-                        this.selection.tahun_ids.length > 0 &&
-                        bulanOk;
-                },
-
-                addSelection() {
-                    if (!this.isSelectionValid()) return;
-
-                    const topik = this.allData.topiks.find(t => String(t.id) === String(this.selection.topik_id));
-                    const variabel = this.allData.variabels.find(v => String(v.id) === String(this.selection.variabel_id));
-                    
-                    // Map klasifikasi IDs to names with proper ID comparison
-                    const klasifikasiNames = this.selection.klasifikasi_ids.map(id => {
-                        const klasifikasi = this.allData.klasifikasis.find(k => String(k.id) === String(id));
-                        return klasifikasi?.nama || '';
-                    }).filter(name => name !== '');
-                    
-                    const tahun_awal = Math.min(...this.selection.tahun_ids);
-                    const tahun_akhir = Math.max(...this.selection.tahun_ids);
-                    const bulan_awal = this.moduleType !== 'lahan' ? (this.allData.bulans.find(b => b.id == Math.min(...this.selection.bulan_ids))?.nama || '') : '';
-                    const bulan_akhir = this.moduleType !== 'lahan' ? (this.allData.bulans.find(b => b.id == Math.max(...this.selection.bulan_ids))?.nama || '') : '';
-
-                    const newSelection = {
-                        id: Date.now(),
-                        topik_nama: topik?.nama || '',
-                        variabel_nama: variabel?.nama || '',
-                        variabel_satuan: variabel?.satuan || '',
-                        klasifikasi_nama: klasifikasiNames.join(', ') || 'Semua',
-                        tahun_awal,
-                        tahun_akhir,
-                        bulan_awal,
-                        bulan_akhir,
-                        // Store the actual selection data for processing
-                        topik_id: this.selection.topik_id,
-                        variabel_id: this.selection.variabel_id,
-                        klasifikasi_ids: [...this.selection.klasifikasi_ids],
-                        tahun_ids: [...this.selection.tahun_ids],
-                        bulan_ids: this.moduleType !== 'lahan' ? [...this.selection.bulan_ids] : []
-                    };
-                    
-                    this.selections.push(newSelection);
-                    this.resetSelection();
-                },
-
-                removeSelection() {
-                    const idsToRemove = this.selectedForRemoval.map(Number);
-                    this.selections = this.selections.filter(item => !idsToRemove.includes(item.id));
-                    this.selectedForRemoval = [];
-                },
-
-                resetSelection() {
-                    this.selection.topik_id = null;
-                    this.selection.variabel_id = null;
-                    this.selection.klasifikasi_ids = [];
-                    this.selection.tahun_ids = [];
-                    this.selection.bulan_ids = [];
-                },
-
-                resetForm() {
-                    this.selection = {
-                        topik_id: null,
-                        variabel_id: null,
-                        klasifikasi_ids: [],
-                        tahun_ids: [],
-                        bulan_ids: [],
-                        provinsi_ids: [],
-                        kabupaten_ids: [],
-                        tata_letak: 'tipe_1',
-                        wilayah: { selected_provinsi: null },
-                    };
-                    this.selections = [];
-                    this.searchResults = { headers: [], rows: [], config: {} };
-                    this.selectedForRemoval = [];
-                    this.wilayahLevel = 'nasional';
-                    this.selectedProvinsiId = null;
-                },
-
-                selectStoredResult(index) {
-                    this.selectedResultIndex = index;
-                    if (this.activeResultTab === 'grafik') {
-                        this.$nextTick(() => this.renderChart());
-                    }
-                },
-
-                toggleResultSelection(id, checked) {
-                    const nid = Number(id);
-                    if (checked) {
-                        if (!this.selectedResultIds.includes(nid)) this.selectedResultIds.push(nid);
-                    } else {
-                        this.selectedResultIds = this.selectedResultIds.filter(x => x !== nid);
-                    }
-                },
-
-                removeSelectedResults() {
-                    if (!this.selectedResultIds || this.selectedResultIds.length === 0) return;
-                    const ids = new Set(this.selectedResultIds.map(Number));
-                    const prevSelected = (this.selectedResultIndex !== null && this.storedResults[this.selectedResultIndex]) ? this.storedResults[this.selectedResultIndex].id : null;
-                    this.storedResults = this.storedResults.filter(r => !ids.has(Number(r.id)));
-                    this.selectedResultIds = [];
-
-                    if (this.storedResults.length === 0) {
-                        this.selectedResultIndex = null;
-                        if (window.myChart && typeof window.myChart.destroy === 'function') window.myChart.destroy();
-                        return;
-                    }
-
-                    let newIndex = null;
-                    if (prevSelected != null) newIndex = this.storedResults.findIndex(r => Number(r.id) === Number(prevSelected));
-                    if (newIndex === -1 || newIndex === null) newIndex = Math.min(this.selectedResultIndex ?? 0, this.storedResults.length - 1);
-                    this.selectStoredResult(newIndex);
-                },
-
-                clearAllResults() {
-                    if (!this.storedResults || this.storedResults.length === 0) return;
-                    this.showClearConfirm = true;
-                },
-
-                clearAllResultsConfirmed() {
-                    this.storedResults = [];
-                    this.selectedResultIds = [];
-                    this.selectedResultIndex = null;
-                    this.showClearConfirm = false;
-                    if (window.myChart && typeof window.myChart.destroy === 'function') window.myChart.destroy();
-                },
-
-                async fetchData() {
-                    if (this.selections.length === 0) {
-                        alert('Silakan tambahkan data terlebih dahulu.');
-                        return;
-                    }
-                    this.isProcessing = true;
-
-                    try {
-                        const isLahan = this.moduleType === 'lahan';
-                        const payload = {
-                            selections: this.selections.map(s => {
-                                const base = {
-                                    variabel_id: s.variabel_id,
-                                    klasifikasi_ids: s.klasifikasi_ids,
-                                };
-                                if (isLahan) {
-                                    return { ...base, tahuns: s.tahun_ids };
-                                } else {
-                                    return { ...base, tahun_ids: s.tahun_ids, bulan_ids: s.bulan_ids || [] };
-                                }
-                            }),
-                            config: {
-                                tata_letak: this.selection.tata_letak,
-                                provinsi_ids: this.wilayahLevel === 'nasional' ? this.selection.provinsi_ids : [],
-                                kabupaten_ids: this.wilayahLevel === 'provinsi' ? this.selection.kabupaten_ids : [],
-                            }
-                        };
-
-                        const response = await fetch(`/pertanian/${this.moduleType}/filter`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(errorData.message || 'Network response was not ok');
-                        }
-
-                        const results = await response.json();
-                        // Expecting results = { headers: HeaderRow[], rows: Row[], config: {...} }
-
-                        const resultIndex = this.storedResults.length + 1;
-                        const storedResult = {
-                            id: Date.now(),
-                            title: `Hasil ${resultIndex}`,
-                            timestamp: new Date().toLocaleString('id-ID'),
-                            results: results,
-                            config: { ...payload.config },
-                            selections: this.selections.map(s => ({ ...s })),
-                            exportSelections: payload.selections,
-                            exportConfig: payload.config,
-                        };
-
-                        this.storedResults.push(storedResult);
-                        this.selectedResultIndex = this.storedResults.length - 1;
-
-                    } catch (error) {
-                        alert('Terjadi kesalahan saat mengambil data: ' + error.message);
-                    } finally {
-                        this.isProcessing = false;
-                    }
-                },
-
-                exportExcel() {
-                    const currentResult = this.selectedResultIndex !== null ? this.storedResults[this.selectedResultIndex] : null;
-                    if (!currentResult || !currentResult.results) return;
-
-                    // Temporarily disable beforeunload prompt during export
-                    this.skipUnloadPrompt = true;
-
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/pertanian/${this.moduleType}/export`;
-                    form.style.display = 'none';
-                    
-                    const csrfToken = document.createElement('input');
-                    csrfToken.type = 'hidden';
-                    csrfToken.name = '_token';
-                    csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    form.appendChild(csrfToken);
-
-                    // Build selections[] inputs
-                    const selections = currentResult.exportSelections || [];
-                    const isLahan = this.moduleType === 'lahan';
-                    selections.forEach((sel, idx) => {
-                        const mk = (name, value) => { const el = document.createElement('input'); el.type='hidden'; el.name = `selections[${idx}][${name}]`; el.value = value; form.appendChild(el); };
-                        mk('variabel_id', sel.variabel_id);
-                        const yearField = isLahan ? 'tahuns' : 'tahun_ids';
-                        (sel.tahun_ids || sel.tahuns || []).forEach(v => { const el = document.createElement('input'); el.type='hidden'; el.name = `selections[${idx}][${yearField}][]`; el.value = v; form.appendChild(el); });
-                        (sel.klasifikasi_ids || []).forEach(v => { const el = document.createElement('input'); el.type='hidden'; el.name = `selections[${idx}][klasifikasi_ids][]`; el.value = v; form.appendChild(el); });
-                        if (!isLahan) { (sel.bulan_ids || []).forEach(v => { const el = document.createElement('input'); el.type='hidden'; el.name = `selections[${idx}][bulan_ids][]`; el.value = v; form.appendChild(el); }); }
-                    });
-
-                    // Build config inputs
-                    const cfg = currentResult.exportConfig || { tata_letak: this.selection.tata_letak, provinsi_ids: [], kabupaten_ids: [] };
-                    const cfgTata = document.createElement('input'); cfgTata.type='hidden'; cfgTata.name='config[tata_letak]'; cfgTata.value = cfg.tata_letak || 'tipe_1'; form.appendChild(cfgTata);
-                    (cfg.provinsi_ids || []).forEach(v => { const el = document.createElement('input'); el.type='hidden'; el.name='config[provinsi_ids][]'; el.value=v; form.appendChild(el); });
-                    (cfg.kabupaten_ids || []).forEach(v => { const el = document.createElement('input'); el.type='hidden'; el.name='config[kabupaten_ids][]'; el.value=v; form.appendChild(el); });
-
-                    // Optional: filename
-                    const filename = document.createElement('input'); filename.type='hidden'; filename.name='filename'; filename.value = `laporan-${this.moduleType}-${Date.now()}.xlsx`; form.appendChild(filename);
-                    
-                    document.body.appendChild(form);
-                    form.submit();
-                    document.body.removeChild(form);
-
-                    // Re-enable prompt after export completes (best-effort)
-                    const reset = () => { this.skipUnloadPrompt = false; window.removeEventListener('focus', reset); };
-                    window.addEventListener('focus', reset);
-                    setTimeout(reset, 3000);
-                },
-
-                // Dependent selection reset
-                loadVariabels() { this.selection.variabel_id = null; this.selection.klasifikasi_ids = []; },
-                loadKlasifikasis() { this.selection.klasifikasi_ids = []; },
-
-                // Computed properties for filtering dropdowns
-                get filteredTopik() { return this.allData.topiks; },
-                get filteredVariabel() { if (!this.selection.topik_id) return []; return this.allData.variabels.filter(v => String(v.topik_id) === String(this.selection.topik_id)); },
-                get filteredKlasifikasi() { if (!this.selection.variabel_id) return []; return this.allData.klasifikasis.filter(k => String(k.variabel_id) === String(this.selection.variabel_id)); },
-                get filteredTahun() { return this.allData.tahuns.filter(t => t.toString().includes(this.search.tahun)); },
-                get filteredBulan() { return this.allData.bulans.filter(b => b.nama.toLowerCase().includes(this.search.bulan.toLowerCase())); },
-                get filteredWilayah() {
-                    const provinces = Array.isArray(this.allData.wilayahs) ? this.allData.wilayahs : [];
-                    const term = (this.search.wilayah || '').toLowerCase().trim();
-                    if (this.wilayahLevel === 'nasional') {
-                        // Filter provinces by name
-                        if (!term) return provinces;
-                        return provinces.filter(p => (p.nama || '').toLowerCase().includes(term));
-                    }
-                    // Provinsi level: keep all provinces, but filter kabupaten list of each province by term
-                    return provinces.map(p => {
-                        const kab = Array.isArray(p.kabupaten) ? p.kabupaten : [];
-                        const filteredKab = term ? kab.filter(k => (k.nama || '').toLowerCase().includes(term)) : kab;
-                        return { ...p, kabupaten: filteredKab };
-                    });
-                },
-
-                toggleKabupaten(id) {
-                    const index = this.selection.kabupaten_ids.indexOf(id);
-                    if (index > -1) { this.selection.kabupaten_ids.splice(index, 1); } else { this.selection.kabupaten_ids.push(id); }
-                },
-                selectAllKabupatenInSelectedProvinsi() {
-                    if (!this.selectedProvinsiId) return;
-                    const selectedProvinsi = this.allData.wilayahs.find(p => p.id == this.selectedProvinsiId);
-                    if (selectedProvinsi && selectedProvinsi.kabupaten) {
-                        this.selection.kabupaten_ids = selectedProvinsi.kabupaten.map(k => k.id);
-                    }
-                },
-                clearKabupatenInSelectedProvinsi() {
-                    if (!this.selectedProvinsiId) { this.selection.kabupaten_ids = []; return; }
-                    const selectedProvinsi = this.allData.wilayahs.find(p => p.id == this.selectedProvinsiId);
-                    if (selectedProvinsi && selectedProvinsi.kabupaten) {
-                        const kabupatenIdsInSelectedProvinsi = selectedProvinsi.kabupaten.map(k => k.id);
-                        this.selection.kabupaten_ids = this.selection.kabupaten_ids.filter(id => !kabupatenIdsInSelectedProvinsi.includes(id));
-                    }
-                },
-                toggleWilayah(id) {
-                    if (this.wilayahLevel === 'nasional') {
-                        const index = this.selection.provinsi_ids.indexOf(id);
-                        if (index > -1) { this.selection.provinsi_ids.splice(index, 1); } else { this.selection.provinsi_ids.push(id); }
-                    } else {
-                        this.toggleKabupaten(id);
-                    }
-                },
-
-                // Aliases to server-provided structures
-                get dynamicHeaders() {
-                    const currentResult = this.selectedResultIndex !== null ? this.storedResults[this.selectedResultIndex] : null;
-                    return currentResult?.results?.headers || [];
-                },
-                get dynamicRows() {
-                    const currentResult = this.selectedResultIndex !== null ? this.storedResults[this.selectedResultIndex] : null;
-                    const rows = currentResult?.results?.rows || [];
-                    // Keep sorter behavior if provided
-                    const sorted = [...rows];
-                    sorted.sort((a, b) => {
-                        const aHas = a.wilayah_sorter !== undefined && a.wilayah_sorter !== null;
-                        const bHas = b.wilayah_sorter !== undefined && b.wilayah_sorter !== null;
-                        if (aHas && bHas) {
-                            if (a.wilayah_sorter !== b.wilayah_sorter) return a.wilayah_sorter - b.wilayah_sorter;
-                            return String(a.wilayah).localeCompare(String(b.wilayah));
-                        }
-                        if (aHas && !bHas) return -1; // rows with sorter come first
-                        if (!aHas && bHas) return 1;
-                        // both missing sorter: sort by name
-                        return String(a.wilayah).localeCompare(String(b.wilayah));
-                    });
-                    return sorted;
-                },
-
-                renderChart() {
-                    const canvas = document.getElementById('dynamicChart');
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d');
-                    if (window.myChart) { window.myChart.destroy(); }
-                    if (!this.dynamicRows || this.dynamicRows.length === 0) return;
-
-                    const labels = this.dynamicRows.map(row => row.wilayah);
-                    const datasets = [];
-                    const colors = [
-                        'rgba(54, 162, 235, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(75, 192, 192, 0.8)',
-                        'rgba(255, 206, 86, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)',
-                        'rgba(201, 203, 207, 0.8)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'
-                    ];
-
-                    const columnLabels = [];
-                    if (this.dynamicHeaders && this.dynamicHeaders.length > 0) {
-                        const lastHeaderRow = this.dynamicHeaders[this.dynamicHeaders.length - 1];
-                        lastHeaderRow.forEach(header => { if (header.name !== 'Wilayah') columnLabels.push(header.name); });
-                    }
-
-                    if (this.dynamicRows.length > 0 && columnLabels.length > 0) {
-                        columnLabels.forEach((columnLabel, index) => {
-                            const data = this.dynamicRows.map(row => {
-                                const value = row.values ? row.values[index] : null;
-                                return value !== null && value !== undefined ? parseFloat(value) || 0 : 0;
-                            });
-                            datasets.push({
-                                label: columnLabel,
-                                data: data,
-                                backgroundColor: colors[index % colors.length],
-                                borderColor: colors[index % colors.length].replace('0.8', '1'),
-                                borderWidth: 1
-                            });
-                        });
-                    }
-
-                    const scrollWrap = document.getElementById('chart-scroll');
-                    const containerWidth = scrollWrap ? scrollWrap.clientWidth : 800;
-                    const containerHeight = scrollWrap ? scrollWrap.clientHeight : 384;
-                    const perLabelWidth = Math.max(70, (datasets.length || 1) * 18 + 40);
-                    const desiredWidth = Math.max(containerWidth, (labels.length || 1) * perLabelWidth);
-                    ctx.canvas.style.width = desiredWidth + 'px';
-                    ctx.canvas.style.height = containerHeight + 'px';
-                    ctx.canvas.width = desiredWidth; // important when responsive:false
-                    ctx.canvas.height = containerHeight;
-
-                    window.myChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: { labels: labels, datasets: datasets },
-                        options: {
-                            responsive: false,
-                            scales: { y: { beginAtZero: true } },
-                            plugins: { legend: { display: this.showLegend, position: 'top' } }
-                        }
-                    });
-                },
-
-                toggleLegend() { this.showLegend = !this.showLegend; this.renderChart(); },
-                scrollToProvince() {
-                    if (!this.selectedProvinceForScroll) return;
-                    const scrollWrap = document.getElementById('chart-scroll');
-                    if (!scrollWrap) return;
-                    const labels = this.dynamicRows.map(row => row.wilayah);
-                    const index = labels.indexOf(this.selectedProvinceForScroll);
-                    if (index === -1) return;
-                    const perLabelWidth = Math.max(70, 120);
-                    const scrollPosition = index * perLabelWidth;
-                    const containerWidth = scrollWrap.clientWidth;
-                    const next = Math.max(0, scrollPosition - containerWidth / 2);
-                    scrollWrap.scrollTo({ left: next, behavior: 'smooth' });
-                },
-                initChartResizeHandlerOnce: (function() { let initialized = false; return function() { if (!initialized) { initialized = true; window.addEventListener('resize', () => { this.renderChart(); }); } }; })(),
-            };
-        }
-    </script>
 
 
 <div x-data="pertanianReportForm({ moduleType: '{{ $moduleType }}', initialData: {{ Js::from($initialData) }} })" x-init="init()" class="space-y-12">
@@ -873,69 +169,7 @@
             </div>
         </div>
 
-        <script>
-        (function(){
-            const INIT_ATTR = 'data-sticky-init';
-            function equalizeColumns(table){
-                try{
-                    const colgroup = document.createElement('colgroup');
-                    const thead = table.querySelector('thead');
-                    if(!thead) return;
-                    const firstRow = thead.querySelector('tr:first-child');
-                    if(!firstRow) return;
-                    const cells = Array.from(firstRow.querySelectorAll('th'));
-                    cells.forEach((cell, idx) => {
-                        const col = document.createElement('col');
-                        if(idx === 0) { col.style.minWidth = '120px'; } else { col.style.minWidth = '100px'; col.style.width = '100px'; }
-                        colgroup.appendChild(col);
-                    });
-                    table.insertBefore(colgroup, table.firstChild);
-                }catch(e){ /* noop */ }
-            }
-        function recalcFor(table){
-                try{
-                    const wrap = table.closest('.sticky-table-container');
-                    const thead = table.querySelector('thead');
-                    if(!wrap || !thead) return;
-                    equalizeColumns(table);
-                    const rows = Array.from(thead.querySelectorAll('tr'));
-                    const dpr = window.devicePixelRatio || 1;
-                    let acc = 0;
-                    rows.forEach((row, idx)=>{
-                        wrap.style.setProperty(`--row-top-${idx+1}`, `${acc}px`);
-                        row.querySelectorAll('th').forEach(th => th.style.top = `${acc}px`);
-                        const rectH = row.getBoundingClientRect().height;
-                        const snapped = Math.round(rectH * dpr) / dpr;
-                        acc += snapped;
-                    });
-                }catch(e){ /* noop */ }
-            }
-
-            function wire(table){
-                if(!table || table.hasAttribute(INIT_ATTR)) return;
-                table.setAttribute(INIT_ATTR,'1');
-                const doRecalc = ()=>recalcFor(table);
-                requestAnimationFrame(()=>requestAnimationFrame(doRecalc));
-                const ro = new ResizeObserver(doRecalc);
-                const wrap = table.closest('.sticky-table-container');
-                if(wrap) ro.observe(wrap);
-                ro.observe(table);
-                const mo = new MutationObserver(()=>requestAnimationFrame(doRecalc));
-                mo.observe(table, { childList:true, subtree:true, attributes:true });
-                const io = new IntersectionObserver((entries)=>{
-                    entries.forEach(e=>{ if(e.isIntersecting) doRecalc(); });
-                }, { root: null, threshold: 0 });
-                io.observe(table);
-                window.addEventListener('resize', doRecalc);
-            }
-
-            function scan(){ document.querySelectorAll('table.sticky-table').forEach(wire); }
-            scan();
-            const rootMO = new MutationObserver(()=>scan());
-            rootMO.observe(document.body, { childList:true, subtree:true });
-            setTimeout(scan, 0); setTimeout(scan, 200); setTimeout(scan, 500);
-        })();
-        </script>
+        
 
         <!-- Action Buttons Section -->
         <div class="flex items-center justify-between mb-4 mt-6">
@@ -1231,10 +465,7 @@
                     </div>
                 </div>
             </div>
-            <!-- lock scroll and ensure body blur fallback if needed -->
-            <div class="hidden" x-init="document.body.style.overflow='hidden'; document.body.classList.add('modal-open')"
-                x-effect="if(showClearConfirm){document.body.style.overflow='hidden'; document.body.classList.add('modal-open')} else {document.body.style.overflow=''; document.body.classList.remove('modal-open')}"
-            ></div>
+            <!-- Body scroll/blur handled by a combined toggler below -->
         </div>
         
     </template>
@@ -1255,11 +486,15 @@
                     <p class="text-neutral-700">Mohon tunggu, kami sedang menyiapkan laporan untuk Anda.</p>
                 </div>
             </div>
-            <!-- lock scroll like other modal -->
-            <div class="hidden" x-init="document.body.style.overflow='hidden'; document.body.classList.add('modal-open')"
-                x-effect="if(isProcessing){document.body.style.overflow='hidden'; document.body.classList.add('modal-open')} else {document.body.style.overflow=''; document.body.classList.remove('modal-open')}"
-            ></div>
+            <!-- Body scroll/blur handled by a combined toggler below -->
         </div>
+    </template>
+
+    <!-- Single combined body lock/blur toggler (teleported) -->
+    <template x-teleport="body">
+        <div class="hidden" x-cloak
+            x-effect="if(showClearConfirm || isProcessing){document.body.style.overflow='hidden'; document.body.classList.add('modal-open')} else {document.body.style.overflow=''; document.body.classList.remove('modal-open')}"
+        ></div>
     </template>
 
     <!-- Step 3: Tampilan Hasil -->
@@ -1421,6 +656,83 @@
         // reserved for future enhancements
     </script>
     @endpush
+    {{-- Chatbot button (moved inside x-data scope) --}}
+    <div @click="chatOpen = true" role="button" aria-label="Buka chatbot"
+         class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full p-4 h-16 w-16 flex items-center justify-center shadow-lg cursor-pointer hover:bg-blue-700 transition-transform hover:scale-110">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-8 w-8" fill="currentColor" aria-hidden="true">
+            <!-- Chat bubble body -->
+            <rect x="3" y="3" width="18" height="14" rx="3" ry="3"></rect>
+            <!-- Tail -->
+            <path d="M14 17 L18 17 L18 21 Z"></path>
+            <!-- Dots -->
+            <circle cx="9" cy="10" r="1.5"></circle>
+            <circle cx="12" cy="10" r="1.5"></circle>
+            <circle cx="15" cy="10" r="1.5"></circle>
+        </svg>
+    </div>
+
+    {{-- Chatbot modal (teleported; retains this component scope) --}}
+    <template x-teleport="body">
+        <div x-show="chatOpen" x-cloak
+             @keydown.escape.window="chatOpen = false"
+             class="modal-root fixed inset-0 z-[1000] flex items-end justify-end p-4 sm:p-6">
+            
+            <div x-show="chatOpen" x-transition.opacity class="fixed inset-0 bg-black/30" x-cloak></div>
+
+          <div @click.outside="chatOpen = false"
+                 x-show="chatOpen" x-cloak
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative bg-white rounded-lg shadow-xl border w-full max-w-md max-h-[55vh] h-auto flex flex-col overflow-hidden min-h-0">
+                
+                <header class="p-4 border-b flex justify-between items-center flex-shrink-0">
+                    <h3 class="font-bold text-lg text-neutral-800">Asisten Data Pertanian</h3>
+                    <button @click="chatOpen = false" class="text-neutral-500 hover:text-neutral-800">&times;</button>
+                </header>
+                
+                <main class="flex-1 p-4 overflow-y-auto space-y-4 min-h-0" x-ref="chatScroll">
+                    <template x-for="(chat, index) in conversation" :key="index">
+                        <div class="flex" :class="chat.sender === 'user' ? 'justify-end' : 'justify-start'">
+                            <p class="max-w-[80%] inline-block p-3 rounded-lg text-sm" 
+                               :class="chat.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-neutral-200 text-neutral-800'" 
+                               x-html="chat.text"></p>
+                        </div>
+                    </template>
+                    <div x-show="isLoading" class="flex justify-start">
+                        <p class="max-w-[80%] inline-block p-3 rounded-lg text-sm bg-neutral-200 text-neutral-800">
+                            <span class="animate-pulse">...</span>
+                        </p>
+                    </div>
+                    
+                </main>
+
+                <footer class="p-4 border-t flex-shrink-0">
+                    <div class="flex flex-col gap-2">
+                        <form @submit.prevent="sendMessage" class="flex gap-2">
+                            <input type="text" x-model="userMessage" :disabled="isLoading" class="w-full border rounded-md p-2 text-sm" placeholder="Ketik pertanyaan Anda...">
+                            <button type="submit" :disabled="isLoading" class="bg-blue-600 text-white rounded-md px-4 disabled:bg-blue-300">Kirim</button>
+                        </form>
+                        <div class="flex justify-between items-center">
+                            <button type="button" @click="fetch('/api/chatbot/reset', {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')}})
+                                                        .catch(() => {})
+                                                        .finally(() => { conversation = [
+                                                        { sender: 'bot', text: 'Selamat datang! Data apa yang ingin Anda cari?' },
+                                                        { sender: 'bot', text: 'Data yang tersedia: Lahan, Benih & Pupuk, serta Iklim & OPT.' }
+                                                        ]; userMessage=''; });"
+                            class="text-sm text-neutral-600 hover:text-neutral-900 underline">Mulai Ulang</button>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </template>
+
+
 </div>
+
 
 </x-layouts.landing>

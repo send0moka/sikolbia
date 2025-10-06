@@ -1,6 +1,22 @@
 // Alpine.js is provided by Livewire for admin pages
 // For landing pages, we'll dynamically load it if needed
 
+// Alpine Js load for landing pages
+import Alpine from 'alpinejs';
+window.Alpine = Alpine;
+
+// Custom Alpine component for Pertanian Report Form
+import pertanianReportForm from './components/pertanianReportForm.js';
+Alpine.data('pertanianReportForm', pertanianReportForm);
+// End Pertanian Report Form
+
+// Sticky table utility (auto-initializes on import)
+import './utils/stickyTable.js';
+
+// Start Alpine AFTER registering all data/components
+Alpine.start();
+
+// Admin Pages
 // Force dark mode for admin pages
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;
@@ -17,16 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.documentElement.classList.add('dark');
         document.body.classList.add('dark');
     }
-    
-    if (!isAdminPage && !window.Alpine) {
-        // Load Alpine.js for landing pages
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js';
-        script.defer = true;
-        document.head.appendChild(script);
-    }
-    
-    console.log('App.js initialized');
 });
 
 // Initialize global flags to prevent duplicate listeners

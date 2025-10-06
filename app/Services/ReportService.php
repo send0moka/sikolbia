@@ -211,6 +211,129 @@ class ReportService
     }
 
     /**
+     * Simple retrieval function for RAG context assembly from a free-form user message.
+     * Attempts to infer module, extract keywords, find wilayah/variabels/years, and sample data.
+     * Returns a concise multi-line string suitable for inclusion as "Konteks Data" in the LLM prompt.
+     */
+    public function retrieveFactualData(string $userMessage): string
+    {
+        $msg = trim($userMessage ?? '');
+        if ($msg === '') return '';
+
+        $lower = mb_strtolower($msg, 'UTF-8');
+        // 1) Detect module candidates by keywords
+        $moduleKeywords = [
+            'lahan' => ['lahan','luas','panen','tanam','sawah'],
+            'benih-pupuk' => ['benih','pupuk','subsidi','penyaluran'],
+            'iklim-opt-dpi' => ['iklim','opt','dpi','hama','penyakit','cuaca']
+        ];
+        $targetModules = [];
+        foreach ($moduleKeywords as $mod => $words) {
+            foreach ($words as $w) {
+                if (str_contains($lower, $w)) { $targetModules[$mod] = true; break; }
+            }
+        }
+        if (empty($targetModules)) {
+            // Unknown: try all
+            $targetModules = ['lahan' => true, 'benih-pupuk' => true, 'iklim-opt-dpi' => true];
+        }
+
+        // 2) Extract years
+        $years = [];
+        if (preg_match_all('/\b(19\d{2}|20\d{2})\b/', $msg, $m)) {
+            $years = array_values(array_unique(array_map('intval', $m[1])));
+        }
+
+        // 3) Build keyword tokens (unigrams + bigrams) for LIKE searches
+        $tokens = preg_split('/[^\p{L}\p{N}]+/u', $lower, -1, PREG_SPLIT_NO_EMPTY);
+        $tokens = array_values(array_filter($tokens, fn($t) => mb_strlen($t, 'UTF-8') >= 3));
+        $bigrams = [];
+        for ($i=0; $i < count($tokens)-1; $i++) { $bigrams[] = $tokens[$i].' '.$tokens[$i+1]; }
+        $candidates = array_values(array_unique(array_merge($bigrams, $tokens)));
+
+        // 4) Retrieve wilayah matches
+        $wilayahMatches = collect();
+        if (!empty($candidates)) {
+            $wilayahMatches = DB::table('wilayah')
+                ->select('id','nama','id_parent')
+                ->where(function($q) use ($candidates){
+                    foreach ($candidates as $c) {
+                        $q->orWhere('nama', 'LIKE', '%'.$c.'%');
+                    }
+                })
+                ->limit(20)
+                ->get();
+        }
+        $wilayahIds = $wilayahMatches->pluck('id')->toArray();
+        $wilayahNames = $wilayahMatches->pluck('nama')->unique()->values()->take(10)->toArray();
+
+        // 5) Retrieve variabel matches for each target module
+        $variabelByModule = [];
+        foreach (array_keys($targetModules) as $module) {
+            try {
+                $tables = $this->getTableMap($module);
+                $vQuery = DB::table($tables['variabel'])->select('id', DB::raw('deskripsi as nama'));
+                if (!empty($candidates)) {
+                    $vQuery->where(function($q) use ($candidates){
+                        foreach ($candidates as $c) { $q->orWhere('deskripsi', 'LIKE', '%'.$c.'%'); }
+                    });
+                }
+                $variabelByModule[$module] = $vQuery->limit(20)->get();
+            } catch (\Throwable $e) {
+                // ignore unknown module mapping here
+            }
+        }
+
+        // 6) Fetch small sample data rows per module using filters discovered
+        $lines = [];
+        foreach (array_keys($targetModules) as $module) {
+            try {
+                $tables = $this->getTableMap($module);
+                $isMonthly = isset($tables['bulan']);
+                $vIds = ($variabelByModule[$module] ?? collect())->pluck('id')->toArray();
+                $data = DB::table($tables['data'].' as d')
+                    ->join($tables['variabel'].' as v','d.id_variabel','=','v.id')
+                    ->join($tables['klasifikasi'].' as k','d.id_klasifikasi','=','k.id')
+                    ->join($tables['wilayah'].' as w','d.id_wilayah','=','w.id')
+                    ->select(
+                        'w.nama as wilayah','v.deskripsi as variabel','k.deskripsi as klasifikasi','d.tahun','d.nilai'
+                    );
+                if ($isMonthly) {
+                    $data->join($tables['bulan'].' as b','d.id_bulan','=','b.id')->addSelect('b.nama as bulan');
+                }
+                if (!empty($wilayahIds)) { $data->whereIn('d.id_wilayah', $wilayahIds); }
+                if (!empty($vIds)) { $data->whereIn('d.id_variabel', $vIds); }
+                if (!empty($years)) { $data->whereIn('d.tahun', $years); }
+                // prefer reasonable size
+                $data->orderBy('d.tahun');
+                $dataRows = $data->limit(25)->get();
+                foreach ($dataRows as $r) {
+                    $line = strtoupper($module).' | '.($r->wilayah ?? '-') .' | '. ($r->variabel ?? '-') .' | '. ($r->klasifikasi ?? '-') .' | '. ($r->tahun ?? '-');
+                    if ($isMonthly) { $line .= ' | '.($r->bulan ?? '-'); }
+                    $line .= ' : '. (is_numeric($r->nilai) ? (string)$r->nilai : (string)$r->nilai);
+                    $lines[] = $line;
+                }
+            } catch (\Throwable $e) {
+                // ignore module failure and continue others
+                try { Log::debug('[retrieveFactualData] sample fetch error', ['module'=>$module, 'err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
+            }
+        }
+
+        // Assemble context
+        $summaryParts = [];
+        $summaryParts[] = 'Pesan: '. $msg;
+        $summaryParts[] = 'Modul kandidat: '. implode(', ', array_keys($targetModules));
+        if (!empty($wilayahNames)) $summaryParts[] = 'Wilayah terdeteksi: '. implode(', ', $wilayahNames);
+        if (!empty($years)) $summaryParts[] = 'Tahun: '. implode(', ', $years);
+
+        $context = implode("\n", $summaryParts);
+        if (!empty($lines)) {
+            $context .= "\nContoh Data:\n". implode("\n", array_slice($lines, 0, 50));
+        }
+        return trim($context);
+    }
+
+    /**
      * Get available year list for a module (descending for lahan, ascending others to match legacy usage).
      */
     public function getAvailableYears(string $moduleType): array
