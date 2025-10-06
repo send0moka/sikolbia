@@ -446,7 +446,7 @@
                                             <td>6. Bahan Makanan <i class="text-xs">/ Food Ingredients</i></td>
                                             <template x-for="result in results" :key="result.tahun">
                                                 <td
-                                                    x-text="Number(result.bahanMakanan) < 0.001 ? '-' : Number(result.bahanMakanan).toFixed(2)">
+                                                    x-text="Number(result.bahanMakanan) < 0.001 ? '-' : Number(result.bahanMakanan).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})">
                                                 </td>
                                             </template>
                                         </tr>
@@ -869,7 +869,7 @@
                     // 6. Bahan Makanan
                     const bahanMakananRow = ['6. Bahan Makanan / Food Ingredients'];
                     this.results.forEach(result => {
-                        bahanMakananRow.push(Number(result.bahanMakanan) < 0.001 ? '-' : Number(result.bahanMakanan).toFixed(2));
+                        bahanMakananRow.push(Number(result.bahanMakanan) < 0.001 ? '-' : Number(result.bahanMakanan).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
                     });
                     exportData.push(bahanMakananRow);
 
