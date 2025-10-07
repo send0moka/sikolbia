@@ -45,10 +45,8 @@
                 {{ $description }}
             </p>
         </div>
-
-    <!-- Two Column Layout -->
-
-
+        
+<!-- Form and Results Section -->
 <div x-data="pertanianReportForm({ moduleType: '{{ $moduleType }}', initialData: {{ Js::from($initialData) }} })" x-init="init()" class="space-y-12">
     <!-- Step 1: Select Data -->
     <section class="bg-neutral-50 rounded-lg p-6 border border-neutral-200">

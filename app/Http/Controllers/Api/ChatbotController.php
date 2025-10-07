@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Gemini\Laravel\Facades\Gemini;
+use OpenAI\Laravel\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 use App\Services\ReportService;
 
 class ChatbotController extends Controller
 {
     /**
-     * RAG entry: accept user message, retrieve context, and ask Gemini to summarize based on available data.
+     * RAG entry: accept user message, retrieve context, and ask OpenAI to summarize based on available data.
      */
     public function handle(Request $request)
     {
@@ -27,17 +27,25 @@ class ChatbotController extends Controller
             }
 
             // Truncate context to reduce risk of provider limits
-            $safeContext = $this->truncateContext($context, 7000, 60);
+            $safeContext = $this->truncateContext($context, 9000, 80);
 
             try {
                 $prompt = $this->getRAGPrompt($safeContext, $userMessage);
-                $result = Gemini::geminiPro()->generateContent($prompt);
-                $geminiText = method_exists($result, 'text') ? (string) $result->text() : (string) $result;
-                $geminiText = trim($geminiText) !== '' ? $geminiText : $this->summarizeContextOffline($safeContext, $userMessage);
-                return response()->json(['reply' => $geminiText]);
+                $model = config('openai.chat_model', env('OPENAI_CHAT_MODEL', 'gpt-5-nano'));
+                $response = OpenAI::chat()->create([
+                    'model' => $model,
+                    'messages' => [
+                        ['role' => 'system', 'content' => 'Anda adalah asisten data pertanian yang akurat.'],
+                        ['role' => 'user', 'content' => $prompt],
+                    ],
+                    'temperature' => 1,
+                ]);
+                $text = $response->choices[0]->message->content ?? '';
+                $final = trim((string) $text) !== '' ? (string) $text : $this->summarizeContextOffline($safeContext, $userMessage);
+                return response()->json(['reply' => $final]);
             } catch (\Throwable $e) {
                 // Provider error: fall back to deterministic summary
-                try { Log::warning('Gemini call failed, using offline summary', ['err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
+                try { Log::warning('OpenAI call failed, using offline summary', ['err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
                 $fallback = $this->summarizeContextOffline($safeContext, $userMessage);
                 return response()->json(['reply' => $fallback]);
             }
@@ -55,17 +63,17 @@ class ChatbotController extends Controller
     private function getRAGPrompt(string $context, string $userMessage): string
     {
         return <<<PROMPT
-            Anda adalah asisten data pertanian yang sangat akurat. Jawab pertanyaan pengguna HANYA berdasarkan konteks data yang saya berikan. Jika data tidak ada atau tidak relevan, katakan "Maaf, data tidak ditemukan".
+Anda adalah asisten data pertanian yang sangat akurat. Jawab pertanyaan pengguna HANYA berdasarkan konteks data yang saya berikan. Jika data tidak ada atau tidak relevan, katakan "Maaf, data tidak ditemukan".
 
-            Konteks Data:
-            ---
-            {$context}
-            ---
+Konteks Data:
+---
+{$context}
+---
 
-            Pertanyaan Pengguna: {$userMessage}
+Pertanyaan Pengguna: {$userMessage}
 
-            Jawaban Anda:
-        PROMPT;
+Jawaban Anda:
+PROMPT;
     }
 
     /**
