@@ -521,9 +521,9 @@ Kriteria sukses ditetapkan mencakup measurable objectives untuk performa teknis 
 
 **b. Data Understanding**
 
-Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional. Dataset mencakup 31 tahun data historis dengan 372 data points bulanan, memberikan foundation yang solid untuk pengembangan Model prediksi Time Series. Target variable dalam penelitian ini adalah konsumsi kalori per kapita per hari yang diukur dalam satuan kkal/kapita/hari.
+Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional. Dataset mencakup 31 tahun data historis dengan lebih dari 41.000 record transaksi NBM yang mencakup sekitar 60+ komoditas pangan. Melalui proses agregasi, data transaksi individual ini menghasilkan 372 data points time series bulanan untuk konsumsi kalori nasional, yang memberikan foundation yang solid untuk pengembangan model prediksi time series. Target variable dalam penelitian ini adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
 
-Dataset NBM memiliki temporal resolution bulanan dengan pola musiman yang jelas, mencakup sekitar 60 komoditas pangan dengan data produksi, impor, ekspor, dan utilisasi. Perhitungan konsumsi kalori menggunakan formula NBM ditunjukkan pada persamaan (29) berikut:
+Dataset NBM memiliki temporal resolution bulanan dengan pola musiman yang jelas, di mana setiap record transaksi mencakup data produksi, impor, ekspor, dan utilisasi untuk masing-masing dari sekitar 60 komoditas pangan. Perhitungan konsumsi kalori menggunakan formula NBM ditunjukkan pada persamaan (29) berikut:
 
 ```
 Kalori per kapita per hari = (Konsumsi per kapita (kg/hari) × Faktor Konversi Energi (kkal/100g)) / 10 ... (29)
