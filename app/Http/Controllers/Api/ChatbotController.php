@@ -32,6 +32,11 @@ class ChatbotController extends Controller
             try {
                 $prompt = $this->getRAGPrompt($safeContext, $userMessage);
                 $model = config('openai.chat_model', env('OPENAI_CHAT_MODEL', 'gpt-5-nano'));
+                // Runtime safeguard: if config didn't pick up env (e.g., cache race), inject it.
+                if (empty(config('openai.api_key')) && env('OPENAI_API_KEY')) {
+                    config(['openai.api_key' => env('OPENAI_API_KEY')]);
+                }
+
                 $response = OpenAI::chat()->create([
                     'model' => $model,
                     'messages' => [
