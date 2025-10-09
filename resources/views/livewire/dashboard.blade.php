@@ -3,7 +3,7 @@
     <div class="mb-6">
         <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Dashboard</h1>
         <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-            Selamat datang di sistem basis data konsumsi pangan
+            Selamat datang di SIKOLBIA - Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat
         </p>
     </div>
 
@@ -55,8 +55,8 @@
         <x-placeholder-pattern class="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
             <div class="absolute inset-0 p-4 flex items-center justify-center">
                 <div class="text-center">
-            <h3 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">Sistem Basis Data Konsumsi Pangan</h3>
-            <p class="text-neutral-600 dark:text-neutral-400">Dashboard untuk mengelola data konsumsi pangan</p>
+            <h3 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">SIKOLBIA</h3>
+            <p class="text-neutral-600 dark:text-neutral-400">Dashboard untuk mengelola data konsumsi pangan, lahan, iklim, benih, dan alamat</p>
                 </div>
             </div>
         </div>

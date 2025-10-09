@@ -11,7 +11,7 @@
                         <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
                     </span>
 
-                    <span class="sr-only">{{ config('app.name', 'Basis Data Konsumsi Pangan') }}</span>
+                    <span class="sr-only">{{ config('app.name', 'SIKOLBIA') }}</span>
                 </a>
 
                 <div class="flex flex-col gap-6">

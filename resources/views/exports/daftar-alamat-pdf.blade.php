@@ -182,7 +182,7 @@
 
     <div class="footer">
         <p>Total: {{ $data->count() }} alamat dinas pertanian</p>
-        <p>Laporan ini dibuat secara otomatis oleh Sistem Basis Data Konsumsi Pangan</p>
+        <p>Laporan ini dibuat secara otomatis oleh SIKOLBIA</p>
     </div>
 </body>
 </html>

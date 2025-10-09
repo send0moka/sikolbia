@@ -41,14 +41,22 @@ COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 # Configure git safe directory
 RUN git config --global --add safe.directory /var/www/html
 
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Configure composer for better reliability
+RUN composer config --global process-timeout 2000 && \
+    composer config --global repositories.packagist composer https://packagist.org && \
+    composer install --no-scripts --no-autoloader --no-interaction --prefer-dist
+
 # Copy package.json if exists
 COPY package*.json ./
 
 # Copy application code (needed for artisan to work)
 COPY . .
 
-# Install composer dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+# Generate autoloader and finalize composer
+RUN composer dump-autoload --optimize
 
 # Install npm dependencies
 RUN if [ -f package.json ]; then \

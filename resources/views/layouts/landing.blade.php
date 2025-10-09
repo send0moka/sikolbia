@@ -24,7 +24,7 @@
                     <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
                         <a href="{{ route('home') }}" class="text-xl font-bold text-blue-600">
-                            Basis Data Konsumsi Pangan
+                            SIKOLBIA
                         </a>
                     </div>
 
@@ -254,9 +254,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Basis Data Konsumsi Pangan</h3>
+                    <h3 class="text-lg font-semibold mb-4">SIKOLBIA</h3>
                     <p class="text-neutral-300">
-                        Sistem informasi untuk data ketersediaan dan konsumsi pangan di Indonesia
+                        Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat untuk data terintegrasi di Indonesia
                     </p>
                 </div>
                 <div>
@@ -278,7 +278,7 @@
                 </div>
             </div>
             <div class="border-t border-neutral-700 mt-8 pt-8 text-center text-neutral-300">
-                <p>&copy; {{ date('Y') }} Basis Data Konsumsi Pangan. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} SIKOLBIA. All rights reserved.</p>
             </div>
         </div>
     </footer>

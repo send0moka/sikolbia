@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Basis Data Konsumsi Pangan'),
+    'name' => env('APP_NAME', 'SIKOLBIA'),
 
     /*
     |--------------------------------------------------------------------------

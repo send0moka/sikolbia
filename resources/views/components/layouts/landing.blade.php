@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Basis Data Konsumsi Pangan' }}</title>
+    <title>{{ $title ?? 'SIKOLBIA' }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -36,7 +36,7 @@
                             <img src="/favicon.svg" alt="Logo" class="h-8 w-8 mr-3">
                             <!-- Always show full title; wrap and scale text so it fits on small screens -->
                             <a href="{{ route('home') }}" class="block text-xl max-[1024px]:text-lg max-[768px]:text-base max-[420px]:text-sm font-semibold text-[#6a4c35] hover:text-[#782c7c] transition-colors leading-tight max-w-[55vw] md:max-w-[40vw] lg:max-w-none">
-                                Basis Data Konsumsi Pangan
+                                SIKOLBIA
                             </a>
                         </div>
 
@@ -283,8 +283,8 @@
                         <div class="flex items-center mb-6">
                             <img src="/favicon.svg" alt="Logo" class="h-10 w-10 mr-3">
                             <div>
-                                <h3 class="text-xl font-semibold text-[#efefa4]">Basis Data Konsumsi Pangan</h3>
-                                <p class="text-sm text-white/80">Pusat Data dan Sistem Informasi Pertanian</p>
+                                <h3 class="text-xl font-semibold text-[#efefa4]">SIKOLBIA</h3>
+                                <p class="text-sm text-white/80">Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat</p>
                             </div>
                         </div>
                         <div class="space-y-3 text-sm">

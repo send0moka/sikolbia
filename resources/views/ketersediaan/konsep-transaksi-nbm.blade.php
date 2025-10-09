@@ -123,7 +123,7 @@
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 TransaksiNbmManagement.php</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Livewire/Admin/TransaksiNbmManagement.php" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Livewire/Admin/TransaksiNbmManagement.php" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -167,7 +167,7 @@ protected $rules = [
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 TransaksiNbm Model</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Models/TransaksiNbm.php" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Models/TransaksiNbm.php" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -209,7 +209,7 @@ public function komoditi() {
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 Calculation Logic</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Livewire/Admin/TransaksiNbmManagement.php#L150" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Livewire/Admin/TransaksiNbmManagement.php#L150" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -251,7 +251,7 @@ $ketersediaan_perkapita =
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 Export Functionality</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Exports/TransaksiNbmExport.php" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Exports/TransaksiNbmExport.php" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -414,7 +414,7 @@ public function headings(): array {
                         <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-6 text-green-400 font-mono text-sm overflow-x-auto">
                             <div class="flex justify-between items-center mb-4">
                                 <span class="text-neutral-400">📁 app/Livewire/Admin/TransaksiNbmManagement.php</span>
-                                <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Livewire/Admin/TransaksiNbmManagement.php#L200" 
+                                <a href="https://github.com/send0moka/sikolbia/tree/main/app/Livewire/Admin/TransaksiNbmManagement.php#L200" 
                                    target="_blank" 
                                    class="text-blue-400 hover:text-blue-300 text-xs">
                                     🔗 View Full Source

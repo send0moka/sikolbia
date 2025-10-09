@@ -1,11 +1,17 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/livewire-starter-kit",
+    "name": "sikolbia/sikolbia",
     "type": "project",
-    "description": "Basis Data Konsumsi Pangan is a Laravel application that provides a comprehensive platform for managing and analyzing food consumption data.",
+    "description": "SIKOLBIA (Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat) is a Laravel application that provides a comprehensive platform for managing and analyzing food consumption, land, climate, seeds, and address data.",
     "keywords": [
         "laravel",
-        "framework"
+        "framework",
+        "sikolbia",
+        "konsumsi-pangan",
+        "lahan",
+        "iklim",
+        "benih",
+        "alamat"
     ],
     "license": "MIT",
     "require": {
@@ -24,7 +30,6 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.23",
-        "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",

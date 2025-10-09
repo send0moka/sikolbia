@@ -131,7 +131,7 @@
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 SusenasManagement.php</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Livewire/Admin/SusenasManagement.php" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Livewire/Admin/SusenasManagement.php" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -174,7 +174,7 @@ protected $rules = [
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 Susenas Model</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Models/Susenas.php" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Models/Susenas.php" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -216,7 +216,7 @@ public function komoditiBps() {
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 Analysis Logic</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Livewire/Admin/SusenasManagement.php#L100" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Livewire/Admin/SusenasManagement.php#L100" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -263,7 +263,7 @@ public function calculateTrend($data) {
                                 <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-neutral-400">📁 Export Functionality</span>
-                                        <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Exports/SusenasExport.php" 
+                                        <a href="https://github.com/send0moka/sikolbia/tree/main/app/Exports/SusenasExport.php" 
                                            target="_blank" 
                                            class="text-blue-400 hover:text-blue-300 text-xs">
                                             🔗 View Source
@@ -417,7 +417,7 @@ public function headings(): array {
                         <div class="bg-neutral-800 dark:bg-zinc-900 rounded-lg p-6 text-green-400 font-mono text-sm overflow-x-auto">
                             <div class="flex justify-between items-center mb-4">
                                 <span class="text-neutral-400">📁 app/Livewire/Admin/SusenasManagement.php</span>
-                                <a href="https://github.com/send0moka/basis-data-konsumsi-pangan/tree/main/app/Livewire/Admin/SusenasManagement.php#L150" 
+                                <a href="https://github.com/send0moka/sikolbia/tree/main/app/Livewire/Admin/SusenasManagement.php#L150" 
                                    target="_blank" 
                                    class="text-blue-400 hover:text-blue-300 text-xs">
                                     🔗 View Full Source

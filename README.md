@@ -1,13 +1,20 @@
-# Basis Data Konsumsi Pangan
+# SIKOLBIA - Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat
 
 ![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)
 ![Livewire](https://img.shields.io/badge/Livewire-3.x-green.svg)
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)
-[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-send0moka%2Fbasis--data--konsumsi--pangan-blue)](https://hub.docker.com/r/send0moka/basis-data-konsumsi-pangan)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-send0moka%2Fsikolbia-blue)](https://hub.docker.com/r/send0moka/sikolbia)
 
-Sistem informasi basis data konsumsi pangan dengan fitur prediksi Nilai Belanja Makanan (NBM) menggunakan machine learning. Aplikasi ini dibangun dengan Laravel dan Livewire untuk frontend yang modern dan responsif.
+**SIKOLBIA** adalah sistem informasi terintegrasi yang menggabungkan 5 modul utama:
+1. **Konsumsi Pangan** - Manajemen data konsumsi makanan dan prediksi NBM
+2. **Lahan** - Pengelolaan data lahan pertanian
+3. **Iklim OptDPI** - Optimalisasi data iklim DPI
+4. **Benih Pupuk** - Manajemen distribusi benih dan pupuk
+5. **Alamat** - Database alamat wilayah Indonesia
+
+Aplikasi ini dibangun dengan Laravel dan Livewire untuk frontend yang modern dan responsif, serta dilengkapi dengan fitur machine learning untuk prediksi Nilai Belanja Makanan (NBM).
 
 ## 🚀 Quick Start dengan Docker (Recommended)
 
@@ -15,8 +22,8 @@ Sistem informasi basis data konsumsi pangan dengan fitur prediksi Nilai Belanja 
 
 ```bash
 # Clone repository
-git clone https://github.com/send0moka/basis-data-konsumsi-pangan.git
-cd basis-data-konsumsi-pangan
+git clone https://github.com/send0moka/sikolbia.git
+cd sikolbia
 
 # Jalankan dengan Docker Compose
 docker-compose up --build -d
@@ -35,10 +42,10 @@ docker-compose up --build -d
 
 ```bash
 # Pull dari Docker Hub
-docker pull send0moka/basis-data-konsumsi-pangan:latest
+docker pull send0moka/sikolbia:latest
 
 # Jalankan container
-docker run -d -p 8000:80 send0moka/basis-data-konsumsi-pangan:latest
+docker run -d -p 8000:80 send0moka/sikolbia:latest
 ```
 
 ## 🌟 Fitur Utama
@@ -161,8 +168,8 @@ sudo usermod -aG docker $USER
 #### 1. Clone Repository
 
 ```bash
-git clone https://github.com/send0moka/basis-data-konsumsi-pangan.git
-cd basis-data-konsumsi-pangan
+git clone https://github.com/send0moka/sikolbia.git
+cd sikolbia
 ```
 
 #### 2. Jalankan dengan Docker
@@ -192,8 +199,8 @@ docker-compose exec app php artisan key:generate
 #### 1. Clone Repository
 
 ```bash
-git clone https://github.com/send0moka/basis-data-konsumsi-pangan.git
-cd basis-data-konsumsi-pangan
+git clone https://github.com/send0moka/sikolbia.git
+cd sikolbia
 ```
 
 #### 2. Setup Environment
@@ -481,8 +488,8 @@ POST /model/validate      # Validate input data
 
 ```bash
 # Clone repository
-git clone https://github.com/send0moka/basis-data-konsumsi-pangan.git
-cd basis-data-konsumsi-pangan
+git clone https://github.com/send0moka/sikolbia.git
+cd sikolbia
 
 # Copy environment production
 cp .env.example .env.production
@@ -517,7 +524,7 @@ docker run -d \
   --name basis-data-prod \
   -p 80:80 \
   -e APP_ENV=production \
-  send0moka/basis-data-konsumsi-pangan:latest
+  send0moka/sikolbia:latest
 ```
 
 #### 3. Setup SSL dengan Nginx Proxy
@@ -527,7 +534,7 @@ docker run -d \
 version: '3.8'
 services:
   app:
-    image: send0moka/basis-data-konsumsi-pangan:latest
+    image: send0moka/sikolbia:latest
     environment:
       - APP_ENV=production
     networks:
@@ -553,14 +560,14 @@ networks:
 
 ### **Docker Hub Repository**
 
-Image Docker tersedia di: [Docker Hub](https://hub.docker.com/r/send0moka/basis-data-konsumsi-pangan)
+Image Docker tersedia di: [Docker Hub](https://hub.docker.com/r/send0moka/sikolbia)
 
 ```bash
 # Pull latest version
-docker pull send0moka/basis-data-konsumsi-pangan:latest
+docker pull send0moka/sikolbia:latest
 
 # Pull specific version
-docker pull send0moka/basis-data-konsumsi-pangan:v1.0.0
+docker pull send0moka/sikolbia:v1.0.0
 ```
 
 ### **Environment Variables untuk Production**
@@ -754,14 +761,14 @@ Dokumentasi lengkap API ML tersedia di:
 
 ### **Docker Hub:**
 
-Image Docker tersedia di: [Docker Hub Repository](https://hub.docker.com/r/send0moka/basis-data-konsumsi-pangan)
+Image Docker tersedia di: [Docker Hub Repository](https://hub.docker.com/r/send0moka/sikolbia)
 
 ```bash
 # Pull latest image
-docker pull send0moka/basis-data-konsumsi-pangan:latest
+docker pull send0moka/sikolbia:latest
 
 # Pull specific version
-docker pull send0moka/basis-data-konsumsi-pangan:v1.0.0
+docker pull send0moka/sikolbia:v1.0.0
 ```
 
 ### **API Endpoints:**
@@ -793,8 +800,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Jika Anda mengalami masalah atau memiliki pertanyaan:
 
 1. **Cek bagian Troubleshooting** di atas
-2. **Buat Issue** di [GitHub Issues](https://github.com/send0moka/basis-data-konsumsi-pangan/issues)
-3. **Diskusi** di [GitHub Discussions](https://github.com/send0moka/basis-data-konsumsi-pangan/discussions)
+2. **Buat Issue** di [GitHub Issues](https://github.com/send0moka/sikolbia/issues)
+3. **Diskusi** di [GitHub Discussions](https://github.com/send0moka/sikolbia/discussions)
 
 ---
 

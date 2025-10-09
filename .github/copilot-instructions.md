@@ -1,6 +1,6 @@
 ## Quick orientation for AI code-assistants
 
-This repository is a Laravel 12 + Livewire 3 web app with a separate FastAPI ML service. The goal of edits should be to preserve the app's integration points (routes, Livewire components, ML API) and follow existing conventions in code and deployment.
+This repository is **SIKOLBIA** (Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat) - a Laravel 12 + Livewire 3 web app with a separate FastAPI ML service. The system integrates 5 main modules: food consumption, land management, climate optimization, seeds & fertilizers, and address database. The goal of edits should be to preserve the app's integration points (routes, Livewire components, ML API) and follow existing conventions in code and deployment.
 
 Key components (quick map):
 - Laravel app: `app/` (controllers, Livewire components in `app/Livewire`, models in `app/Models`, services in `app/Services`). See `routes/` for route naming and grouping conventions.

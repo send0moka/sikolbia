@@ -78,10 +78,10 @@
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-36">
             <div class="text-center">
                 <h1 class="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-                    Basis Data Konsumsi Pangan
+                    SIKOLBIA
                 </h1>
                 <p class="text-xl md:text-2xl mb-8 text-[#efefa4] drop-shadow-md">
-                    Sistem Informasi Ketersediaan dan Konsumsi Pangan Indonesia
+                    Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="#about" 
@@ -129,8 +129,8 @@
                     Tentang Sistem
                 </h2>
                 <p class="text-xl text-neutral-700 max-w-3xl mx-auto font-medium">
-                    Basis Data Konsumsi Pangan adalah sistem informasi terintegrasi yang menyediakan 
-                    data komprehensif tentang ketersediaan dan konsumsi pangan di Indonesia
+                    SIKOLBIA adalah sistem informasi terintegrasi yang menyediakan 
+                    data komprehensif tentang konsumsi pangan, lahan pertanian, iklim, benih & pupuk, serta alamat di Indonesia
                 </p>
             </div>
 
