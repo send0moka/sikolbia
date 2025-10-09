@@ -27,7 +27,7 @@ class ChatbotController extends Controller
             }
 
             // Truncate context to reduce risk of provider limits
-            $safeContext = $this->truncateContext($context, 9000, 80);
+            $safeContext = $this->truncateContext($context, 7000, 60);
 
             try {
                 $prompt = $this->getRAGPrompt($safeContext, $userMessage);

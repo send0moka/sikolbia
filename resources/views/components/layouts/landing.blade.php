@@ -116,7 +116,7 @@
                             <div class="relative h-16 flex items-center" x-data="{ open: false }">
                                 <button @click="open = !open" 
                                         class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
-                                    Pertanian
+                                    Data Non Komoditas Pertanian
                                     <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
@@ -126,6 +126,10 @@
                                      @click.outside="open = false"
                                      class="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                     <div class="py-1">
+                                        <a href="{{ route('pertanian.daftar-alamat') }}"
+                                           class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
+                                            Daftar Alamat
+                                        </a>
                                         <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Benih dan Pupuk
@@ -137,10 +141,6 @@
                                         <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Lahan
-                                        </a>
-                                        <a href="{{ route('pertanian.daftar-alamat') }}"
-                                           class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
-                                            Daftar Alamat
                                         </a>
                                     </div>
                                 </div>

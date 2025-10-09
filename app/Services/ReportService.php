@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Central service layer for Pertanian reports (Lahan, Benih & Pupuk, Iklim OPT DPI).
+ * Central service layer for Pertanian reports in public view panel (Lahan, Benih & Pupuk, Iklim OPT DPI).
  *
  * Responsibility (phase 1): Provide unified metadata/table mapping so higher layers
  * (controllers/components) can resolve the correct tables generically.
@@ -306,13 +306,7 @@ class ReportService
                 if (!empty($years)) { $data->whereIn('d.tahun', $years); }
                 // prefer reasonable size
                 $data->orderBy('d.tahun');
-                if ($isMonthly) {
-                    // Ensure month progression so samples cover more than just January
-                    $data->orderBy('b.id');
-                }
-                // Raise limit for monthly datasets to increase chance of multi-month coverage
-                $limit = $isMonthly ? 120 : 25;
-                $dataRows = $data->limit($limit)->get();
+                $dataRows = $data->limit(25)->get();
                 foreach ($dataRows as $r) {
                     $line = strtoupper($module).' | '.($r->wilayah ?? '-') .' | '. ($r->variabel ?? '-') .' | '. ($r->klasifikasi ?? '-') .' | '. ($r->tahun ?? '-');
                     if ($isMonthly) { $line .= ' | '.($r->bulan ?? '-'); }
