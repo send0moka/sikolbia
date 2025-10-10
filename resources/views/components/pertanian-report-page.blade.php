@@ -695,9 +695,122 @@
                 <main class="flex-1 p-4 overflow-y-auto space-y-4 min-h-0" x-ref="chatScroll">
                     <template x-for="(chat, index) in conversation" :key="index">
                         <div class="flex" :class="chat.sender === 'user' ? 'justify-end' : 'justify-start'">
-                            <p class="max-w-[80%] inline-block p-3 rounded-lg text-sm" 
-                               :class="chat.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-neutral-200 text-neutral-800'" 
-                               x-html="chat.text"></p>
+                            <!-- Text bubble -->
+                            <template x-if="!chat.type || chat.type === 'text'">
+                                <p class="max-w-[80%] inline-block p-3 rounded-lg text-sm"
+                                   :class="chat.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-neutral-200 text-neutral-800'"
+                                   x-html="chat.text"></p>
+                            </template>
+
+                            <!-- Options bubble (single select) -->
+                            <template x-if="chat.type === 'options'">
+                                <div class="max-w-[90%] bg-neutral-200 text-neutral-800 p-3 rounded-lg">
+                                    <p class="text-sm font-medium mb-2" x-text="chat.title || 'Pilih salah satu:'"></p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="opt in chat.options" :key="opt.value">
+                                            <button type="button" class="px-3 py-1.5 rounded-full text-sm bg-white hover:bg-blue-50 border border-neutral-300"
+                                                    @click="handleOption(index, opt)">
+                                                <span x-text="opt.label"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="text-sm text-neutral-700 underline" @click="stepBack()">Kembali satu langkah</button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Checklist bubble (multi select with confirm) -->
+                            <template x-if="chat.type === 'checklist'">
+                                <div class="max-w-[90%] bg-neutral-200 text-neutral-800 p-3 rounded-lg">
+                                    <p class="text-sm font-medium mb-2" x-text="chat.title || 'Pilih beberapa:'"></p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto">
+                                        <template x-for="opt in chat.options" :key="opt.value">
+                                            <label class="flex items-center gap-2 p-2 rounded-md bg-white hover:bg-blue-50 border">
+                                                <input type="checkbox" class="form-checkbox text-blue-600"
+                                                       :checked="chat.selected?.includes(opt.value)"
+                                                       @change="toggleChecklist(chat, opt.value)">
+                                                <span class="text-sm" x-text="opt.label"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                    <div class="flex justify-between items-center gap-2 mt-3">
+                                        <button type="button" class="text-sm text-neutral-700 underline" @click="stepBack()">Kembali</button>
+                                        <div class="flex gap-2">
+                                            <button type="button" class="text-sm text-neutral-700 underline" @click="clearChecklist(chat)">Bersihkan</button>
+                                            <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700"
+                                                    @click="confirmChecklist(index)">Lanjut</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Table preview bubble -->
+                            <template x-if="chat.type === 'table'">
+                                <div class="max-w-[95%] bg-white text-neutral-800 p-3 rounded-lg border overflow-x-auto">
+                                    <p class="text-sm font-medium mb-2" x-text="chat.title || 'Hasil pratinjau'">Hasil pratinjau</p>
+                                    <!-- Minimal meta summary -->
+                                    <div class="text-[13px] text-neutral-500 mb-2 space-y-0.5">
+                                        <div x-show="chat.meta?.module"><span class="font-medium">Modul:</span> <span x-text="chat.meta.module"></span></div>
+                                        <div x-show="chat.meta?.topik"><span class="font-medium">Topik:</span> <span x-text="chat.meta.topik"></span></div>
+                                        <div x-show="chat.meta?.variabel"><span class="font-medium">Variabel:</span> <span x-text="chat.meta.variabel"></span></div>
+                                        <div x-show="chat.meta?.klasifikasi"><span class="font-medium">Klasifikasi:</span> <span x-text="chat.meta.klasifikasi"></span></div>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-[640px] text-xs border-collapse">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border px-2 py-1 bg-neutral-50 whitespace-nowrap">Wilayah</th>
+                                                    <template x-if="Array.isArray(chat.results?.headers) && chat.results.headers.length">
+                                                        <template x-for="(h, cIdx) in chat.results.headers[chat.results.headers.length - 1]" :key="'h-'+cIdx">
+                                                            <th class="border px-2 py-1 bg-neutral-50 whitespace-nowrap" x-text="h.name"></th>
+                                                        </template>
+                                                    </template>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template x-for="(row, r) in (chat.results?.rows || []).slice(0, 8)" :key="'row-'+r">
+                                                    <tr>
+                                                        <td class="border px-2 py-1 font-medium" x-text="row.wilayah"></td>
+                                                        <template x-for="(v, i) in (row.values || []).slice(0, (chat.results?.headers?.[chat.results.headers.length-1]?.length || row.values?.length || 0))" :key="'cell-'+r+'-'+i">
+                                                            <td class="border px-2 py-1 text-right" x-text="v !== null && v !== undefined ? (typeof v === 'number' ? v.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v) : '-' "></td>
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-xs text-neutral-600 mt-2" x-show="(chat.results?.rows || []).length > 8">Ditampilkan 8 baris pertama.</div>
+                                    <div class="flex justify-end gap-2 mt-3">
+                                        <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-green-600 text-white hover:bg-green-700"
+                                                @click="saveWizardResult(chat)">Simpan ke Panel</button>
+                                        <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-neutral-700 text-white hover:bg-neutral-800"
+                                                @click="chatOpen=false; $nextTick(()=>selectStoredResult(storedResults.length-1))" x-show="storedResults.length>0">Buka Panel</button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Summary preview bubble -->
+                            <template x-if="chat.type === 'summary'">
+                                <div class="max-w-[95%] bg-white text-neutral-800 p-3 rounded-lg border">
+                                    <p class="text-sm font-medium mb-2">Ringkasan Hasil</p>
+                                    <div class="text-[13px] text-neutral-500 mb-2 space-y-0.5">
+                                        <div x-show="chat.meta?.module"><span class="font-medium">Modul:</span> <span x-text="chat.meta.module"></span></div>
+                                        <div x-show="chat.meta?.topik"><span class="font-medium">Topik:</span> <span x-text="chat.meta.topik"></span></div>
+                                        <div x-show="chat.meta?.variabel"><span class="font-medium">Variabel:</span> <span x-text="chat.meta.variabel"></span></div>
+                                        <div x-show="chat.meta?.klasifikasi"><span class="font-medium">Klasifikasi:</span> <span x-text="chat.meta.klasifikasi"></span></div>
+                                    </div>
+                                    <ul class="list-disc pl-5 text-sm text-neutral-700 space-y-1">
+                                        <template x-for="(line, i) in (chat.summaryLines || [])" :key="'sum-'+i">
+                                            <li x-text="line"></li>
+                                        </template>
+                                    </ul>
+                                    <div class="flex justify-end gap-2 mt-3">
+                                        <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700" @click="showAsTable(chat)">Tampilkan Tabel</button>
+                                        <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-green-600 text-white hover:bg-green-700" @click="saveWizardResult(chat)">Simpan ke Panel</button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
                     <div x-show="isLoading" class="flex justify-start">
@@ -708,6 +821,22 @@
                     
                 </main>
 
+                <!-- In-panel Reset Confirmation Modal -->
+                <div x-show="showChatResetConfirm" x-cloak class="absolute inset-0 z-20 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-black/30" @click="cancelResetConfirm()"></div>
+                    <div class="relative bg-white rounded-lg shadow-lg border w-[92%] max-w-sm p-4">
+                        <div class="flex items-start justify-between">
+                            <h4 class="font-semibold text-neutral-900">Mulai Ulang Percakapan?</h4>
+                            <button class="text-neutral-500 hover:text-neutral-800" @click="cancelResetConfirm()">&times;</button>
+                        </div>
+                        <p class="text-sm text-neutral-600 mt-2">Tindakan ini akan menghapus histori chat yang sedang tampil. Anda yakin ingin melanjutkan?</p>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button" class="px-3 py-1.5 rounded-md text-sm border hover:bg-neutral-50" @click="cancelResetConfirm()">Batal</button>
+                            <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-red-600 text-white hover:bg-red-700" @click="confirmReset()">Mulai Ulang</button>
+                        </div>
+                    </div>
+                </div>
+
                 <footer class="p-4 border-t flex-shrink-0">
                     <div class="flex flex-col gap-2">
                         <form @submit.prevent="sendMessage" class="flex gap-2">
@@ -715,13 +844,9 @@
                             <button type="submit" :disabled="isLoading" class="bg-blue-600 text-white rounded-md px-4 disabled:bg-blue-300">Kirim</button>
                         </form>
                         <div class="flex justify-between items-center">
-                            <button type="button" @click="fetch('/api/chatbot/reset', {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')}})
-                                                        .catch(() => {})
-                                                        .finally(() => { conversation = [
-                                                        { sender: 'bot', text: 'Selamat datang! Data apa yang ingin Anda cari?' },
-                                                        { sender: 'bot', text: 'Data yang tersedia: Lahan, Benih & Pupuk, serta Iklim & OPT.' }
-                                                        ]; userMessage=''; });"
+                            <button type="button" @click="openResetConfirm()"
                             class="text-sm text-neutral-600 hover:text-neutral-900 underline">Mulai Ulang</button>
+                            <div class="text-xs text-neutral-500">Atau gunakan alur pandu di atas.</div>
                         </div>
                     </div>
                 </footer>
