@@ -236,12 +236,16 @@
                     <div x-data="{ open: false }">
                         <button @click="open = !open" 
                                 class="w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 flex justify-between items-center transition-colors">
-                            Pertanian
+                            Data Non Komoditas Pertanian
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="pl-6 space-y-1 bg-[#efefa4]/10">
+                            <a href="{{ route('pertanian.daftar-alamat') }}"
+                                 class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
+                                Daftar Alamat
+                            </a>
                             <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Benih dan Pupuk
@@ -253,10 +257,6 @@
                             <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                  class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Lahan
-                            </a>
-                            <a href="{{ route('pertanian.daftar-alamat') }}"
-                                 class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
-                                Daftar Alamat
                             </a>
                         </div>
                     </div>

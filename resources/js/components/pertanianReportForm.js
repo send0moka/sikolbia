@@ -107,6 +107,16 @@ export default function pertanianReportForm(config) {
                 // Control beforeunload prompt during safe actions (e.g., export)
                 skipUnloadPrompt: false,
 
+                // Quick Start templates for guided flow
+                getQuickStartTemplates() {
+                    return [
+                        { id:'qs_pupuk_urea_latest', label:'Mulai Cepat: Pupuk Urea (nasional, tahun terbaru)', module:'benih-pupuk', topikMatch:'pupuk', variabelMatches:['urea'], pick:{ years:'latest', months:'all', wilayah:'top5prov', klasifikasi:'few' } },
+                        { id:'qs_pupuk_npk_latest', label:'Mulai Cepat: Pupuk NPK (nasional, tahun terbaru)', module:'benih-pupuk', topikMatch:'pupuk', variabelMatches:['npk'], pick:{ years:'latest', months:'all', wilayah:'top5prov', klasifikasi:'few' } },
+                        { id:'qs_lahan_latest', label:'Mulai Cepat: Lahan (nasional, tahun terbaru)', module:'lahan', topikMatch:'lahan', variabelMatches:['luas','lahan','total'], pick:{ years:'latest', wilayah:'top5prov', klasifikasi:'few' } },
+                        { id:'qs_iklim_hujan_latest', label:'Mulai Cepat: Curah Hujan (nasional, tahun terbaru)', module:'iklim-opt-dpi', topikMatch:'hujan', variabelMatches:['curah','hujan'], pick:{ years:'latest', months:'all', wilayah:'top5prov', klasifikasi:'few' } },
+                    ];
+                },
+
                 // Height sync helpers
                 setupHeightSync() {
                     try {
@@ -161,6 +171,13 @@ export default function pertanianReportForm(config) {
                         { value: 'iklim-opt-dpi', label: 'Iklim & OPT DPI' },
                     ]}
                 ];
+                // Quick Start intents bubble
+                try {
+                    const quickStartOpts = (this.getQuickStartTemplates() || []).map(t => ({ value:t.id, label:t.label, quickStart:true, templateId:t.id, scope:'quickstart' }));
+                    if (quickStartOpts.length) {
+                        this.conversation.push({ sender:'bot', type:'options', title:'Mulai Cepat', options: quickStartOpts });
+                    }
+                } catch(_) { /* noop */ }
                 this.$nextTick(()=>this.scrollChatToBottom());
             },
             openResetConfirm(){ this.showChatResetConfirm = true; },
@@ -242,6 +259,13 @@ export default function pertanianReportForm(config) {
             },
             // Guided chat option handlers
             async handleOption(index, opt) {
+                // Handle Quick Start templates regardless of current step
+                if (opt && opt.scope === 'quickstart' && opt.quickStart) {
+                    this.conversation.push({ sender:'user', type:'text', text: opt.label });
+                    await this.runQuickStart(opt.templateId);
+                    this.$nextTick(()=>this.scrollChatToBottom());
+                    return;
+                }
                 const step = this.wizard.step;
                 if (step === 'module') {
                     this.wizard.moduleType = opt.value;
@@ -260,6 +284,18 @@ export default function pertanianReportForm(config) {
                     this.wizard.step = 'klasifikasi';
                     this.conversation.push({ sender: 'user', type: 'text', text: opt.label });
                     await this.ensureKlasifikasis(this.wizard.moduleType, this.wizard.variabelId);
+                    // Data Dictionary bubble (variabel info)
+                    try {
+                        const variabelList = this.wizardData.variabelsByTopik[String(this.wizard.topikId)] || [];
+                        const varObj = variabelList.find(v => String(v.id) === String(this.wizard.variabelId));
+                        if (varObj) {
+                            const nama = varObj.nama || 'Variabel';
+                            const satuan = varObj.satuan ? ` (${varObj.satuan})` : '';
+                            const desc = varObj.deskripsi || varObj.keterangan || 'Deskripsi tidak tersedia.';
+                            const html = `<div><div><strong>Variabel:</strong> ${nama}${satuan}</div><div class="mt-1 text-neutral-700">${desc}</div></div>`;
+                            this.conversation.push({ sender:'bot', type:'text', text: html });
+                        }
+                    } catch(_) { /* noop */ }
                     this.loadWizardKlasifikasis();
                 } else if (step === 'waktu_tahun') {
                     // single-year quick select
@@ -305,6 +341,58 @@ export default function pertanianReportForm(config) {
                     }
                 }
                 this.$nextTick(()=>this.scrollChatToBottom());
+            },
+            async runQuickStart(templateId) {
+                const templates = this.getQuickStartTemplates();
+                const t = templates.find(x => x.id === templateId);
+                if (!t) { this.conversation.push({ sender:'bot', type:'text', text:'Template Mulai Cepat tidak tersedia.'}); return; }
+                try {
+                    this.isLoading = true;
+                    this.wizard.moduleType = t.module;
+                    await this.ensureModuleData(t.module);
+                    // Pick topik by includes
+                    const topiks = this.wizardData.topiks || [];
+                    const tMatch = (name, s) => String(name||'').toLowerCase().includes(String(s||'').toLowerCase());
+                    let topik = topiks.find(tp => tMatch(tp.nama, t.topikMatch)) || topiks[0];
+                    if (!topik) { this.conversation.push({ sender:'bot', type:'text', text:'Tidak ada topik pada modul ini.'}); return; }
+                    this.wizard.topikId = topik.id;
+                    await this.ensureVariabels(t.module, topik.id);
+                    // Pick variabel
+                    const vars = this.wizardData.variabelsByTopik[String(topik.id)] || [];
+                    let varObj = null;
+                    if (Array.isArray(t.variabelMatches)) {
+                        varObj = vars.find(v => t.variabelMatches.some(key => tMatch(v.nama, key)));
+                    }
+                    if (!varObj) varObj = vars[0];
+                    if (!varObj) { this.conversation.push({ sender:'bot', type:'text', text:'Tidak ada variabel pada topik terpilih.'}); return; }
+                    this.wizard.variabelId = varObj.id;
+                    await this.ensureKlasifikasis(t.module, varObj.id);
+                    // Klasifikasi: pick a few
+                    const klasList = this.wizardData.klasifikasisByVariabel[String(varObj.id)] || [];
+                    this.wizard.klasifikasiIds = (t.pick?.klasifikasi === 'few') ? (klasList.slice(0,3).map(k => k.id)) : [];
+                    // Years
+                    const years = this.wizardData.years || [];
+                    const latest = years.length ? Math.max(...years) : null;
+                    this.wizard.tahunIds = latest ? [latest] : (years[0] ? [years[0]] : []);
+                    // Months (not for lahan)
+                    if (t.module !== 'lahan') {
+                        const bulans = this.wizardData.bulans || [];
+                        this.wizard.bulanIds = (t.pick?.months === 'all') ? bulans.map(b => b.id) : (bulans.slice(-3).map(b => b.id));
+                    } else { this.wizard.bulanIds = []; }
+                    // Wilayah: pick top 5 provinces
+                    await this.ensureWilayahs();
+                    const provs = (this.wizardData.wilayahs || []).slice(0,5);
+                    this.wizard.provinsiIds = provs.map(p => p.id);
+                    this.wizard.kabupatenIds = [];
+                    // Inform user
+                    const label = `${(varObj.nama || 'Variabel')} — ${this.wizard.tahunIds.join(', ')}${(this.wizard.bulanIds && this.wizard.bulanIds.length)? ', semua bulan':''} (Top 5 provinsi)`;
+                    this.conversation.push({ sender:'bot', type:'text', text:`Menjalankan Mulai Cepat untuk: <strong>${label}</strong>` });
+                    await this.finishPreview();
+                } catch (e) {
+                    this.conversation.push({ sender:'bot', type:'text', text:'Gagal menjalankan Mulai Cepat: ' + (e.message || e) });
+                } finally {
+                    this.isLoading = false;
+                }
             },
             toggleChecklist(chat, value) {
                 if (!Array.isArray(chat.selected)) chat.selected = [];
