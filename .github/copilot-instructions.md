@@ -1,48 +1,43 @@
-## Quick orientation for AI code-assistants
+## SIKOLBIA — AI assistant quick brief
 
-This repository is **SIKOLBIA** (Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat) - a Laravel 12 + Livewire 3 web app with a separate FastAPI ML service. The system integrates 5 main modules: food consumption, land management, climate optimization, seeds & fertilizers, and address database. The goal of edits should be to preserve the app's integration points (routes, Livewire components, ML API) and follow existing conventions in code and deployment.
+Laravel 12 + Livewire 3 app with a separate FastAPI ML service. Five modules: konsumsi (NBM), lahan, iklim OptDPI, benih & pupuk, dan daftar alamat. Preserve integration points (routes, Livewire, exports, ML API) and existing conventions.
 
-Key components (quick map):
-- Laravel app: `app/` (controllers, Livewire components in `app/Livewire`, models in `app/Models`, services in `app/Services`). See `routes/` for route naming and grouping conventions.
-- Frontend assets: `resources/`, built with Vite/npm (see `package.json` and `vite.config.js`).
-- ML training & utils: `ml_models/` (read `ml_models/README.md`).
-- ML serving API: `fastapi/` — the FastAPI server (entry: `fastapi/main.py`) expects production model under `ml_models/models/nbm_production` and exposes `/health`, `/predict`, `/model/stats`.
-- Docker + compose: `Dockerfile`, `docker-compose.yml` — production/dev workflows rely heavily on these.
+Architecture map (where things live)
+- Laravel core: `app/` (controllers, Livewire in `app/Livewire`, models in `app/Models`, services in `app/Services`). Routes under `routes/` follow grouped prefixes (`admin/...`, `api/...`).
+- Frontend assets: `resources/` built by Vite/Tailwind (`package.json`, `vite.config.js`).
+- ML training: `ml_models/` (see `production_model.py`, `data_loader.py`, `train_model.py`).
+- ML serving: `fastapi/main.py` loads model from `ml_models/models/nbm_production` and exposes `/health`, `/predict`, `/model/stats`.
+- Docker: `docker-compose.yml` services `app`, `nginx` (8000), `mysql` (3306), `phpmyadmin` (8081), `redis` (6379), `fastapi-ml` (8082).
 
-Developer workflows to preserve and reuse
-- Start full stack (recommended): `docker-compose up --build -d` (then use `docker-compose exec app php artisan migrate:fresh --seed` to initialize DB).
-- Local Laravel dev: `php artisan serve`; for ML API run `./start_api.sh` (or `start_api.bat` on Windows) from repo root or use `fastapi/` Docker service.
-- Build assets: `npm run build` (dev: `npm run dev`). CI uses Node 22 (see `.github/workflows/tests.yml`).
-- Tests: `./vendor/bin/pest` or `composer run pest` (composer.json defines `pest` script). The CI workflow copies `.env.example` and runs `php artisan key:generate` before testing.
+Core workflows (commands implied; see README for full steps)
+- Full stack: `docker-compose up --build -d` → run `php artisan migrate:fresh --seed` and `php artisan key:generate` inside `app` container.
+- Local dev: Laravel `php artisan serve`; assets `npm run dev`/`build`; ML API via `./start_api.sh` or Docker `fastapi-ml`. ML base URL uses env `ML_API_URL`.
+- Tests: use Pest via `composer run pest` (script clears caches, migrates fresh, seeds `RolePermissionSeeder`).
 
-Project-specific conventions and important gotchas
-- Livewire components export data using Maatwebsite Excel. Example: `app/Livewire/Admin/IklimoptdpiReports.php` uses `IklimoptdpiReportsExport` and session-based download flows. When changing exports, update `app/Exports/*` classes.
-- Use database `deskripsi` fields for display in many reference tables (topik/variabel). Example: select and order by `deskripsi` in Livewire render methods.
-- `komoditi` codes are composed as `kode_kelompok + kode_komoditi` (e.g. kelompok `01` -> komoditi `0101`). AJAX endpoints rely on this pattern (see `routes/web.php` ketersediaan API).
-- Permissions use `spatie/laravel-permission`. Routes commonly wrap views with `permission:` middleware — preserve permission strings when renaming routes or controllers.
-- Session/Export: some exports are implemented by setting session data then redirecting to a download route (see `admin/benih-pupuk/export/*` routes). Do not remove session usage without migrating behavior.
+Project conventions and gotchas
+- Excel export pattern: Livewire + Maatwebsite Excel; session-based handoff then redirect to a download route (e.g., `admin/benih-pupuk/export/*`). Update `app/Exports/*` and keep session semantics.
+- Display fields: many reference tables use `deskripsi` for labels; select/order by `deskripsi` in UI flows.
+- Komoditi code scheme: `kode_kelompok + kode_komoditi` (e.g., `01` → `0101`). AJAX relies on this; see `routes/web.php` ketersediaan `api/komoditi` example.
+- Permissions: `spatie/laravel-permission`; keep exact `permission:` middleware strings on routes when refactoring.
 
-ML integration notes for code edits
-- FastAPI reads production model from `ml_models/models/nbm_production`. If you modify model serialization, ensure `fastapi/main.py` loader (`NBMProductionModel.load_production_model`) is updated.
-- FastAPI CORS already allows Docker host and `*` — but keep cautious changes; endpoints used by Laravel are `/health`, `/predict` and `/model/stats` (Laravel controllers call these endpoints — see `routes/web.php` for `prediksi-nbm` routes).
-- Environment variables: Docker-compose wires `REDIS_URL`, `DATABASE_URL` for the ML service. When testing locally, mirror these into the FastAPI `.env` or start script.
+Key integration points (with concrete examples)
+- NBM ML API: Laravel controller `NBMPredictionController` is wired in `routes/nbm_api.php` and `routes/web.php` under `admin/konsumsi-pangan/prediksi-nbm`. FastAPI `/predict` expects exactly 6 months of `NBMDataPoint` `{ tahun, bulan, kelompok, komoditi, kalori_hari }` and returns `{ prediction, confidence_interval, model_info }` (see `fastapi/main.py`).
+- Unified Pertanian reports + chatbot: Blade `resources/views/components/pertanian-report-page.blade.php`, JS `resources/js/components/pertanianReportForm.js`, service `app/Services/ReportService.php`. Public routes in `routes/web.php` under `prefix('pertanian')` with moduleType `lahan|benih-pupuk|iklim-opt-dpi`; compatibility APIs exist at `api/benih-pupuk`, `api/lahan`, `api/iklim-opt-dpi` (e.g., `topiks`, `variabels/{topik}`, `years`, `bulans`, `filter`, `sample-data`).
+- Ketersediaan NBMs: see `routes/web.php` → `ketersediaan/api/laporan-nbm` and `ketersediaan/api/komoditi` for the komoditi code/join behavior used by the UI.
 
-Where to look for examples
-- Example Livewire export: `app/Livewire/Admin/IklimoptdpiReports.php`
-- Route naming patterns & API endpoints: `routes/web.php` (look for `prefix('admin/...')` and `prefix('api/...')` patterns)
-- ML server & health/predict contract: `fastapi/main.py`
-- Model training & preprocessing: `ml_models/` (see `train_model.py`, `production_model.py`, `data_loader.py`)
-- Docker orchestration: `docker-compose.yml` (service names: `app`, `nginx`, `mysql`, `fastapi-ml`)
+ML service notes
+- Model path is fixed: `ml_models/models/nbm_production`. If serialization or layout changes, update `NBMProductionModel.load_production_model` and keep FastAPI aware of sequence length/features.
+- Docker sets `REDIS_URL` and `DATABASE_URL` for FastAPI; CORS already allows `*` and Docker hosts.
 
-Quick PR checklist for AI edits
-- Run or re-run migrations/seeds if DB schema changed: `php artisan migrate` / `migrate:fresh --seed`.
-- If view or route names change, update `routes/web.php` and any Livewire components referencing them.
-- If changing exports or Excel templates, update `app/Exports/*` and ensure tests or sample routes still return `xlsx` via `Excel::download`.
-- For ML changes, run `python` scripts in `ml_models/` and ensure the FastAPI loader can still load the model path `ml_models/models/nbm_production`.
-- Preserve file permission steps: storage and bootstrap/cache must stay writeable (Dockerfile and README include these steps).
+When editing
+- Touching routes or view names? Update both `routes/web.php` (and `routes/nbm_api.php` where applicable) and any Livewire components referencing them.
+- Changing exports/templates? Update `app/Exports/*` and ensure downloads still stream an `xlsx` via `Excel::download`.
+- ML contract changes? Re-run a quick `/health` and `/model/stats` check, and validate `/predict` with a 6-point payload.
 
-When in doubt
-- Read `README.md` (root) and `ml_models/README.md` first — they document expected commands and environment.
-- Prefer small, focused changes (one behavioral change per PR). Include explicit integration tests where possible (e.g., call `/health` after ML edits, sanity-check exports by invoking the export route).
+Good starting references
+- App routes and permissions: `routes/web.php`, `routes/nbm_api.php`.
+- ML contract: `fastapi/main.py`.
+- Exports pattern: `app/Livewire/Admin/IklimoptdpiReports.php` and controllers under `app/Http/Controllers/*Export*`.
+- End-to-end dev: root `README.md`, `ml_models/README.md`.
 
-If you want me to update or expand any section (more examples, test commands, CI specifics), tell me which area to expand.
+Questions or unclear areas? Tell me which module (NBM/pertanian reports/exports/ML API) to expand, and I’ll add concrete flows or test snippets next.
