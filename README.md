@@ -81,6 +81,8 @@ Cara menggunakan (singkat):
 2) Pilih “Mulai Cepat” atau ikuti alur pandu dari “Pilih Modul”
 3) Pilih tampilan hasil sebagai “Tabel” atau “Ringkasan” lalu “Simpan ke Panel” jika ingin dianalisis lebih lanjut
 
+Dokumentasi lengkap: lihat `docs/chatbot/README.md`.
+
 ## 🐳 Docker Setup Lengkap
 
 ### Persyaratan Docker:

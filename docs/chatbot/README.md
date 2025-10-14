@@ -2,6 +2,19 @@
 
 Dokumentasi fitur chatbot untuk modul pertanian (Benih & Pupuk, Lahan, Iklim & OPT DPI) yang terintegrasi ke halaman laporan berbasis komponen `pertanian-report-page.blade.php`.
 
+## 📚 Daftar Isi
+
+- [Ringkasan Fitur](#-ringkasan-fitur)
+- [Arsitektur](#-arsitektur)
+- [Alur Percakapan](#-alur-percakapan)
+- [Struktur Data Bubble](#-struktur-data-bubble-ringkas)
+- [Konfigurasi & Perilaku](#-konfigurasi--perilaku)
+- [Pengembangan & Build](#-pengembangan--build)
+- [Pengujian Manual](#-pengujian-manual-checklist)
+- [Keterbatasan](#-keterbatasan-singkat)
+- [Roadmap](#-roadmap-ringkas)
+- [Troubleshooting](#-troubleshooting)
+
 ## ✨ Ringkasan Fitur
 
 - Alur pandu (guided conversation) lintas modul: Modul → Topik → Variabel → Klasifikasi → Waktu → Wilayah → Pratinjau
