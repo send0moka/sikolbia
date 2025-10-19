@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Central service layer for Pertanian reports (Lahan, Benih & Pupuk, Iklim OPT DPI).
+ * Central service layer for Pertanian reports in public view panel (Lahan, Benih & Pupuk, Iklim OPT DPI).
  *
  * Responsibility (phase 1): Provide unified metadata/table mapping so higher layers
  * (controllers/components) can resolve the correct tables generically.
@@ -263,8 +263,23 @@ class ReportService
                 })
                 ->limit(20)
                 ->get();
+            // Prefer exact bigram/full-string matches by reordering results if present
+            $exact = [];
+            $others = [];
+            $targetNames = array_map('mb_strtolower', array_map('trim', $candidates));
+            foreach ($wilayahMatches as $row) {
+                $nm = mb_strtolower(trim((string)$row->nama));
+                if (in_array($nm, $targetNames) || in_array('provinsi '.$nm, $targetNames)) { $exact[] = $row; } else { $others[] = $row; }
+            }
+            if (!empty($exact)) { $wilayahMatches = collect(array_merge($exact, $others)); }
         }
         $wilayahIds = $wilayahMatches->pluck('id')->toArray();
+        // Expand province matches to include all their kabupaten/kota children so data rows at child level are not missed
+        $provinceIds = $wilayahMatches->whereNull('id_parent')->pluck('id')->toArray();
+        if (!empty($provinceIds)) {
+            $childIds = DB::table('wilayah')->whereIn('id_parent', $provinceIds)->pluck('id')->toArray();
+            $wilayahIds = array_values(array_unique(array_merge($wilayahIds, $childIds)));
+        }
         $wilayahNames = $wilayahMatches->pluck('nama')->unique()->values()->take(10)->toArray();
 
         // 5) Retrieve variabel matches for each target module
@@ -306,13 +321,8 @@ class ReportService
                 if (!empty($years)) { $data->whereIn('d.tahun', $years); }
                 // prefer reasonable size
                 $data->orderBy('d.tahun');
-                if ($isMonthly) {
-                    // Ensure month progression so samples cover more than just January
-                    $data->orderBy('b.id');
-                }
-                // Raise limit for monthly datasets to increase chance of multi-month coverage
-                $limit = $isMonthly ? 120 : 25;
-                $dataRows = $data->limit($limit)->get();
+                // Fetch a slightly larger sample to cover multiple kabupaten in a province
+                $dataRows = $data->limit(120)->get();
                 foreach ($dataRows as $r) {
                     $line = strtoupper($module).' | '.($r->wilayah ?? '-') .' | '. ($r->variabel ?? '-') .' | '. ($r->klasifikasi ?? '-') .' | '. ($r->tahun ?? '-');
                     if ($isMonthly) { $line .= ' | '.($r->bulan ?? '-'); }

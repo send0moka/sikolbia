@@ -34,7 +34,7 @@ return [
     | Here you may specify your OpenAI API base URL used to make requests. This
     | is needed if using a custom API endpoint. Defaults to: api.openai.com/v1
     */
-    'base_uri' => env('OPENAI_BASE_URL'),
+    'base_uri' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
 
     /*
     |--------------------------------------------------------------------------
@@ -46,4 +46,13 @@ return [
     */
 
     'request_timeout' => env('OPENAI_REQUEST_TIMEOUT', 30),
+
+    /* Model configuration is now handled in the controller.
+    |
+    | The default chat model can be specified here. This will be used if no
+    | model is specified in the request.
+    */
+    'chat_model' => env('OPENAI_CHAT_MODEL', 'gpt-5-nano'),
+
+
 ];

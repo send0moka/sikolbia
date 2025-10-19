@@ -58,7 +58,32 @@ docker run -d -p 8000:80 send0moka/sikolbia:latest
 - **API ML** FastAPI server untuk prediksi real-time
 - **Docker Ready** Deployment dengan Docker untuk production
 
-## � Docker Setup Lengkap
+## 🤖 Chatbot Asisten Data Pertanian (Baru)
+
+Chatbot membantu pengguna menelusuri data dari 3 modul pertanian dalam satu alur terpandu dan ringkas: Benih & Pupuk, Lahan, dan Iklim & OPT DPI. Fitur-fitur utamanya:
+
+- Guided conversation (alur pandu) lintas modul: pilih Modul → Topik → Variabel → Klasifikasi → Waktu → Wilayah → Pratinjau
+- Quick Start intents: opsi “Mulai Cepat” (mis. Pupuk Urea/NPK terbaru, Lahan terbaru, Curah Hujan terbaru) untuk langsung mendapatkan pratinjau tanpa banyak klik
+- Data Dictionary bubble: setelah memilih variabel, chatbot menampilkan nama, satuan, dan deskripsi singkat variabel
+- Pilihan tampilan pratinjau: “Tabel” atau “Ringkasan”; ringkasan berisi poin-poin kunci per wilayah dan tombol “Tampilkan Tabel”
+- Navigasi “Kembali satu langkah”: pengguna bisa kembali ke langkah sebelumnya dari bubble opsi maupun checklist
+- “Ingin dibantu lagi?”: setelah pratinjau, pengguna dapat melanjutkan alur pandu atau beralih ke pertanyaan bebas (free text)
+- Simpan ke Panel: hasil pratinjau dapat disimpan ke panel sisi kanan untuk dilihat lengkap (tabel/grafik) dan diekspor
+- Konfirmasi “Mulai Ulang”: tombol “Mulai Ulang” di panel chatbot memunculkan modal konfirmasi agar tidak menghapus chat secara tidak sengaja
+
+Lokasi kode terkait:
+- UI Blade: `resources/views/components/pertanian-report-page.blade.php`
+- Logika Alpine: `resources/js/components/pertanianReportForm.js`
+- Layanan & RAG: `app/Services/ReportService.php`
+
+Cara menggunakan (singkat):
+1) Klik tombol bulat chatbot di kanan bawah halaman laporan pertanian
+2) Pilih “Mulai Cepat” atau ikuti alur pandu dari “Pilih Modul”
+3) Pilih tampilan hasil sebagai “Tabel” atau “Ringkasan” lalu “Simpan ke Panel” jika ingin dianalisis lebih lanjut
+
+Dokumentasi lengkap: lihat `docs/chatbot/README.md`.
+
+## 🐳 Docker Setup Lengkap
 
 ### Persyaratan Docker:
 - **Docker Desktop** atau **Docker Engine**
@@ -147,7 +172,7 @@ sudo usermod -aG docker $USER
 # Logout dan login ulang
 ```
 
-## �📋 Prasyarat Sistem
+## 📋 Prasyarat Sistem
 
 ### Software Yang Diperlukan (untuk development lokal):
 - **PHP** 8.2 atau lebih tinggi
@@ -480,7 +505,7 @@ GET  /model/features      # Available features
 POST /model/validate      # Validate input data
 ```
 
-## � Deployment
+## 🚀 Deployment
 
 ### **Production dengan Docker**
 
@@ -603,8 +628,6 @@ MAIL_PASSWORD=your_password
 # ML API
 ML_API_URL=http://ml-api:8082
 ```
-
-## �🔧 Troubleshooting
 
 ## 🔧 Troubleshooting
 

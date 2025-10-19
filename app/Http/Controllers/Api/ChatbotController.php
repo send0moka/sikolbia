@@ -27,11 +27,16 @@ class ChatbotController extends Controller
             }
 
             // Truncate context to reduce risk of provider limits
-            $safeContext = $this->truncateContext($context, 9000, 80);
+            $safeContext = $this->truncateContext($context, 7000, 60);
 
             try {
                 $prompt = $this->getRAGPrompt($safeContext, $userMessage);
                 $model = config('openai.chat_model', env('OPENAI_CHAT_MODEL', 'gpt-5-nano'));
+                // Runtime safeguard: if config didn't pick up env (e.g., cache race), inject it.
+                if (empty(config('openai.api_key')) && env('OPENAI_API_KEY')) {
+                    config(['openai.api_key' => env('OPENAI_API_KEY')]);
+                }
+
                 $response = OpenAI::chat()->create([
                     'model' => $model,
                     'messages' => [

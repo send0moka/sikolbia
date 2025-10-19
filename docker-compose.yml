@@ -24,9 +24,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1g
+          memory: 4g
         reservations:
-          memory: 512m
+          memory: 1g
 
   nginx:
     image: nginx:alpine
@@ -51,7 +51,6 @@ services:
       MYSQL_INNODB_BUFFER_POOL_SIZE: 256M
       MYSQL_INNODB_LOG_FILE_SIZE: 64M
       MYSQL_INNODB_FLUSH_LOG_AT_TRX_COMMIT: 2
-      MYSQL_QUERY_CACHE_SIZE: 64M
     ports:
       - "3306:3306"
     volumes:
