@@ -119,6 +119,7 @@ Jehian Athaya Tsani Az Zuhry
 
 - **Tabel 1.** Penelitian Sejenis
 - **Tabel 2.** Jadwal Penelitian
+- **Tabel 3.** Struktur Data NBM Indonesia
 
 ---
 
@@ -142,29 +143,15 @@ Hasil penelitian diharapkan dapat memberikan sistem prediksi konsumsi kalori yan
 
 ### 1.1 Latar Belakang
 
-Ketahanan pangan global telah menjadi tantangan utama abad ke-21 yang memerlukan perhatian serius dari komunitas internasional. Menurut FAO (2023), sekitar 735 juta orang di dunia mengalami kelaparan pada tahun 2022, meningkat dari 768 juta pada tahun sebelumnya. Perubahan iklim, konflik geopolitik, dan dampak pandemi COVID-19 telah memperburuk situasi ketahanan pangan global (Paudel et al., 2023). Negara-negara berkembang, khususnya di Asia Tenggara, menghadapi tekanan yang lebih besar dalam mempertahankan sistem pangan yang resilient dan berkelanjutan (OECD, 2021).
+Ketahanan pangan merupakan isu kritis yang mempengaruhi stabilitas sosial, ekonomi, dan politik Indonesia. Data Global Food Security Index (GFSI) 2024 menunjukkan Indonesia menempati peringkat ke-69 dari 113 negara dengan skor 59,2, posisi yang masih tertinggal dibandingkan negara ASEAN lainnya seperti Singapura (77,4), Malaysia (70,1), dan Thailand (64,5) (Sekretariat Jendral - Kementrian Pertanian, 2024). Dengan populasi lebih dari 270 juta jiwa, Indonesia menghadapi tantangan kompleks dalam memastikan ketersediaan pangan berkelanjutan yang diperparah oleh perubahan iklim dan volatilitas harga pangan (BPS, 2023).
 
-Dalam konteks regional, Asia Tenggara merupakan wilayah dengan tingkat kerawanan pangan yang signifikan. Data Global Food Security Index (GFSI) 2024 menunjukkan bahwa rata-rata skor ketahanan pangan negara-negara ASEAN masih berada di bawah standar optimal (Sundram, 2023). Faktor-faktor seperti pertumbuhan populasi yang pesat, urbanisasi, dan degradasi lahan pertanian menjadi tantangan utama dalam menjaga stabilitas pasokan pangan regional (ASEAN Secretariat, 2024).
+Sistem prediksi konsumsi pangan yang akurat menjadi kebutuhan mendesak untuk mendukung perencanaan ketahanan pangan nasional. Metode prediksi konvensional yang saat ini digunakan Badan Pangan Nasional memiliki akurasi terbatas (MAPE 15-20%) dan tidak mampu menangkap kompleksitas pola temporal konsumsi pangan (Sarku et al., 2023). Ketidakakuratan prediksi ini berimplikasi pada kerugian ekonomi signifikan, dengan Kementerian Pertanian melaporkan kerugian Rp 2,3 triliun akibat salah alokasi sumber daya dalam program ketahanan pangan periode 2020-2022 (Kementerian Pertanian, 2023).
 
-Ketahanan pangan merupakan isu kritis yang mempengaruhi stabilitas sosial, ekonomi, dan politik suatu negara, termasuk Indonesia (Fadila & Putri, 2023). Data terbaru menunjukkan Indonesia menempati peringkat ke-69 dari 113 negara dengan skor 59,2 pada Global Food Security Index (GFSI) yang dirilis oleh Economist Intelligence Unit, posisi yang masih tertinggal dibandingkan negara-negara ASEAN lainnya seperti Singapura (77,4), Malaysia (70,1), dan Thailand (64,5) (Sekretariat Jendral - Kementrian Pertanian, 2024). Rendahnya peringkat ini mencerminkan berbagai tantangan struktural dalam sistem pangan nasional, termasuk keterbatasan infrastruktur, volatilitas harga, dan kapasitas prediksi yang masih terbatas (Rozaki, 2021).
+Data Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 dengan 41,316 records menunjukkan volatilitas konsumsi kalori yang kompleks, dengan fluktuasi dari 2.156 kkal/kapita/hari hingga 2.978 kkal/kapita/hari (Sekretariat Jendral - Kementrian Pertanian, 2024). Dataset historis ini mencakup 120 komoditas pangan dari 11 kelompok utama dengan parameter produksi, impor, ekspor, dan konsumsi kalori per kapita per hari yang memberikan foundation komprehensif untuk analisis prediktif.
 
-Dengan jumlah penduduk lebih dari 270 juta jiwa, Indonesia menghadapi tantangan kompleks dalam memastikan ketersediaan pangan yang berkelanjutan (BPS, 2023). Tantangan ini semakin diperberat oleh dampak perubahan iklim yang menyebabkan penurunan produktivitas pertanian hingga 10-25% dan meningkatkan volatilitas harga pangan (FAO, 2023). Pandemi COVID-19 juga telah memperparah situasi dengan gangguan rantai pasokan yang menyebabkan 23,2% rumah tangga Indonesia mengalami ketidakamanan pangan pada tahun 2020 (Iannone, 2023). Selain itu, fenomena El Niño dan La Niña secara periodik mempengaruhi pola curah hujan dan produksi pertanian nasional (Badan Meteorologi, Klimatologi, dan Geofisika, 2024).
+Long Short Term Memory (LSTM) sebagai varian Recurrent Neural Network telah terbukti unggul dalam time series forecasting dengan kemampuan menangkap long-term dependencies dan pola musiman kompleks (Alkahfi et al., 2024). Metode ensemble yang mengintegrasikan LSTM dengan robust regression algorithms menunjukkan peningkatan akurasi hingga 25-30% dibandingkan model tunggal (Howard & Augustine, 2025). Namun, belum ada penelitian yang menggunakan LSTM ensemble untuk prediksi konsumsi kalori agregat nasional berdasarkan data NBM Indonesia yang komprehensif.
 
-Eksplorasi awal data Neraca Bahan Makanan (NBM) Indonesia mengungkap volatilitas konsumsi kalori yang mengkhawatirkan, dengan koefisien variasi 18,3% dalam periode 2000-2024 dan fluktuasi ekstrem dari 2.156 kkal/kapita/hari (krisis 1998) hingga 2.978 kkal/kapita/hari (2019) (Sekretariat Jendral - Kementrian Pertanian, 2024). Analisis dekomposisi time series menunjukkan adanya komponen tren (R² = 0.76), komponen musiman dengan periode 12 bulan, dan komponen tidak beraturan yang mencapai 23% dari total variasi, mengindikasikan kompleksitas pola yang membutuhkan teknik pemodelan yang advanced (Susanti & Prabowo, 2023).
-
-Sistem prediksi konsumsi pangan yang akurat menjadi kebutuhan mendesak dalam mendukung pencapaian target Sustainable Development Goals (SDGs) nomor 2 tentang Zero Hunger. Metode prediksi konvensional yang saat ini digunakan Badan Pangan Nasional memiliki akurasi terbatas (MAPE 15-20%) dan tidak mampu menangkap kompleksitas pola waktu konsumsi pangan (Sarku et al., 2023). Studi komparatif menunjukkan bahwa Indonesia memiliki akurasi prediksi terendah untuk konsumsi pangan forecasting dibandingkan negara berkembang lainnya yang telah mengimplementasikan pendekatan machine learning (Asian Development Bank, 2023).
-
-Ketidakakuratan prediksi konsumsi pangan berimplikasi pada kerugian ekonomi yang signifikan. Kementerian Pertanian melaporkan kerugian Rp 2,3 triliun akibat salah alokasi sumber daya dalam program ketahanan pangan periode 2020-2022. Sebanyak 34% target tidak tercapai karena perkiraan yang terlalu rendah pada konsumsi kalori regional (Kementerian Pertanian, 2023). Kesenjangan teknologi ini berdampak pada keterlambatan respon terhadap krisis ketahanan pangan, seperti yang terjadi pada kekurangan beras 2023 yang baru terdeteksi 4 bulan setelah tren penurunan konsumsi dimulai (Sujarwo et al., 2022).
-
-Dalam era revolusi industri 4.0, penerapan teknologi artificial intelligence (AI) dan machine learning telah mentransformasi berbagai sektor, termasuk prediksi dan perencanaan pangan (Yang et al., 2025). Deep learning, khususnya algoritma neural network, telah menunjukkan kemampuan superior dalam menangani data time series yang kompleks dengan pola non-linear (Zhang et al., 2023). Long Short Term Memory (LSTM), sebagai varian dari Recurrent Neural Network (RNN), telah terbukti unggul dalam time series forecasting dengan kemampuan menangkap long term dependencies dan pola musiman yang kompleks (Alkahfi et al., 2024).
-
-Metode ensemble yang mengintegrasikan LSTM dengan algoritma machine learning lainnya telah menunjukkan peningkatan performa yang signifikan dalam berbagai domain prediksi (Howard & Augustine, 2025). Penelitian terdahulu menunjukkan bahwa pendekatan ensemble dapat mengurangi overfitting dan meningkatkan generalisasi model (Magalhães et al., 2025). Khususnya dalam agricultural forecasting, metode ensemble yang menggabungkan LSTM dengan robust regression algorithms telah mencapai akurasi yang lebih tinggi dibandingkan pendekatan model tunggal (Narkunam, 2025).
-
-Tinjauan literatur terhadap penelitian terdahulu mengungkap beberapa gap penelitian yang signifikan. Pertama, mayoritas penelitian LSTM untuk prediksi pangan berfokus pada komoditas tunggal seperti beras atau jagung, belum ada yang menggunakan data agregat konsumsi kalori nasional dari NBM (Cahyani et al., 2023; Tami & Owda, 2024). Kedua, penelitian sebelumnya umumnya menggunakan model LSTM tunggal tanpa pendekatan ensemble, padahal literatur menunjukkan bahwa metode ensemble dapat meningkatkan akurasi prediksi hingga 25-30% (Pawar et al., 2023; Raharjo et al., 2022). Ketiga, belum ada penelitian yang mengintegrasikan model LSTM ensemble dengan sistem informasi real-time berbasis arsitektur microservices untuk prediksi konsumsi pangan Indonesia (Thompson et al., 2024).
-
-Penelitian Adhany et al. (2025) menggunakan LSTM untuk prediksi produksi gandum di China dengan MAPE 12,4%, namun tidak menggunakan ensemble method dan data terbatas pada satu komoditas. Sementara itu, Sun et al. (2024) menerapkan ensemble LSTM untuk prediksi harga pangan di India dengan MAPE 9,7%, tetapi fokus pada harga bukan konsumsi kalori. Serrano et al. (2024) mengembangkan sistem prediksi konsumsi pangan Brasil menggunakan tradisional time series methods dengan MAPE 14,8%, menunjukkan potensi perbaikan dengan deep learning.
-
-Penelitian di negara berkembang lainnya menunjukkan bahwa pendekatan LSTM enhanced ensemble dapat meningkatkan akurasi prediksi konsumsi pangan dengan MAPE < 10% (Raharjo et al., 2022). Namun, penelitian tersebut menggunakan data sintetis dan belum divalidasi dengan data asli yang kompleks seperti NBM Indonesia. Data Neraca Bahan Makanan (NBM) Indonesia yang telah terakumulasi selama lebih dari 30 tahun (1993-2024) menyediakan fondasi yang kuat untuk pengembangan model prediktif berbasis machine learning ensemble yang dapat mengisi gap penelitian yang ada (Waqas et al., 2025).
+Berdasarkan latar belakang di atas, penulis mengusulkan implementasi LSTM enhanced ensemble untuk prediksi konsumsi kalori harian nasional guna mengatasi keterbatasan metode konvensional dan memberikan sistem peringatan dini berbasis machine learning yang akurat untuk mendukung pengambilan keputusan dalam perencanaan ketahanan pangan Indonesia.
 
 ### 1.2 Rumusan Masalah
 
@@ -180,25 +167,25 @@ Adapun batasan dari penelitian ini adalah sebagai berikut:
 
 a. Penelitian ini berfokus pada pengembangan model machine learning menggunakan algoritma LSTM untuk prediksi konsumsi kalori harian.
 
-b. Data yang digunakan adalah data NBM Indonesia periode 1993-2024 yang bersumber dari Badan Pangan Nasional, Badan Pusat Statistika, dan Pusat Data dan Sistem Informasi Kementerian Pertanian.
+b. Data yang digunakan adalah data NBM Indonesia periode 1993-2024 dengan total 41,316 records yang mencakup 120 komoditas pangan dari 11 kelompok, bersumber dari Badan Pangan Nasional, Badan Pusat Statistika, dan Pusat Data dan Sistem Informasi Kementerian Pertanian.
 
-c. Prediksi yang dibuat terbatas pada konsumsi kalori harian per kapita, tidak mencakup prediksi protein dan lemak.
+c. Prediksi yang dibuat terbatas pada konsumsi kalori harian agregat nasional per komoditi untuk mendukung decision support pemerintah, tidak mencakup prediksi personal atau regional.
 
-d. Implementasi sistem informasi menggunakan kerangka kerja Laravel untuk frontend web antarmuka dan FastAPI untuk backend machine learning service dengan database MySQL, dilengkapi dengan Docker containerization untuk deployment yang scalable dan Redis untuk penyimpanan cache.
+d. Sistem informasi berbasis web ditujukan untuk stakeholder pemerintah (Badan Pangan Nasional, Kementerian Pertanian) dengan arsitektur Laravel, FastAPI, dan Docker untuk national food security forecasting.
 
 e. Evaluasi model mencakup metrik RMSE, MAE, dan MAPE untuk mengukur akurasi prediksi dengan target MAPE < 10% berdasarkan standar industri dan literatur terkait.
 
-f. Penelitian ini tidak mencakup pengembangan aplikasi mobile, hanya fokus pada sistem berbasis web.
+f. Penelitian ini tidak mencakup pengembangan aplikasi mobile atau personal health tracking, hanya fokus pada national-level forecasting system.
 
 ### 1.4 Tujuan Penelitian
 
 Adapun tujuan dari penelitian ini adalah sebagai berikut:
 
-a. Mengimplementasikan model LSTM enhanced ensemble untuk prediksi konsumsi kalori harian dengan memanfaatkan data historis Neraca Bahan Makanan Indonesia dan teknik Robust preprocessing.
+a. Mengimplementasikan model LSTM enhanced ensemble untuk prediksi konsumsi kalori harian agregat nasional per komoditi dengan memanfaatkan data historis NBM Indonesia periode 1993-2024 dan teknik time-aware preprocessing untuk mencegah data leakage.
 
-b. Melakukan preprocessing dan feature engineering pada data NBM menggunakan StandardScaler dan RobustScaler untuk optimalisasi performa model ensemble dalam prediksi konsumsi kalori.
+b. Melakukan preprocessing dan feature engineering pada dataset NBM 41,316 records menggunakan StandardScaler dan RobustScaler dengan metode yang aman secara temporal untuk optimalisasi performa model ensemble.
 
-c. Mengevaluasi performa model LSTM enhanced ensemble dalam memprediksi konsumsi kalori harian menggunakan metrik evaluasi RMSE, MAE, dan MAPE dengan target akurasi MAPE < 10% berdasarkan perbandingan dari literatur terkait.
+c. Mengevaluasi performa model LSTM enhanced ensemble dalam memprediksi konsumsi kalori nasional menggunakan metrik RMSE, MAE, dan MAPE dengan target akurasi MAPE < 10% untuk mendukung decision support sistem ketahanan pangan.
 
 d. Mengintegrasikan model ensemble yang telah dilatih ke dalam sistem informasi berbasis web dengan arsitektur Laravel, FastAPI, dan Docker untuk memberikan prediksi konsumsi kalori secara real-time.
 
@@ -214,9 +201,9 @@ Penelitian ini memberikan pengalaman praktis dalam penerapan algoritma LSTM untu
 
 Penelitian ini memberikan wawasan mengenai penerapan algoritma LSTM dalam prediksi konsumsi kalori berbasis data NBM dan menyajikan informasi yang bermanfaat bagi akademisi dan praktisi yang ingin mengembangkan sistem prediksi ketahanan pangan.
 
-#### c. Bagi Masyarakat
+#### c. Bagi Pemerintah dan Masyarakat
 
-Penelitian ini membantu pemerintah dan pengambil kebijakan dalam perencanaan ketahanan pangan nasional melalui sistem peringatan dini berbasis machine learning, serta memberikan transparansi informasi prediksi ketersediaan pangan untuk meningkatkan kesadaran masyarakat tentang pentingnya ketahanan pangan.
+Penelitian ini membantu Badan Pangan Nasional, Kementerian Pertanian, dan pengambil kebijakan dalam perencanaan ketahanan pangan nasional melalui sistem peringatan dini berbasis machine learning dengan akurasi tinggi. Sistem menyediakan early warning system untuk antisipasi krisis pangan dan mendukung transparansi informasi prediksi konsumsi nasional untuk meningkatkan kesadaran publik tentang ketahanan pangan Indonesia.
 
 ---
 
@@ -474,17 +461,60 @@ Alur kerja sistem dimulai dari permintaan pengguna melalui antarmuka web Laravel
 
 ---
 
-## BAB III. METODOLOGI
+## BAB III. METODE PENELITIAN
 
-### 3.1 Pendekatan dan Jenis Penelitian
+### 3.1 Data dan Alat Penelitian
 
-Penelitian ini menggunakan pendekatan kuantitatif eksperimental dengan metode Research and Development (RnD). Pendekatan kuantitatif dipilih karena penelitian melibatkan analisis data numerik time series konsumsi kalori dan evaluasi performa model menggunakan metrik statistik (Sukarna & Ansori, 2022).
+Penelitian ini memerlukan spesifikasi data, perangkat lunak, perangkat keras, dan lingkungan pengembangan yang tepat untuk mendukung implementasi model LSTM enhanced ensemble secara optimal. Bagian ini menjelaskan secara detail komponen-komponen fundamental yang digunakan dalam pengembangan sistem prediksi konsumsi kalori berbasis machine learning, mulai dari sumber data historis NBM Indonesia hingga infrastruktur teknologi yang mendukung arsitektur microservices.
 
-Research and Development (RnD) adalah metode penelitian yang bertujuan untuk menghasilkan produk tertentu dan menguji keefektifan produk tersebut (Okpatrioka, 2023). RnD merupakan proses atau langkah-langkah untuk mengembangkan suatu produk baru atau menyempurnakan produk yang telah ada, yang dapat dipertanggungjawabkan. Dalam konteks penelitian ini, produk yang dikembangkan berupa sistem prediksi konsumsi kalori berbasis LSTM yang terintegrasi dengan antarmuka web.
+#### a. Data Penelitian
 
-Jenis penelitian ini termasuk applied research yang fokus pada penerapan praktis algoritma LSTM untuk menyelesaikan masalah nyata dalam ketahanan pangan Indonesia. Penelitian mengadopsi experimental design dengan controlled variables untuk menguji performa berbagai konfigurasi model LSTM dan membandingkannya dengan metode baseline yang saat ini digunakan.
+Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan 41.316 record transaksi NBM yang mencakup 120 komoditas pangan dari 11 kelompok utama.
 
-Tahapan RnD terdiri dari sepuluh tahap sistematis yang digambarkan pada **Gambar 2** yang mencakup proses pengembangan sistematis dari penelitian awal hingga diseminasi produk final.
+Melalui proses agregasi temporal, data transaksi individual ini menghasilkan 372 titik data time series bulanan untuk konsumsi kalori nasional (31 tahun × 12 bulan), memberikan foundation yang solid untuk pengembangan model prediksi time series. Target variabel penelitian adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
+
+Struktur data NBM yang digunakan dalam penelitian ini dapat dilihat pada **Tabel 3** yang menunjukkan format record transaksi dengan field utama meliputi tahun, bulan, kode kelompok komoditas, kode komoditas spesifik, dan nilai kalori per hari untuk setiap komoditas pangan.
+
+#### Tabel 3. Struktur Data NBM Indonesia
+
+| Tahun | Bulan | Kelompok | Komoditi | Kalori/Hari |
+|-------|-------|----------|----------|-------------|
+| 1993  | 01    | 01       | 0101     | 892.45      |
+| 1993  | 01    | 01       | 0102     | 45.12       |
+| 1993  | 01    | 02       | 0201     | 234.78      |
+| 1993  | 01    | 03       | 0301     | 123.56      |
+| 1993  | 01    | 03       | 0302     | 67.89       |
+
+#### b. Perangkat Lunak
+
+Penelitian menggunakan kombinasi teknologi untuk pengembangan sistem prediksi. Untuk pengembangan machine learning, bahasa pemrograman utama yang digunakan adalah Python 3.8+ dengan library TensorFlow/Keras untuk implementasi model LSTM, Scikit-learn untuk algoritma ensemble dan preprocessing, serta Pandas dan NumPy untuk manipulasi dan analisis data. Visualisasi data dilakukan menggunakan Matplotlib dan Seaborn.
+
+Pengembangan aplikasi web menggunakan framework Laravel 11 sebagai backend dengan Livewire 3 untuk komponen frontend yang reaktif. Database management system yang digunakan adalah MySQL 8.0, sedangkan untuk layanan machine learning inference menggunakan FastAPI sebagai microservice.
+
+Untuk deployment dan DevOps, penelitian menggunakan Docker untuk containerization dan konsistensi environment, Docker Compose untuk orkestrasi multi-service, serta Git untuk version control dan collaborative development.
+
+#### c. Perangkat Keras
+
+Pengembangan dan pengujian sistem dilakukan menggunakan laptop MSI GF63 Thin 10UC dengan prosesor Intel Core i5-10500H (6 cores, 12 logical processors) dengan base speed 2.50 GHz, memori 16 GB RAM DDR4 2933 MT/s untuk training model dan pemrosesan data, serta storage SSD KINGSTON OM8PCP3512F-AI1 kapasitas 477 GB untuk menyimpan dataset dan model artifacts. GPU NVIDIA GeForce RTX 3050 Laptop GPU dengan 4 GB dedicated memory digunakan untuk mempercepat proses training model LSTM.
+
+Untuk deployment production, sistem didesain agar dapat berjalan pada infrastruktur cloud dengan spesifikasi yang dapat disesuaikan sesuai kebutuhan load dan performance requirements.
+
+#### d. Lingkungan Pengembangan
+
+Penelitian menggunakan Visual Studio Code sebagai code editor utama dan Jupyter Notebook untuk exploratory data analysis serta prototyping. MySQL Workbench digunakan untuk desain dan manajemen database, sedangkan Postman digunakan untuk testing dan validasi API. GitHub digunakan sebagai platform hosting repository dan kolaborasi pengembangan.
+
+### 3.2 Metode Penelitian
+
+Penelitian ini menggunakan pendekatan kuantitatif eksperimental dengan metode Research and Development (RnD) yang terintegrasi dengan framework CRISP-DM untuk pengembangan model machine learning. Pendekatan kuantitatif dipilih karena penelitian melibatkan analisis data numerik time series konsumsi kalori dan evaluasi performa model menggunakan metrik statistik (Sukarna & Ansori, 2022).
+
+Research and Development (RnD) adalah metode penelitian yang bertujuan untuk menghasilkan produk tertentu dan menguji keefektifan produk tersebut (Okpatrioka, 2023). Dalam konteks penelitian ini, produk yang dikembangkan berupa sistem prediksi konsumsi kalori berbasis LSTM enhanced ensemble yang terintegrasi dengan antarmuka web untuk stakeholder pemerintah.
+
+Penelitian mengadopsi experimental design dengan controlled variables untuk menguji performa berbagai konfigurasi model LSTM dan membandingkannya dengan metode baseline. Integrasi RnD dengan CRISP-DM memungkinkan systematic approach dari business understanding hingga deployment yang sesuai dengan standar industri machine learning.
+
+Tahapan RnD yang dimodifikasi dengan integrasi CRISP-DM terdiri dari sepuluh tahap sistematis yang digambarkan pada **Gambar 2** yang mencakup proses pengembangan sistematis dari penelitian awal hingga diseminasi produk final. Metodologi ini memiliki karakteristik unik dengan feedback loops antar tahap untuk memastikan iterasi perbaikan yang kontinyu dan integrasi CRISP-DM pada tahap Early Test untuk standardisasi pengembangan model machine learning.
+
+![Kerangka Metodologi RnD](rnd_methodology_simple.svg)
+*Gambar 2. Kerangka Metodologi RnD Terintegrasi dengan CRISP-DM*
 
 Setiap tahap RnD dalam penelitian ini dijelaskan sebagai berikut:
 
@@ -508,9 +538,9 @@ Melakukan evaluasi rancangan sistem bersama pakar machine learning dan domain ex
 
 Melakukan penyempurnaan rancangan berdasarkan feedback dari tahap validasi. Revisi dapat mencakup modifikasi arsitektur model, perbaikan preprocessing pipeline, atau penyesuaian antarmuka pengguna sesuai dengan saran expert.
 
-#### f. Early Test
+#### f. Early Test (Implementasi Model LSTM Enhanced Ensemble)
 
-Tahap ini merupakan implementasi lengkap model LSTM enhanced ensemble dengan metodologi CRISP-DM. Detail tahapan implementasi LSTM akan dijelaskan pada subbab 3.2. Pengujian dilakukan terhadap performa model menggunakan data training dan validation dengan metrik evaluasi RMSE, MAE, dan MAPE.
+Tahap ini merupakan implementasi lengkap model LSTM enhanced ensemble dengan metodologi CRISP-DM yang diintegrasikan dalam kerangka RnD. Implementasi mengikuti fase-fase CRISP-DM secara systematic untuk memastikan structured progression dari data understanding hingga model evaluation. Pengujian dilakukan terhadap performa model menggunakan data training dan validation dengan metrik evaluasi RMSE, MAE, dan MAPE.
 
 #### g. Product Revision
 
@@ -528,11 +558,7 @@ Melakukan penyempurnaan akhir sistem berdasarkan evaluasi dari uji coba lapangan
 
 Menyusun dokumentasi lengkap sistem, panduan penggunaan, dan laporan penelitian. Persiapan untuk knowledge transfer dan potential adoption oleh stakeholder terkait dalam perencanaan ketahanan pangan.
 
-### 3.2 Implementasi Model LSTM Enhanced Ensemble
-
-Implementasi model LSTM enhanced ensemble dilakukan pada tahap ke-6 (Early Test) dalam kerangka RnD menggunakan metodologi CRISP-DM sebagai kerangka kerja pengembangan. CRISP-DM dipilih sebagai pendekatan sistematis untuk memastikan structured progression dari data understanding hingga model deployment (Schröer et al., 2021). **Gambar 3** mengilustrasikan fase-fase CRISP-DM yang diterapkan dalam penelitian ini, menunjukkan bagaimana setiap fase saling terhubung untuk menghasilkan model prediksi yang robust dan reliable.
-
-Tahapan implementasi LSTM mengikuti kerangka kerja CRISP-DM sebagai berikut:
+Tahapan implementasi model LSTM enhanced ensemble dalam tahap Early Test mengikuti kerangka kerja CRISP-DM yang digambarkan pada **Gambar 3**, menunjukkan systematic progression dari data understanding hingga model deployment (Schröer et al., 2021). Implementasi CRISP-DM mencakup fase-fase sebagai berikut:
 
 #### a. Business Understanding
 
@@ -550,9 +576,9 @@ Kriteria sukses ditetapkan mencakup measurable objectives untuk performa teknis 
 
 #### b. Data Understanding
 
-Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan lebih dari 41.000 record transaksi NBM yang mencakup sekitar 60+ komoditas pangan. Melalui proses agregasi, data transaksi individual ini menghasilkan 372 data points time series bulanan untuk konsumsi kalori nasional, yang memberikan pondasi yang solid untuk pengembangan model prediksi time series. Target variabel dalam penelitian ini adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
+Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan 41.316 record transaksi NBM yang mencakup 120 komoditas pangan dari 11 kelompok. Melalui proses agregasi, data transaksi individual ini menghasilkan 372 data points time series bulanan untuk konsumsi kalori nasional, yang memberikan pondasi yang solid untuk pengembangan model prediksi time series. Target variabel dalam penelitian ini adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
 
-Dataset NBM memiliki resolusi temporal bulanan dengan pola musiman yang jelas, setiap record transaksi mencakup data produksi, impor, ekspor, dan utilisasi untuk masing-masing dari sekitar 60 komoditas pangan. Perhitungan konsumsi kalori menggunakan formula NBM:
+Dataset NBM memiliki resolusi temporal bulanan dengan pola musiman yang jelas, setiap record transaksi mencakup data produksi, impor, ekspor, dan utilisasi untuk masing-masing dari 120 komoditas pangan. Perhitungan konsumsi kalori menggunakan formula NBM:
 
 ```
 Kalori per kapita per hari = [Konsumsi per kapita (kg/hari) × Faktor Konversi Energi (kkal/100g)] / 10    ...(30)
