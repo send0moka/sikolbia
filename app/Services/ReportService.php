@@ -221,56 +221,69 @@ class ReportService
         if ($msg === '') return '';
 
         $lower = mb_strtolower($msg, 'UTF-8');
-        // 1) Detect module candidates by keywords
-        $moduleKeywords = [
-            'lahan' => ['lahan','luas','panen','tanam','sawah'],
-            'benih-pupuk' => ['benih','pupuk','subsidi','penyaluran'],
-            'iklim-opt-dpi' => ['iklim','opt','dpi','hama','penyakit','cuaca']
-        ];
+
+        // Prefer deterministic extraction via StructuredSearchService; fallback to heuristics
+        $structured = null;
+        try {
+            $ss = new \App\Services\StructuredSearchService();
+            $structured = $ss->search($msg);
+        } catch (\Throwable $e) { /* ignore and use fallback below */ }
+
+        // 1) Detect module candidates
         $targetModules = [];
-        foreach ($moduleKeywords as $mod => $words) {
-            foreach ($words as $w) {
-                if (str_contains($lower, $w)) { $targetModules[$mod] = true; break; }
+        if (is_array($structured) && !empty($structured['modules'] ?? [])) {
+            foreach ($structured['modules'] as $m) { $targetModules[$m] = true; }
+        } else {
+            $moduleKeywords = [
+                'lahan' => ['lahan','luas','panen','tanam','sawah'],
+                'benih-pupuk' => ['benih','pupuk','subsidi','penyaluran'],
+                'iklim-opt-dpi' => ['iklim','opt','dpi','hama','penyakit','cuaca']
+            ];
+            foreach ($moduleKeywords as $mod => $words) {
+                foreach ($words as $w) { if (str_contains($lower, $w)) { $targetModules[$mod] = true; break; } }
             }
-        }
-        if (empty($targetModules)) {
-            // Unknown: try all
-            $targetModules = ['lahan' => true, 'benih-pupuk' => true, 'iklim-opt-dpi' => true];
+            if (empty($targetModules)) { $targetModules = ['lahan' => true, 'benih-pupuk' => true, 'iklim-opt-dpi' => true]; }
         }
 
-        // 2) Extract years
+        // 2) Years
         $years = [];
-        if (preg_match_all('/\b(19\d{2}|20\d{2})\b/', $msg, $m)) {
-            $years = array_values(array_unique(array_map('intval', $m[1])));
+        if (is_array($structured) && !empty($structured['years'] ?? [])) {
+            $years = array_values(array_unique(array_map('intval', $structured['years'])));
+        } else {
+            if (preg_match_all('/\b(19\d{2}|20\d{2})\b/', $msg, $m)) { $years = array_values(array_unique(array_map('intval', $m[1]))); }
         }
 
-        // 3) Build keyword tokens (unigrams + bigrams) for LIKE searches
-        $tokens = preg_split('/[^\p{L}\p{N}]+/u', $lower, -1, PREG_SPLIT_NO_EMPTY);
-        $tokens = array_values(array_filter($tokens, fn($t) => mb_strlen($t, 'UTF-8') >= 3));
-        $bigrams = [];
-        for ($i=0; $i < count($tokens)-1; $i++) { $bigrams[] = $tokens[$i].' '.$tokens[$i+1]; }
+        // 3) Candidates for LIKE search (tokens + bigrams)
+        if (is_array($structured) && (!empty($structured['tokens'] ?? []) || !empty($structured['bigrams'] ?? []))) {
+            $tokens = array_values(array_filter($structured['tokens'] ?? [], fn($t) => mb_strlen((string)$t,'UTF-8') >= 3));
+            $bigrams = array_values($structured['bigrams'] ?? []);
+        } else {
+            $tokens = preg_split('/[^\p{L}\p{N}]+/u', $lower, -1, PREG_SPLIT_NO_EMPTY);
+            $tokens = array_values(array_filter($tokens, fn($t) => mb_strlen($t, 'UTF-8') >= 3));
+            $bigrams = [];
+            for ($i=0; $i < count($tokens)-1; $i++) { $bigrams[] = $tokens[$i].' '.$tokens[$i+1]; }
+        }
         $candidates = array_values(array_unique(array_merge($bigrams, $tokens)));
 
         // 4) Retrieve wilayah matches
+        // 4) Wilayah matches
         $wilayahMatches = collect();
-        if (!empty($candidates)) {
+        if (is_array($structured) && !empty($structured['wilayah_hits'] ?? [])) {
+            // Convert array rows to collection of stdClass for downstream compatibility
+            $wilayahMatches = collect(array_map(function($r){
+                return (object) ['id'=>$r['id'] ?? null, 'nama'=>$r['nama'] ?? '', 'id_parent'=>$r['id_parent'] ?? null];
+            }, $structured['wilayah_hits']))->take(20);
+        } elseif (!empty($candidates)) {
             $wilayahMatches = DB::table('wilayah')
                 ->select('id','nama','id_parent')
-                ->where(function($q) use ($candidates){
-                    foreach ($candidates as $c) {
-                        $q->orWhere('nama', 'LIKE', '%'.$c.'%');
-                    }
-                })
+                ->where(function($q) use ($candidates){ foreach ($candidates as $c) { $q->orWhere('nama', 'LIKE', '%'.$c.'%'); } })
                 ->limit(20)
                 ->get();
-            // Prefer exact bigram/full-string matches by reordering results if present
+            // Reorder exact matches first
             $exact = [];
             $others = [];
             $targetNames = array_map('mb_strtolower', array_map('trim', $candidates));
-            foreach ($wilayahMatches as $row) {
-                $nm = mb_strtolower(trim((string)$row->nama));
-                if (in_array($nm, $targetNames) || in_array('provinsi '.$nm, $targetNames)) { $exact[] = $row; } else { $others[] = $row; }
-            }
+            foreach ($wilayahMatches as $row) { $nm = mb_strtolower(trim((string)$row->nama)); if (in_array($nm, $targetNames) || in_array('provinsi '.$nm, $targetNames)) { $exact[]=$row; } else { $others[]=$row; } }
             if (!empty($exact)) { $wilayahMatches = collect(array_merge($exact, $others)); }
         }
         $wilayahIds = $wilayahMatches->pluck('id')->toArray();
@@ -282,16 +295,21 @@ class ReportService
         }
         $wilayahNames = $wilayahMatches->pluck('nama')->unique()->values()->take(10)->toArray();
 
-        // 5) Retrieve variabel matches for each target module
+        // 5) Retrieve variabel matches for each target module (prefer structured hits)
         $variabelByModule = [];
         foreach (array_keys($targetModules) as $module) {
             try {
                 $tables = $this->getTableMap($module);
                 $vQuery = DB::table($tables['variabel'])->select('id', DB::raw('deskripsi as nama'));
-                if (!empty($candidates)) {
-                    $vQuery->where(function($q) use ($candidates){
-                        foreach ($candidates as $c) { $q->orWhere('deskripsi', 'LIKE', '%'.$c.'%'); }
-                    });
+                $structuredIds = [];
+                if (is_array($structured) && !empty($structured['variabel_hits'][$module] ?? [])) {
+                    $structuredIds = array_values(array_map(fn($r)=> (int)($r['id'] ?? 0), $structured['variabel_hits'][$module]));
+                    $structuredIds = array_values(array_filter($structuredIds, fn($id)=> $id>0));
+                }
+                if (!empty($structuredIds)) {
+                    $vQuery->whereIn('id', $structuredIds);
+                } elseif (!empty($candidates)) {
+                    $vQuery->where(function($q) use ($candidates){ foreach ($candidates as $c) { $q->orWhere('deskripsi', 'LIKE', '%'.$c.'%'); } });
                 }
                 $variabelByModule[$module] = $vQuery->limit(20)->get();
             } catch (\Throwable $e) {

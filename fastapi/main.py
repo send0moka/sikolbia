@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Any, Optional
@@ -17,7 +17,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'ml_models'))
 from ml_models.production_model import NBMProductionModel
 from ml_models.data_loader import DataLoader
 from ml_models.data_preprocessing_monthly import DataPreprocessorMonthly
-from embeddings_index import SemanticIndex
 
 # Configure logging - disabled for production
 logging.basicConfig(
@@ -57,7 +56,6 @@ app.add_middleware(
 # Global model instance
 production_model = None
 model_info = None
-semantic_index: Optional[SemanticIndex] = None
 
 # Pydantic models for request/response
 class NBMDataPoint(BaseModel):
@@ -114,8 +112,8 @@ class ModelStatsResponse(BaseModel):
 # Startup event to load model
 @app.on_event("startup")
 async def startup_event():
-    """Load the production model on startup and prepare semantic index"""
-    global production_model, model_info, semantic_index
+    """Load the production model on startup"""
+    global production_model, model_info
     
     try:
         logger.info("Loading NBM production model...")
@@ -142,33 +140,7 @@ async def startup_event():
         logger.info("✅ NBM production model loaded successfully!")
         logger.info(f"Model performance: {model_info.get('mape_achieved', 'N/A')}")
 
-        # Initialize semantic index (best-effort)
-        try:
-            semantic_index = SemanticIndex()
-            loaded = semantic_index.load()
-            if not loaded:
-                documents = []
-                try:
-                    dl = DataLoader()
-                    # Optional: implement a method to fetch variables; fallback if not available
-                    if hasattr(dl, 'get_all_variabels_df'):
-                        var_df = dl.get_all_variabels_df()
-                        for _, row in var_df.iterrows():
-                            text = f"Variabel: {row.get('nama','')} ({row.get('satuan','')}) — Topik: {row.get('topik_nama','')} — {row.get('deskripsi','')}"
-                            documents.append({ 'text': text, 'metadata': { 'type': 'variabel', 'id': row.get('id'), 'module': row.get('module') } })
-                except Exception as e:
-                    logger.warning(f"Semantic doc seed skipped: {e}")
-                if not documents:
-                    documents = [
-                        { 'text': 'Curah hujan bulanan (mm) variabel iklim', 'metadata': { 'type':'variabel', 'id': 'seed1', 'module':'iklim-opt-dpi' }},
-                        { 'text': 'Pupuk Urea produksi dan distribusi', 'metadata': { 'type':'variabel', 'id': 'seed2', 'module':'benih-pupuk' }},
-                        { 'text': 'Luas lahan sawah per provinsi', 'metadata': { 'type':'variabel', 'id': 'seed3', 'module':'lahan' }},
-                    ]
-                semantic_index.build(documents)
-                semantic_index.save()
-            logger.info(f"✅ Semantic index ready with {semantic_index.size()} docs")
-        except Exception as e:
-            logger.error(f"Semantic index init failed: {e}")
+        
         
     except Exception as e:
         logger.error(f"Failed to load model: {str(e)}")
@@ -261,71 +233,7 @@ async def health_check():
         timestamp=datetime.now()
     )
 
-# ===== Semantic Search Models & Endpoints =====
-class SemanticSearchRequest(BaseModel):
-    query: str
-    top_k: int = 8
 
-class SemanticSearchHit(BaseModel):
-    text: str
-    score: float
-    metadata: Dict[str, Any]
-
-class SemanticSearchResponse(BaseModel):
-    results: List[SemanticSearchHit]
-    count: int
-    index_size: int
-    timestamp: datetime
-
-def _auth_token(x_token: Optional[str] = Header(default=None)):
-    token = os.environ.get('SEMANTIC_ADMIN_TOKEN')
-    if token and x_token != token:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return True
-
-@app.get("/semantic/health")
-async def semantic_health():
-    global semantic_index
-    ready = (semantic_index is not None) and semantic_index.is_ready()
-    return { 'ready': ready, 'size': (semantic_index.size() if (semantic_index and semantic_index.is_ready()) else 0) }
-
-@app.post("/semantic/search", response_model=SemanticSearchResponse)
-async def semantic_search(req: SemanticSearchRequest):
-    global semantic_index
-    if not req.query or len(req.query.strip()) == 0:
-        raise HTTPException(status_code=400, detail="Query is required")
-    if semantic_index is None or not semantic_index.is_ready():
-        raise HTTPException(status_code=503, detail="Semantic index not ready")
-    try:
-        results_raw = semantic_index.search(req.query.strip(), top_k=min(max(req.top_k,1), 20))
-        hits: List[SemanticSearchHit] = []
-        for item in results_raw:
-            meta = item.get('metadata', {})
-            text = item.get('text', '')
-            score = float(item.get('score', 0.0))
-            hits.append(SemanticSearchHit(text=text, score=score, metadata=meta))
-        return SemanticSearchResponse(results=hits, count=len(hits), index_size=semantic_index.size(), timestamp=datetime.now())
-    except Exception as e:
-        logger.error(f"Semantic search error: {e}")
-        raise HTTPException(status_code=500, detail="Semantic search failed")
-
-@app.post("/semantic/reload-index")
-async def semantic_reload(x_ok: bool = Depends(_auth_token)):
-    global semantic_index
-    try:
-        if semantic_index is None:
-            semantic_index = SemanticIndex()
-        documents = [
-            { 'text': 'Curah hujan bulanan (mm) variabel iklim', 'metadata': { 'type':'variabel', 'id': 'seed1', 'module':'iklim-opt-dpi' }},
-            { 'text': 'Pupuk Urea produksi dan distribusi', 'metadata': { 'type':'variabel', 'id': 'seed2', 'module':'benih-pupuk' }},
-            { 'text': 'Luas lahan sawah per provinsi', 'metadata': { 'type':'variabel', 'id': 'seed3', 'module':'lahan' }},
-        ]
-        semantic_index.build(documents)
-        semantic_index.save()
-        return { 'status': 'ok', 'size': semantic_index.size() }
-    except Exception as e:
-        logger.error(f"Semantic reload failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to reload index")
 
 @app.get("/model/stats", response_model=ModelStatsResponse)
 async def get_model_stats():
