@@ -84,7 +84,7 @@ class StructuredSearchService
         $moduleKeywords = [
             'lahan' => ['lahan','luas','panen','sawah','kebun','tegal','ladang','guma','irigasi','non-irigasi'],
             'benih-pupuk' => ['benih','pupuk','inbrida','hibrida','komposit','alokasi','realisasi'],
-            'iklim-opt-dpi' => ['iklim','opt','dpi','puso','terkena']
+            'iklim-opt-dpi' => ['iklim','opt','dpi','puso','terkena','hujan','curah','suhu','kelembaban','banjir','kekeringan','penyinaran'],
         ];
         $mods = [];
         foreach ($moduleKeywords as $mod => $words) {
