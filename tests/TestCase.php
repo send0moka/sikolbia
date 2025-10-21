@@ -4,10 +4,11 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesApplication;
 
 abstract class TestCase extends BaseTestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, CreatesApplication;
     
     protected function setUp(): void
     {
@@ -16,7 +17,13 @@ abstract class TestCase extends BaseTestCase
         // Ensure testing database exists
         $databasePath = database_path('testing.sqlite');
         if (!file_exists($databasePath)) {
-            touch($databasePath);
+            @touch($databasePath);
         }
+
+        // Force tests to use SQLite file regardless of .env
+        config([
+            'database.default' => 'sqlite',
+            'database.connections.sqlite.database' => $databasePath,
+        ]);
     }
 }
