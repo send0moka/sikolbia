@@ -60,6 +60,7 @@ class PertanianReportController extends Controller
                 'columnOrder' => $result['columnOrder'] ?? [],
             ]);
         } catch (ValidationException $e) {
+            // Force JSON for XHR to avoid HTML error pages
             return response()->json(['message' => 'Data input tidak valid.', 'errors' => $e->errors()], 422);
         } catch (\Throwable $e) {
             Log::error('PertanianReport filter error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);

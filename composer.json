@@ -74,10 +74,11 @@
             "@php artisan test"
         ],
         "pest": [
-            "@php artisan optimize:clear --ansi",
-            "@php artisan migrate:fresh --quiet --ansi",
-            "@php artisan db:seed --class=RolePermissionSeeder --ansi",
-            "@php artisan view:clear --ansi",
+            "@php -r \"file_exists('database/testing.sqlite') || touch('database/testing.sqlite');\"",
+            "@php artisan optimize:clear --env=testing --ansi",
+            "@php artisan migrate:fresh --env=testing --quiet --ansi",
+            "@php artisan db:seed --env=testing --class=RolePermissionSeeder --ansi",
+            "@php artisan view:clear --env=testing --ansi",
             "./vendor/bin/pest --colors=always"
         ]
     },
