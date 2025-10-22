@@ -110,6 +110,14 @@ export default function pertanianReportForm(config) {
                 // Control beforeunload prompt during safe actions (e.g., export)
                 skipUnloadPrompt: false,
 
+                // TODO(next): Enhanced incomplete query prompting
+                // - If user asks like "data benih jagung 2024 di jawa tengah":
+                //   1) Detect module benih-pupuk, variable family contains "jagung"
+                //   2) Ask: gunakan semua bulan atau pilih bulan tertentu? (implemented via waktu_bulan_choice)
+                //   3) Ask: klasifikasi apa yang diinginkan? tampilkan checklist dari variabel terpilih
+                //   4) Ask: tingkat wilayah provinsi Jawa Tengah saja, atau kabupaten tertentu? (offer provinsi vs kabupaten)
+                //   5) Proceed to preview when choices completed.
+
                 // Quick Start templates for guided flow
                 getQuickStartTemplates() {
                     return [
@@ -335,6 +343,19 @@ export default function pertanianReportForm(config) {
                         this.wizard.step = 'wilayah';
                         this.askWilayah();
                     }
+                } else if (step === 'waktu_bulan_choice') {
+                    // New step: choose all months or manual selection
+                    this.conversation.push({ sender: 'user', type: 'text', text: opt.label });
+                    if (opt.value === 'bulan_all') {
+                        const bulans = this.wizardData.bulans || [];
+                        this.wizard.bulanIds = bulans.map(b => b.id);
+                        this.wizard.step = 'wilayah';
+                        this.askWilayah();
+                    } else {
+                        // Render checklist for manual month selection
+                        this.renderBulanChecklist();
+                        this.wizard.step = 'waktu_bulan';
+                    }
                 } else if (step === 'wilayah_level') {
                     this.conversation.push({ sender: 'user', type: 'text', text: opt.label });
                     if (opt.value === 'nasional') {
@@ -368,6 +389,23 @@ export default function pertanianReportForm(config) {
                 }
                 this.$nextTick(()=>this.scrollChatToBottom());
             },
+            renderBulanChecklist() {
+                const bulans = (this.wizardData.bulans || []).map(b => ({ value: b.id, label: b.nama }));
+                this.conversation.push({ sender:'bot', type:'checklist', title:'Pilih Bulan', options: bulans, selected: [] });
+            },
+            // Helpers for fetch
+            getCsrfToken() {
+                try { return (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')) || ''; } catch (_) { return ''; }
+            },
+            async parseJsonOrText(res) {
+                const ct = res.headers.get('content-type') || '';
+                if (ct.includes('application/json')) {
+                    return await res.json();
+                }
+                const txt = await res.text();
+                // Surface first chars of HTML/text to user for easier debugging
+                throw new Error(txt?.slice(0, 200) || 'Non-JSON response');
+            },
             async applyStructuredSuggestion(moduleChoice) {
                 try {
                     const s = this.structuredSuggestion || {};
@@ -384,7 +422,7 @@ export default function pertanianReportForm(config) {
                     const years = Array.isArray(s.years) ? s.years.map(v=>parseInt(v,10)).filter(Number.isFinite) : [];
                     if (years.length) { this.wizard.tahunIds = [Math.max(...years)]; }
 
-                    // Wilayah: prefer exact phrase match in query; else first hit
+                    // Wilayah: prefer exact phrase match in query; avoid selecting many provinces by default
                     const qLower = String(s.query || '').toLowerCase();
                     const wilayahHits = Array.isArray(s.wilayah_hits) ? s.wilayah_hits : [];
                     let chosenWilayah = null;
@@ -394,13 +432,14 @@ export default function pertanianReportForm(config) {
                     }
                     if (!chosenWilayah && wilayahHits.length) { chosenWilayah = wilayahHits[0]; }
                     if (chosenWilayah) {
+                        // Set a single province; do not prefill multiple provinces
                         this.wizard.provinsiIds = [chosenWilayah.id].filter(Boolean);
                     } else {
                         this.wizard.provinsiIds = [];
                     }
                     this.wizard.kabupatenIds = [];
 
-                    // Pick best-matching variabel by query token overlap; fallback to first
+                    // Pick best-matching variabel by query token overlap; prioritize tokens present in the query (e.g., 'jagung')
                     const varsForModule = (s.variabel_hits && s.variabel_hits[chosenModule]) ? s.variabel_hits[chosenModule] : [];
                     let pickedVar = null;
                     if (Array.isArray(varsForModule) && varsForModule.length) {
@@ -418,6 +457,20 @@ export default function pertanianReportForm(config) {
                         await this.ensureKlasifikasis(chosenModule, pickedVar.id);
                         const klasList = this.wizardData.klasifikasisByVariabel[String(pickedVar.id)] || [];
                         this.wizard.klasifikasiIds = klasList.map(k => k.id);
+                    } else {
+                        // If we couldn't infer a variable, fall back to guided variable pick
+                        this.conversation.push({ sender:'bot', type:'text', text:'Tidak menemukan variabel yang cocok dari pencarian. Silakan pilih variabel.' });
+                        await this.ensureModuleData(chosenModule);
+                        // If we have at least one topik, ask user to choose variabel via wizard
+                        const topiks = this.wizardData.topiks || [];
+                        if (topiks.length) {
+                            this.wizard.topikId = topiks[0].id;
+                            await this.ensureVariabels(chosenModule, this.wizard.topikId);
+                            this.loadWizardVariabels();
+                            this.wizard.step = 'variabel';
+                            this.structuredSuggestion = null;
+                            return;
+                        }
                     }
 
                     // Months: for non-lahan, use suggestions; if none, ask user to pick
@@ -559,8 +612,12 @@ export default function pertanianReportForm(config) {
                 this.conversation.push({ sender:'bot', type:'options', title:'Atau pilih cepat satu tahun', options:[{value: latest, label: `Hanya ${latest}`} ]});
             },
             loadWizardBulans() {
-                const bulans = (this.wizardData.bulans || []).map(b => ({ value: b.id, label: b.nama }));
-                this.conversation.push({ sender:'bot', type:'checklist', title:'Pilih Bulan', options: bulans, selected: [] });
+                // Offer a quick choice before rendering month checklist
+                this.conversation.push({ sender:'bot', type:'options', title:'Gunakan semua bulan?', options:[
+                    { value:'bulan_all', label:'Ya, gunakan semua bulan' },
+                    { value:'bulan_manual', label:'Tidak, saya pilih bulan tertentu' },
+                ]});
+                this.wizard.step = 'waktu_bulan_choice';
             },
             askWilayah() {
                 // choose level first
@@ -586,10 +643,13 @@ export default function pertanianReportForm(config) {
                 this.wizard.step = 'wilayah_kabupaten';
             },
             async ensureModuleData(module){
-                // if same as page module and wizardData already has topiks, skip
-                if ((module === this.moduleType) && (this.wizardData.topiks && this.wizardData.topiks.length)) {
-                    // ensure years/bulans present
-                    return;
+                // Only skip if all critical datasets exist; otherwise fetch them
+                const hasTopiks = Array.isArray(this.wizardData.topiks) && this.wizardData.topiks.length > 0;
+                const hasYears = Array.isArray(this.wizardData.years) && this.wizardData.years.length > 0;
+                const needsBulans = module !== 'lahan';
+                const hasBulans = Array.isArray(this.wizardData.bulans) && this.wizardData.bulans.length > 0;
+                if ((module === this.moduleType) && hasTopiks && hasYears && (!needsBulans || hasBulans)) {
+                    return; // everything present
                 }
                 try {
                     this.isLoading = true;
@@ -619,8 +679,17 @@ export default function pertanianReportForm(config) {
             async ensureKlasifikasis(module, variabelId){
                 const key = String(variabelId);
                 if (this.wizardData.klasifikasisByVariabel[key]) return;
-                const res = await fetch(`/api/${module}/klasifikasis`, { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')}, body: JSON.stringify({ variabel_ids: [variabelId] })});
-                const list = await res.json();
+                const res = await fetch(`/api/${module}/klasifikasis`, {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({ variabel_ids: [variabelId] })
+                });
+                const list = await this.parseJsonOrText(res);
                 this.wizardData.klasifikasisByVariabel[key] = list || [];
             },
             async ensureWilayahs(){
@@ -642,13 +711,26 @@ export default function pertanianReportForm(config) {
                     provinsi_ids: this.wizard.provinsiIds,
                     kabupaten_ids: this.wizard.kabupatenIds,
                 };
+                // Client-side sanity checks to avoid server validation redirects/HTML
+                if (!this.wizard.variabelId) { this.conversation.push({ sender:'bot', type:'text', text:'Variabel belum dipilih.' }); return; }
+                if (!Array.isArray(this.wizard.klasifikasiIds) || this.wizard.klasifikasiIds.length === 0) { this.conversation.push({ sender:'bot', type:'text', text:'Pilih minimal satu klasifikasi.' }); return; }
+                if (!Array.isArray(this.wizard.tahunIds) || this.wizard.tahunIds.length === 0) { this.conversation.push({ sender:'bot', type:'text', text:'Pilih minimal satu tahun.' }); return; }
+                if (!isLahan && (!Array.isArray(this.wizard.bulanIds) || this.wizard.bulanIds.length === 0)) { this.conversation.push({ sender:'bot', type:'text', text:'Pilih minimal satu bulan.' }); return; }
+                const wilayahCount = (config.provinsi_ids?.length || 0) + (config.kabupaten_ids?.length || 0);
+                if (wilayahCount === 0) { this.conversation.push({ sender:'bot', type:'text', text:'Pilih minimal satu wilayah.' }); return; }
                 try {
                     this.isLoading = true;
                     const res = await fetch(`/pertanian/${this.wizard.moduleType}/filter`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': this.getCsrfToken(),
+                        },
                         body: JSON.stringify({ selections, config })
                     });
-                    const data = await res.json();
+                    const data = await this.parseJsonOrText(res);
                     if (!res.ok) throw new Error(data?.message || 'Gagal memuat pratinjau');
                     // Build minimal meta text for preview
                     const topikObj = (this.wizardData.topiks || []).find(t => String(t.id) === String(this.wizard.topikId));
@@ -1192,8 +1274,15 @@ export default function pertanianReportForm(config) {
                                         const modules = (sjson.modules || []).join(', ');
                                         const years = (sjson.years || []).join(', ');
                                         const months = (sjson.months || []).map(m => m.nama).slice(0,6).join(', ');
-                                        const wilayahs = (sjson.wilayah_hits || []).map(w => w.nama).slice(0,6).join(', ');
-                                        const varPreview = Object.entries(sjson.variabel_hits || {}).map(([mod, arr]) => `${mod}: ${(arr||[]).map(v=>v.nama).slice(0,5).join(', ')}`).join(' | ');
+                                        // Prefer exact wilayah match in summary
+                                        const qLower = String(sjson.query || '').toLowerCase();
+                                        const wilayahList = (sjson.wilayah_hits || []);
+                                        const exact = wilayahList.find(w => qLower.includes(String(w.nama||'').toLowerCase()));
+                                        const wilayahs = exact ? exact.nama : wilayahList.slice(0,3).map(w => w.nama).join(', ');
+                                        // Only show up to 3 variable names for the chosen module to reduce noise
+                                        const chosenMod = (sjson.modules || [])[0];
+                                        const varArr = chosenMod ? ((sjson.variabel_hits||{})[chosenMod]||[]) : [];
+                                        const varPreview = varArr.slice(0,3).map(v=>v.nama).join(', ');
                                         const lines = [
                                             modules ? `Modul: ${modules}` : null,
                                             years ? `Tahun: ${years}` : null,
