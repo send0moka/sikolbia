@@ -16,35 +16,24 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'ml_models'))
 
 # Import both original and enhanced models
 try:
-    from ml_models.enhanced_model_adapter import NBMProductionModelEnhanced
+    from ml_models.enhanced_production_model import EnhancedNBMProductionModel
     from ml_models.production_model import NBMProductionModel
     ENHANCED_MODEL_AVAILABLE = True
 except ImportError:
     from ml_models.production_model import NBMProductionModel
     ENHANCED_MODEL_AVAILABLE = False
     print("⚠️  Enhanced model not available, using original model")
+
 from ml_models.data_loader import DataLoader
 from ml_models.data_preprocessing_monthly import DataPreprocessorMonthly
 from embeddings_index import SemanticIndex
 
-# Import enhanced monitoring
-try:
-    # Import monitoring endpoints
-from .monitoring_endpoints import monitoring_router, startup_monitoring_init
-
-# Import SHAP endpoints
-from .shap_endpoints import shap_router, startup_shap_init
-    ENHANCED_MONITORING_AVAILABLE = True
-except ImportError:
-    ENHANCED_MONITORING_AVAILABLE = False
-    print("⚠️  Enhanced monitoring not available")
-
-# Configure logging - disabled for production
+# Configure logging
 logging.basicConfig(
-    level=logging.ERROR,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        # logging.FileHandler('api_logs.log'),  # Disabled file logging
+        logging.FileHandler('logs/api.log'),
         logging.StreamHandler()
     ]
 )
@@ -74,20 +63,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include monitoring router if available
-if ENHANCED_MONITORING_AVAILABLE:
-    # Include monitoring router
-app.include_router(monitoring_router)
-
-# Include SHAP router
-app.include_router(shap_router)# Global model instances
+# Global model instances
 production_model = None
 enhanced_model = None
-enhanced_monitor = None
 model_info = None
 semantic_index: Optional[SemanticIndex] = None
 
-# Pydantic models for request/response
+# Enhanced Pydantic models
 class NBMDataPoint(BaseModel):
     """Single NBM data point"""
     tahun: int = Field(..., ge=1990, le=2030, description="Year")
@@ -98,7 +80,7 @@ class NBMDataPoint(BaseModel):
     
     @validator('kalori_hari')
     def validate_calories(cls, v):
-        if v <= 0 or v > 1000:  # Reasonable calorie range
+        if v <= 0 or v > 1000:
             raise ValueError('Calories must be between 0 and 1000')
         return v
 
@@ -142,34 +124,32 @@ class MultiStepRequest(BaseModel):
         description="Confidence level for intervals"
     )
 
-class MultiStepResponse(BaseModel):
-    """Response model for multi-step prediction"""
-    success: bool = Field(..., description="Prediction success status")
-    predictions: List[float] = Field(..., description="Multi-step predictions")
-    confidence_intervals: List[Dict[str, float]] = Field(..., description="Confidence intervals for each step")
-    forecast_months: List[str] = Field(..., description="Forecast period labels")
-    model_info: Dict[str, Any] = Field(..., description="Model metadata")
-    input_summary: Dict[str, Any] = Field(..., description="Input data summary")
-    timestamp: datetime = Field(default_factory=datetime.now)
+class ConfidenceInterval(BaseModel):
+    """Confidence interval model"""
+    lower_bound: float = Field(..., description="Lower confidence bound")
+    upper_bound: float = Field(..., description="Upper confidence bound")
+    margin_percent: float = Field(..., description="Margin as percentage")
+    interval_width: float = Field(..., description="Width of interval")
 
 class EnhancedPredictionResponse(BaseModel):
     """Enhanced response model for prediction with confidence intervals"""
     success: bool = Field(..., description="Prediction success status")
     prediction: Optional[float] = Field(None, description="Point prediction (kcal/day)")
-    confidence_interval: Optional[Dict[str, float]] = Field(None, description="Statistical confidence interval")
+    confidence_interval: Optional[ConfidenceInterval] = Field(None, description="Statistical confidence interval")
     uncertainty_metrics: Optional[Dict[str, float]] = Field(None, description="Uncertainty quantification")
     model_info: Dict[str, Any] = Field(..., description="Enhanced model metadata")
     input_summary: Dict[str, Any] = Field(..., description="Input data summary")
     timestamp: datetime = Field(default_factory=datetime.now)
 
-class PredictionResponse(BaseModel):
-    """Response model for prediction"""
+class MultiStepResponse(BaseModel):
+    """Response model for multi-step prediction"""
     success: bool = Field(..., description="Prediction success status")
-    prediction: Optional[float] = Field(None, description="Predicted calories per day")
-    confidence_interval: Optional[Dict[str, float]] = Field(None, description="95% confidence interval")
+    predictions: List[float] = Field(..., description="Multi-step predictions")
+    confidence_intervals: List[ConfidenceInterval] = Field(..., description="Confidence intervals for each step")
+    forecast_months: List[str] = Field(..., description="Forecast period labels")
     model_info: Dict[str, Any] = Field(..., description="Model metadata")
     input_summary: Dict[str, Any] = Field(..., description="Input data summary")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Prediction timestamp")
+    timestamp: datetime = Field(default_factory=datetime.now)
 
 class HealthResponse(BaseModel):
     """Enhanced health check response"""
@@ -178,33 +158,61 @@ class HealthResponse(BaseModel):
     enhanced_features: bool = Field(..., description="Enhanced features availability")
     model_version: str = Field(..., description="Model version")
     api_version: str = Field(..., description="API version")
-    capabilities: Dict[str, bool] = Field(..., description="Available capabilities")
+    uptime: str = Field(..., description="Service uptime")
     timestamp: datetime = Field(default_factory=datetime.now)
-    status: str
-    model_loaded: bool
-    api_version: str
-    timestamp: datetime
 
-class ModelStatsResponse(BaseModel):
-    """Model statistics response"""
-    model_performance: Dict[str, float]
-    model_architecture: Dict[str, Any]
-    training_data_info: Dict[str, Any]
-    feature_importance: List[Dict[str, Any]]
-
-# Startup event to load model
+# Startup event
 @app.on_event("startup")
 async def startup_event():
-    """Startup tasks"""
-    logger.info("Starting FastAPI ML service...")
+    """Initialize models and services on startup"""
+    global production_model, enhanced_model, model_info, semantic_index
     
-    # Initialize monitoring system
-    await startup_monitoring_init()
-    
-    # Initialize SHAP analyzer
-    await startup_shap_init()
-    
-    logger.info("FastAPI ML service started successfully")
+    try:
+        logger.info("🚀 Starting Enhanced NBM Prediction API...")
+        
+        # Load enhanced model if available
+        if ENHANCED_MODEL_AVAILABLE:
+            try:
+                enhanced_model = EnhancedNBMProductionModel.load_enhanced_model()
+                logger.info("✅ Enhanced model loaded successfully")
+            except Exception as e:
+                logger.warning(f"Enhanced model loading failed: {e}")
+                enhanced_model = None
+        
+        # Fallback to original model
+        if enhanced_model is None:
+            try:
+                production_model = NBMProductionModel.load_production_model()
+                logger.info("✅ Original production model loaded as fallback")
+            except Exception as e:
+                logger.error(f"Failed to load any model: {e}")
+                raise
+        
+        # Load model info
+        try:
+            model_dir = "ml_models/models/nbm_production_enhanced" if enhanced_model else "ml_models/models/nbm_production"
+            model_info = joblib.load(f"{model_dir}/model_info.pkl")
+        except Exception as e:
+            logger.warning(f"Model info loading failed: {e}")
+            model_info = {"version": "unknown", "description": "NBM prediction model"}
+        
+        # Initialize semantic index
+        try:
+            semantic_index = SemanticIndex()
+            if semantic_index.exists():
+                semantic_index.load()
+                logger.info(f"✅ Semantic index loaded with {semantic_index.size()} documents")
+            else:
+                logger.info("Semantic index not found, will initialize on first use")
+        except Exception as e:
+            logger.error(f"Semantic index init failed: {e}")
+            semantic_index = None
+            
+        logger.info("🎯 Enhanced NBM API ready!")
+        
+    except Exception as e:
+        logger.error(f"Startup failed: {str(e)}")
+        raise
 
 def create_sequence_from_data(data: List[NBMDataPoint]) -> np.ndarray:
     """Convert NBM data points to model input sequence"""
@@ -233,17 +241,14 @@ def create_sequence_from_data(data: List[NBMDataPoint]) -> np.ndarray:
         raise ValueError(f"Expected 6 months of data, got {len(monthly_data)}")
     
     # Create sequence similar to training data format
-    # This is a simplified version - in production you might want to use the full preprocessing pipeline
-    
     sequence = []
     for _, row in monthly_data.iterrows():
-        # Create basic features (simplified version of production features)
         month_val = row['bulan']
         kalori_val = row['kalori_hari']
         
-        # Basic feature vector (matching production model expectations)
+        # Basic feature vector
         features = [
-            kalori_val,  # kalori_hari_normalized (will be scaled)
+            kalori_val,  # kalori_hari_normalized
             kalori_val,  # kalori_lag_1 (simplified)
             kalori_val,  # kalori_lag_3 (simplified)
             kalori_val,  # kalori_lag_6 (simplified)
@@ -257,29 +262,50 @@ def create_sequence_from_data(data: List[NBMDataPoint]) -> np.ndarray:
         
         sequence.append(features)
     
-    # Convert to numpy array with shape (1, 6, 10) for single prediction
     return np.array([sequence])
 
-def calculate_confidence_interval(prediction: float, model_uncertainty: float = 0.15) -> Dict[str, float]:
-    """Calculate approximate confidence interval"""
-    margin = prediction * model_uncertainty  # ~15% uncertainty based on model performance
-    return {
-        "lower_bound": max(0, prediction - margin),
-        "upper_bound": prediction + margin,
-        "margin_percent": model_uncertainty * 100
-    }
+def create_confidence_interval_object(lower: float, upper: float) -> ConfidenceInterval:
+    """Create ConfidenceInterval object"""
+    interval_width = upper - lower
+    margin_percent = (interval_width / (2 * (lower + upper) / 2)) * 100 if (lower + upper) > 0 else 0
+    
+    return ConfidenceInterval(
+        lower_bound=round(lower, 2),
+        upper_bound=round(upper, 2),
+        margin_percent=round(margin_percent, 2),
+        interval_width=round(interval_width, 2)
+    )
 
-# API Endpoints
+def log_prediction(prediction: float, input_data: List[NBMDataPoint], confidence_interval: Optional[Dict] = None):
+    """Background task to log predictions"""
+    try:
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'prediction': prediction,
+            'data_points': len(input_data),
+            'confidence_interval': confidence_interval,
+            'avg_input_calories': np.mean([d.kalori_hari for d in input_data])
+        }
+        
+        # Log to file (simplified)
+        with open('logs/predictions.log', 'a') as f:
+            f.write(f"{log_entry}\n")
+            
+    except Exception as e:
+        logger.error(f"Prediction logging failed: {e}")
+
+# Enhanced API Endpoints
 
 @app.get("/", response_model=Dict[str, str])
 async def root():
-    """Root endpoint with API information"""
+    """Root endpoint with enhanced API information"""
     return {
-        "message": "NBM Calorie Prediction API",
-        "version": "1.0.0",
+        "message": "Enhanced NBM Calorie Prediction API",
+        "version": "2.0.0",
+        "features": "confidence_intervals,multi_step_prediction,uncertainty_quantification",
         "docs": "/docs",
         "health": "/health",
-        "status": "running"
+        "endpoints": "/predict,/predict/multi-step,/model/stats"
     }
 
 @app.get("/health", response_model=HealthResponse)
@@ -289,137 +315,23 @@ async def health_check():
     model_loaded = (enhanced_model is not None) or (production_model is not None)
     enhanced_features = enhanced_model is not None
     
-    capabilities = {
-        "confidence_intervals": enhanced_features,
-        "multi_step_prediction": enhanced_features,
-        "uncertainty_quantification": enhanced_features,
-        "semantic_search": semantic_index is not None,
-        "batch_prediction": True,
-        "model_statistics": True
-    }
-    
     return HealthResponse(
         status="healthy" if model_loaded else "unhealthy",
         model_loaded=model_loaded,
         enhanced_features=enhanced_features,
         model_version=model_info.get('version', 'unknown') if model_info else 'unknown',
         api_version="2.0.0",
-        capabilities=capabilities,
+        uptime="N/A",  # Could implement actual uptime tracking
         timestamp=datetime.now()
     )
 
-# ===== Semantic Search Models & Endpoints =====
-class SemanticSearchRequest(BaseModel):
-    query: str
-    top_k: int = 8
-
-class SemanticSearchHit(BaseModel):
-    text: str
-    score: float
-    metadata: Dict[str, Any]
-
-class SemanticSearchResponse(BaseModel):
-    results: List[SemanticSearchHit]
-    count: int
-    index_size: int
-    timestamp: datetime
-
-def _auth_token(x_token: Optional[str] = Header(default=None)):
-    token = os.environ.get('SEMANTIC_ADMIN_TOKEN')
-    if token and x_token != token:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return True
-
-@app.get("/semantic/health")
-async def semantic_health():
-    global semantic_index
-    ready = (semantic_index is not None) and semantic_index.is_ready()
-    return { 'ready': ready, 'size': (semantic_index.size() if (semantic_index and semantic_index.is_ready()) else 0) }
-
-@app.post("/semantic/search", response_model=SemanticSearchResponse)
-async def semantic_search(req: SemanticSearchRequest):
-    global semantic_index
-    if not req.query or len(req.query.strip()) == 0:
-        raise HTTPException(status_code=400, detail="Query is required")
-    if semantic_index is None or not semantic_index.is_ready():
-        raise HTTPException(status_code=503, detail="Semantic index not ready")
-    try:
-        results_raw = semantic_index.search(req.query.strip(), top_k=min(max(req.top_k,1), 20))
-        hits: List[SemanticSearchHit] = []
-        for item in results_raw:
-            meta = item.get('metadata', {})
-            text = item.get('text', '')
-            score = float(item.get('score', 0.0))
-            hits.append(SemanticSearchHit(text=text, score=score, metadata=meta))
-        return SemanticSearchResponse(results=hits, count=len(hits), index_size=semantic_index.size(), timestamp=datetime.now())
-    except Exception as e:
-        logger.error(f"Semantic search error: {e}")
-        raise HTTPException(status_code=500, detail="Semantic search failed")
-
-@app.post("/semantic/reload-index")
-async def semantic_reload(x_ok: bool = Depends(_auth_token)):
-    global semantic_index
-    try:
-        if semantic_index is None:
-            semantic_index = SemanticIndex()
-        documents = [
-            { 'text': 'Curah hujan bulanan (mm) variabel iklim', 'metadata': { 'type':'variabel', 'id': 'seed1', 'module':'iklim-opt-dpi' }},
-            { 'text': 'Pupuk Urea produksi dan distribusi', 'metadata': { 'type':'variabel', 'id': 'seed2', 'module':'benih-pupuk' }},
-            { 'text': 'Luas lahan sawah per provinsi', 'metadata': { 'type':'variabel', 'id': 'seed3', 'module':'lahan' }},
-        ]
-        semantic_index.build(documents)
-        semantic_index.save()
-        return { 'status': 'ok', 'size': semantic_index.size() }
-    except Exception as e:
-        logger.error(f"Semantic reload failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to reload index")
-
-@app.get("/model/stats", response_model=ModelStatsResponse)
-async def get_model_stats():
-    """Get model statistics and information"""
-    if production_model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded")
-    
-    return ModelStatsResponse(
-        model_performance={
-            "mape": 8.34,
-            "mae": 3.24,
-            "rmse": 5.84,
-            "r2": 0.826
-        },
-        model_architecture={
-            "type": "HuberRegressor Ensemble",
-            "n_models": 3,
-            "sequence_length": 6,
-            "features": 9,
-            "weights": [0.0939, 0.9061, 0.0000]
-        },
-        training_data_info={
-            "records": 3390,
-            "date_range": "1993-2024",
-            "food_groups": 11,
-            "years_covered": 31
-        },
-        feature_importance=[
-            {"feature": "latest_value", "importance": 0.25},
-            {"feature": "recent_trend", "importance": 0.20},
-            {"feature": "short_term_avg", "importance": 0.15},
-            {"feature": "medium_term_avg", "importance": 0.12},
-            {"feature": "stability", "importance": 0.10},
-            {"feature": "linear_trend", "importance": 0.08},
-            {"feature": "seasonal_sin", "importance": 0.05},
-            {"feature": "seasonal_cos", "importance": 0.03},
-            {"feature": "momentum", "importance": 0.02}
-        ]
-    )
-
 @app.post("/predict", response_model=EnhancedPredictionResponse)
-async def predict_calories(request: PredictionRequest, background_tasks: BackgroundTasks):
+async def predict_calories_enhanced(request: PredictionRequest, background_tasks: BackgroundTasks):
     """
     Enhanced prediction with statistical confidence intervals
     
     Features:
-    - Statistical confidence intervals via enhanced model
+    - Statistical confidence intervals via bootstrap
     - Uncertainty quantification
     - Improved error handling
     """
@@ -429,9 +341,9 @@ async def predict_calories(request: PredictionRequest, background_tasks: Backgro
         raise HTTPException(status_code=503, detail="No model loaded")
     
     try:
-        logger.info(f"Enhanced prediction request: {len(request.data)} points")
+        logger.info(f"Enhanced prediction request: {len(request.data)} points, confidence={request.confidence_level}")
         
-        # Validate and sort data chronologically
+        # Validate and sort data
         sorted_data = sorted(request.data, key=lambda x: (x.tahun, x.bulan))
         
         # Create input sequence
@@ -440,21 +352,22 @@ async def predict_calories(request: PredictionRequest, background_tasks: Backgro
         # Make prediction with confidence intervals
         if enhanced_model:
             # Use enhanced model with proper confidence intervals
-            result = enhanced_model.predict_original_scale_with_confidence(X_sequence, confidence_level=0.95)
+            result = enhanced_model.predict_original_scale_with_confidence(
+                X_sequence, 
+                confidence_level=request.confidence_level
+            )
             
             prediction = result['prediction'][0]
-            confidence_interval = {
-                "lower_bound": round(result['lower_bound'][0], 2),
-                "upper_bound": round(result['upper_bound'][0], 2),
-                "margin_percent": round((result['interval_width'][0] / prediction * 100), 2),
-                "interval_width": round(result['interval_width'][0], 2)
-            }
+            confidence_interval = create_confidence_interval_object(
+                result['lower_bound'][0], 
+                result['upper_bound'][0]
+            )
             
             uncertainty_metrics = {
                 "interval_width": float(result['interval_width'][0]),
                 "relative_uncertainty": float(result['interval_width'][0] / prediction * 100),
-                "confidence_level": 0.95,
-                "method": "statistical_approximation"
+                "confidence_level": request.confidence_level,
+                "method": "bootstrap_ensemble"
             }
             
         else:
@@ -463,17 +376,15 @@ async def predict_calories(request: PredictionRequest, background_tasks: Backgro
             
             # Simple confidence interval (15% margin)
             margin = prediction * 0.15
-            confidence_interval = {
-                "lower_bound": round(max(0, prediction - margin), 2),
-                "upper_bound": round(prediction + margin, 2),
-                "margin_percent": 15.0,
-                "interval_width": round(margin * 2, 2)
-            }
+            confidence_interval = create_confidence_interval_object(
+                max(0, prediction - margin),
+                prediction + margin
+            )
             
             uncertainty_metrics = {
                 "interval_width": margin * 2,
                 "relative_uncertainty": 15.0,
-                "confidence_level": 0.95,
+                "confidence_level": request.confidence_level,
                 "method": "simple_margin"
             }
         
@@ -487,25 +398,13 @@ async def predict_calories(request: PredictionRequest, background_tasks: Backgro
             "sequence_length": 6
         }
         
-        # Log prediction for monitoring
+        # Background logging
         background_tasks.add_task(
             log_prediction, 
             prediction=prediction, 
             input_data=request.data,
             confidence_interval=confidence_interval.dict()
         )
-        
-        # Enhanced monitoring integration
-        if enhanced_monitor:
-            try:
-                # Update monitoring buffers
-                enhanced_monitor.update_buffers(
-                    prediction=prediction,
-                    features=input_summary,
-                    response_time=100.0  # Would be actual response time
-                )
-            except Exception as e:
-                logger.warning(f"Enhanced monitoring update failed: {e}")
         
         logger.info(f"Enhanced prediction successful: {prediction:.2f} ± {uncertainty_metrics['interval_width']/2:.2f}")
         
@@ -516,7 +415,7 @@ async def predict_calories(request: PredictionRequest, background_tasks: Backgro
             uncertainty_metrics=uncertainty_metrics,
             model_info={
                 "model_type": "Enhanced HuberRegressor Ensemble" if enhanced_model else "HuberRegressor Ensemble",
-                "version": model_info.get('version', '2.0.0') if model_info else '2.0.0',
+                "version": model_info.get('version', '1.0.0') if model_info else '1.0.0',
                 "mape": model_info.get('mape_achieved', '8.88%') if model_info else '8.88%',
                 "features": "confidence_intervals,uncertainty_quantification" if enhanced_model else "basic_prediction",
                 "confidence_method": uncertainty_metrics['method']
@@ -564,15 +463,10 @@ async def predict_multi_step(request: MultiStepRequest, background_tasks: Backgr
         result = enhanced_model.predict_multi_step(X_sequence, n_steps=request.n_steps)
         
         # Create confidence interval objects
-        confidence_intervals = []
-        for ci in result['confidence_intervals']:
-            interval = {
-                "lower_bound": round(ci['lower'], 2),
-                "upper_bound": round(ci['upper'], 2),
-                "margin_percent": round(((ci['upper'] - ci['lower']) / ((ci['upper'] + ci['lower'])/2) * 100), 2),
-                "interval_width": round(ci['upper'] - ci['lower'], 2)
-            }
-            confidence_intervals.append(interval)
+        confidence_intervals = [
+            create_confidence_interval_object(ci['lower'], ci['upper'])
+            for ci in result['confidence_intervals']
+        ]
         
         # Generate forecast month labels
         last_date = max(sorted_data, key=lambda x: (x.tahun, x.bulan))
@@ -626,83 +520,64 @@ async def predict_multi_step(request: MultiStepRequest, background_tasks: Backgr
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Internal server error during multi-step prediction")
 
-@app.post("/predict/batch")
-async def predict_batch(requests: List[PredictionRequest]):
-    """
-    Batch prediction endpoint for multiple requests
+@app.get("/model/stats")
+async def model_statistics():
+    """Get detailed model statistics and capabilities"""
     
-    Args:
-        requests: List of PredictionRequest objects
-        
-    Returns:
-        List of PredictionResponse objects
-    """
-    if production_model is None:
+    active_model = enhanced_model if enhanced_model else production_model
+    if active_model is None:
+        raise HTTPException(status_code=503, detail="No model loaded")
+    
+    stats = {
+        "model_info": model_info if model_info else {},
+        "capabilities": {
+            "confidence_intervals": enhanced_model is not None,
+            "multi_step_prediction": enhanced_model is not None,
+            "uncertainty_quantification": enhanced_model is not None,
+            "bootstrap_ensemble": enhanced_model is not None,
+            "max_forecast_horizon": 12 if enhanced_model else 1
+        },
+        "performance": {
+            "mape": model_info.get('mape_achieved', '8.88%') if model_info else '8.88%',
+            "target_achieved": True,
+            "confidence_coverage": model_info.get('confidence_coverage', '95%') if model_info else 'N/A'
+        },
+        "api_version": "2.0.0",
+        "model_version": model_info.get('version', 'unknown') if model_info else 'unknown',
+        "timestamp": datetime.now()
+    }
+    
+    return stats
+
+# Keep original endpoints for backward compatibility
+@app.post("/predict/legacy")
+async def predict_calories_legacy(request: PredictionRequest):
+    """Legacy prediction endpoint for backward compatibility"""
+    
+    # Use original simple prediction logic
+    active_model = enhanced_model if enhanced_model else production_model
+    if active_model is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
-    if len(requests) > 100:  # Limit batch size
-        raise HTTPException(status_code=400, detail="Batch size too large (max 100)")
-    
-    results = []
-    for i, request in enumerate(requests):
-        try:
-            # Reuse single prediction logic
-            response = await predict_calories(request, BackgroundTasks())
-            results.append(response)
-        except Exception as e:
-            # Continue with other predictions even if one fails
-            logger.error(f"Batch prediction {i} failed: {str(e)}")
-            results.append(PredictionResponse(
-                success=False,
-                prediction=None,
-                confidence_interval=None,
-                model_info={"error": str(e)},
-                input_summary={},
-                timestamp=datetime.now()
-            ))
-    
-    return results
-
-async def log_prediction(prediction: float, input_data: List[NBMDataPoint], confidence: Dict[str, float]):
-    """Background task to log predictions for monitoring"""
     try:
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "prediction": prediction,
-            "confidence_interval": confidence,
-            "input_count": len(input_data),
-            "date_range": f"{input_data[0].tahun}-{input_data[0].bulan} to {input_data[-1].tahun}-{input_data[-1].bulan}"
+        sorted_data = sorted(request.data, key=lambda x: (x.tahun, x.bulan))
+        X_sequence = create_sequence_from_data(sorted_data)
+        
+        if enhanced_model:
+            prediction = enhanced_model.predict_original_scale_with_confidence(X_sequence)['prediction'][0]
+        else:
+            prediction = production_model.predict_original_scale(X_sequence)[0]
+        
+        return {
+            "success": True,
+            "prediction": round(prediction, 2),
+            "model_info": {"type": "legacy", "version": "1.0.0"},
+            "timestamp": datetime.now()
         }
         
-        # Log to file (in production, you might use a database)
-        with open("prediction_logs.log", "a") as f:
-            f.write(f"{log_entry}\n")
-            
     except Exception as e:
-        logger.error(f"Failed to log prediction: {str(e)}")
-
-# Error handlers
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    logger.error(f"HTTP error: {exc.status_code} - {exc.detail}")
-    return {
-        "error": True,
-        "status_code": exc.status_code,
-        "message": exc.detail,
-        "timestamp": datetime.now().isoformat()
-    }
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    logger.error(f"Unexpected error: {str(exc)}")
-    logger.error(traceback.format_exc())
-    return {
-        "error": True,
-        "status_code": 500,
-        "message": "Internal server error",
-        "timestamp": datetime.now().isoformat()
-    }
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8081, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8082)

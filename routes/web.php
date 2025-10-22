@@ -1,12 +1,34 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Public\KetersediaanController;
 use Livewire\Volt\Volt;
 
 // Landing Page Routes
 Route::get('/', function () {
     return view('homepage');
 })->name('home');
+
+// Public NBM Information Routes  
+Route::prefix('ketersediaan')->name('public.ketersediaan.')->group(function () {
+    Route::get('dashboard-publik', [KetersediaanController::class, 'dashboard'])->name('dashboard');
+    Route::get('laporan-publik', [KetersediaanController::class, 'laporanPublik'])->name('laporan-publik');
+    Route::get('tentang-nbm', [KetersediaanController::class, 'tentang'])->name('tentang-nbm');
+    Route::get('metodologi-nbm', [KetersediaanController::class, 'metodologi'])->name('metodologi');
+    
+    // API for public dashboard data
+    Route::get('api/dashboard-data', [KetersediaanController::class, 'apiDashboardData'])->name('api.dashboard-data');
+});
+
+// Public Registration Routes (for access upgrade)
+Route::prefix('registrasi')->name('public.registrasi.')->group(function () {
+    Route::get('pemerintah', [KetersediaanController::class, 'registrasiPemerintah'])->name('pemerintah');
+    Route::get('akademisi', [KetersediaanController::class, 'registrasiAkademisi'])->name('akademisi');
+    Route::post('proses', [KetersediaanController::class, 'prosesRegistrasi'])->name('proses');
+});
+
+// ADMIN ROUTES - LEVEL 1 ACCESS (PUSDATIN ONLY)  
+// =============================================
 
 // Admin Panel Selection Route - setelah login
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -112,6 +134,11 @@ Route::middleware(['auth'])->group(function () {
 
 // Admin Routes 
 Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
+    // Enhanced Prediction Dashboard with SHAP Analysis - accessible to all authenticated users
+    Route::get('prediction-dashboard', function () {
+        return view('admin.prediction-dashboard-simple');
+    })->name('prediction-dashboard');
+    
     // User management - hanya untuk superadmin
     Route::middleware(['permission:view users'])->group(function () {
         Route::view('users', 'admin.users')->name('users');
@@ -369,6 +396,20 @@ Route::prefix('api/lahan')->name('api.lahan.')->group(function () {
 
 Route::prefix('api')->name('api.')->group(function () {
     Route::get('daftar-alamat/data', [App\Http\Controllers\PublicDaftarAlamatController::class, 'getData'])->name('daftar-alamat.data');
+    
+    // Prediction Dashboard API Routes
+    Route::middleware(['auth'])->group(function () {
+        Route::post('predict-nbm', [App\Http\Controllers\Admin\PredictionDashboardController::class, 'predict'])->name('predict-nbm');
+        Route::post('predict-nbm/multi-step', [App\Http\Controllers\Admin\PredictionDashboardController::class, 'multiStepPredict'])->name('predict-nbm.multi-step');
+        Route::get('health-check', [App\Http\Controllers\Admin\PredictionDashboardController::class, 'healthCheck'])->name('health-check');
+        Route::get('prediction-stats', [App\Http\Controllers\Admin\PredictionDashboardController::class, 'getStats'])->name('prediction-stats');
+        Route::post('prediction-analytics', [App\Http\Controllers\Admin\PredictionDashboardController::class, 'updateAnalytics'])->name('prediction-analytics');
+        
+        // Mock endpoints for testing (fallback)
+        Route::post('mock/predict-nbm', [App\Http\Controllers\Admin\MockPredictionController::class, 'mockPredict'])->name('mock.predict-nbm');
+        Route::get('mock/health-check', [App\Http\Controllers\Admin\MockPredictionController::class, 'mockHealthCheck'])->name('mock.health-check');
+        Route::get('mock/prediction-stats', [App\Http\Controllers\Admin\MockPredictionController::class, 'mockStats'])->name('mock.prediction-stats');
+    });
 });
 
 require __DIR__.'/auth.php';

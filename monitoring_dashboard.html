@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBM Model Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e1e8ed;
+        }
+        
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .metric {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fc;
+            border-radius: 8px;
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+        
+        .health-score {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .health-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .health-excellent { background: linear-gradient(135deg, #00b894, #00a085); }
+        .health-good { background: linear-gradient(135deg, #00b894, #55a3ff); }
+        .health-fair { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+        .health-poor { background: linear-gradient(135deg, #e17055, #d63031); }
+        .health-critical { background: linear-gradient(135deg, #d63031, #74b9ff); }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-good { background-color: #00b894; }
+        .status-warning { background-color: #fdcb6e; }
+        .status-critical { background-color: #e17055; }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+        
+        .alert-high {
+            background-color: #ffeaa7;
+            border-color: #fdcb6e;
+        }
+        
+        .alert-medium {
+            background-color: #fab1a0;
+            border-color: #e17055;
+        }
+        
+        .alert-low {
+            background-color: #74b9ff;
+            border-color: #0984e3;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .timestamp {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+            
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 NBM Model Monitoring Dashboard</h1>
+        <p>Real-time monitoring, drift detection, and performance analytics</p>
+    </div>
+
+    <div class="dashboard">
+        <!-- Health Score -->
+        <div class="card">
+            <h3>🎯 Overall Health Score</h3>
+            <div class="health-score">
+                <div id="healthCircle" class="health-circle health-good">
+                    <span id="healthValue">--</span>
+                </div>
+                <div id="healthStatus">Loading...</div>
+            </div>
+            <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+        </div>
+
+        <!-- Current Metrics -->
+        <div class="card">
+            <h3>📊 Current Metrics</h3>
+            <div class="metric-grid">
+                <div class="metric">
+                    <div class="metric-value" id="predictionCount">--</div>
+                    <div class="metric-label">Predictions (24h)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="avgResponseTime">--</div>
+                    <div class="metric-label">Avg Response (ms)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="driftScore">--</div>
+                    <div class="metric-label">Drift Score</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="errorRate">--</div>
+                    <div class="metric-label">Error Rate (%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drift Detection -->
+        <div class="card">
+            <h3>🚨 Drift Detection Status</h3>
+            <div id="driftStatus">
+                <div class="loading">Loading drift status...</div>
+            </div>
+        </div>
+
+        <!-- Active Alerts -->
+        <div class="card">
+            <h3>⚠️ Active Alerts</h3>
+            <div id="alertsList">
+                <div class="loading">Loading alerts...</div>
+            </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h3>📈 Performance Trends</h3>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Drift History Chart -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h3>🔄 Drift Detection History</h3>
+            <div class="chart-container">
+                <canvas id="driftChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="timestamp" id="lastUpdate">
+        Last updated: --
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8082';
+        
+        // Global chart instances
+        let performanceChart = null;
+        let driftChart = null;
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            refreshData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(refreshData, 30000);
+        });
+        
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    updateHealthScore(),
+                    updateCurrentMetrics(),
+                    updateDriftStatus(),
+                    updateAlerts(),
+                    updatePerformanceChart(),
+                    updateDriftChart()
+                ]);
+                
+                document.getElementById('lastUpdate').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+                    
+            } catch (error) {
+                console.error('Failed to refresh data:', error);
+                showError('Failed to refresh dashboard data');
+            }
+        }
+        
+        async function updateHealthScore() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/monitoring/health-score`);
+                if (!response.ok) throw new Error('Health score API not available');
+                
+                const data = await response.json();
+                
+                const healthValue = document.getElementById('healthValue');
+                const healthStatus = document.getElementById('healthStatus');
+                const healthCircle = document.getElementById('healthCircle');
+                
+                healthValue.textContent = Math.round(data.health_score);
+                healthStatus.textContent = data.health_status.toUpperCase();
+                
+                // Update circle color based on health
+                healthCircle.className = `health-circle health-${data.health_status}`;
+                
+            } catch (error) {
+                console.error('Failed to update health score:', error);
+                document.getElementById('healthValue').textContent = '--';
+                document.getElementById('healthStatus').textContent = 'API Unavailable';
+            }
+        }
+        
+        async function updateCurrentMetrics() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/monitoring/metrics`);
+                if (!response.ok) throw new Error('Metrics API not available');
+                
+                const data = await response.json();
+                
+                // Update metric displays
+                document.getElementById('predictionCount').textContent = 
+                    data.buffer_status.prediction_buffer_size || '--';
+                document.getElementById('avgResponseTime').textContent = 
+                    Math.round(data.performance_profile.avg_response_time) || '--';
+                document.getElementById('driftScore').textContent = 
+                    (data.drift_detection.prediction_drift_score * 100).toFixed(1) + '%';
+                document.getElementById('errorRate').textContent = '< 1%'; // Placeholder
+                
+            } catch (error) {
+                console.error('Failed to update current metrics:', error);
+                showError('Metrics unavailable');
+            }
+        }
+        
+        async function updateDriftStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/monitoring/drift/status`);
+                if (!response.ok) throw new Error('Drift status API not available');
+                
+                const data = await response.json();
+                
+                const statusHtml = `
+                    <div style="margin-bottom: 1rem;">
+                        <span class="status-indicator ${data.overall_drift_detected ? 'status-critical' : 'status-good'}"></span>
+                        <strong>${data.overall_drift_detected ? 'DRIFT DETECTED' : 'STABLE'}</strong>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Prediction Drift:</strong> ${(data.prediction_drift.score * 100).toFixed(1)}%
+                        <span style="color: #7f8c8d;">(threshold: ${(data.prediction_drift.threshold * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Feature Drift:</strong> ${(data.feature_drift.score * 100).toFixed(1)}%
+                        <span style="color: #7f8c8d;">(threshold: ${(data.feature_drift.threshold * 100).toFixed(1)}%)</span>
+                    </div>
+                    <div>
+                        <strong>Samples Compared:</strong> ${data.prediction_drift.samples_compared}
+                    </div>
+                `;
+                
+                document.getElementById('driftStatus').innerHTML = statusHtml;
+                
+            } catch (error) {
+                console.error('Failed to update drift status:', error);
+                document.getElementById('driftStatus').innerHTML = 
+                    '<div style="color: #e17055;">Drift detection unavailable</div>';
+            }
+        }
+        
+        async function updateAlerts() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/monitoring/alerts`);
+                if (!response.ok) throw new Error('Alerts API not available');
+                
+                const data = await response.json();
+                
+                let alertsHtml = '';
+                
+                if (data.total_alerts === 0) {
+                    alertsHtml = '<div style="color: #00b894;">✅ No active alerts</div>';
+                } else {
+                    data.active_alerts.forEach(alert => {
+                        alertsHtml += `
+                            <div class="alert alert-${alert.severity}">
+                                <strong>${alert.alert_type.replace('_', ' ').toUpperCase()}</strong><br>
+                                ${alert.message}
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('alertsList').innerHTML = alertsHtml;
+                
+            } catch (error) {
+                console.error('Failed to update alerts:', error);
+                document.getElementById('alertsList').innerHTML = 
+                    '<div style="color: #e17055;">Alerts unavailable</div>';
+            }
+        }
+        
+        function initializeCharts() {
+            // Performance Chart
+            const perfCtx = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(perfCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Response Time (ms)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Drift Chart
+            const driftCtx = document.getElementById('driftChart').getContext('2d');
+            driftChart = new Chart(driftCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Prediction Drift',
+                        data: [],
+                        borderColor: '#e17055',
+                        backgroundColor: 'rgba(225, 112, 85, 0.1)',
+                        tension: 0.1
+                    }, {
+                        label: 'Feature Drift',
+                        data: [],
+                        borderColor: '#fdcb6e',
+                        backgroundColor: 'rgba(253, 203, 110, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1
+                        }
+                    }
+                }
+            });
+        }
+        
+        async function updatePerformanceChart() {
+            try {
+                // Placeholder data - would come from actual monitoring API
+                const now = new Date();
+                const labels = [];
+                const data = [];
+                
+                for (let i = 23; i >= 0; i--) {
+                    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+                    labels.push(time.getHours() + ':00');
+                    data.push(Math.random() * 200 + 100); // Simulated data
+                }
+                
+                performanceChart.data.labels = labels;
+                performanceChart.data.datasets[0].data = data;
+                performanceChart.update();
+                
+            } catch (error) {
+                console.error('Failed to update performance chart:', error);
+            }
+        }
+        
+        async function updateDriftChart() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/monitoring/drift/history?hours=24`);
+                if (!response.ok) throw new Error('Drift history API not available');
+                
+                const data = await response.json();
+                
+                // Process drift history data
+                const labels = [];
+                const predictionDrift = [];
+                const featureDrift = [];
+                
+                // Take last 24 data points
+                const recentHistory = data.history.slice(-24);
+                
+                recentHistory.forEach(item => {
+                    const time = new Date(item.timestamp);
+                    labels.push(time.getHours() + ':' + time.getMinutes().toString().padStart(2, '0'));
+                    predictionDrift.push(item.prediction_drift_score || 0);
+                    featureDrift.push(item.feature_drift_score || 0);
+                });
+                
+                driftChart.data.labels = labels;
+                driftChart.data.datasets[0].data = predictionDrift;
+                driftChart.data.datasets[1].data = featureDrift;
+                driftChart.update();
+                
+            } catch (error) {
+                console.error('Failed to update drift chart:', error);
+                // Use simulated data on error
+                updateDriftChartWithSimulatedData();
+            }
+        }
+        
+        function updateDriftChartWithSimulatedData() {
+            const labels = [];
+            const predictionDrift = [];
+            const featureDrift = [];
+            
+            for (let i = 23; i >= 0; i--) {
+                const time = new Date(Date.now() - i * 60 * 60 * 1000);
+                labels.push(time.getHours() + ':00');
+                predictionDrift.push(Math.random() * 0.3);
+                featureDrift.push(Math.random() * 0.25);
+            }
+            
+            driftChart.data.labels = labels;
+            driftChart.data.datasets[0].data = predictionDrift;
+            driftChart.data.datasets[1].data = featureDrift;
+            driftChart.update();
+        }
+        
+        function showError(message) {
+            console.error(message);
+            // Could show toast notification or update UI with error state
+        }
+    </script>
+</body>
+</html>

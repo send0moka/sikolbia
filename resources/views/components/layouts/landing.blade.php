@@ -74,6 +74,26 @@
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Dashboard Komoditas
                                         </a>
+                                        <div class="border-t border-gray-200 my-1"></div>
+                                        <div class="px-4 py-2">
+                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Akses Publik</p>
+                                        </div>
+                                        <a href="{{ route('public.ketersediaan.dashboard') }}" 
+                                           class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
+                                            <i class="fas fa-chart-bar mr-2"></i>Dashboard NBM Publik
+                                        </a>
+                                        <a href="{{ route('public.ketersediaan.laporan-publik') }}" 
+                                           class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
+                                            <i class="fas fa-file-alt mr-2"></i>Laporan NBM Publik
+                                        </a>
+                                        <a href="{{ route('public.ketersediaan.tentang-nbm') }}" 
+                                           class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
+                                            <i class="fas fa-info-circle mr-2"></i>Tentang NBM
+                                        </a>
+                                        <a href="{{ route('public.ketersediaan.metodologi') }}" 
+                                           class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
+                                            <i class="fas fa-book mr-2"></i>Metodologi NBM
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -199,6 +219,24 @@
                             <a href="{{ route('ketersediaan.dashboard-komoditas') }}" 
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Dashboard Komoditas
+                            </a>
+                            <div class="border-t border-gray-300 my-2"></div>
+                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider py-1">Akses Publik</p>
+                            <a href="{{ route('public.ketersediaan.dashboard') }}" 
+                               class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                                <i class="fas fa-chart-bar mr-2"></i>Dashboard NBM Publik
+                            </a>
+                            <a href="{{ route('public.ketersediaan.laporan-publik') }}" 
+                               class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                                <i class="fas fa-file-alt mr-2"></i>Laporan NBM Publik
+                            </a>
+                            <a href="{{ route('public.ketersediaan.tentang-nbm') }}" 
+                               class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                                <i class="fas fa-info-circle mr-2"></i>Tentang NBM
+                            </a>
+                            <a href="{{ route('public.ketersediaan.metodologi') }}" 
+                               class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                                <i class="fas fa-book mr-2"></i>Metodologi NBM
                             </a>
                         </div>
                     </div>
@@ -357,6 +395,47 @@
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                                     </svg>
                                     Dashboard Komoditas
+                                </a>
+                            </li>
+                            <li class="pt-2 border-t border-white/20">
+                                <span class="text-xs text-[#efefa4]/80 font-medium tracking-wide uppercase">Akses Publik</span>
+                            </li>
+                            <li>
+                                <a href="{{ route('public.ketersediaan.dashboard') }}" 
+                                   class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
+                                    <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Dashboard NBM Publik
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('public.ketersediaan.laporan-publik') }}" 
+                                   class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
+                                    <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Laporan NBM Publik
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('public.ketersediaan.tentang-nbm') }}" 
+                                   class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
+                                    <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Tentang NBM
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('public.ketersediaan.metodologi') }}" 
+                                   class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
+                                    <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Metodologi NBM
                                 </a>
                             </li>
                         </ul>
