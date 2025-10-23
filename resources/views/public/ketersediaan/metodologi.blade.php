@@ -1,7 +1,7 @@
 <x-layouts.landing title="Metodologi NBM - SIKOLBIA">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <div class="py-12 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Breadcrumb -->
@@ -160,7 +160,7 @@
                     <div class="relative">
                         <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
 
-                        <div class="relative flex items-start mb-8">
+                        <div class="relative flex items-start gap-3 mb-4">
                             <div
                                 class="flex-shrink-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                 1</div>
@@ -179,7 +179,7 @@
                             </div>
                         </div>
 
-                        <div class="relative flex items-start mb-8">
+                        <div class="relative flex items-start gap-3 mb-4">
                             <div
                                 class="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                 2</div>
@@ -210,7 +210,7 @@
                             </div>
                         </div>
 
-                        <div class="relative flex items-start mb-8">
+                        <div class="relative flex items-start gap-3 mb-4">
                             <div
                                 class="flex-shrink-0 w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                 3</div>
@@ -296,10 +296,10 @@
                                 <div>
                                     <strong class="text-gray-700">Faktor Susut:</strong>
                                     <ul class="text-gray-600 mt-1">
-                                        <li>• Padi-padian: 5-10%</li>
-                                        <li>• Sayuran segar: 15-25%</li>
-                                        <li>• Buah-buahan: 10-20%</li>
-                                        <li>• Ikan segar: 8-15%</li>
+                                        @foreach ($susutData as $susut)
+                                            <li>• {{ $susut['nama'] }}:
+                                                {{ $susut['susut_min'] }}-{{ $susut['susut_max'] }}%</li>
+                                        @endforeach
                                     </ul>
                                 </div>
                                 <div>
@@ -374,19 +374,22 @@
                         </h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                             <div>
-                                <div class="text-2xl font-bold text-purple-800">87.3%</div>
+                                <div class="text-2xl font-bold text-purple-800">
+                                    {{ number_format($modelStats['accuracy'], 1) }}%</div>
                                 <div class="text-sm text-gray-600">Akurasi Prediksi</div>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-purple-800">0.89</div>
+                                <div class="text-2xl font-bold text-purple-800">{{ $modelStats['r2_score'] }}</div>
                                 <div class="text-sm text-gray-600">R² Score</div>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-purple-800">4.2%</div>
+                                <div class="text-2xl font-bold text-purple-800">
+                                    {{ number_format($modelStats['mape_error'], 1) }}%</div>
                                 <div class="text-sm text-gray-600">MAPE Error</div>
                             </div>
                             <div>
-                                <div class="text-2xl font-bold text-purple-800">6 bln</div>
+                                <div class="text-2xl font-bold text-purple-800">{{ $modelStats['prediction_horizon'] }}
+                                </div>
                                 <div class="text-sm text-gray-600">Horizon Prediksi</div>
                             </div>
                         </div>

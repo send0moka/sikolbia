@@ -28,6 +28,9 @@ class Komoditi extends Model
         'asal_produksi',
         'shelf_life_hari',
         'harga_rata_per_kg',
+        'susut_min_persen',
+        'susut_max_persen',
+        'susut_keterangan',
     ];
 
     protected function casts(): array
@@ -44,6 +47,8 @@ class Komoditi extends Model
             'zat_besi_per_100g' => 'decimal:2',
             'kalsium_per_100g' => 'decimal:2',
             'harga_rata_per_kg' => 'decimal:2',
+            'susut_min_persen' => 'decimal:2',
+            'susut_max_persen' => 'decimal:2',
         ];
     }
 
