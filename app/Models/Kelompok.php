@@ -18,6 +18,8 @@ class Kelompok extends Model
         'ake_ketersediaan',
         'skor_pph',
         'status_aktif',
+        'icon_class',
+        'color_class',
     ];
 
     protected function casts(): array

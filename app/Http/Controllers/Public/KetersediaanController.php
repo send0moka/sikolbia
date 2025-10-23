@@ -86,7 +86,49 @@ class KetersediaanController extends Controller
      */
     public function tentang()
     {
-        return view('public.ketersediaan.tentang');
+        // Ambil statistik real dari database
+        $stats = [
+            // Jumlah kelompok komoditas yang aktif
+            'total_kelompok' => Kelompok::where('status_aktif', true)->count(),
+            
+            // Jumlah komoditas yang aktif
+            'total_komoditas' => Komoditi::whereHas('kelompok', function($query) {
+                $query->where('status_aktif', true);
+            })->count(),
+            
+            // Rentang tahun data dari transaksi NBM
+            'tahun_awal' => TransaksiNbm::min('tahun'),
+            'tahun_akhir' => TransaksiNbm::max('tahun'),
+            
+            // Total jumlah tahun data yang tersedia (hitung distinct tahun)
+            'total_tahun' => TransaksiNbm::distinct('tahun')->count(),
+            
+            // Total record transaksi NBM (sebagai indikator volume data)
+            'total_transaksi' => TransaksiNbm::count(),
+            
+            // Jumlah bulan terbaru yang memiliki data (untuk indikator update)
+            'bulan_terakhir' => TransaksiNbm::where('tahun', TransaksiNbm::max('tahun'))
+                ->distinct('bulan')->count(),
+                
+            // Total konsumsi bahan makanan nasional tahun terbaru (ton)
+            'total_konsumsi_ton' => TransaksiNbm::where('tahun', TransaksiNbm::max('tahun'))
+                ->sum('bahan_makanan'),
+        ];
+
+        // Ambil data kelompok komoditas yang aktif dengan icon dari database
+        $kelompokList = Kelompok::where('status_aktif', true)
+            ->orderBy('kode')
+            ->get()
+            ->map(function($kelompok) {
+                return [
+                    'nama' => $kelompok->nama,
+                    'kode' => $kelompok->kode,
+                    'icon' => $kelompok->icon_class,
+                    'color' => $kelompok->color_class
+                ];
+            });
+
+        return view('public.ketersediaan.tentang', compact('stats', 'kelompokList'));
     }
 
     /**
