@@ -1,53 +1,43 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi Akses Akademisi - SIKOLBIA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<x-layouts.landing title="Registrasi Akses Akademisi - SIKOLBIA">
+    <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50">
-    <!-- Header Navigation -->
-    <nav class="bg-green-800 text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                        <i class="fas fa-seedling text-2xl"></i>
-                        <div>
-                            <h1 class="text-xl font-bold">SIKOLBIA</h1>
-                            <p class="text-xs text-green-200">Registrasi Akses Akademisi</p>
+    
+    <div class="py-12 bg-white" x-data="registrasiForm()">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Breadcrumb -->
+            <nav class="flex mb-8" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{{ route('home') }}" class="text-neutral-700 hover:text-blue-600">Home</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="ml-1 text-blue-600 font-medium">Registrasi Akademisi</span>
                         </div>
-                    </a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('home') }}" class="hover:text-green-200">
-                        <i class="fas fa-home mr-1"></i> Beranda
-                    </a>
-                    <a href="{{ route('public.ketersediaan.dashboard') }}" class="hover:text-green-200">Dashboard Publik</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+                    </li>
+                </ol>
+            </nav>
 
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-8" x-data="registrasiForm()">
-        
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-graduation-cap text-purple-600 text-3xl"></i>
+            <!-- Page Header -->
+            <div class="mb-8">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-graduation-cap text-purple-600 text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
+                        Registrasi Akses Akademisi
+                    </h1>
+                    <p class="text-xl text-neutral-600 max-w-2xl mx-auto">
+                        Dapatkan akses penelitian ke data NBM lengkap untuk keperluan riset, 
+                        publikasi ilmiah, dan pengembangan ilmu pengetahuan
+                    </p>
+                </div>
             </div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">
-                Registrasi Akses Akademisi
-            </h1>
-            <p class="text-gray-600 max-w-2xl mx-auto">
-                Dapatkan akses penelitian ke data NBM lengkap untuk keperluan riset, 
-                publikasi ilmiah, dan pengembangan ilmu pengetahuan
-            </p>
-        </div>
 
         <!-- Benefits Section -->
         <div class="bg-white rounded-lg shadow-md p-8 mb-8">
@@ -399,6 +389,8 @@
                 </span>
             </div>
         </div>
+
+        </div> <!-- End Content Container -->
     </div>
 
     <script>
@@ -410,5 +402,4 @@
             }
         }
     </script>
-</body>
-</html>
+</x-layouts.landing>
