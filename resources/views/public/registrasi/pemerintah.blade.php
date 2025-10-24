@@ -116,6 +116,34 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-600 mt-1 mr-3"></i>
+                        <div>
+                            <h3 class="text-red-800 font-medium">Terjadi Kesalahan!</h3>
+                            <p class="text-red-700 text-sm">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-triangle text-red-600 mt-1 mr-3"></i>
+                        <div>
+                            <h3 class="text-red-800 font-medium">Mohon perbaiki kesalahan berikut:</h3>
+                            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('public.registrasi.proses') }}" class="space-y-6">
                 @csrf
                 <input type="hidden" name="tipe_akses" value="pemerintah">
@@ -126,29 +154,45 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap *</label>
                         <input type="text" name="nama_lengkap" required
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               value="{{ old('nama_lengkap') }}"
+                               class="w-full p-3 border {{ $errors->has('nama_lengkap') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Masukkan nama lengkap">
+                        @error('nama_lengkap')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">NIP/NIK *</label>
                         <input type="text" name="nip_nik" required
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               value="{{ old('nip_nik') }}"
+                               class="w-full p-3 border {{ $errors->has('nip_nik') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Nomor Induk Pegawai/Kependudukan">
+                        @error('nip_nik')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email Instansi *</label>
                         <input type="email" name="email" required
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               value="{{ old('email') }}"
+                               class="w-full p-3 border {{ $errors->has('email') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                placeholder="email@instansi.go.id">
+                        @error('email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon *</label>
                         <input type="tel" name="telepon" required
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               value="{{ old('telepon') }}"
+                               class="w-full p-3 border {{ $errors->has('telepon') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                placeholder="+62">
+                        @error('telepon')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
@@ -161,27 +205,34 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Instansi *</label>
                             <select name="instansi" required
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full p-3 border {{ $errors->has('instansi') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih Instansi</option>
-                                <option value="BPN - Badan Pertanahan Nasional">BPN - Badan Pertanahan Nasional</option>
-                                <option value="Kementerian Pertanian">Kementerian Pertanian</option>
-                                <option value="Bappenas">Bappenas</option>
-                                <option value="Kementerian Koordinator Perekonomian">Kemenko Perekonomian</option>
-                                <option value="Kementerian Perdagangan">Kementerian Perdagangan</option>
-                                <option value="BPS - Badan Pusat Statistik">BPS - Badan Pusat Statistik</option>
-                                <option value="Kementerian Kelautan dan Perikanan">Kementerian Kelautan dan Perikanan</option>
-                                <option value="BULOG">BULOG</option>
-                                <option value="Pemerintah Provinsi">Pemerintah Provinsi</option>
-                                <option value="Pemerintah Kabupaten/Kota">Pemerintah Kabupaten/Kota</option>
-                                <option value="lainnya">Lainnya (sebutkan di catatan)</option>
+                                <option value="BPN - Badan Pertanahan Nasional" {{ old('instansi') === 'BPN - Badan Pertanahan Nasional' ? 'selected' : '' }}>BPN - Badan Pertanahan Nasional</option>
+                                <option value="Kementerian Pertanian" {{ old('instansi') === 'Kementerian Pertanian' ? 'selected' : '' }}>Kementerian Pertanian</option>
+                                <option value="Bappenas" {{ old('instansi') === 'Bappenas' ? 'selected' : '' }}>Bappenas</option>
+                                <option value="Kementerian Koordinator Perekonomian" {{ old('instansi') === 'Kementerian Koordinator Perekonomian' ? 'selected' : '' }}>Kemenko Perekonomian</option>
+                                <option value="Kementerian Perdagangan" {{ old('instansi') === 'Kementerian Perdagangan' ? 'selected' : '' }}>Kementerian Perdagangan</option>
+                                <option value="BPS - Badan Pusat Statistik" {{ old('instansi') === 'BPS - Badan Pusat Statistik' ? 'selected' : '' }}>BPS - Badan Pusat Statistik</option>
+                                <option value="Kementerian Kelautan dan Perikanan" {{ old('instansi') === 'Kementerian Kelautan dan Perikanan' ? 'selected' : '' }}>Kementerian Kelautan dan Perikanan</option>
+                                <option value="BULOG" {{ old('instansi') === 'BULOG' ? 'selected' : '' }}>BULOG</option>
+                                <option value="Pemerintah Provinsi" {{ old('instansi') === 'Pemerintah Provinsi' ? 'selected' : '' }}>Pemerintah Provinsi</option>
+                                <option value="Pemerintah Kabupaten/Kota" {{ old('instansi') === 'Pemerintah Kabupaten/Kota' ? 'selected' : '' }}>Pemerintah Kabupaten/Kota</option>
+                                <option value="lainnya" {{ old('instansi') === 'lainnya' ? 'selected' : '' }}>Lainnya (sebutkan di catatan)</option>
                             </select>
+                            @error('instansi')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Jabatan *</label>
                             <input type="text" name="jabatan" required
-                                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   value="{{ old('jabatan') }}"
+                                   class="w-full p-3 border {{ $errors->has('jabatan') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Jabatan dalam instansi">
+                            @error('jabatan')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
@@ -247,8 +298,11 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Kebutuhan Data</label>
                             <textarea name="deskripsi_kebutuhan" rows="3"
-                                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                      placeholder="Jelaskan secara spesifik kebutuhan data dan bagaimana akan digunakan..."></textarea>
+                                      class="w-full p-3 border {{ $errors->has('deskripsi_kebutuhan') ? 'border-red-500' : 'border-gray-300' }} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                      placeholder="Jelaskan secara spesifik kebutuhan data dan bagaimana akan digunakan...">{{ old('deskripsi_kebutuhan') }}</textarea>
+                            @error('deskripsi_kebutuhan')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>

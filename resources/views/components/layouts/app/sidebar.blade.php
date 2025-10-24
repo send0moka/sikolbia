@@ -82,6 +82,14 @@
                     </flux:navlist.item>
                     @endcan
                 </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('User Management')" class="grid">
+                    @can('view users')
+                    <flux:navlist.item icon="document-text" :href="route('admin.registrasi-akses')" :current="request()->routeIs('admin.registrasi-akses')" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.registrasi-akses') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Registrasi Akses') }}</span>
+                    </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />

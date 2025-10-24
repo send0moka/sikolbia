@@ -1,8 +1,7 @@
-// Alpine.js is provided by Livewire for admin pages
-// For landing pages, we'll dynamically load it if needed
-
-// Alpine Js load for landing pages
+// Alpine.js setup - Let Livewire handle Alpine initialization
 import Alpine from 'alpinejs';
+
+// Make Alpine available globally before Livewire loads
 window.Alpine = Alpine;
 
 // Custom Alpine component for Pertanian Report Form
@@ -13,8 +12,22 @@ Alpine.data('pertanianReportForm', pertanianReportForm);
 // Sticky table utility (auto-initializes on import)
 import './utils/stickyTable.js';
 
-// Start Alpine AFTER registering all data/components
-Alpine.start();
+// Let Livewire handle Alpine initialization for Livewire pages
+// Only start Alpine manually for non-Livewire pages
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to allow Livewire to initialize first
+    setTimeout(() => {
+        // Check if this is a Livewire page
+        const hasLivewire = document.querySelector('[wire\\:id]') || 
+                           document.querySelector('[livewire\\:id]') || 
+                           window.Livewire;
+        
+        // If no Livewire and Alpine hasn't started yet, start Alpine manually
+        if (!hasLivewire && !window.Alpine._x_started) {
+            Alpine.start();
+        }
+    }, 100);
+});
 
 // Admin Pages
 // Force dark mode for admin pages

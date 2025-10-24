@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TransaksiNbm;
 use App\Models\Komoditi;
 use App\Models\Kelompok;
+use App\Models\RegistrasiAkses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -317,14 +318,100 @@ class KetersediaanController extends Controller
     }
 
     /**
-     * Proses registrasi (placeholder)
+     * Proses registrasi dengan validasi lengkap
      */
     public function prosesRegistrasi(Request $request)
     {
-        // Untuk sekarang, hanya redirect dengan pesan
-        return redirect()->back()->with('success', 
-            'Permohonan akses Anda telah diterima. Tim kami akan menghubungi dalam 1-3 hari kerja.'
-        );
+        try {
+            // Validasi dasar berdasarkan tipe akses
+            $baseRules = [
+                'tipe_akses' => 'required|in:pemerintah,akademisi',
+                'nama_lengkap' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:registrasi_akses,email',
+                'telepon' => 'required|string|max:20',
+                'deskripsi_kebutuhan' => 'nullable|string|max:1000'
+            ];
+
+            // Validasi khusus berdasarkan tipe akses
+            if ($request->tipe_akses === 'pemerintah') {
+                $specificRules = [
+                    'nip_nik' => 'required|string|max:50',
+                    'instansi' => 'required|string|max:255',
+                    'jabatan' => 'required|string|max:255',
+                    'unit_kerja' => 'required|string|max:255',
+                    'provinsi' => 'required|string|max:100',
+                    'tujuan' => 'required|array|min:1',
+                    'tujuan.*' => 'string|in:perencanaan_kebijakan,monitoring_ketahanan,analisis_regional,laporan_rutin,prediksi_konsumsi,evaluasi_program'
+                ];
+            } else {
+                $specificRules = [
+                    'institusi' => 'required|string|max:255',
+                    'gelar_akademik' => 'required|string|max:100',
+                    'bidang_keahlian' => 'required|string|max:255',
+                    'jenis_penelitian' => 'required|string|max:255',
+                    'tujuan' => 'required|array|min:1',
+                    'tujuan.*' => 'string|in:penelitian_skripsi,penelitian_tesis,penelitian_disertasi,penelitian_mandiri,publikasi_jurnal,analisis_kebijakan'
+                ];
+            }
+
+            $rules = array_merge($baseRules, $specificRules);
+
+            // Custom error messages
+            $messages = [
+                'required' => 'Field :attribute wajib diisi.',
+                'email' => 'Format email tidak valid.',
+                'unique' => 'Email sudah terdaftar dalam sistem.',
+                'in' => 'Pilihan :attribute tidak valid.',
+                'tujuan.required' => 'Minimal pilih satu tujuan penggunaan data.',
+                'tujuan.min' => 'Minimal pilih satu tujuan penggunaan data.'
+            ];
+
+            $validatedData = $request->validate($rules, $messages);
+
+            // Simpan data ke database
+            $registrasi = RegistrasiAkses::create([
+                'nama_lengkap' => $validatedData['nama_lengkap'],
+                'nip_nik' => $validatedData['nip_nik'] ?? null,
+                'email' => $validatedData['email'],
+                'telepon' => $validatedData['telepon'],
+                'tipe_akses' => $validatedData['tipe_akses'],
+                'instansi' => $validatedData['instansi'] ?? null,
+                'institusi' => $validatedData['institusi'] ?? null,
+                'jabatan' => $validatedData['jabatan'] ?? null,
+                'unit_kerja' => $validatedData['unit_kerja'] ?? null,
+                'provinsi' => $validatedData['provinsi'] ?? null,
+                'gelar_akademik' => $validatedData['gelar_akademik'] ?? null,
+                'bidang_keahlian' => $validatedData['bidang_keahlian'] ?? null,
+                'jenis_penelitian' => $validatedData['jenis_penelitian'] ?? null,
+                'tujuan_penggunaan' => $validatedData['tujuan'] ?? [],
+                'deskripsi_kebutuhan' => $validatedData['deskripsi_kebutuhan'],
+                'status' => RegistrasiAkses::STATUS_PENDING
+            ]);
+
+            // Log untuk admin
+            logger()->info('New registration submitted', [
+                'id' => $registrasi->id,
+                'nama' => $registrasi->nama_lengkap,
+                'tipe' => $registrasi->tipe_akses,
+                'email' => $registrasi->email
+            ]);
+
+            return redirect()->back()->with('success', 
+                'Permohonan akses berhasil dikirim! Kami akan menghubungi Anda melalui email dalam 1-3 hari kerja. ID Registrasi: #' . str_pad($registrasi->id, 6, '0', STR_PAD_LEFT)
+            );
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (Exception $e) {
+            logger()->error('Registration submission failed', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->except(['_token'])
+            ]);
+
+            return redirect()->back()->with('error', 
+                'Terjadi kesalahan saat mengirim permohonan. Silakan coba lagi atau hubungi support.'
+            )->withInput();
+        }
     }
 
     /**

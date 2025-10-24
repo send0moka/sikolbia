@@ -278,6 +278,9 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
         return view('prediksi.index');
     })->name('prediksi-nbm');
     
+    // Registrasi Akses Management
+    Route::view('registrasi-akses', 'admin.registrasi-akses')->name('registrasi-akses');
+    
     // ML Model Dashboard - Enhanced monitoring and evaluation interface
     Route::middleware(['permission:view dashboard'])->get('ml-dashboard', function () {
         return view('admin.ml-dashboard');
