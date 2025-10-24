@@ -206,6 +206,16 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Switch to Akademisi -->
+            <div class="mt-4 text-center">
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                    Dari institusi akademik atau mahasiswa? 
+                    <a href="{{ route('public.registrasi.akademisi') }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium">
+                        Daftar sebagai Akademisi
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
 </x-layouts.landing>

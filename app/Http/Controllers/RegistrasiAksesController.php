@@ -25,15 +25,15 @@ class RegistrasiAksesController extends Controller
             'nama_lengkap' => 'required|string|max:255',
             'email' => 'required|email|unique:registrasi_akses,email',
             'telepon' => 'required|string|max:20',
-            'tipe_akses' => 'required|in:pemerintah,akademik',
+            'tipe_akses' => 'required|in:pemerintah,akademisi',
             
             // Pemerintah fields
             'instansi' => 'required_if:tipe_akses,pemerintah|nullable|string|max:255',
             'jenis_dinas' => 'nullable|string|max:255',
             'jabatan' => 'required_if:tipe_akses,pemerintah|nullable|string|max:255',
             
-            // Akademik fields
-            'institusi' => 'required_if:tipe_akses,akademik|nullable|string|max:255',
+            // Akademisi fields
+            'institusi' => 'required_if:tipe_akses,akademisi|nullable|string|max:255',
             'jenjang_pendidikan' => 'nullable|string|max:255',
             'program_studi' => 'nullable|string|max:255',
             
