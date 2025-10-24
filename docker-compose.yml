@@ -41,6 +41,40 @@ services:
     networks:
       - laravel
 
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sikolbia-app
+    container_name: sikolbia-queue
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html:delegated
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
+    networks:
+      - laravel
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=sikolbia_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootsecret
+      - QUEUE_CONNECTION=database
+    command: php artisan queue:work --tries=3 --timeout=60 --sleep=3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 256m
+
   mysql:
     image: mysql:8.0
     container_name: sikolbia-mysql

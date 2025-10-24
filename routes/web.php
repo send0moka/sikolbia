@@ -22,9 +22,9 @@ Route::prefix('ketersediaan')->name('public.ketersediaan.')->group(function () {
 
 // Public Registration Routes (for access upgrade)
 Route::prefix('registrasi')->name('public.registrasi.')->group(function () {
-    Route::get('pemerintah', [KetersediaanController::class, 'registrasiPemerintah'])->name('pemerintah');
-    Route::get('akademisi', [KetersediaanController::class, 'registrasiAkademisi'])->name('akademisi');
-    Route::post('proses', [KetersediaanController::class, 'prosesRegistrasi'])->name('proses');
+    Route::get('pemerintah', [App\Http\Controllers\RegistrasiAksesController::class, 'showFormPemerintah'])->name('pemerintah');
+    Route::get('akademisi', [App\Http\Controllers\RegistrasiAksesController::class, 'showFormAkademisi'])->name('akademisi');
+    Route::post('proses', [App\Http\Controllers\RegistrasiAksesController::class, 'proses'])->name('proses');
 });
 
 // ADMIN ROUTES - LEVEL 1 ACCESS (PUSDATIN ONLY)  

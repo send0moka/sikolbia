@@ -5,8 +5,12 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\RegistrasiAkses as RegistrasiAksesModel;
+use App\Mail\RegistrasiApprovedMail;
+use App\Mail\RegistrasiRejectedMail;
+use App\Mail\RegistrasiNeedDocumentsMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class RegistrasiAkses extends Component
 {
@@ -24,6 +28,7 @@ class RegistrasiAkses extends Component
     public $selectedRegistrasi = null;
     public $actionType = '';
     public $adminCatatan = '';
+    public $catatanAdmin = ''; // For detail modal input
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -128,33 +133,79 @@ class RegistrasiAkses extends Component
     public function viewDetail($registrasiId)
     {
         Log::info('viewDetail called with ID: ' . $registrasiId);
+        $this->catatanAdmin = ''; // Reset catatan when opening modal
         $this->showDetail($registrasiId);
     }
 
     public function approve($registrasiId)
     {
         $registrasi = RegistrasiAksesModel::findOrFail($registrasiId);
-        $registrasi->approve(Auth::id(), 'Disetujui melalui dashboard admin');
         
-        session()->flash('message', 'Registrasi berhasil disetujui.');
+        // Use custom catatan if provided, otherwise use default
+        $catatan = !empty($this->catatanAdmin) 
+            ? $this->catatanAdmin 
+            : 'Selamat! Registrasi Anda telah disetujui. Anda sekarang dapat mengakses sistem SIKOLBIA.';
+        
+        $registrasi->approve(Auth::id(), $catatan);
+        
+        // Send email notification
+        try {
+            Mail::to($registrasi->email)->send(new RegistrasiApprovedMail($registrasi));
+            Log::info('Approval email sent to: ' . $registrasi->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send approval email: ' . $e->getMessage());
+        }
+        
+        session()->flash('message', 'Registrasi berhasil disetujui dan email notifikasi telah dikirim.');
+        $this->catatanAdmin = ''; // Reset after action
         $this->closeModals();
     }
 
     public function reject($registrasiId)
     {
         $registrasi = RegistrasiAksesModel::findOrFail($registrasiId);
-        $registrasi->reject(Auth::id(), 'Ditolak melalui dashboard admin');
         
-        session()->flash('message', 'Registrasi berhasil ditolak.');
+        // Use custom catatan if provided, otherwise use default
+        $catatan = !empty($this->catatanAdmin) 
+            ? $this->catatanAdmin 
+            : 'Mohon maaf, registrasi Anda tidak dapat disetujui saat ini. Silakan periksa kembali data yang Anda kirimkan atau hubungi admin untuk informasi lebih lanjut.';
+        
+        $registrasi->reject(Auth::id(), $catatan);
+        
+        // Send email notification
+        try {
+            Mail::to($registrasi->email)->send(new RegistrasiRejectedMail($registrasi));
+            Log::info('Rejection email sent to: ' . $registrasi->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send rejection email: ' . $e->getMessage());
+        }
+        
+        session()->flash('message', 'Registrasi berhasil ditolak dan email notifikasi telah dikirim.');
+        $this->catatanAdmin = ''; // Reset after action
         $this->closeModals();
     }
 
     public function needDocuments($registrasiId)
     {
         $registrasi = RegistrasiAksesModel::findOrFail($registrasiId);
-        $registrasi->needDocuments(Auth::id(), 'Membutuhkan dokumen tambahan');
         
-        session()->flash('message', 'Status diubah menjadi butuh dokumen tambahan.');
+        // Use custom catatan if provided, otherwise use default
+        $catatan = !empty($this->catatanAdmin) 
+            ? $this->catatanAdmin 
+            : 'Untuk melanjutkan proses verifikasi, kami memerlukan dokumen atau informasi tambahan dari Anda. Silakan hubungi kami untuk detail lebih lanjut.';
+        
+        $registrasi->needDocuments(Auth::id(), $catatan);
+        
+        // Send email notification
+        try {
+            Mail::to($registrasi->email)->send(new RegistrasiNeedDocumentsMail($registrasi));
+            Log::info('Need documents email sent to: ' . $registrasi->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send need documents email: ' . $e->getMessage());
+        }
+        
+        session()->flash('message', 'Status diubah menjadi butuh dokumen tambahan dan email notifikasi telah dikirim.');
+        $this->catatanAdmin = ''; // Reset after action
         $this->closeModals();
     }
 

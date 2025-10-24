@@ -2,6 +2,13 @@
     <!-- Header -->
     <flux:heading size="xl" class="mb-6">{{ __('Registrasi Akses') }}</flux:heading>
     
+    <!-- Success Message -->
+    @if (session()->has('message'))
+        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative dark:bg-green-900 dark:border-green-600 dark:text-green-200" role="alert">
+            <span class="block sm:inline">{{ session('message') }}</span>
+        </div>
+    @endif
+    
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
         <!-- Total Registrasi -->
@@ -368,16 +375,41 @@
 
             <!-- Action Buttons -->
             @if($selectedRegistrasi->status === 'pending')
-            <div class="mt-6 flex justify-end space-x-3">
-                <flux:button wire:click="needDocuments({{ $selectedRegistrasi->id }})" variant="outline">
-                    Minta Dokumen Tambahan
-                </flux:button>
-                <flux:button wire:click="approve({{ $selectedRegistrasi->id }})" class="bg-green-600 text-white hover:bg-green-700">
-                    Setujui
-                </flux:button>
-                <flux:button wire:click="reject({{ $selectedRegistrasi->id }})" class="bg-red-600 text-white hover:bg-red-700">
-                    Tolak
-                </flux:button>
+            <div class="mt-6 space-y-4">
+                <!-- Catatan Admin Input -->
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                        Catatan Admin (Opsional)
+                    </label>
+                    <textarea 
+                        wire:model="catatanAdmin" 
+                        rows="3" 
+                        class="w-full rounded-md border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Tambahkan catatan atau alasan untuk pemohon (akan dikirim via email)..."
+                    ></textarea>
+                    <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                        Catatan ini akan disertakan dalam email notifikasi
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <flux:button wire:click="needDocuments({{ $selectedRegistrasi->id }})" variant="outline">
+                        Minta Dokumen Tambahan
+                    </flux:button>
+                    <flux:button 
+                        wire:click="approve({{ $selectedRegistrasi->id }})" 
+                        wire:confirm="Apakah Anda yakin ingin menyetujui registrasi ini?"
+                        class="bg-green-600 text-white hover:bg-green-700">
+                        Setujui
+                    </flux:button>
+                    <flux:button 
+                        wire:click="reject({{ $selectedRegistrasi->id }})" 
+                        wire:confirm="Apakah Anda yakin ingin menolak registrasi ini?"
+                        class="bg-red-600 text-white hover:bg-red-700">
+                        Tolak
+                    </flux:button>
+                </div>
             </div>
             @endif
             </div>
