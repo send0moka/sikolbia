@@ -12,21 +12,21 @@ Alpine.data('pertanianReportForm', pertanianReportForm);
 // Sticky table utility (auto-initializes on import)
 import './utils/stickyTable.js';
 
-// Let Livewire handle Alpine initialization for Livewire pages
-// Only start Alpine manually for non-Livewire pages
+// IMPORTANT: Do NOT start Alpine manually when Livewire is present
+// Livewire will handle Alpine initialization including navigate functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Small delay to allow Livewire to initialize first
-    setTimeout(() => {
-        // Check if this is a Livewire page
-        const hasLivewire = document.querySelector('[wire\\:id]') || 
-                           document.querySelector('[livewire\\:id]') || 
-                           window.Livewire;
-        
-        // If no Livewire and Alpine hasn't started yet, start Alpine manually
-        if (!hasLivewire && !window.Alpine._x_started) {
-            Alpine.start();
-        }
-    }, 100);
+    // Check if this is a Livewire page
+    const hasLivewire = document.querySelector('[wire\\:id]') || 
+                       document.querySelector('[livewire\\:id]') || 
+                       window.Livewire;
+    
+    // Only start Alpine manually for non-Livewire pages and if not already started
+    if (!hasLivewire && !window.Alpine._x_started) {
+        console.log('Starting Alpine manually for non-Livewire page');
+        Alpine.start();
+    } else if (hasLivewire) {
+        console.log('Livewire detected - Alpine will be handled by Livewire');
+    }
 });
 
 // Admin Pages

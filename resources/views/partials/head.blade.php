@@ -21,3 +21,14 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 @stack('styles')
+
+<!-- Prevent multiple Alpine instances -->
+<script>
+    // Ensure only one Alpine instance
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.Alpine && window.Alpine._x_started) {
+            console.log('Alpine already started, skipping duplicate initialization');
+            return;
+        }
+    });
+</script>

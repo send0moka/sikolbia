@@ -37,8 +37,8 @@ Route::prefix('registrasi')->name('public.registrasi.')->group(function () {
 // ADMIN ROUTES - LEVEL 1 ACCESS (PUSDATIN ONLY)  
 // =============================================
 
-// Admin Panel Selection Route - setelah login
-Route::middleware(['auth', 'verified'])->group(function () {
+// Admin Panel Selection Route - setelah login - HANYA UNTUK ADMIN/SUPERADMIN
+Route::middleware(['auth', 'verified', 'admin.only'])->group(function () {
     // Main dashboard route
     Route::get('/admin/konsumsi-pangan', function () {
         return view('dashboard');
@@ -198,8 +198,8 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
     });
 });
 
-// Lahan Routes
-Route::middleware(['auth'])->prefix('admin/lahan')->name('admin.lahan.')->group(function () {
+// Lahan Routes - HANYA UNTUK ADMIN/SUPERADMIN
+Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/lahan')->name('admin.lahan.')->group(function () {
     Route::get('/', function () {
         return view('admin.lahan.dashboard');
     })->name('dashboard');
@@ -222,8 +222,8 @@ Route::middleware(['auth'])->prefix('admin/lahan')->name('admin.lahan.')->group(
     Route::view('settings', 'admin.lahan.settings')->name('settings');
 });
 
-// Iklim OPT-DPI Routes
-Route::middleware(['auth'])->prefix('admin/iklim-opt-dpi')->name('admin.iklim-opt-dpi.')->group(function () {
+// Iklim OptDPI Routes - HANYA UNTUK ADMIN/SUPERADMIN
+Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/iklim-opt-dpi')->name('admin.iklim-opt-dpi.')->group(function () {
     Route::view('/', 'admin.iklim-opt-dpi.dashboard-wrapper')->name('dashboard');
     
     // Iklim Opt DPI management CRUD
@@ -240,8 +240,8 @@ Route::middleware(['auth'])->prefix('admin/iklim-opt-dpi')->name('admin.iklim-op
     Route::view('reports', 'admin.iklim-opt-dpi.reports-wrapper')->name('reports');
 });
 
-// Panel Daftar Alamat Routes
-Route::middleware(['auth'])->prefix('admin/daftar-alamat')->name('admin.daftar-alamat.')->group(function () {
+// Panel Daftar Alamat Routes - HANYA UNTUK ADMIN/SUPERADMIN
+Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/daftar-alamat')->name('admin.daftar-alamat.')->group(function () {
     Route::get('/', function () {
         return view('admin.daftar-alamat.dashboard');
     })->name('dashboard');
@@ -260,8 +260,8 @@ Route::middleware(['auth'])->prefix('admin/daftar-alamat')->name('admin.daftar-a
     Route::post('save', [App\Http\Controllers\Admin\DaftarAlamatController::class, 'save'])->name('save');
 });
 
-// Panel Benih Pupuk Routes
-Route::middleware(['auth'])->prefix('admin/benih-pupuk')->name('admin.benih-pupuk.')->group(function () {
+// Panel Benih Pupuk Routes - HANYA UNTUK ADMIN/SUPERADMIN
+Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/benih-pupuk')->name('admin.benih-pupuk.')->group(function () {
     Route::get('/', function () {
         return view('admin.panel-benih-pupuk.dashboard');
     })->name('dashboard');
@@ -303,15 +303,15 @@ Route::get('admin/benih-pupuk/export/simple-test', function() {
     return 'Simple test route works!';
 });
 
-// Susenas Routes (accessible by both superadmin and admin)
-Route::middleware(['auth', 'permission:view kelompokbps|view komoditibps|view susenas'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
+// Susenas Routes (accessible by admin and superadmin with proper permissions)
+Route::middleware(['auth', 'role:admin|superadmin', 'permission:view kelompokbps|view komoditibps|view susenas'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
     Route::view('kelompok-bps', 'admin.kelompok-bps')->name('kelompok-bps');
     Route::view('komoditi-bps', 'admin.komoditi-bps')->name('komoditi-bps');
     Route::view('susenas', 'admin.susenas')->name('susenas');
 });
 
-// NBM Prediction Routes
-Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
+// NBM Prediction Routes - HANYA UNTUK ADMIN/SUPERADMIN
+Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
     Route::get('prediksi-nbm', function () {
         return view('prediksi.index');
     })->name('prediksi-nbm');

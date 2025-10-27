@@ -40,8 +40,16 @@ new #[Layout('components.layouts.auth')] class extends Component {
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
-        // Redirect ke halaman pemilihan admin panel
-        $this->redirectIntended(default: route('admin.panel-selection', absolute: false), navigate: true);
+        // Redirect based on user role (ignore previous intended to avoid sending users to the wrong panel)
+        $user = Auth::user();
+        if ($user->hasRole('pemerintah')) {
+            $this->redirect(route('pemerintah.dashboard'));
+        } elseif ($user->hasRole('akademisi')) {
+            $this->redirect(route('akademisi.dashboard'));
+        } else {
+            // superadmin / admin
+            $this->redirect(route('admin.panel-selection'));
+        }
     }
 
     /**
