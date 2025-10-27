@@ -217,7 +217,7 @@
                                             <svg class="mx-auto h-12 w-12 text-neutral-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
-                                            <div class="flex text-sm text-neutral-600 dark:text-neutral-400">
+                                            <div class="flex justify-center items-center text-sm text-neutral-600 dark:text-neutral-400">
                                                 <label for="surat_permohonan" class="relative cursor-pointer bg-white dark:bg-neutral-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                                     <span>Upload file</span>
                                                     <input id="surat_permohonan" name="surat_permohonan" type="file" accept=".pdf" class="sr-only" required>
@@ -243,7 +243,7 @@
                                             <svg class="mx-auto h-12 w-12 text-neutral-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
-                                            <div class="flex text-sm text-neutral-600 dark:text-neutral-400">
+                                            <div class="flex justify-center items-center text-sm text-neutral-600 dark:text-neutral-400">
                                                 <label for="id_instansi" class="relative cursor-pointer bg-white dark:bg-neutral-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                                     <span>Upload file</span>
                                                     <input id="id_instansi" name="id_instansi" type="file" accept=".pdf,.jpg,.jpeg,.png" class="sr-only" required>
@@ -269,7 +269,7 @@
                                             <svg class="mx-auto h-12 w-12 text-neutral-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>
-                                            <div class="flex text-sm text-neutral-600 dark:text-neutral-400">
+                                            <div class="flex justify-center items-center text-sm text-neutral-600 dark:text-neutral-400">
                                                 <label for="surat_atasan" class="relative cursor-pointer bg-white dark:bg-neutral-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                                     <span>Upload file</span>
                                                     <input id="surat_atasan" name="surat_atasan" type="file" accept=".pdf" class="sr-only">
@@ -364,7 +364,7 @@
                 
                 const dropZone = input.closest('.border-dashed');
                 
-                // File input change handler - safe approach that preserves input
+                // File input change handler - safe approach that preserves input and updates text
                 input.addEventListener('change', function(e) {
                     if (e.target.files.length > 0) {
                         const file = e.target.files[0];
@@ -375,28 +375,46 @@
                             dropZone.classList.add('border-green-400', 'bg-green-50');
                             dropZone.classList.remove('border-neutral-300', 'border-red-500');
                             
-                            // Add success indicator without destroying the input
-                            const existingSuccess = dropZone.querySelector('.file-success-indicator');
-                            if (existingSuccess) {
-                                existingSuccess.remove();
+                            // Update the text content while preserving the input element
+                            const textContainer = dropZone.querySelector('.flex');
+                            if (textContainer) {
+                                // Store original content for potential reset
+                                if (!textContainer.dataset.originalContent) {
+                                    textContainer.dataset.originalContent = textContainer.innerHTML;
+                                }
+                                
+                                // Replace the text content with success message
+                                textContainer.innerHTML = `
+                                    <span class="text-green-600 dark:text-green-400 font-medium">
+                                        ✓ ${file.name}
+                                    </span>
+                                `;
                             }
                             
-                            const successDiv = document.createElement('div');
-                            successDiv.className = 'file-success-indicator mt-2 text-sm text-green-600 font-medium text-center';
-                            successDiv.innerHTML = `✓ ${file.name} (${formatFileSize(file.size)})`;
-                            dropZone.appendChild(successDiv);
+                            // Update the file size text
+                            const sizeText = dropZone.querySelector('.text-xs.text-neutral-500');
+                            if (sizeText) {
+                                if (!sizeText.dataset.originalContent) {
+                                    sizeText.dataset.originalContent = sizeText.textContent;
+                                }
+                                sizeText.textContent = `${formatFileSize(file.size)} - File berhasil dipilih`;
+                                sizeText.classList.add('text-green-600', 'dark:text-green-400');
+                                sizeText.classList.remove('text-neutral-500');
+                            }
                         } else {
-                            // Clear invalid file
+                            // Clear invalid file and reset to original state
                             input.value = '';
                             dropZone.classList.add('border-red-500');
                             dropZone.classList.remove('border-green-400', 'bg-green-50', 'border-neutral-300');
                             
-                            // Remove success indicator if exists
-                            const successDiv = dropZone.querySelector('.file-success-indicator');
-                            if (successDiv) {
-                                successDiv.remove();
-                            }
+                            // Reset text to original
+                            resetTextToOriginal(dropZone);
                         }
+                    } else {
+                        // No file selected, reset to original state
+                        resetTextToOriginal(dropZone);
+                        dropZone.classList.remove('border-green-400', 'bg-green-50', 'border-red-500');
+                        dropZone.classList.add('border-neutral-300');
                     }
                 });
                 
@@ -458,6 +476,20 @@
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
+            
+            function resetTextToOriginal(dropZone) {
+                const textContainer = dropZone.querySelector('.flex');
+                if (textContainer && textContainer.dataset.originalContent) {
+                    textContainer.innerHTML = textContainer.dataset.originalContent;
+                }
+                
+                const sizeText = dropZone.querySelector('.text-xs');
+                if (sizeText && sizeText.dataset.originalContent) {
+                    sizeText.textContent = sizeText.dataset.originalContent;
+                    sizeText.classList.remove('text-green-600', 'dark:text-green-400');
+                    sizeText.classList.add('text-neutral-500');
+                }
+            }
         });
         
         // Global function for clearing files (if needed)
@@ -469,11 +501,8 @@
                 dropZone.classList.remove('border-green-400', 'bg-green-50', 'border-red-500');
                 dropZone.classList.add('border-neutral-300');
                 
-                // Remove success indicator if exists
-                const successDiv = dropZone.querySelector('.file-success-indicator');
-                if (successDiv) {
-                    successDiv.remove();
-                }
+                // Reset text to original content
+                resetTextToOriginal(dropZone);
             }
         }
     </script>
