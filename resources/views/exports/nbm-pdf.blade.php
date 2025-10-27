@@ -113,7 +113,7 @@
 <body>
     <div class="header">
         <h1>LAPORAN NERACA BAHAN MAKANAN (NBM)</h1>
-        <h2>Sistem Kolaborasi Ketahanan Pangan Bantul & Indonesia</h2>
+        <h2>Sistem Kolaborasi Ketahanan Pangan Nasional Indonesia</h2>
     </div>
 
     <div class="meta-info">

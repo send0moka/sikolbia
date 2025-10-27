@@ -7,7 +7,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold mb-2">Selamat Datang, {{ Auth::user()->name }}!</h2>
-                <p class="text-blue-100">Akses Data Sistem Kolaborasi Ketahanan Pangan Bantul & Indonesia</p>
+                <p class="text-blue-100">Akses Data Sistem Kolaborasi Ketahanan Pangan Nasional Indonesia</p>
                 <p class="text-sm text-blue-200 mt-1">Role: <span class="font-semibold">Pemerintah</span> • Akses: Read-Only</p>
             </div>
             <div class="hidden md:block">

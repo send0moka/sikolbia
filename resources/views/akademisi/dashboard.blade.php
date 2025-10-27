@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold mb-2">Selamat Datang, {{ Auth::user()->name }}!</h2>
-                <p class="text-purple-100">Akses Riset & Data Ketahanan Pangan Bantul & Indonesia</p>
+                <p class="text-purple-100">Akses Riset & Data Ketahanan Pangan Nasional Indonesia</p>
                 <p class="text-sm text-purple-200 mt-1">Role: <span class="font-semibold">Akademisi</span> • Akses: Read-Only & Export</p>
             </div>
             <div class="hidden md:block">
@@ -100,7 +100,7 @@
                         <li>Skripsi, Tesis, dan Disertasi</li>
                         <li>Analisis statistik dan Machine Learning</li>
                     </ul>
-                    <p class="mt-3 text-xs">Mohon cantumkan sumber data: <strong>"SIKOLBIA - Sistem Kolaborasi Ketahanan Pangan Bantul & Indonesia"</strong> dalam publikasi Anda.</p>
+                    <p class="mt-3 text-xs">Mohon cantumkan sumber data: <strong>"SIKOLBIA - Sistem Kolaborasi Ketahanan Pangan Nasional Indonesia"</strong> dalam publikasi Anda.</p>
                 </div>
             </div>
         </div>
@@ -177,7 +177,7 @@
             <div class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                 <h4 class="text-sm font-medium text-neutral-900 dark:text-white mb-3">Petunjuk Sitasi Data</h4>
                 <div class="bg-neutral-50 dark:bg-neutral-700 rounded p-3 text-xs text-neutral-600 dark:text-neutral-300">
-                    <p class="font-mono">Sumber: SIKOLBIA - Sistem Kolaborasi Ketahanan Pangan Bantul & Indonesia. Diakses: [{{ date('Y') }}]</p>
+                    <p class="font-mono">Sumber: SIKOLBIA - Sistem Kolaborasi Ketahanan Pangan Nasional Indonesia. Diakses: [{{ date('Y') }}]</p>
                 </div>
                 <a href="#" class="mt-3 inline-block text-sm text-purple-600 dark:text-purple-400 hover:underline">Ubah Password →</a>
             </div>
