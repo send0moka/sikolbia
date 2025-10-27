@@ -18,7 +18,8 @@ class RegistrasiApprovedMail extends Mailable implements ShouldQueue
      * Create a new message instance.
      */
     public function __construct(
-        public RegistrasiAkses $registrasi
+        public RegistrasiAkses $registrasi,
+        public ?string $password = null
     ) {
         //
     }
@@ -42,6 +43,8 @@ class RegistrasiApprovedMail extends Mailable implements ShouldQueue
             markdown: 'emails.registrasi.approved',
             with: [
                 'registrasi' => $this->registrasi,
+                'password' => $this->password,
+                'loginUrl' => url('/login'),
             ],
         );
     }

@@ -1,3 +1,7 @@
+@php
+    use Illuminate\Support\Facades\Storage;
+@endphp
+
 <div>
     <!-- Header -->
     <flux:heading size="xl" class="mb-6">{{ __('Registrasi Akses') }}</flux:heading>
@@ -371,6 +375,39 @@
                     {{ $selectedRegistrasi->catatan_admin }}
                 </p>
             </div>
+            @endif
+
+            <!-- Dokumen Tambahan yang Diupload -->
+            @if($selectedRegistrasi->dokumen_tambahan)
+            @php
+                $dokumen = json_decode($selectedRegistrasi->dokumen_tambahan, true);
+            @endphp
+            @if($dokumen && count($dokumen) > 0)
+            <div class="mt-6">
+                <h4 class="font-medium text-neutral-900 dark:text-white mb-3">📎 Dokumen Tambahan yang Diupload</h4>
+                <div class="space-y-2">
+                    @foreach($dokumen as $index => $doc)
+                    <div class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ $doc['original_name'] }}</p>
+                                @if(isset($doc['keterangan']) && $doc['keterangan'])
+                                <p class="text-xs text-neutral-600 dark:text-neutral-400">{{ $doc['keterangan'] }}</p>
+                                @endif
+                                <p class="text-xs text-neutral-500">{{ \Carbon\Carbon::parse($doc['uploaded_at'])->format('d M Y H:i') }}</p>
+                            </div>
+                        </div>
+                        <a href="{{ Storage::url($doc['path']) }}" target="_blank" class="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded hover:bg-blue-200">
+                            Download
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
             @endif
 
             <!-- Action Buttons -->

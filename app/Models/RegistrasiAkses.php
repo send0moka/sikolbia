@@ -31,6 +31,12 @@ class RegistrasiAkses extends Model
         'jenis_penelitian',
         'tujuan_penggunaan',
         'deskripsi_kebutuhan',
+        'surat_permohonan',
+        'id_instansi',
+        'surat_atasan',
+        'surat_keterangan_institusi',
+        'proposal_penelitian',
+        'dokumen_uploaded_at',
         'status',
         'catatan_admin',
         'tanggal_review',
@@ -89,6 +95,11 @@ class RegistrasiAkses extends Model
     public function reviewer()
     {
         return $this->belongsTo(\App\Models\User::class, 'reviewed_by');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
     // Scopes

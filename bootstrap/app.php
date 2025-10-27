@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'redirect.role' => \App\Http\Middleware\RedirectBasedOnRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

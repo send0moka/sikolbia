@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Surat Permohonan Akses Data NBM - Pemerintah</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 21cm;
+            margin: 0 auto;
+            padding: 2cm;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kop-surat {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #64748b;
+        }
+        
+        .nomor-surat {
+            margin: 20px 0;
+        }
+        
+        .nomor-surat div {
+            margin: 5px 0;
+        }
+        
+        .isi-surat {
+            margin: 30px 0;
+            text-align: justify;
+        }
+        
+        .data-pemohon {
+            background: #f1f5f9;
+            padding: 20px;
+            border-left: 4px solid #2563eb;
+            margin: 20px 0;
+        }
+        
+        .data-pemohon table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-pemohon td {
+            padding: 8px;
+            border-bottom: 1px dotted #cbd5e1;
+        }
+        
+        .data-pemohon td:first-child {
+            width: 30%;
+            font-weight: bold;
+        }
+        
+        .checkbox-list {
+            margin: 15px 0;
+        }
+        
+        .checkbox-list label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+        
+        .checkbox-list input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .lampiran {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .ttd-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .ttd-box {
+            width: 45%;
+            text-align: center;
+        }
+        
+        .materai-box {
+            border: 2px dashed #dc2626;
+            background: #fef2f2;
+            padding: 20px;
+            text-align: center;
+            margin: 30px auto;
+            width: 200px;
+            color: #dc2626;
+            font-weight: bold;
+        }
+        
+        .petunjuk {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 5px;
+        }
+        
+        .petunjuk h3 {
+            color: #065f46;
+            margin-top: 0;
+        }
+        
+        .petunjuk ol {
+            color: #047857;
+        }
+        
+        @media print {
+            body {
+                padding: 1cm;
+            }
+            .petunjuk {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TEMPLATE SURAT PERMOHONAN</h1>
+        <h2>Akses Data NBM (Neraca Bahan Makanan)</h2>
+        <p><strong>Untuk Instansi Pemerintahan</strong></p>
+    </div>
+
+    <div class="kop-surat">
+        <strong>[TEMPAT KOP SURAT INSTANSI]</strong><br>
+        <em>Gunakan kop surat resmi instansi/dinas Anda</em>
+    </div>
+
+    <div class="nomor-surat">
+        <div><strong>Nomor:</strong> ___________________</div>
+        <div><strong>Lampiran:</strong> _____ ( _____ ) berkas</div>
+        <div><strong>Perihal:</strong> Permohonan Akses Data NBM (Neraca Bahan Makanan)</div>
+    </div>
+
+    <div style="margin: 30px 0;">
+        <p><strong>Kepada Yth.</strong><br>
+        Tim Pengelola Data SIKOLBIA<br>
+        Kementerian Pertanian Republik Indonesia<br>
+        <strong>di tempat</strong></p>
+    </div>
+
+    <div class="isi-surat">
+        <p><strong>Dengan hormat,</strong></p>
+        
+        <p>Yang bertanda tangan di bawah ini:</p>
+        
+        <div class="data-pemohon">
+            <table>
+                <tr>
+                    <td>Nama Lengkap</td>
+                    <td>: _______________________________________</td>
+                </tr>
+                <tr>
+                    <td>Jabatan</td>
+                    <td>: _______________________________________</td>
+                </tr>
+                <tr>
+                    <td>Instansi/Dinas</td>
+                    <td>: _______________________________________</td>
+                </tr>
+                <tr>
+                    <td>Alamat Instansi</td>
+                    <td>: _______________________________________</td>
+                </tr>
+                <tr>
+                    <td>Nomor Telepon</td>
+                    <td>: _______________________________________</td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td>: _______________________________________</td>
+                </tr>
+                <tr>
+                    <td>NIP</td>
+                    <td>: _______________________________________</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>Dengan ini mengajukan permohonan untuk mendapatkan akses data NBM (Neraca Bahan Makanan) yang dikelola oleh SIKOLBIA untuk keperluan:</p>
+
+        <div class="checkbox-list">
+            <strong>Tujuan Penggunaan Data:</strong><br>
+            <label><input type="checkbox"> Penelitian dan Pengembangan</label>
+            <label><input type="checkbox"> Perencanaan Program Pemerintah</label>
+            <label><input type="checkbox"> Monitoring dan Evaluasi</label>
+            <label><input type="checkbox"> Analisis Kebijakan Pangan</label>
+            <label><input type="checkbox"> Pelaporan Statistik</label>
+            <label><input type="checkbox"> Koordinasi Antar Instansi</label>
+            <label><input type="checkbox"> Lainnya: ________________________________</label>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <p><strong>Deskripsi Detail Kebutuhan:</strong></p>
+            <div style="border: 1px solid #ccc; min-height: 100px; padding: 10px;">
+                <em>(Jelaskan secara detail mengapa data NBM diperlukan, bagaimana data akan digunakan, dan output yang akan dihasilkan dari penggunaan data tersebut)</em>
+            </div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <p><strong>Periode Data yang Dibutuhkan:</strong></p>
+            <p>Dari tahun _______ sampai dengan tahun _______</p>
+        </div>
+
+        <div class="checkbox-list">
+            <strong>Jenis Data NBM yang Dibutuhkan:</strong><br>
+            <label><input type="checkbox"> Data Produksi Pangan</label>
+            <label><input type="checkbox"> Data Konsumsi Pangan</label>
+            <label><input type="checkbox"> Data Ketersediaan Pangan</label>
+            <label><input type="checkbox"> Data Kalori per Komoditi</label>
+            <label><input type="checkbox"> Data Kelompok Pangan</label>
+            <label><input type="checkbox"> Data Prediksi NBM (Machine Learning)</label>
+            <label><input type="checkbox"> Lainnya: ________________________________</label>
+        </div>
+
+        <div class="lampiran">
+            <strong>Bersama surat ini kami lampirkan:</strong>
+            <ol>
+                <li>Surat Keterangan dari Atasan Langsung</li>
+                <li>Fotokopi Kartu Pegawai/ID Instansi</li>
+                <li>_________________________________ (jika ada)</li>
+            </ol>
+        </div>
+
+        <p>Demikian permohonan ini kami sampaikan. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.</p>
+    </div>
+
+    <div class="ttd-section">
+        <div class="ttd-box">
+            <p><strong>Mengetahui,</strong><br>
+            <strong>Atasan Langsung</strong></p>
+            <div style="height: 80px; margin: 20px 0;"></div>
+            <p>_________________________<br>
+            <strong>( _________________ )</strong><br>
+            NIP. _____________________</p>
+        </div>
+        
+        <div class="ttd-box">
+            <p>____________, __ _______ 20__</p>
+            <p><strong>Hormat kami,</strong></p>
+            <div style="height: 80px; margin: 20px 0;"></div>
+            <p>_________________________<br>
+            <strong>( _________________ )</strong><br>
+            NIP. _____________________</p>
+        </div>
+    </div>
+
+    <div class="materai-box">
+        MATERAI<br>
+        Rp 10.000,-
+    </div>
+
+    <div class="petunjuk">
+        <h3>🔍 Petunjuk Penggunaan Template:</h3>
+        <ol>
+            <li><strong>Isi semua bagian yang kosong</strong> dengan informasi yang sesuai</li>
+            <li><strong>Centang kotak</strong> yang sesuai dengan kebutuhan data Anda</li>
+            <li><strong>Gunakan kop surat resmi</strong> instansi/dinas Anda</li>
+            <li><strong>Pastikan surat bermaterai</strong> Rp 10.000</li>
+            <li><strong>Tanda tangan asli</strong> dari pejabat yang berwenang</li>
+            <li><strong>Lampirkan dokumen pendukung</strong> yang diminta</li>
+            <li><strong>Simpan dalam format PDF</strong> sebelum upload</li>
+            <li><strong>Pastikan dokumen jelas dan terbaca</strong> saat dipindai</li>
+        </ol>
+        
+        <h3>📋 Ketentuan Penting:</h3>
+        <ul>
+            <li>Surat harus menggunakan nomor surat yang valid</li>
+            <li>Tanda tangan harus asli (bukan digital signature)</li>
+            <li>Materai ditempel sebelum ditandatangani</li>
+            <li>Dokumen dalam kondisi jelas dan tidak kabur</li>
+        </ul>
+        
+        <h3>📞 Informasi Kontak:</h3>
+        <ul>
+            <li><strong>Email:</strong> data@sikolbia.kementan.go.id</li>
+            <li><strong>Website:</strong> https://sikolbia.kementan.go.id</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; color: #64748b; font-size: 12px;">
+        <p><em>Template ini berlaku sejak tanggal diterbitkan dan dapat berubah sewaktu-waktu.<br>
+        Versi terbaru tersedia di website resmi SIKOLBIA.</em></p>
+    </div>
+</body>
+</html>

@@ -144,7 +144,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('public.registrasi.proses') }}" class="space-y-6">
+            <form method="POST" action="{{ route('public.registrasi.proses') }}" class="space-y-6" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="tipe_akses" value="pemerintah">
 
@@ -307,20 +307,124 @@
                     </div>
                 </div>
 
-                <!-- Documents Upload Note -->
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
-                    <div class="flex">
-                        <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                <!-- Document Upload Section -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">
+                        <i class="fas fa-upload text-blue-600 mr-2"></i>
+                        Upload Dokumen Pendukung
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Template Download -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-download text-blue-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="text-blue-800 font-medium">Template Surat Permohonan</h4>
+                                    <p class="text-blue-700 text-sm mt-1">
+                                        Download template resmi surat permohonan akses data NBM
+                                    </p>
+                                    <a href="https://drive.google.com/file/d/template-surat-permohonan-pemerintah" target="_blank"
+                                       class="inline-flex items-center mt-2 text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                                        <i class="fas fa-external-link-alt mr-1"></i>
+                                        Download Template
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Surat Permohonan Upload -->
                         <div>
-                            <h3 class="text-blue-800 font-medium">Dokumen yang Diperlukan</h3>
-                            <p class="text-blue-700 text-sm mt-1">
-                                Setelah submit form ini, Anda akan dihubungi untuk melengkapi dokumen:
-                            </p>
-                            <ul class="text-blue-700 text-sm mt-2 space-y-1">
-                                <li>• Surat permohonan akses data (resmi dari instansi)</li>
-                                <li>• Fotokopi kartu pegawai/ID instansi</li>
-                                <li>• Surat keterangan dari atasan langsung</li>
-                            </ul>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Surat Permohonan Akses Data *
+                                <span class="text-gray-500">(PDF, max 5MB)</span>
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="surat_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Upload file</span>
+                                            <input id="surat_permohonan" name="surat_permohonan" type="file" accept=".pdf" class="sr-only" required>
+                                        </label>
+                                        <p class="pl-1">atau drag & drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PDF hingga 5MB</p>
+                                </div>
+                            </div>
+                            @error('surat_permohonan')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- ID Instansi Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Kartu Pegawai/ID Instansi *
+                                <span class="text-gray-500">(PDF/JPG, max 2MB)</span>
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="id_instansi" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Upload file</span>
+                                            <input id="id_instansi" name="id_instansi" type="file" accept=".pdf,.jpg,.jpeg,.png" class="sr-only" required>
+                                        </label>
+                                        <p class="pl-1">atau drag & drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PDF, JPG, PNG hingga 2MB</p>
+                                </div>
+                            </div>
+                            @error('id_instansi')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Surat Keterangan Atasan Upload (Optional) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Surat Keterangan Atasan
+                                <span class="text-gray-500">(PDF, max 3MB, optional)</span>
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="surat_atasan" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Upload file</span>
+                                            <input id="surat_atasan" name="surat_atasan" type="file" accept=".pdf" class="sr-only">
+                                        </label>
+                                        <p class="pl-1">atau drag & drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PDF hingga 3MB (opsional)</p>
+                                </div>
+                            </div>
+                            @error('surat_atasan')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Upload Requirements -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="text-yellow-800 font-medium">Persyaratan Dokumen</h4>
+                                    <ul class="text-yellow-700 text-sm mt-2 space-y-1">
+                                        <li>• Dokumen harus jelas dan terbaca</li>
+                                        <li>• Surat permohonan bermaterai dan ditandatangani</li>
+                                        <li>• ID instansi yang masih berlaku</li>
+                                        <li>• Format file sesuai ketentuan (PDF/JPG)</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

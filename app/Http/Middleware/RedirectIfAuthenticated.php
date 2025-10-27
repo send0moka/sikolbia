@@ -18,7 +18,17 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect()->route('admin.panel-selection');
+                $user = Auth::user();
+                
+                // Redirect based on role
+                if ($user->hasRole('pemerintah')) {
+                    return redirect()->route('pemerintah.dashboard');
+                } elseif ($user->hasRole('akademisi')) {
+                    return redirect()->route('akademisi.dashboard');
+                } else {
+                    // Admin/Superadmin
+                    return redirect()->route('admin.panel-selection');
+                }
             }
         }
 

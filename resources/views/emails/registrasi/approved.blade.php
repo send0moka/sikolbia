@@ -1,9 +1,9 @@
 <x-mail::message>
-# Registrasi Akses Disetujui
+# 🎉 Registrasi Akses Disetujui
 
 Halo **{{ $registrasi->nama_lengkap }}**,
 
-Kami dengan senang hati menginformasikan bahwa registrasi akses Anda ke sistem SIKOLBIA telah **disetujui**.
+Selamat! Registrasi akses Anda ke sistem SIKOLBIA telah **disetujui** dan akun Anda telah dibuat.
 
 ## Detail Registrasi
 
@@ -15,13 +15,26 @@ Kami dengan senang hati menginformasikan bahwa registrasi akses Anda ke sistem S
 - **Jabatan**: {{ $registrasi->jabatan }}
 @else
 - **Institusi**: {{ $registrasi->institusi }}
+@if($registrasi->program_studi)
 - **Program Studi**: {{ $registrasi->program_studi }}
 @endif
+@endif
 
-Anda sekarang dapat mengakses sistem SIKOLBIA dengan akun yang telah Anda daftarkan.
+---
 
-<x-mail::button :url="config('app.url')">
-Akses SIKOLBIA
+## 🔐 Informasi Login
+
+Berikut adalah kredensial login Anda:
+
+- **Email**: `{{ $registrasi->email }}`
+- **Password**: `{{ $password }}`
+
+<x-mail::panel>
+⚠️ **PENTING**: Segera ubah password Anda setelah login pertama kali untuk keamanan akun Anda.
+</x-mail::panel>
+
+<x-mail::button :url="$loginUrl">
+Login ke SIKOLBIA
 </x-mail::button>
 
 @if($registrasi->catatan_admin)

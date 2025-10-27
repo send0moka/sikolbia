@@ -25,6 +25,13 @@ Route::prefix('registrasi')->name('public.registrasi.')->group(function () {
     Route::get('pemerintah', [App\Http\Controllers\RegistrasiAksesController::class, 'showFormPemerintah'])->name('pemerintah');
     Route::get('akademisi', [App\Http\Controllers\RegistrasiAksesController::class, 'showFormAkademisi'])->name('akademisi');
     Route::post('proses', [App\Http\Controllers\RegistrasiAksesController::class, 'proses'])->name('proses');
+    
+    // Check status
+    Route::get('check-status', [App\Http\Controllers\RegistrasiAksesController::class, 'checkStatus'])->name('check-status');
+    
+    // Upload dokumen tambahan
+    Route::get('upload-dokumen/{id}', [App\Http\Controllers\UploadDokumenController::class, 'showForm'])->name('upload-dokumen');
+    Route::post('upload-dokumen/{id}', [App\Http\Controllers\UploadDokumenController::class, 'upload'])->name('upload-dokumen.submit');
 });
 
 // ADMIN ROUTES - LEVEL 1 ACCESS (PUSDATIN ONLY)  
@@ -45,6 +52,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin', function () {
         return view('admin.panel-selection');
     })->name('admin.panel-selection');
+});
+
+// PEMERINTAH ROUTES - PUBLIC USER ACCESS (READ-ONLY)
+// ===================================================
+Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')->name('pemerintah.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Pemerintah\PemerintahDashboardController::class, 'index'])->name('dashboard');
+    
+    // Konsumsi Pangan & NBM
+    Route::get('/laporan-nbm', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'laporanNbm'])->name('laporan-nbm');
+    Route::post('/laporan-nbm/filter', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'filterLaporanNbm'])->name('laporan-nbm.filter');
+    Route::get('/laporan-nbm/export/excel', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportExcelNbm'])->name('laporan-nbm.export.excel');
+    Route::get('/laporan-nbm/export/pdf', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPdfNbm'])->name('laporan-nbm.export.pdf');
+    Route::get('/api/komoditi', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getKomoditi'])->name('api.komoditi');
+    
+    Route::get('/prediksi-nbm', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'prediksiNbm'])->name('prediksi-nbm');
+    
+    // Pertanian
+    Route::get('/lahan', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'lahan'])->name('lahan');
+    Route::get('/benih-pupuk', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'benihPupuk'])->name('benih-pupuk');
+    Route::get('/iklim', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'iklim'])->name('iklim');
+    
+    // Settings & Profile
+    Route::get('/profile', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'profile'])->name('profile');
+    Route::get('/settings', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'settings'])->name('settings');
+    Route::get('/panduan', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'panduan'])->name('panduan');
+});
+
+// AKADEMISI ROUTES - PUBLIC USER ACCESS (READ-ONLY)
+// ==================================================
+Route::middleware(['auth', 'verified', 'role:akademisi'])->prefix('akademisi')->name('akademisi.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Akademisi\AkademisiDashboardController::class, 'index'])->name('dashboard');
 });
 
 // Ketersediaan Routes
@@ -280,6 +318,9 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
     
     // Registrasi Akses Management
     Route::view('registrasi-akses', 'admin.registrasi-akses')->name('registrasi-akses');
+    
+    // User Management - Enhanced admin actions
+    Route::view('kelola-pengguna', 'admin.user-management')->name('kelola-pengguna');
     
     // ML Model Dashboard - Enhanced monitoring and evaluation interface
     Route::middleware(['permission:view dashboard'])->get('ml-dashboard', function () {

@@ -146,19 +146,77 @@ class RegistrasiAkses extends Component
             ? $this->catatanAdmin 
             : 'Selamat! Registrasi Anda telah disetujui. Anda sekarang dapat mengakses sistem SIKOLBIA.';
         
-        $registrasi->approve(Auth::id(), $catatan);
-        
-        // Send email notification
         try {
-            Mail::to($registrasi->email)->send(new RegistrasiApprovedMail($registrasi));
-            Log::info('Approval email sent to: ' . $registrasi->email);
+            // Create User account
+            $user = $this->createUserFromRegistrasi($registrasi);
+            
+            // Approve registration
+            $registrasi->approve(Auth::id(), $catatan);
+            
+            // Store user_id in registrasi
+            $registrasi->update(['user_id' => $user->id]);
+            
+            // Send email notification with credentials
+            Mail::to($registrasi->email)->send(new RegistrasiApprovedMail($registrasi, $user->password_plain));
+            Log::info('User account created and approval email sent to: ' . $registrasi->email);
+            
+            session()->flash('message', 'Registrasi berhasil disetujui, akun user telah dibuat, dan email notifikasi telah dikirim.');
         } catch (\Exception $e) {
-            Log::error('Failed to send approval email: ' . $e->getMessage());
+            Log::error('Failed to approve registration: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menyetujui registrasi: ' . $e->getMessage());
         }
         
-        session()->flash('message', 'Registrasi berhasil disetujui dan email notifikasi telah dikirim.');
         $this->catatanAdmin = ''; // Reset after action
         $this->closeModals();
+    }
+    
+    private function createUserFromRegistrasi($registrasi)
+    {
+        // Generate username from email
+        $username = explode('@', $registrasi->email)[0];
+        $baseUsername = $username;
+        $counter = 1;
+        
+        // Ensure unique username
+        while (\App\Models\User::where('email', $username . '@' . explode('@', $registrasi->email)[1])->exists()) {
+            $username = $baseUsername . $counter;
+            $counter++;
+        }
+        
+        // Generate random password
+        $password = 'SIKOLBIA' . rand(1000, 9999);
+        
+        // Create user
+        $user = \App\Models\User::create([
+            'name' => $registrasi->nama_lengkap,
+            'email' => $registrasi->email,
+            'password' => bcrypt($password),
+            'email_verified_at' => now(),
+        ]);
+        
+        // Store plain password temporarily for email
+        $user->password_plain = $password;
+        
+        // Assign role based on tipe_akses
+        $roleName = $registrasi->tipe_akses === 'pemerintah' ? 'pemerintah' : 'akademisi';
+        
+        if (\Spatie\Permission\Models\Role::where('name', $roleName)->exists()) {
+            $user->assignRole($roleName);
+        } else {
+            // Fallback to default role if specific role doesn't exist
+            Log::warning("Role '$roleName' not found, assigning 'user' role instead");
+            if (\Spatie\Permission\Models\Role::where('name', 'user')->exists()) {
+                $user->assignRole('user');
+            }
+        }
+        
+        Log::info('User created', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'role' => $roleName,
+        ]);
+        
+        return $user;
     }
 
     public function reject($registrasiId)
