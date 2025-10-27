@@ -377,6 +377,151 @@
             </div>
             @endif
 
+            <!-- Dokumen yang Diupload -->
+            @php
+                $hasDocuments = false;
+                $documents = [];
+                
+                if ($selectedRegistrasi->surat_permohonan) {
+                    $documents[] = [
+                        'type' => 'surat_permohonan',
+                        'label' => 'Surat Permohonan',
+                        'path' => $selectedRegistrasi->surat_permohonan,
+                        'required' => $selectedRegistrasi->tipe_akses === 'pemerintah'
+                    ];
+                    $hasDocuments = true;
+                }
+                
+                if ($selectedRegistrasi->id_instansi) {
+                    $documents[] = [
+                        'type' => 'id_instansi',
+                        'label' => 'ID Instansi/KTP',
+                        'path' => $selectedRegistrasi->id_instansi,
+                        'required' => $selectedRegistrasi->tipe_akses === 'pemerintah'
+                    ];
+                    $hasDocuments = true;
+                }
+                
+                if ($selectedRegistrasi->surat_atasan) {
+                    $documents[] = [
+                        'type' => 'surat_atasan',
+                        'label' => 'Surat Keterangan Atasan',
+                        'path' => $selectedRegistrasi->surat_atasan,
+                        'required' => false
+                    ];
+                    $hasDocuments = true;
+                }
+                
+                if ($selectedRegistrasi->surat_keterangan_institusi) {
+                    $documents[] = [
+                        'type' => 'surat_keterangan_institusi',
+                        'label' => 'Surat Keterangan Institusi',
+                        'path' => $selectedRegistrasi->surat_keterangan_institusi,
+                        'required' => $selectedRegistrasi->tipe_akses === 'akademisi'
+                    ];
+                    $hasDocuments = true;
+                }
+                
+                if ($selectedRegistrasi->proposal_penelitian) {
+                    $documents[] = [
+                        'type' => 'proposal_penelitian',
+                        'label' => 'Proposal Penelitian',
+                        'path' => $selectedRegistrasi->proposal_penelitian,
+                        'required' => false
+                    ];
+                    $hasDocuments = true;
+                }
+            @endphp
+
+            @if($hasDocuments)
+            <div class="mt-6">
+                <h4 class="font-medium text-neutral-900 dark:text-white mb-4">📄 Dokumen yang Diupload</h4>
+                <div class="space-y-3">
+                    @foreach($documents as $doc)
+                    <div class="border border-neutral-200 dark:border-neutral-600 rounded-lg p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                        <div class="flex items-start justify-between gap-4">
+                            <!-- File Info -->
+                            <div class="flex items-start space-x-3 min-w-0 flex-1">
+                                <div class="flex-shrink-0 mt-1">
+                                    @if(Str::endsWith($doc['path'], '.pdf'))
+                                        <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                                        </svg>
+                                    @else
+                                        <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                                        </svg>
+                                    @endif
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h5 class="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                                        {{ $doc['label'] }}
+                                        @if($doc['required'])
+                                            <span class="text-red-500 ml-1">*</span>
+                                        @endif
+                                    </h5>
+                                    <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-1">
+                                        {{ basename($doc['path']) }}
+                                    </p>
+                                    @if(Storage::disk('public')->exists($doc['path']))
+                                        <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+                                            ✓ {{ number_format(Storage::disk('public')->size($doc['path']) / 1024, 1) }} KB
+                                        </p>
+                                    @else
+                                        <p class="text-xs text-red-600 dark:text-red-400 mt-1">
+                                            ⚠ File tidak ditemukan
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex-shrink-0">
+                                @if(Storage::disk('public')->exists($doc['path']))
+                                    <div class="flex flex-col gap-2 min-w-[80px]">
+                                        <a href="{{ route('admin.registrasi-akses.download', [$selectedRegistrasi->id, $doc['type']]) }}" 
+                                           target="_blank"
+                                           class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            Download
+                                        </a>
+                                        @if(Str::endsWith($doc['path'], '.pdf'))
+                                            <a href="{{ Storage::url($doc['path']) }}" 
+                                               target="_blank"
+                                               class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                                Preview
+                                            </a>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900">
+                                        File Hilang
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @else
+            <div class="mt-6">
+                <h4 class="font-medium text-neutral-900 dark:text-white mb-4">📄 Dokumen yang Diupload</h4>
+                <div class="text-center py-8 bg-neutral-50 dark:bg-neutral-700 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-600">
+                    <svg class="mx-auto h-8 w-8 text-neutral-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400">Tidak ada dokumen yang diupload</p>
+                </div>
+            </div>
+            @endif
+
             <!-- Dokumen Tambahan yang Diupload -->
             @if($selectedRegistrasi->dokumen_tambahan)
             @php

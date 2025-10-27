@@ -318,6 +318,7 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
     
     // Registrasi Akses Management
     Route::view('registrasi-akses', 'admin.registrasi-akses')->name('registrasi-akses');
+    Route::get('registrasi-akses/download/{registrasi}/{file}', [App\Http\Controllers\RegistrasiAksesController::class, 'downloadFile'])->name('registrasi-akses.download');
     
     // User Management - Enhanced admin actions
     Route::view('kelola-pengguna', 'admin.user-management')->name('kelola-pengguna');

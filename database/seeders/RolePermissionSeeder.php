@@ -66,6 +66,13 @@ class RolePermissionSeeder extends Seeder
             'edit komoditibps',
             'delete komoditibps',
             
+            // Registrasi Akses permissions
+            'manage registrasi-akses',
+            'view registrasi-akses',
+            'approve registrasi-akses',
+            'reject registrasi-akses',
+            'download registrasi-files',
+            
             // ML Dashboard permissions
             'view ml_dashboard',
             'manage ml_models',
@@ -125,6 +132,13 @@ class RolePermissionSeeder extends Seeder
             'create komoditibps',
             'edit komoditibps',
             'delete komoditibps',
+            
+            // Registrasi Akses permissions
+            'manage registrasi-akses',
+            'view registrasi-akses',
+            'approve registrasi-akses',
+            'reject registrasi-akses',
+            'download registrasi-files',
             
             // ML Dashboard permissions
             'view ml_dashboard',

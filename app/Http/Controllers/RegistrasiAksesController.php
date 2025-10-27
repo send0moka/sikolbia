@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\RegistrasiAkses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class RegistrasiAksesController extends Controller
 {
@@ -124,5 +126,66 @@ class RegistrasiAksesController extends Controller
             Log::error('Registration failed: ' . $e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
         }
+    }
+
+    public function downloadFile(RegistrasiAkses $registrasi, $file)
+    {
+        // Check if user has permission to download files
+        if (!auth()->user()->can('download registrasi-files')) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Define allowed file types
+        $allowedFiles = [
+            'surat_permohonan',
+            'id_instansi', 
+            'surat_atasan',
+            'surat_keterangan_institusi',
+            'proposal_penelitian'
+        ];
+
+        if (!in_array($file, $allowedFiles)) {
+            abort(404, 'File type not found');
+        }
+
+        // Get file path from database
+        $filePath = $registrasi->{$file};
+        
+        if (!$filePath) {
+            abort(404, 'File not found');
+        }
+
+        // Check if file exists in storage
+        if (!Storage::disk('public')->exists($filePath)) {
+            abort(404, 'File not found in storage');
+        }
+
+        // Get file info
+        $fullPath = Storage::disk('public')->path($filePath);
+        $fileName = pathinfo($filePath, PATHINFO_BASENAME);
+        
+        // Create descriptive filename
+        $descriptiveNames = [
+            'surat_permohonan' => 'Surat_Permohonan',
+            'id_instansi' => 'ID_Instansi',
+            'surat_atasan' => 'Surat_Atasan',
+            'surat_keterangan_institusi' => 'Surat_Keterangan_Institusi',
+            'proposal_penelitian' => 'Proposal_Penelitian'
+        ];
+        
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $downloadName = $descriptiveNames[$file] . '_' . $registrasi->nama_lengkap . '_' . $registrasi->id . '.' . $extension;
+        
+        // Clean filename for download
+        $downloadName = preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName);
+
+        Log::info('File download', [
+            'user_id' => auth()->id(),
+            'registrasi_id' => $registrasi->id,
+            'file_type' => $file,
+            'file_path' => $filePath
+        ]);
+
+        return response()->download($fullPath, $downloadName);
     }
 }
