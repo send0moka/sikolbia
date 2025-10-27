@@ -21,44 +21,89 @@ class PemerintahController extends Controller
 
     public function filterLaporanNbm(Request $request)
     {
-        $request->validate([
-            'kelompok' => 'nullable|string',
-            'tahun' => 'nullable|integer|min:2020|max:' . (date('Y') + 1),
-            'bulan' => 'nullable|integer|min:1|max:12',
-            'limit' => 'nullable|integer|min:10|max:1000'
-        ]);
+        try {
+            $request->validate([
+                'kelompok' => 'nullable|string',
+                'tahun' => 'nullable|integer|min:2020|max:' . (date('Y') + 1),
+                'bulan' => 'nullable|integer|min:1|max:12',
+                'limit' => 'nullable|integer|min:10|max:1000'
+            ]);
 
-        $query = TransaksiNbm::with(['kelompok', 'komoditi']);
+            // Start with basic query without relationships to test
+            $query = TransaksiNbm::query();
 
-        if ($request->filled('kelompok')) {
-            $query->where('kelompok_id', $request->kelompok);
+            if ($request->filled('kelompok')) {
+                $query->where('kode_kelompok', $request->kelompok);
+            }
+
+            if ($request->filled('tahun')) {
+                $query->where('tahun', $request->tahun);
+            }
+
+            if ($request->filled('bulan')) {
+                $query->where('bulan', $request->bulan);
+            }
+
+            // Simple pagination first
+            $data = $query->orderBy('tahun', 'desc')
+                         ->orderBy('bulan', 'desc')
+                         ->orderBy('kode_kelompok')
+                         ->orderBy('kode_komoditi')
+                         ->paginate($request->input('limit', 50));
+
+            // Load relationships after pagination to avoid join issues
+            $data->load(['kelompok', 'komoditi']);
+
+            // Transform data to include needed properties
+            $data->getCollection()->transform(function ($item) {
+                // Ensure kelompok has deskripsi field (use nama as fallback)
+                if ($item->kelompok) {
+                    $item->kelompok->deskripsi = $item->kelompok->nama;
+                }
+                
+                // Ensure komoditi has deskripsi field (use nama as fallback)
+                if ($item->komoditi) {
+                    $item->komoditi->deskripsi = $item->komoditi->nama;
+                }
+                
+                return $item;
+            });
+
+            // Calculate statistics
+            $totalQuery = TransaksiNbm::query();
+            if ($request->filled('kelompok')) {
+                $totalQuery->where('kode_kelompok', $request->kelompok);
+            }
+            if ($request->filled('tahun')) {
+                $totalQuery->where('tahun', $request->tahun);
+            }
+            if ($request->filled('bulan')) {
+                $totalQuery->where('bulan', $request->bulan);
+            }
+            
+            $avgMakanan = $totalQuery->avg('makanan');
+            $latestRecord = $totalQuery->orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->first();
+
+            $statistics = [
+                'total_data' => $data->total(),
+                'rata_rata_kalori' => $avgMakanan ? round($avgMakanan, 2) : 0,
+                'periode_terbaru' => $latestRecord ? $latestRecord->periode_display : '-'
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'statistics' => $statistics
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error in filterLaporanNbm: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memuat data: ' . $e->getMessage()
+            ], 500);
         }
-
-        if ($request->filled('tahun')) {
-            $query->where('tahun', $request->tahun);
-        }
-
-        if ($request->filled('bulan')) {
-            $query->where('bulan', $request->bulan);
-        }
-
-        $data = $query->orderBy('tahun', 'desc')
-                     ->orderBy('bulan', 'desc')
-                     ->orderBy('kelompok_id')
-                     ->orderBy('komoditi_id')
-                     ->paginate($request->input('limit', 50));
-
-        $statistics = [
-            'total_data' => $data->total(),
-            'rata_rata_kalori' => $query->avg('kalori_hari'),
-            'periode_terbaru' => $query->orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->first()
-        ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-            'statistics' => $statistics
-        ]);
     }
 
     public function exportExcelNbm(Request $request)
@@ -142,26 +187,17 @@ class PemerintahController extends Controller
 
     public function getKomoditi(Request $request)
     {
-        $kelompokId = $request->input('kelompok_id');
+        $kelompokKode = $request->input('kelompok_id'); // Keep parameter name for frontend compatibility
         
-        if (!$kelompokId) {
+        if (!$kelompokKode) {
             return response()->json(['komoditi' => []]);
         }
 
-        $komoditi = Komoditi::where('kelompok_id', $kelompokId)
-                           ->where('status_aktif', '1')
-                           ->orderBy('kode')
-                           ->get(['kode', 'deskripsi']);
+        $komoditi = Komoditi::where('kode_kelompok', $kelompokKode)
+                           ->orderBy('kode_komoditi')
+                           ->get(['kode_komoditi as kode', 'nama as deskripsi']);
 
         return response()->json(['komoditi' => $komoditi]);
-    }
-
-class PemerintahController extends Controller
-{
-    public function laporanNbm()
-    {
-        $kelompokOptions = Kelompok::aktif()->orderBy('kode')->get(['kode', 'nama']);
-        return view('pemerintah.laporan-nbm', compact('kelompokOptions'));
     }
 
     public function prediksiNbm()
