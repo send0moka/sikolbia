@@ -1,23 +1,21 @@
 # PROPOSAL TUGAS AKHIR
 
-# IMPLEMENTASI LSTM UNTUK PREDIKSI KONSUMSI KALORI HARIAN BERDASARKAN DATA NERACA BAHAN MAKANAN KEMENTERIAN PERTANIAN
+## IMPLEMENTASI LSTM UNTUK PREDIKSI KONSUMSI KALORI HARIAN BERDASARKAN DATA NERACA BAHAN MAKANAN KEMENTERIAN PERTANIAN
 
-## SKRIPSI
+**SKRIPSI**
 
-Disusun untuk memenuhi sebagian persyaratan  
-untuk memperoleh gelar Sarjana Komputer  
-Jurusan Informatika
+Disusun untuk memenuhi sebagian persyaratan untuk memperoleh gelar Sarjana Komputer Jurusan Informatika
 
 **Disusun oleh:**  
 Jehian Athaya Tsani Az Zuhry  
 H1D022006
 
-KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI  
-UNIVERSITAS JENDERAL SOEDIRMAN  
-FAKULTAS TEKNIK  
-JURUSAN INFORMATIKA  
-PURWOKERTO  
-2025
+**KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI**  
+**UNIVERSITAS JENDERAL SOEDIRMAN**  
+**FAKULTAS TEKNIK**  
+**JURUSAN INFORMATIKA**  
+**PURWOKERTO**  
+**2025**
 
 ---
 
@@ -53,21 +51,21 @@ NIP. 197109202006041001
 
 ## KATA PENGANTAR
 
-Puji syukur ke hadirat Tuhan Yang Maha Esa atas rahmat dan karunia-Nya, sehingga penulis dapat menyelesaikan proposal penelitian dengan judul **"Implementasi LSTM untuk Prediksi Konsumsi Kalori Harian Berdasarkan Data Neraca Bahan Makanan Kementerian Pertanian."** Proposal ini disusun sebagai salah satu syarat untuk menempuh Tugas Akhir pada Jurusan Informatika, Fakultas Teknik, Universitas Jenderal Soedirman.
+Puji syukur ke hadirat Tuhan Yang Maha Esa atas rahmat dan karunia-Nya, sehingga penulis dapat menyelesaikan proposal penelitian dengan judul "Implementasi LSTM untuk Prediksi Konsumsi Kalori Harian Berdasarkan Data Neraca Bahan Makanan Kementerian Pertanian." Proposal ini disusun sebagai salah satu syarat untuk menempuh Tugas Akhir pada Jurusan Informatika, Fakultas Teknik, Universitas Jenderal Soedirman.
 
 Dalam penyusunan proposal ini, penulis mendapatkan berbagai dukungan, arahan, serta masukan dari banyak pihak. Oleh karena itu, dengan penuh hormat dan rasa syukur, penulis menyampaikan terima kasih kepada:
 
-1. Bapak Prof. Dr. Eng. Ir. Agus Maryoto, ST., M.T., IPU., ASEAN Eng., selaku Dekan Fakultas Teknik, Universitas Jenderal Soedirman.
+1. Bapak Prof. Dr. Eng. Ir. Agus Maryoto, S.T., M.T., IPU., ASEAN Eng., selaku Dekan Fakultas Teknik, Universitas Jenderal Soedirman.
 2. Bapak Dr. Ir. Lasmedi Afuan, S.T., M.Cs., IPM., selaku Ketua Jurusan Informatika, Fakultas Teknik, Universitas Jenderal Soedirman.
-3. Ibu Nofiyati, S.Kom., M.Kom. IPM., selaku Dosen Pembimbing I dan Ibu Devi Astri Nawangnugraeni, S.Pd., M.Kom., selaku Dosen Pembimbing II yang dengan penuh perhatian telah memberikan bimbingan dan arahan selama penyusunan proposal ini.
-4. Orang tua dan keluarga tercinta atas doa, semangat, serta dukungan yang tiada harganya.
-5. Rekan-rekan seperjuangan di Jurusan Informatika angkatan 2022, serta seluruh pihak yang telah memberikan dukungan dan masukan.
+3. Bapak Ir. Bangun Wijayanto, S.T., M.Cs., IPM., selaku Dosen Pembimbing Akademik yang telah memberikan arahan akademik selama masa perkuliahan.
+4. Ibu Nofiyati, S.Kom., M.Kom. IPM., selaku Dosen Pembimbing I dan Ibu Devi Astri Nawangnugraeni, S.Pd., M.Kom., selaku Dosen Pembimbing II yang dengan penuh perhatian telah memberikan bimbingan dan arahan selama penyusunan proposal ini.
+5. Orang tua dan keluarga tercinta atas doa, semangat, serta dukungan yang tiada harganya.
+6. Rekan-rekan seperjuangan di Jurusan Informatika angkatan 2022, serta seluruh pihak yang telah memberikan dukungan dan masukan.
 
 Penulis menyadari proposal ini memiliki keterbatasan, sehingga kritik dan saran sangat diharapkan untuk perbaikan ke depan. Semoga karya ini dapat berkontribusi pada pengembangan ilmu, khususnya dalam bidang machine learning dan analisis data pangan, serta memberikan manfaat bagi perencanaan kebijakan ketahanan pangan nasional.
 
-Purwokerto, 13 Oktober 2025
-
-Jehian Athaya Tsani Az Zuhry
+Purwokerto, 13 Oktober 2025  
+**Jehian Athaya Tsani Az Zuhry**
 
 ---
 
@@ -98,8 +96,8 @@ Jehian Athaya Tsani Az Zuhry
   - [2.10 Gap Analysis](#210-gap-analysis)
   - [2.11 Kerangka Konseptual](#211-kerangka-konseptual)
 - [BAB III. METODOLOGI](#bab-iii-metodologi)
-  - [3.1 Pendekatan dan Jenis Penelitian](#31-pendekatan-dan-jenis-penelitian)
-  - [3.2 Implementasi Model LSTM Enhanced Ensemble](#32-implementasi-model-lstm-enhanced-ensemble)
+  - [3.1 Data dan Alat Penelitian](#31-data-dan-alat-penelitian)
+  - [3.2 Metode Penelitian](#32-metode-penelitian)
   - [3.3 Jadwal Penelitian](#33-jadwal-penelitian)
 - [DAFTAR PUSTAKA](#daftar-pustaka)
 
@@ -107,39 +105,34 @@ Jehian Athaya Tsani Az Zuhry
 
 ## DAFTAR GAMBAR
 
-- **Gambar 1.** Struktur Sel LSTM
-- **Gambar 2.** Tahapan Research and Development
-- **Gambar 3.** Diagram Alur CRISP-DM
-- **Gambar 4.** Strategi Pembagian Data NBM Indonesia
-- **Gambar 5.** Time Series Cross-Validation Expanding Window
+- Gambar 1. Struktur Sel LSTM
+- Gambar 2. Tahapan Research and Development
+- Gambar 3. Diagram Alur CRISP-DM
+- Gambar 4. Strategi Pembagian Data NBM Indonesia
+- Gambar 5. Time Series Cross-Validation Expanding Window
 
 ---
 
 ## DAFTAR TABEL
 
-- **Tabel 1.** Penelitian Sejenis
-- **Tabel 2.** Jadwal Penelitian
-- **Tabel 3.** Struktur Data NBM Indonesia
+- Tabel 1. Penelitian Sejenis
+- Tabel 2. Jadwal Penelitian
 
 ---
 
 ## ABSTRAK
 
-Ketahanan pangan merupakan isu kritis bagi Indonesia dengan peringkat ke-69 dari 113 negara pada Global Food Security Index 2024. Sistem prediksi konsumsi pangan yang akurat menjadi kebutuhan mendesak untuk mendukung perencanaan kebijakan ketahanan pangan nasional. Metode prediksi konvensional yang digunakan saat ini memiliki akurasi terbatas (MAPE 15-20%) dan tidak mampu menangkap kompleksitas pola temporal konsumsi pangan. 
+Ketahanan pangan merupakan isu kritis bagi Indonesia dengan peringkat ke-69 dari 113 negara pada Global Food Security Index 2024. Sistem prediksi konsumsi pangan yang akurat menjadi kebutuhan mendesak untuk mendukung perencanaan kebijakan ketahanan pangan nasional. Metode prediksi konvensional memiliki akurasi terbatas (MAPE 15-20%) dan tidak mampu menangkap kompleksitas pola temporal konsumsi pangan.
 
-Penelitian ini bertujuan mengimplementasikan model LSTM enhanced ensemble untuk memprediksi konsumsi kalori harian berdasarkan data Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 dengan target akurasi MAPE < 10%. Metodologi penelitian menggunakan pendekatan Research and Development (RnD) dengan kerangka kerja CRISP-DM untuk pengembangan model machine learning. 
+Penelitian ini bertujuan mengimplementasikan model LSTM enhanced ensemble untuk memprediksi konsumsi kalori harian berdasarkan data Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 dengan target akurasi MAPE < 10%. Metodologi penelitian menggunakan pendekatan Research and Development (RnD) dengan kerangka kerja CRISP-DM. Data historis NBM mencakup 31 tahun dengan 372 titik data bulanan yang dibagi secara kronologis menjadi 70% data pelatihan, 15% data validasi, dan 15% data pengujian. Preprocessing menggunakan StandardScaler dan RobustScaler, sementara hyperparameter optimization dilakukan melalui time series cross-validation. Model ensemble menggabungkan LSTM dengan robust regression algorithms seperti HuberRegressor. Evaluasi menggunakan metrik RMSE, MAE, dan MAPE dengan perbandingan terhadap baseline models.
 
-Data historis NBM yang mencakup 31 tahun dengan 372 titik data bulanan dibagi secara kronologis menjadi 70% data pelatihan (1993-2015), 15% data validasi (2016-2019), dan 15% data pengujian (2020-2024). Preprocessing data menggunakan StandardScaler dan RobustScaler, sementara hyperparameter optimization dilakukan melalui time series cross-validation dengan expanding window. Model ensemble menggabungkan LSTM untuk ekstraksi pola temporal dengan robust regression algorithms seperti HuberRegressor. 
-
-Evaluasi performa model menggunakan metrik RMSE, MAE, dan MAPE dengan perbandingan terhadap baseline models (ARIMA, Linear Regression, dan Random Forest). Model yang telah divalidasi akan diintegrasikan ke dalam sistem informasi berbasis web menggunakan arsitektur microservices dengan Laravel untuk frontend, FastAPI untuk backend machine learning service, dan Docker untuk containerization. 
-
-Hasil penelitian diharapkan dapat memberikan sistem prediksi konsumsi kalori yang akurat untuk mendukung pengambilan keputusan berbasis bukti dalam perencanaan ketahanan pangan nasional dan menjadi kontribusi akademik dalam penerapan deep learning untuk agricultural forecasting di Indonesia.
+Model diintegrasikan ke dalam sistem informasi berbasis website menggunakan arsitektur microservices dengan Laravel, FastAPI, dan Docker. Hasil penelitian diharapkan memberikan sistem prediksi konsumsi kalori yang akurat untuk mendukung pengambilan keputusan dalam perencanaan ketahanan pangan nasional dan berkontribusi pada penerapan deep learning untuk agricultural forecasting di Indonesia.
 
 **Kata Kunci:** LSTM, ensemble learning, prediksi konsumsi kalori, Neraca Bahan Makanan, ketahanan pangan, time series forecasting, deep learning, CRISP-DM, microservices architecture
 
 ---
 
-## BAB I. PENDAHULUAN
+## BAB I PENDAHULUAN
 
 ### 1.1 Latar Belakang
 
@@ -159,7 +152,7 @@ Berdasarkan latar belakang yang telah diuraikan, rumusan masalah dalam penelitia
 
 a. Bagaimana mengimplementasikan arsitektur model LSTM enhanced ensemble dengan hyperparameter optimal, teknik Robust preprocessing (StandardScaler dan RobustScaler), sequence generation yang tepat, dan evaluasi metrik RMSE, MAE, MAPE untuk memprediksi konsumsi kalori harian berdasarkan data NBM Indonesia periode 1993-2024 dengan target akurasi MAPE < 10%?
 
-b. Bagaimana mengintegrasikan model ensemble yang telah divalidasi ke dalam sistem informasi berbasis web dengan arsitektur Laravel, FastAPI, dan Docker untuk memberikan layanan prediksi real-time?
+b. Bagaimana mengintegrasikan model ensemble yang telah divalidasi ke dalam sistem informasi berbasis website dengan arsitektur Laravel, FastAPI, dan Docker untuk memberikan layanan prediksi real-time?
 
 ### 1.3 Batasan Penelitian
 
@@ -171,11 +164,11 @@ b. Data yang digunakan adalah data NBM Indonesia periode 1993-2024 dengan total 
 
 c. Prediksi yang dibuat terbatas pada konsumsi kalori harian agregat nasional per komoditi untuk mendukung decision support pemerintah, tidak mencakup prediksi personal atau regional.
 
-d. Sistem informasi berbasis web ditujukan untuk stakeholder pemerintah (Badan Pangan Nasional, Kementerian Pertanian) dengan arsitektur Laravel, FastAPI, dan Docker untuk national food security forecasting.
+d. Sistem informasi berbasis website ditujukan untuk stakeholder pemerintah (Kementerian Pertanian) dengan arsitektur Laravel, FastAPI, dan Docker untuk national food security forecasting.
 
 e. Evaluasi model mencakup metrik RMSE, MAE, dan MAPE untuk mengukur akurasi prediksi dengan target MAPE < 10% berdasarkan standar industri dan literatur terkait.
 
-f. Penelitian ini tidak mencakup pengembangan aplikasi mobile atau personal health tracking, hanya fokus pada national-level forecasting system.
+f. Penelitian ini tidak mencakup pengembangan aplikasi mobile atau personal health tracking, hanya fokus pada sistem national-level forecasting.
 
 ### 1.4 Tujuan Penelitian
 
@@ -187,7 +180,7 @@ b. Melakukan preprocessing dan feature engineering pada dataset NBM 41,316 recor
 
 c. Mengevaluasi performa model LSTM enhanced ensemble dalam memprediksi konsumsi kalori nasional menggunakan metrik RMSE, MAE, dan MAPE dengan target akurasi MAPE < 10% untuk mendukung decision support sistem ketahanan pangan.
 
-d. Mengintegrasikan model ensemble yang telah dilatih ke dalam sistem informasi berbasis web dengan arsitektur Laravel, FastAPI, dan Docker untuk memberikan prediksi konsumsi kalori secara real-time.
+d. Mengintegrasikan model ensemble yang telah dilatih ke dalam sistem informasi berbasis website dengan arsitektur Laravel, FastAPI, dan Docker untuk memberikan prediksi konsumsi kalori secara real-time.
 
 ### 1.5 Manfaat Penelitian
 
@@ -207,51 +200,51 @@ Penelitian ini membantu Badan Pangan Nasional, Kementerian Pertanian, dan pengam
 
 ---
 
-## BAB II. TINJAUAN PUSTAKA
+## BAB II TINJAUAN PUSTAKA
 
 ### 2.1 Ketahanan Pangan dan Neraca Bahan Makanan (NBM)
 
 Ketahanan pangan didefinisikan sebagai kondisi terpenuhinya pangan bagi negara sampai dengan perseorangan, yang tercermin dari tersedianya pangan yang cukup, baik jumlah maupun mutunya, aman, beragam, bergizi, merata, dan terjangkau serta tidak bertentangan dengan agama, keyakinan, dan budaya masyarakat untuk dapat hidup sehat, aktif, dan produktif secara berkelanjutan (Badan Pangan Nasional, 2021). Konsep ini mencakup empat pilar utama: ketersediaan (availability), keterjangkauan (accessibility), pemanfaatan (utilization), dan stabilitas (stability) yang saling berinteraksi dalam sistem pangan nasional (FAO, 2023).
 
-Neraca Bahan Makanan (NBM) menggunakan formula dasar untuk menghitung konsumsi per kapita:
+Neraca Bahan Makanan (NBM) menggunakan formula dasar untuk menghitung konsumsi per kapita. Persamaan (1) berikut menunjukkan formula tersebut:
 
 ```
-Konsumsi per kapita = Ketersediaan Bersih / (Jumlah Penduduk × 365 hari)    ...(1)
+Konsumsi per kapita = Ketersediaan Bersih / (Jumlah Penduduk × 365 hari)  ... (1)
 ```
 
-Ketersediaan Bersih dihitung dengan:
+Ketersediaan Bersih dihitung dengan persamaan (2) yang disajikan sebagai berikut:
 
 ```
-Ketersediaan Bersih = Produksi + Impor − Ekspor ± ΔStok − Non-Food Uses    ...(2)
+Ketersediaan Bersih = Produksi + Impor − Ekspor ± ΔStok − Non-Food Uses  ... (2)
 ```
 
-Di mana perubahan stok (ΔStok) adalah perubahan stok (positif jika berkurang, negatif jika bertambah) dan non-food uses merupakan penggunaan untuk pakan ternak, industri, dan lain sebagainya.
+Perubahan stok (Δstok) adalah perubahan stok (positif jika berkurang, negatif jika bertambah) dan non-food uses merupakan penggunaan untuk pakan ternak, industri, dan lain sebagainya.
 
-Konversi ke kalori menggunakan faktor konversi energi:
+Konversi ke kalori menggunakan faktor konversi energi. Persamaan (3) berikut menunjukkan proses konversi tersebut:
 
 ```
-Kalori per kapita per hari = [Konsumsi per kapita (kg/hari) × Faktor Konversi Energi (kkal/100g)] / 10    ...(3)
+Kalori per kapita per hari = [Konsumsi per kapita (kg/hari) × Faktor Konversi Energi (kkal/100g)] / 10  ... (3)
 ```
 
 Neraca Bahan Makanan (NBM) merupakan instrumen penting dalam monitoring ketahanan pangan yang menyajikan gambaran menyeluruh tentang situasi pangan suatu negara dalam kurun waktu tertentu (Sekretariat Jendral - Kementrian Pertanian, 2024). NBM mengintegrasikan data produksi, impor, ekspor, perubahan stok, dan penggunaan untuk pakan ternak serta industri, sehingga menghasilkan angka konsumsi per kapita yang akurat. Data NBM Indonesia telah dikompilasi sejak tahun 1993 dan mencakup lebih dari 60 komoditas pangan utama dengan parameter konsumsi kalori, protein, dan lemak per kapita per hari.
 
 ### 2.2 Time Series Forecasting dan Prediksi Konsumsi Pangan
 
-Time Series Forecasting adalah teknik analisis data historis yang diamati dalam urutan waktu tertentu untuk memprediksi nilai-nilai masa depan (Arwansyah et al., 2022). Model ARIMA (Autoregressive Integrated Moving Average) dapat dinyatakan sebagai ARIMA(p,d,q) dengan persamaan:
+Time Series Forecasting adalah teknik analisis data historis yang diamati dalam urutan waktu tertentu untuk memprediksi nilai-nilai masa depan (Arwansyah et al., 2022). Model ARIMA (Autoregressive Integrated Moving Average) dapat dinyatakan sebagai ARIMA(p,d,q) dengan persamaan (4) yang disajikan sebagai berikut:
 
 ```
-(1 − φ₁L − φ₂L² − ⋯ − φₚLᵖ)(1 − L)ᵈXₜ = (1 + θ₁L + θ₂L² + ⋯ + θᵩLᵩ)εₜ    ...(4)
+(1 − φ₁L − φ₂L² − ⋯ − φₚLᵖ)(1 − L)ᵈXₜ = (1 + θ₁L + θ₂L² + ⋯ + θₑLᵠ)εₜ  ... (4)
 ```
 
-Di mana L adalah lag operator, φᵢ adalah autoregressive parameters, θⱼ adalah moving average parameters, d adalah degree of differencing, dan εₜ adalah white noise error term.
+L adalah lag operator, φᵢ adalah autoregressive parameters, θⱼ adalah moving average parameters, d adalah degree of differencing, dan εₜ adalah white noise error term.
 
-Exponential smoothing menggunakan weighted average dari observasi masa lalu dengan formula:
+Exponential smoothing menggunakan weighted average dari observasi masa lalu dengan formula yang ditunjukkan pada persamaan (5) berikut:
 
 ```
-Sₜ = αXₜ + (1 − α)Sₜ₋₁    ...(5)
+Sₜ = αΧₜ + (1 − α)Sₜ₋₁  ... (5)
 ```
 
-Di mana Sₜ adalah smoothed value pada waktu t, α adalah smoothing parameter (0 < α < 1), dan Xₜ adalah actual value pada waktu t.
+Sₜ adalah smoothed value pada waktu t, α adalah smoothing parameter (0 < α < 1), dan Χₜ adalah actual value pada waktu t.
 
 Dalam konteks ketahanan pangan, forecasting konsumsi memiliki karakteristik unik berupa pola musiman yang dipengaruhi oleh faktor musim panen, hari raya keagamaan, dan kondisi ekonomi makro. Konsumsi pangan menunjukkan pola temporal yang kompleks dengan komponen tren jangka panjang, siklus musiman, dan fluktuasi tidak teratur yang memerlukan pendekatan model yang sophisticated (Siregar et al., 2024).
 
@@ -259,145 +252,135 @@ Metode konvensional seperti ARIMA dan exponential smoothing telah lama digunakan
 
 ### 2.3 Neural Network dan Deep Learning
 
-Neural Network adalah computational model yang terinspirasi dari struktur dan fungsi jaringan syaraf biologis, terdiri dari nodes (neurons) yang saling terhubung dan mampu belajar pola kompleks dari data training (Benos et al., 2021). Forward propagation pada fully connected layer dinyatakan dengan:
+Neural Network adalah computational model yang terinspirasi dari struktur dan fungsi jaringan syaraf biologis, terdiri dari nodes (neurons) yang saling terhubung dan mampu belajar pola kompleks dari data training (Benos et al., 2021). Forward propagation pada fully connected layer dinyatakan dengan persamaan (6) dan (7) sebagai berikut:
 
 ```
-z[l] = W[l]a[l−1] + b[l]    ...(6)
-a[l] = g[l](z[l])           ...(7)
+z[l] = W[l]a[l-1] + b[l]  ... (6)
+a[l] = g[l](z[l])  ... (7)
 ```
 
-Di mana z[l] adalah linear output layer ke-l, W[l] adalah weight matrix layer ke-l, a[l−1] adalah activation dari layer sebelumnya, b[l] adalah bias vector, dan g[l] adalah activation function.
+z[l] adalah linear output layer ke-l, W[l] adalah weight matrix layer ke-l, a[l-1] adalah activation dari layer sebelumnya, b[l] adalah bias vector, dan g[l] adalah activation function.
 
-Activation functions yang umum digunakan:
-
-**Sigmoid:**
-```
-σ(z) = 1 / (1 + e⁻ᶻ)    ...(8)
-```
-
-**Tanh:**
-```
-tanh(z) = (e²ᶻ − e⁻²ᶻ) / (e²ᶻ + e⁻²ᶻ)    ...(9)
-```
-
-**ReLU:**
-```
-ReLU(z) = max(0, z)    ...(10)
-```
-
-Backpropagation untuk update weights menggunakan:
+Activation functions yang umum digunakan ditunjukkan pada persamaan (8), (9), dan (10) sebagai berikut:
 
 ```
-∂L/∂W[l] = ∂L/∂z[l] ∙ ∂z[l]/∂W[l] = δ[l] ∙ (α[l−1])ᵀ    ...(11)
-W[l] ≔ W[l] − α ∂L/∂W[l]                               ...(12)
+σ(z) = 1 / (1 + e⁻ᶻ)  ... (8)
+tanh(z) = (e² − e⁻²) / (e² + e⁻²)  ... (9)
+ReLU(z) = max(0, z)  ... (10)
 ```
 
-Di mana L adalah loss function, δ[l] adalah error signal layer ke-l, dan α adalah learning rate.
+Backpropagation untuk update weights menggunakan persamaan (11) dan (12) yang disajikan sebagai berikut:
+
+```
+∂L/∂W[l] = (∂L/∂z[l]) · (∂z[l]/∂W[l]) = δ[l] · (α[l-1])ᵀ  ... (11)
+W[l] ≔ W[l] − α(∂L/∂W[l])  ... (12)
+```
+
+L adalah loss function, δ[l] adalah error signal layer ke-l, dan α adalah learning rate.
 
 Deep Learning merupakan subset dari machine learning yang menggunakan neural networks dengan multiple hidden layers untuk ekstraksi fitur hierarkis dan pembelajaran representasi yang sophisticated. Arsitektur deep learning telah terbukti superior dalam menangani high-dimensional data dan complex pattern recognition tasks, termasuk aplikasi dalam agricultural domain (Opara et al., 2024). Keunggulan utama deep learning terletak pada kemampuan automatic feature extraction, yang mengeliminasi kebutuhan manual feature engineering yang memakan waktu dan subjektif dalam machine learning pendekatan tradisional.
 
 ### 2.4 Long Short-term Memory (LSTM) dan Metode Ensemble
 
-Long Short-term Memory (LSTM) adalah specialized recurrent Neural Network architecture yang dirancang untuk mengatasi vanishing gradient problem dalam traditional RNNs, sehingga mampu menangkap Long-term Dependencies dalam sequential data (Kong et al., 2025). LSTM memiliki cell state mechanism yang memungkinkan selective retention dan forgetting informasi melalui three gates: forget gate, input gate, dan output gate.
+Long Short-term Memory (LSTM) adalah specialized recurrent Neural Network architecture yang dirancang untuk mengatasi vanishing gradient problem dalam traditional RNNs, sehingga mampu menangkap Long-term Dependencies dalam sequential data (Kong et al., 2025). LSTM memiliki cell state mechanism yang memungkinkan selective retention dan forgetting informasi melalui three gates: forget gate, input gate, dan output gate. Struktur sel LSTM secara detail dapat dilihat pada Gambar 1 yang menunjukkan interaksi antar komponen dalam arsitektur LSTM.
 
-**Forget Gate** menentukan informasi yang akan dihapus dari cell state:
+**Gambar 1. Struktur Sel LSTM**
 
-```
-fₜ = σ(Wf ∙ [hₜ₋₁, xₜ] + bf)    ...(13)
-```
-
-Di mana fₜ adalah forget gate output pada waktu t, σ adalah sigmoid function, Wf adalah weight matrix untuk forget gate, hₜ₋₁ adalah hidden state sebelumnya, xₜ adalah input pada waktu t, dan bf adalah bias vector untuk forget gate.
-
-**Input Gate** memutuskan nilai-nilai baru yang akan disimpan dalam cell state:
+Forget Gate menentukan informasi yang akan dihapus dari cell state dengan persamaan (13) yang ditunjukkan sebagai berikut:
 
 ```
-iₜ = σ(Wi ∙ [hₜ₋₁, xₜ] + bi)       ...(14)
-C̃ₜ = tanh(WC ∙ [hₜ₋₁, xₜ] + bC)    ...(15)
+fₜ = σ(Wf · [hₜ₋₁, xₜ] + bf)  ... (13)
 ```
 
-Di mana iₜ adalah input gate output, C̃ₜ adalah kandidat nilai cell state baru, Wi, WC adalah weight matrices, dan bi, bC adalah bias vectors.
+fₜ adalah forget gate output pada waktu t, σ adalah sigmoid function, Wf adalah weight matrix untuk forget gate, hₜ₋₁ adalah hidden state sebelumnya, xₜ adalah input pada waktu t, dan bf adalah bias vector untuk forget gate.
 
-**Cell State Update** menggabungkan informasi lama dan baru:
-
-```
-Cₜ = fₜ ∗ Cₜ₋₁ + iₜ ∗ C̃ₜ    ...(16)
-```
-
-**Output Gate** menentukan bagian cell state yang akan menjadi output:
+Input Gate memutuskan nilai-nilai baru yang akan disimpan dalam cell state. Persamaan (14) dan (15) berikut menunjukkan proses tersebut:
 
 ```
-oₜ = σ(Wo ∙ [hₜ₋₁, xₜ] + bo)    ...(17)
-hₜ = oₜ ∗ tanh(Cₜ)              ...(18)
+iₜ = σ(Wᵢ · [hₜ₋₁, xₜ] + bᵢ)  ... (14)
+C̅ₜ = tanh(Wc · [hₜ₋₁, xₜ] + bc)  ... (15)
 ```
 
-Di mana oₜ adalah output gate dan hₜ adalah hidden state output pada waktu t.
+iₜ adalah input gate output, C̅ₜ adalah kandidat nilai cell state baru, Wᵢ, Wc adalah weight matrices, dan bᵢ, bc adalah bias vectors.
 
-Dalam konteks ensemble learning untuk time series forecasting, LSTM dapat dikombinasikan dengan robust regression algorithms seperti HuberRegressor. HuberRegressor menggunakan huber loss function yang menggabungkan MSE untuk error kecil dan MAE untuk error besar:
-
-```
-Lδ(y, f(x)) = { ½(y − f(x))²                    untuk |y − f(x)| ≤ δ
-              { δ|y − f(x)| − ½δ²               untuk |y − f(x)| > δ    ...(19)
-```
-
-Di mana y adalah nilai aktual, f(x) adalah nilai prediksi, dan δ adalah threshold parameter (biasanya 1.35).
-
-LSTM enhanced ensemble menggabungkan temporal pattern recognition capabilities dari LSTM dengan Robust statistical properties dari Regression Algorithms. Ensemble prediction dihitung menggunakan weighted averaging:
+Cell state update menggabungkan informasi lama dan baru. Persamaan (16) berikut menunjukkan proses tersebut:
 
 ```
-ŷensemble = Σ(wi ∙ ŷi) dari i=1 hingga n    ...(20)
+Cₜ = fₜ * Cₜ₋₁ + iₜ * C̅ₜ  ... (16)
 ```
 
-dengan constraint Σwi = 1 dan wi ≥ 0, ŷensemble adalah prediksi ensemble, wi adalah weight untuk model ke-i, ŷi adalah prediksi dari model ke-i, dan n adalah jumlah model dalam ensemble.
-
-Adam Optimizer yang umum digunakan untuk training LSTM menggunakan:
+Output Gate menentukan bagian cell state yang akan menjadi output dengan persamaan (17) dan (18) yang disajikan sebagai berikut:
 
 ```
-mₜ = β₁mₜ₋₁ + (1 − β₁)gₜ              ...(21)
-vₜ = β₂vₜ₋₁ + (1 − β₂)gₜ²             ...(22)
-m̂ₜ = mₜ / (1 − β₁ᵗ)                  ...(23)
-v̂ₜ = vₜ / (1 − β₂ᵗ)                  ...(24)
-θₜ₊₁ = θₜ − α/(√v̂ₜ + ε) m̂ₜ          ...(25)
+oₜ = σ(Wo · [hₜ₋₁, xₜ] + b₀)  ... (17)
+hₜ = oₜ * tanh(Cₜ)  ... (18)
 ```
 
-Di mana gₜ adalah gradient pada step t, mₜ, vₜ adalah first dan second moment estimates, β₁, β₂ adalah decay rates (biasanya 0.9 dan 0.999), α adalah learning rate, dan ε adalah small constant untuk numerical stability.
+oₜ adalah output gate dan hₜ adalah hidden state output pada waktu t.
+
+Dalam konteks ensemble learning untuk time series forecasting, LSTM dapat dikombinasikan dengan robust regression algorithms seperti HuberRegressor. HuberRegressor menggunakan huber loss function yang menggabungkan MSE untuk error kecil dan MAE untuk error besar. Persamaan (19) berikut menunjukkan fungsi tersebut:
+
+```
+           ⎧ ½(y − f(x))²                  untuk |y − f(x)| ≤ δ
+Lδ(y,f(x)) = ⎨
+           ⎩ δ|y − f(x)| − ½δ²            untuk |y − f(x)| > δ
+... (19)
+```
+
+y adalah nilai aktual, f(x) adalah nilai prediksi, dan δ adalah threshold parameter (biasanya 1.35).
+
+LSTM enhanced ensemble menggabungkan temporal pattern recognition capabilities dari LSTM dengan Robust statistical properties dari Regression Algorithms. Ensemble prediction dihitung menggunakan weighted averaging. Persamaan (20) berikut menunjukkan proses tersebut:
+
+```
+ŷensemble = Σ(i=1 to n) wᵢ · ŷᵢ  ... (20)
+```
+
+dengan constraint Σ(i=1 to n) wᵢ = 1 dan wᵢ ≥ 0, ŷensemble adalah prediksi ensemble, wᵢ adalah weight untuk model ke-i, ŷᵢ adalah prediksi dari model ke-i, dan n adalah jumlah model dalam ensemble.
+
+Adam Optimizer yang umum digunakan untuk training LSTM menggunakan persamaan (21), (22), (23), dan (24) yang disajikan sebagai berikut:
+
+```
+mₜ = β₁mₜ₋₁ + (1 − β₁)gₜ  ... (21)
+vₜ = β₂vₜ₋₁ + (1 − β₂)gₜ²  ... (22)
+m̂ₜ = mₜ / (1 − β₁ᵗ)  ... (23)
+θₜ₊₁ = θₜ − (α / √(v̂ₜ + ε)) m̂ₜ  ... (24)
+```
+
+gₜ adalah gradient pada step t, mₜ, vₜ adalah first dan second moment estimates, β₁, β₂ adalah decay rates (biasanya 0.9 dan 0.999), α adalah learning rate, dan ϵ adalah small constant untuk numerical stability.
 
 Hyperparameter optimization dalam ensemble setting mencakup not only LSTM-specific parameters (learning rate, batch size, epochs, window size) tetapi juga ensemble configuration seperti model weights, voting mechanisms, dan regularization parameters untuk preventing overfitting across multiple models.
 
 ### 2.5 Metrik Evaluasi Model Prediksi
 
-Evaluasi performa model prediksi menggunakan multiple metrics untuk memastikan comprehensive assessment. 
-
-**Root Mean Square Error (RMSE)** mengukur standard deviation dari residuals dan memberikan penalty yang lebih besar untuk large errors:
+Evaluasi performa model prediksi menggunakan multiple metrics untuk memastikan comprehensive assessment. Root Mean Square Error (RMSE) mengukur standard deviation dari residuals dan memberikan penalty yang lebih besar untuk large errors. Persamaan (25) berikut menunjukkan formula tersebut:
 
 ```
-RMSE = √[1/n Σ(yi − ŷi)²]    ...(26)
+RMSE = √(1/n ∑(yᵢ − ŷᵢ)²)  ... (25)
 ```
 
-**Mean Absolute Error (MAE)** memberikan average magnitude of errors tanpa mempertimbangkan direction:
+yᵢ adalah nilai aktual, ŷᵢ adalah nilai prediksi, dan n adalah jumlah observasi.
+
+Mean Absolute Error (MAE) memberikan average magnitude of errors tanpa mempertimbangkan direction. Persamaan (26) berikut menunjukkan formula tersebut:
 
 ```
-MAE = 1/n Σ|yi − ŷi|    ...(27)
+MAE = (1/n) ∑|yᵢ − ŷᵢ|  ... (26)
 ```
 
-**Mean Absolute Percentage Error (MAPE)** mengukur akurasi dalam bentuk persentase, memudahkan interpretasi:
+Mean Absolute Percentage Error (MAPE) mengukur akurasi dalam bentuk persentase, memudahkan interpretasi dengan persamaan (27) yang ditunjukkan sebagai berikut:
 
 ```
-MAPE = (100%/n) Σ|yi − ŷi|/yi    ...(28)
+MAPE = (100%/n) ∑|(yᵢ − ŷᵢ)/yᵢ|  ... (27)
 ```
-
-Di mana yi adalah nilai aktual, ŷi adalah nilai prediksi, dan n adalah jumlah observasi.
 
 RMSE lebih sensitif terhadap outliers dibandingkan MAE karena menggunakan squared errors, sementara MAE lebih robust terhadap outliers dan memberikan equal weight untuk semua errors (Raharjo et al., 2022). MAPE memberikan interpretasi yang intuitif dalam bentuk persentase error, namun dapat menghasilkan nilai infinite atau sangat besar ketika nilai aktual mendekati nol.
 
 ### 2.6 Arsitektur Sistem Laravel-FastAPI dan Docker
 
-Implementasi sistem prediksi modern memerlukan arsitektur yang memisahkan concerns antara user interface, business logic, dan machine learning processing dengan deployment strategy yang scalable (Kamil et al., 2024).
+Implementasi sistem prediksi modern memerlukan arsitektur yang memisahkan concerns antara user interface, business logic, dan machine learning processing dengan deployment strategy yang scalable (Kamil et al., 2024). Laravel menyediakan robust foundation untuk pengembangan aplikasi website dengan features seperti Eloquent ORM, Livewire reactive components, dan Blade templating engine yang memudahkan development of interactive dashboard dan real-time user interactions.
 
-Laravel menyediakan robust foundation untuk pengembangan aplikasi web dengan features seperti Eloquent ORM, Livewire reactive components, dan Blade templating engine yang memudahkan development of interactive dashboard dan real-time user interactions.
+FastAPI merupakan modern kerangka kerja python website yang dioptimalkan untuk membangun APIs dengan dokumentasi OpenAPI otomatis dan dukungan bawaan untuk pemrograman asinkron. FastAPI sangat cocok untuk machine learning karena integrasi native dengan ekosistem scientific Python (NumPy, Pandas, scikit-learn) dan performa tinggi yang comparable dengan NodeJS dan Go.
 
-FastAPI merupakan modern kerangka kerja python web yang dioptimalkan untuk membangun APIs dengan dokumentasi OpenAPI otomatis dan dukungan bawaan untuk pemrograman asinkron. FastAPI sangat cocok untuk machine learning karena integrasi native dengan ekosistem scientific Python (NumPy, Pandas, scikit-learn) dan performa tinggi yang comparable dengan NodeJS dan Go.
-
-Docker memungkinkan lingkungan deployment yang konsisten di seluruh tahap pengembangan, pengujian, dan produksi. Arsitektur berbasis kontainer memastikan reproduibilitas dan portabilitas dari machine learning, mengeliminasi isu "it works on my machine" yang umum terjadi dalam machine learning deployment (Benos et al., 2021). Pengaturan multi-kontainer dengan Docker Compose memungkinkan pemisahan tanggung jawab antara aplikasi web, layanan machine learning, basis data, dan caching layers.
+Docker memungkinkan lingkungan deployment yang konsisten di seluruh tahap pengembangan, pengujian, dan produksi. Arsitektur berbasis kontainer memastikan reproduibilitas dan portabilitas dari machine learning, mengeliminasi isu "it works on my machine" yang umum terjadi dalam machine learning deployment (Benos et al., 2021). Pengaturan multi-kontainer dengan Docker Compose memungkinkan pemisahan tanggung jawab antara aplikasi website, layanan machine learning, basis data, dan caching layers.
 
 Session management dan caching optimization menggunakan Redis untuk caching data berkecepatan tinggi dan penyimpanan sesi pengguna, mengurangi beban database dan meningkatkan waktu respons untuk permintaan prediksi yang sering. Arsitektur microservices dengan Laravel sebagai layanan frontend dan FastAPI sebagai layanan backend machine learning memungkinkan skalabilitas independen, fleksibilitas teknologi, dan pemeliharaan yang lebih mudah melalui pengikatan longgar dan kohesi tinggi dalam desain sistem.
 
@@ -419,7 +402,9 @@ Penelitian dalam negeri mengenai prediksi konsumsi pangan masih sebagian besar m
 
 Fadila & Putri (2023) melakukan analisis perkembangan ketahanan pangan di Indonesia menggunakan big data, namun fokus pada analisis deskriptif daripada pemodelan prediktif. Penelitian tersebut mengidentifikasi ketersediaan dan kualitas data menjadi tantangan besar dalam pengembangan sistem prediksi lanjutan untuk ketahanan pangan Indonesia.
 
-#### Tabel 1. Penelitian Sejenis
+Ringkasan penelitian sejenis yang terkait dengan prediksi konsumsi pangan dan penerapan LSTM dapat dilihat pada Tabel 1 yang menunjukkan perbandingan hasil penelitian terdahulu dengan pendekatan yang akan digunakan dalam penelitian ini.
+
+**Tabel 1. Penelitian Sejenis**
 
 | No | Peneliti (Tahun) | Judul | Hasil | Perbedaan |
 |----|------------------|-------|-------|-----------|
@@ -433,21 +418,17 @@ Fadila & Putri (2023) melakukan analisis perkembangan ketahanan pangan di Indone
 
 Berdasarkan tinjauan literatur sistematis, teridentifikasi beberapa gap kritis dalam penelitian yang ada:
 
-#### a. Keterbatasan Ruang Lingkup
+a. **Keterbatasan Ruang Lingkup**  
+   Mayoritas penelitian fokus pada prediksi tingkat regional atau komoditas tunggal, belum ada yang menangani peramalan konsumsi kalori tingkat nasional menggunakan dataset NBM yang komprehensif (Siregar et al., 2024).
 
-Mayoritas penelitian fokus pada prediksi tingkat regional atau komoditas tunggal, belum ada yang menangani peramalan konsumsi kalori tingkat nasional menggunakan dataset NBM yang komprehensif (Siregar et al., 2024).
+b. **Kesenjangan Metodologis**  
+   Terbatasnya penerapan arsitektur deep learning mutakhir seperti LSTM untuk forecasting konsumsi pangan dalam konteks negara berkembang (Asian Development Bank, 2023).
 
-#### b. Kesenjangan Metodologis
+c. **Pemanfaatan Data**  
+   Kurangnya pemanfaatan dataset historis jangka panjang yang tersedia, dengan mayoritas studi menggunakan data jangka pendek (< 10 tahun) yang tidak memadai untuk menangkap pola jangka panjang (Arwansyah et al., 2022).
 
-Terbatasnya penerapan arsitektur deep learning mutakhir seperti LSTM untuk forecasting konsumsi pangan dalam konteks negara berkembang (Asian Development Bank, 2023).
-
-#### c. Pemanfaatan Data
-
-Kurangnya pemanfaatan dataset historis jangka panjang yang tersedia, dengan mayoritas studi menggunakan data jangka pendek (< 10 tahun) yang tidak memadai untuk menangkap pola jangka panjang (Arwansyah et al., 2022).
-
-#### d. Kesenjangan Implementasi
-
-Kurangnya sistem terintegrasi yang menggabungkan model prediktif dengan antarmuka yang mudah digunakan untuk aplikasi kebijakan (Opara et al., 2024).
+d. **Kesenjangan Implementasi**  
+   Kurangnya sistem terintegrasi yang menggabungkan model prediktif dengan antarmuka yang mudah digunakan untuk aplikasi kebijakan (Opara et al., 2024).
 
 ### 2.11 Kerangka Konseptual
 
@@ -457,11 +438,11 @@ Input utama penelitian berupa data NBM historis (1993-2024) yang mencakup time s
 
 Model yang telah tervalidasi akan diintegrasikan dalam arsitektur microservices dengan layanan frontend Laravel untuk antarmuka pengguna dan visualisasi dashboard, layanan backend FastAPI untuk serving model machine learning, dan database MySQL untuk persistensi data. Arsitektur ini memungkinkan penerapan yang dapat diskalakan dan kemampuan prediksi real-time yang mendukung pengambilan keputusan berbasis bukti dalam perencanaan ketahanan pangan (Kamil et al., 2024).
 
-Alur kerja sistem dimulai dari permintaan pengguna melalui antarmuka web Laravel, yang kemudian mengirim panggilan API ke layanan FastAPI untuk inferensi model. Hasil dari prediksi akan di-cache dalam database MySQL dan ditampilkan melalui dashboard visualisasi interaktif. Kerangka konseptual ini memberikan peta jalan yang jelas untuk mencapai tujuan penelitian sambil memastikan ketepatan teoritis dan penerapan praktis dari sistem yang dikembangkan.
+Alur kerja sistem dimulai dari permintaan pengguna melalui antarmuka website Laravel, yang kemudian mengirim panggilan API ke layanan FastAPI untuk inferensi model. Hasil dari prediksi akan di-cache dalam database MySQL dan ditampilkan melalui dashboard visualisasi interaktif. Kerangka konseptual ini memberikan peta jalan yang jelas untuk mencapai tujuan penelitian sambil memastikan ketepatan teoritis dan penerapan praktis dari sistem yang dikembangkan.
 
 ---
 
-## BAB III. METODE PENELITIAN
+## BAB III METODOLOGI
 
 ### 3.1 Data dan Alat Penelitian
 
@@ -469,27 +450,27 @@ Penelitian ini memerlukan spesifikasi data, perangkat lunak, perangkat keras, da
 
 #### a. Data Penelitian
 
-Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan 41.316 record transaksi NBM yang mencakup 120 komoditas pangan dari 11 kelompok utama.
+Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan 41,316 records transaksi NBM yang mencakup 120 komoditas pangan dari 11 kelompok utama.
 
 Melalui proses agregasi temporal, data transaksi individual ini menghasilkan 372 titik data time series bulanan untuk konsumsi kalori nasional (31 tahun × 12 bulan), memberikan foundation yang solid untuk pengembangan model prediksi time series. Target variabel penelitian adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
 
-Struktur data NBM yang digunakan dalam penelitian ini dapat dilihat pada **Tabel 3** yang menunjukkan format record transaksi dengan field utama meliputi tahun, bulan, kode kelompok komoditas, kode komoditas spesifik, dan nilai kalori per hari untuk setiap komoditas pangan.
+Struktur data NBM yang digunakan dalam penelitian ini dapat dilihat pada Tabel 2 yang menunjukkan format record transaksi dengan field utama meliputi tahun, bulan, kode kelompok komoditas, kode komoditas spesifik, dan nilai kalori per hari untuk setiap komoditas pangan.
 
-#### Tabel 3. Struktur Data NBM Indonesia
+**Tabel 2. Struktur Data NBM Indonesia**
 
 | Tahun | Bulan | Kelompok | Komoditi | Kalori/Hari |
 |-------|-------|----------|----------|-------------|
-| 1993  | 01    | 01       | 0101     | 892.45      |
-| 1993  | 01    | 01       | 0102     | 45.12       |
-| 1993  | 01    | 02       | 0201     | 234.78      |
-| 1993  | 01    | 03       | 0301     | 123.56      |
-| 1993  | 01    | 03       | 0302     | 67.89       |
+| 1993 | 01 | 01 | 0101 | 892.45 |
+| 1993 | 01 | 01 | 0102 | 45.12 |
+| 1993 | 01 | 02 | 0201 | 234.78 |
+| 1993 | 01 | 03 | 0301 | 123.56 |
+| 1993 | 01 | 03 | 0302 | 123.56 |
 
 #### b. Perangkat Lunak
 
 Penelitian menggunakan kombinasi teknologi untuk pengembangan sistem prediksi. Untuk pengembangan machine learning, bahasa pemrograman utama yang digunakan adalah Python 3.8+ dengan library TensorFlow/Keras untuk implementasi model LSTM, Scikit-learn untuk algoritma ensemble dan preprocessing, serta Pandas dan NumPy untuk manipulasi dan analisis data. Visualisasi data dilakukan menggunakan Matplotlib dan Seaborn.
 
-Pengembangan aplikasi web menggunakan framework Laravel 11 sebagai backend dengan Livewire 3 untuk komponen frontend yang reaktif. Database management system yang digunakan adalah MySQL 8.0, sedangkan untuk layanan machine learning inference menggunakan FastAPI sebagai microservice.
+Pengembangan aplikasi website menggunakan framework Laravel 11 sebagai backend dengan Livewire 3 untuk komponen frontend yang reaktif. Database management system yang digunakan adalah MySQL 8.0, sedangkan untuk layanan machine learning inference menggunakan FastAPI sebagai microservice.
 
 Untuk deployment dan DevOps, penelitian menggunakan Docker untuk containerization dan konsistensi environment, Docker Compose untuk orkestrasi multi-service, serta Git untuk version control dan collaborative development.
 
@@ -501,107 +482,100 @@ Untuk deployment production, sistem didesain agar dapat berjalan pada infrastruk
 
 #### d. Lingkungan Pengembangan
 
-Penelitian menggunakan Visual Studio Code sebagai code editor utama dan Jupyter Notebook untuk exploratory data analysis serta prototyping. MySQL Workbench digunakan untuk desain dan manajemen database, sedangkan Postman digunakan untuk testing dan validasi API. GitHub digunakan sebagai platform hosting repository dan kolaborasi pengembangan.
+Penelitian menggunakan Visual Studio Code sebagai code editor utama dan Jupyter Notebook untuk exploratory data analysis serta prototyping. phpMyAdmin digunakan untuk desain dan manajemen database, sedangkan Postman digunakan untuk testing dan validasi API. GitHub digunakan sebagai platform hosting repository dan kolaborasi pengembangan.
 
 ### 3.2 Metode Penelitian
 
 Penelitian ini menggunakan pendekatan kuantitatif eksperimental dengan metode Research and Development (RnD) yang terintegrasi dengan framework CRISP-DM untuk pengembangan model machine learning. Pendekatan kuantitatif dipilih karena penelitian melibatkan analisis data numerik time series konsumsi kalori dan evaluasi performa model menggunakan metrik statistik (Sukarna & Ansori, 2022).
 
-Research and Development (RnD) adalah metode penelitian yang bertujuan untuk menghasilkan produk tertentu dan menguji keefektifan produk tersebut (Okpatrioka, 2023). Dalam konteks penelitian ini, produk yang dikembangkan berupa sistem prediksi konsumsi kalori berbasis LSTM enhanced ensemble yang terintegrasi dengan antarmuka web untuk stakeholder pemerintah.
+Research and Development (RnD) adalah metode penelitian yang bertujuan untuk menghasilkan produk tertentu dan menguji keefektifan produk tersebut (Okpatrioka, 2023). Dalam konteks penelitian ini, produk yang dikembangkan berupa sistem prediksi konsumsi kalori berbasis LSTM enhanced ensemble yang terintegrasi dengan antarmuka website untuk stakeholder pemerintah.
 
-Penelitian mengadopsi experimental design dengan controlled variables untuk menguji performa berbagai konfigurasi model LSTM dan membandingkannya dengan metode baseline. Integrasi RnD dengan CRISP-DM memungkinkan systematic approach dari business understanding hingga deployment yang sesuai dengan standar industri machine learning.
+Penelitian mengadopsi experimental design dengan controlled variables untuk menguji performa berbagai konfigurasi model LSTM dan membandingkannya dengan metode baseline. Integrasi RnD dengan CRISP-DM memungkinkan pendekatan sistematis dari business understanding hingga deployment yang sesuai dengan standar industri machine learning.
 
-Tahapan RnD yang dimodifikasi dengan integrasi CRISP-DM terdiri dari sepuluh tahap sistematis yang digambarkan pada **Gambar 2** yang mencakup proses pengembangan sistematis dari penelitian awal hingga diseminasi produk final. Metodologi ini memiliki karakteristik unik dengan feedback loops antar tahap untuk memastikan iterasi perbaikan yang kontinyu dan integrasi CRISP-DM pada tahap Early Test untuk standardisasi pengembangan model machine learning.
+Tahapan RnD yang dimodifikasi dengan integrasi CRISP-DM terdiri dari sepuluh tahap sistematis yang digambarkan pada Gambar 2 yang mencakup proses pengembangan sistematis dari penelitian awal hingga diseminasi produk final. Metodologi ini memiliki karakteristik unik dengan feedback loops antar tahap untuk memastikan iterasi perbaikan yang berkelanjutan dan integrasi CRISP-DM pada tahap Early Test untuk standardisasi pengembangan model machine learning.
 
-![Kerangka Metodologi RnD](rnd_methodology_simple.svg)
-*Gambar 2. Kerangka Metodologi RnD Terintegrasi dengan CRISP-DM*
+**Gambar 2. Tahapan Research and Development**
 
 Setiap tahap RnD dalam penelitian ini dijelaskan sebagai berikut:
 
-#### a. Research and Collection Preliminary
+a. **Research and Collection Preliminary**  
+   Tahap ini melakukan kajian pustaka mendalam terkait metode prediksi time series, algoritma LSTM, dan ensemble learning dalam konteks prediksi konsumsi pangan. Identifikasi kebutuhan pengguna sistem dilakukan melalui analisis stakeholder dan review dokumen kebijakan ketahanan pangan. Pengumpulan data historis NBM Indonesia periode 1993-2024 sebagai foundation dataset untuk pengembangan model.
 
-Tahap ini melakukan kajian pustaka mendalam terkait metode prediksi time series, algoritma LSTM, dan ensemble learning dalam konteks prediksi konsumsi pangan. Identifikasi kebutuhan pengguna sistem dilakukan melalui analisis stakeholder dan review dokumen kebijakan ketahanan pangan. Pengumpulan data historis NBM Indonesia periode 1993-2024 sebagai foundation dataset untuk pengembangan model.
+b. **Research Planning**  
+   Menyusun blueprint arsitektur sistem prediksi yang mencakup komponen machine learning dan antarmuka website. Menentukan algoritma utama (LSTM enhanced ensemble) dan teknologi pendukung (Laravel, FastAPI, dan Docker). Merancang kerangka metodologi penelitian dengan mengadopsi CRISP-DM sebagai kerangka kerja pengembangan model machine learning.
 
-#### b. Research Planning
+c. **Early Product Development**  
+   Membangun struktur dasar model LSTM ensemble dan merancang antarmuka aplikasi berbasis website. Implementasi preprocessing pipeline untuk data NBM dan pengembangan baseline models untuk comparison. Tahap ini menghasilkan prototipe awal sistem prediksi.
 
-Menyusun blueprint arsitektur sistem prediksi yang mencakup komponen machine learning dan antarmuka web. Menentukan algoritma utama (LSTM enhanced ensemble) dan teknologi pendukung (Laravel, FastAPI, dan Docker). Merancang kerangka metodologi penelitian dengan mengadopsi CRISP-DM sebagai kerangka kerja pengembangan model machine learning.
+d. **Expert Validation**  
+   Melakukan evaluasi rancangan sistem bersama pakar machine learning dan domain expert ketahanan pangan. Validasi mencakup review arsitektur model, kesesuaian teknik preprocessing, dan relevansi dengan kebutuhan praktis dalam perencanaan ketahanan pangan.
 
-#### c. Early Product Development
+e. **Product Revision**  
+   Melakukan penyempurnaan rancangan berdasarkan feedback dari tahap validasi. Revisi dapat mencakup modifikasi arsitektur model, perbaikan preprocessing pipeline, atau penyesuaian antarmuka pengguna sesuai dengan saran expert.
 
-Membangun struktur dasar model LSTM ensemble dan merancang antarmuka aplikasi berbasis web. Implementasi preprocessing pipeline untuk data NBM dan pengembangan baseline models untuk comparison. Tahap ini menghasilkan prototipe awal sistem prediksi.
+f. **Early Test (Implementasi Model LSTM Enhanced Ensemble)**  
+   Tahap ini merupakan implementasi lengkap model LSTM enhanced ensemble dengan metodologi CRISP-DM yang diintegrasikan dalam kerangka RnD. Implementasi mengikuti fase-fase CRISP-DM secara sistematis untuk memastikan structured progression dari data understanding hingga model evaluation. Pengujian dilakukan terhadap performa model menggunakan data training dan validation dengan metrik evaluasi RMSE, MAE, dan MAPE.
 
-#### d. Expert Validation
+g. **Product Revision**  
+   Menyempurnakan model dan sistem berdasarkan hasil pengujian tahap sebelumnya. Optimisasi hyperparameter, perbaikan ensemble configuration, dan enhancement antarmuka pengguna berdasarkan hasil testing.
 
-Melakukan evaluasi rancangan sistem bersama pakar machine learning dan domain expert ketahanan pangan. Validasi mencakup review arsitektur model, kesesuaian teknik preprocessing, dan relevansi dengan kebutuhan praktis dalam perencanaan ketahanan pangan.
+h. **Field Test**  
+   Melakukan pengujian komprehensif menggunakan data testing (2020-2024) dalam kondisi real-world scenarios. Testing mencakup accuracy assessment, performa sistem, dan usability evaluation dengan potential users.
 
-#### e. Product Revision
+i. **Final Product Revision**  
+   Melakukan penyempurnaan akhir sistem berdasarkan evaluasi dari uji coba lapangan. Finalisasi konfigurasi model, sistem deployment, dan dokumentasi lengkap untuk production use.
 
-Melakukan penyempurnaan rancangan berdasarkan feedback dari tahap validasi. Revisi dapat mencakup modifikasi arsitektur model, perbaikan preprocessing pipeline, atau penyesuaian antarmuka pengguna sesuai dengan saran expert.
+j. **Dissemination**  
+   Menyusun dokumentasi lengkap sistem, panduan penggunaan, dan laporan penelitian. Persiapan untuk knowledge transfer dan potential adoption oleh stakeholder terkait dalam perencanaan ketahanan pangan.
 
-#### f. Early Test (Implementasi Model LSTM Enhanced Ensemble)
+Tahapan implementasi model LSTM enhanced ensemble dalam tahap Early Test mengikuti kerangka kerja CRISP-DM yang digambarkan pada Gambar 3, menunjukkan systematic progression dari data understanding hingga model deployment (Schröer et al., 2021).
 
-Tahap ini merupakan implementasi lengkap model LSTM enhanced ensemble dengan metodologi CRISP-DM yang diintegrasikan dalam kerangka RnD. Implementasi mengikuti fase-fase CRISP-DM secara systematic untuk memastikan structured progression dari data understanding hingga model evaluation. Pengujian dilakukan terhadap performa model menggunakan data training dan validation dengan metrik evaluasi RMSE, MAE, dan MAPE.
+**Gambar 3. Diagram Alur CRISP-DM**
 
-#### g. Product Revision
-
-Menyempurnakan model dan sistem berdasarkan hasil pengujian tahap sebelumnya. Optimisasi hyperparameter, perbaikan ensemble configuration, dan enhancement antarmuka pengguna berdasarkan hasil testing.
-
-#### h. Field Test
-
-Melakukan pengujian komprehensif menggunakan data testing (2020-2024) dalam kondisi real-world scenarios. Testing mencakup accuracy assessment, performa sistem, dan usability evaluation dengan potential users.
-
-#### i. Final Product Revision
-
-Melakukan penyempurnaan akhir sistem berdasarkan evaluasi dari uji coba lapangan. Finalisasi konfigurasi model, sistem deployment, dan dokumentasi lengkap untuk production use.
-
-#### j. Dissemination
-
-Menyusun dokumentasi lengkap sistem, panduan penggunaan, dan laporan penelitian. Persiapan untuk knowledge transfer dan potential adoption oleh stakeholder terkait dalam perencanaan ketahanan pangan.
-
-Tahapan implementasi model LSTM enhanced ensemble dalam tahap Early Test mengikuti kerangka kerja CRISP-DM yang digambarkan pada **Gambar 3**, menunjukkan systematic progression dari data understanding hingga model deployment (Schröer et al., 2021). Implementasi CRISP-DM mencakup fase-fase sebagai berikut:
+Tahapan implementasi LSTM mengikuti kerangka kerja CRISP-DM sebagai berikut:
 
 #### a. Business Understanding
 
 Fase pertama dari metodologi CRISP-DM fokus pada pemahaman mendalam terhadap konteks ketahanan pangan Indonesia dan persyaratan khusus untuk sistem prediksi yang akan dikembangkan. Tahap ini dimulai dengan analisis stakeholder untuk mengidentifikasi pihak-pihak kunci seperti Badan Pangan Nasional, Kementerian Pertanian, dan para pengambil kebijakan, serta memahami proses pengambilan keputusan mereka dalam perencanaan ketahanan pangan.
 
-Problem definition dilakukan secara sistematis untuk mendefinisikan persyaratan prediksi secara jelas, menetapkan target akurasi MAPE kurang dari 10% berdasarkan standar industri dengan formula:
+Problem definition dilakukan secara sistematis untuk mendefinisikan persyaratan prediksi secara jelas, menetapkan target akurasi MAPE kurang dari 10% berdasarkan standar industri dengan formula yang ditunjukkan pada persamaan (28) berikut:
 
 ```
-MAPE = (100%/n) Σ|yi − ŷi|/yi    ...(29)
+MAPE = (100%/n) ∑|(yᵢ − ŷᵢ)/yᵢ|  ... (28)
 ```
 
-Di mana yi adalah nilai aktual konsumsi kalori, ŷi adalah nilai prediksi, dan n adalah jumlah observasi.
+yᵢ adalah nilai aktual konsumsi kalori, ŷᵢ adalah nilai prediksi, dan n adalah jumlah observasi.
 
 Kriteria sukses ditetapkan mencakup measurable objectives untuk performa teknis melalui metrik akurasi dan dampak bisnis dalam bentuk improved planning efficiency. Risk assessment juga dilakukan untuk mengidentifikasi potensi tantangan dalam kualitas data, model complexity, dan integration requirements.
 
 #### b. Data Understanding
 
-Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan 41.316 record transaksi NBM yang mencakup 120 komoditas pangan dari 11 kelompok. Melalui proses agregasi, data transaksi individual ini menghasilkan 372 data points time series bulanan untuk konsumsi kalori nasional, yang memberikan pondasi yang solid untuk pengembangan model prediksi time series. Target variabel dalam penelitian ini adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
+Data yang digunakan dalam penelitian ini bersumber dari Neraca Bahan Makanan (NBM) Indonesia periode 1993-2024 yang diperoleh dari Badan Pangan Nasional, Pusat Data dan Sistem Informasi Kementerian Pertanian, dan Badan Pusat Statistika. Dataset mencakup 31 tahun data historis dengan 41,316 records transaksi NBM yang mencakup 120 komoditas pangan dari 11 kelompok. Melalui proses agregasi, data transaksi individual ini menghasilkan 372 data points time series bulanan untuk konsumsi kalori nasional, yang memberikan pondasi yang solid untuk pengembangan model prediksi time series. Target variabel dalam penelitian ini adalah konsumsi kalori per kapita per hari agregat nasional yang diukur dalam satuan kkal/kapita/hari.
 
-Dataset NBM memiliki resolusi temporal bulanan dengan pola musiman yang jelas, setiap record transaksi mencakup data produksi, impor, ekspor, dan utilisasi untuk masing-masing dari 120 komoditas pangan. Perhitungan konsumsi kalori menggunakan formula NBM:
+Dataset NBM memiliki resolusi temporal bulanan dengan pola musiman yang jelas, setiap record transaksi mencakup data produksi, impor, ekspor, dan utilisasi untuk masing-masing dari 120 komoditas pangan. Perhitungan konsumsi kalori menggunakan formula NBM ditunjukkan pada persamaan (29) berikut:
 
 ```
-Kalori per kapita per hari = [Konsumsi per kapita (kg/hari) × Faktor Konversi Energi (kkal/100g)] / 10    ...(30)
+Kalori per kapita per hari = [Konsumsi per kapita (kg/hari) × Faktor Konversi Energi (kkal/100g)] / 10  ... (29)
 ```
 
 Data quality assessment menunjukkan adanya missing values yang diestimasi kurang dari 5%, outliers akibat economic shocks, dan potential measurement errors yang memerlukan treatment khusus.
 
-Exploratory Data Analysis (EDA) dilakukan untuk memahami karakteristik dataset secara komprehensif menggunakan statistical measures:
+Exploratory Data Analysis (EDA) dilakukan untuk memahami karakteristik dataset secara komprehensif menggunakan statistical measures. Persamaan (30) berikut menunjukkan formula tersebut:
 
 ```
-Coefficient of Variation = (σ/μ) × 100%    ...(31)
+Coefficient of Variation = (σ/μ) × 100%  ... (30)
 ```
 
-Di mana σ adalah standard deviation dan μ adalah mean konsumsi kalori.
+σ adalah standard deviation dan μ adalah mean konsumsi kalori.
 
 Analisis temporal menggunakan Augmented Dickey-Fuller test dengan hipotesis:
 - H₀: Time series memiliki unit root (non-stationary)
 - H₁: Time series adalah stationary
 
-Correlation analysis menggunakan Pearson correlation coefficient:
+Correlation analysis menggunakan Pearson correlation coefficient. Persamaan (31) berikut menunjukkan formula tersebut:
 
 ```
-r = Σ(xi − x̄)(yi − ȳ) / √[Σ(xi − x̄)² Σ(yi − ȳ)²]    ...(32)
+r = ∑(xᵢ − x̄)(yᵢ − ȳ) / √[∑(xᵢ − x̄)² ∑(yᵢ − ȳ)²]  ... (31)
 ```
 
 Outlier detection menggunakan IQR method dengan threshold Q₁ − 1.5 × IQR dan Q₃ + 1.5 × IQR, serta Z-score analysis dengan threshold |z| > 3.
@@ -610,154 +584,155 @@ Outlier detection menggunakan IQR method dengan threshold Q₁ − 1.5 × IQR da
 
 Tahap data preparation merupakan fase kritikal yang menentukan kualitas input untuk model LSTM. Data cleaning dimulai dengan handling missing values menggunakan forward-fill method untuk maintaining temporal continuity, dengan validasi terhadap pola musiman untuk memastikan imputasi tidak mengubah karakteristik fundamental dari time series.
 
-Outlier treatment menggunakan winsorization:
+Outlier treatment menggunakan winsorization dengan persamaan (32) yang ditunjukkan sebagai berikut:
 
 ```
 xwinsorization = { P₁      jika x < P₁
-                 { x       jika P₁ ≥ x ≥ P₉₉
-                 { P₉₉     jika x > P₉₉    ...(33)
+                   x       jika P₁ ≥ x ≥ P₉₉
+                   P₉₉     jika x > P₉₉  ... (32)
 ```
 
-Di mana P₁ dan P₉₉ adalah 1st dan 99th percentiles.
+P₁ dan P₉₉ adalah 1st dan 99th percentiles.
 
-Feature engineering menggunakan cyclical encoding untuk temporal features:
-
-```
-Monthsin = sin(2π × month / 12)    ...(34)
-Monthcos = cos(2π × month / 12)    ...(35)
-```
-
-Rolling statistics dihitung dengan Moving Average:
+Feature engineering menggunakan cyclical encoding untuk temporal features. Persamaan (33) dan (34) berikut menunjukkan formula tersebut:
 
 ```
-MAₜ = (1/k) Σxₜ₋ᵢ dari i=0 hingga k-1    ...(36)
+Monthₛᵢₙ = sin(2π × month / 12)  ... (33)
+Monthcₒₛ = cos(2π × month / 12)  ... (34)
 ```
 
-Di mana k adalah window size (3, 6, 12 bulan).
+Rolling statistics dihitung dengan Moving Average. Persamaan (35) berikut menunjukkan formula tersebut:
 
-Data preprocessing menggunakan StandardScaler dan RobustScaler:
-
-**StandardScaler:**
 ```
-z = (x − μ) / σ    ...(37)
+MAₜ = (1/k) ∑xₜ₋ᵢ  ... (35)
 ```
 
-**RobustScaler:**
+k adalah window size (3, 6, 12 bulan).
+
+Data preprocessing menggunakan StandardScaler dan RobustScaler dengan persamaan (36) dan (37) yang ditunjukkan sebagai berikut:
+
 ```
-z = (x − median) / (Q₃ − Q₁)    ...(38)
+z = (x − μ) / σ  ... (36)
+z = (x − median) / (Q₃ − Q₁)  ... (37)
 ```
 
 Sequence generation menggunakan sliding window dengan window size yang akan dioptimasi melalui grid search.
 
-Dataset NBM Indonesia yang mencakup 31 tahun (1993-2024) dengan 372 titik data bulanan dibagi secara kronologis untuk menjaga integritas temporal dan mencegah data leakage yang dapat terjadi pada random split. Strategi pembagian data divisualisasikan pada **Gambar 4** yang menunjukkan distribusi temporal dataset.
+Dataset NBM Indonesia yang mencakup 31 tahun (1993-2024) dengan 372 titik data bulanan dibagi secara kronologis untuk menjaga integritas temporal dan mencegah data leakage yang dapat terjadi pada random split. Strategi pembagian data divisualisasikan pada Gambar 4 yang menunjukkan distribusi temporal dataset.
+
+**Gambar 4. Strategi Pembagian Data NBM Indonesia**
 
 Pembagian data mengikuti proporsi 70:15:15 dengan alasan sebagai berikut:
 
-**Data Pelatihan (70%, 1993-2015)**  
-Periode 23 tahun dengan 276 titik data bulanan digunakan untuk melatih model ensemble LSTM. Periode ini mencakup berbagai kondisi ekonomi dan pangan Indonesia, termasuk krisis moneter 1998 dan periode recovery, memberikan variasi pola yang cukup untuk pembelajaran model.
+- **Data Pelatihan (70%, 1993-2015)**  
+  Periode 23 tahun dengan 276 titik data bulanan digunakan untuk melatih model ensemble LSTM. Periode ini mencakup berbagai kondisi ekonomi dan pangan Indonesia, termasuk krisis moneter 1998 dan periode recovery, memberikan variasi pola yang cukup untuk pembelajaran model.
 
-**Data Validasi (15%, 2016-2019)**  
-Periode 4 tahun dengan 48 titik data digunakan untuk validasi model dan tuning hyperparameter. Periode ini dipilih karena merepresentasikan kondisi ekonomi yang relatif stabil (pra-pandemi), sehingga cocok untuk optimasi parameter model tanpa bias dari kondisi ekstrem.
+- **Data Validasi (15%, 2016-2019)**  
+  Periode 4 tahun dengan 48 titik data digunakan untuk validasi model dan tuning hyperparameter. Periode ini dipilih karena merepresentasikan kondisi ekonomi yang relatif stabil (pra-pandemi), sehingga cocok untuk optimasi parameter model tanpa bias dari kondisi ekstrem.
 
-**Data Pengujian (15%, 2020-2024)**  
-Periode 4 tahun terakhir dengan 48 titik data digunakan untuk evaluasi final performa model. Periode ini sengaja dipilih karena mencakup kondisi challenging seperti pandemi COVID-19, yang menguji robustness model terhadap shock ekonomi dan gangguan rantai pasokan pangan.
+- **Data Pengujian (15%, 2020-2024)**  
+  Periode 4 tahun terakhir dengan 48 titik data digunakan untuk evaluasi final performa model. Periode ini sengaja dipilih karena mencakup kondisi challenging seperti pandemi COVID-19, yang menguji robustness model terhadap shock ekonomi dan gangguan rantai pasokan pangan.
 
-Untuk optimasi hyperparameter dan pemilihan konfigurasi model terbaik, penelitian ini menerapkan Time Series Cross-Validation dengan teknik expanding window pada data pelatihan (1993-2015). Metode ini divisualisasikan pada **Gambar 5** yang menunjukkan mekanisme validasi bertahap.
+Untuk optimasi hyperparameter dan pemilihan konfigurasi model terbaik, penelitian ini menerapkan Time Series Cross-Validation dengan teknik expanding window pada data pelatihan (1993-2015). Metode ini divisualisasikan pada Gambar 5 yang menunjukkan mekanisme validasi bertahap.
+
+**Gambar 5. Time Series Cross-Validation Expanding Window**
 
 Expanding window cross-validation dilakukan dengan tahapan sebagai berikut:
-- **Fold 1:** training pada 1993-2005 (12 tahun), validasi pada 2006
-- **Fold 2:** training pada 1993-2007 (14 tahun), validasi pada 2008
-- **Fold 3:** training pada 1993-2009 (16 tahun), validasi pada 2010
-- **Fold 4:** training pada 1993-2011 (18 tahun), validasi pada 2012
-- **Fold 5:** training pada 1993-2013 (20 tahun), validasi pada 2014
+- Fold 1: training pada 1993-2005 (12 tahun), validasi pada 2006
+- Fold 2: training pada 1993-2007 (14 tahun), validasi pada 2008
+- Fold 3: training pada 1993-2009 (16 tahun), validasi pada 2010
+- Fold 4: training pada 1993-2011 (18 tahun), validasi pada 2012
+- Fold 5: training pada 1993-2013 (20 tahun), validasi pada 2014
 - Proses berlanjut hingga fold terakhir memakai data hingga 2015
 
 Setiap fold menambahkan 1-2 tahun data pelatihan untuk mensimulasikan kondisi asli sehingga model terus belajar dari data historis yang bertambah. Metode ini memberikan evaluasi robust terhadap performa model pada berbagai periode waktu dan membantu mendeteksi overfitting serta memilih hyperparameter optimal yang generalize dengan baik. Performa model pada setiap fold akan dievaluasi menggunakan metrik RMSE, MAE, dan MAPE untuk memastikan konsistensi akurasi prediksi across different time periods.
 
 #### d. Modeling
 
-Desain arsitektur model LSTM enhanced ensemble menggabungkan LSTM untuk temporal pattern extraction dengan robust regression algorithms. Arsitektur LSTM menggunakan persamaan gate mechanisms sebagai berikut:
+Desain arsitektur model LSTM enhanced ensemble menggabungkan LSTM untuk temporal pattern extraction dengan robust regression algorithms. Arsitektur LSTM menggunakan persamaan gate mechanisms sebagaimana ditunjukkan pada persamaan (38) hingga (43) berikut.
 
-**Forget Gate:**
+Forget Gate:
 ```
-fₜ = σ(Wf ∙ [hₜ₋₁, xₜ] + bf)    ...(39)
-```
-
-**Input Gate:**
-```
-iₜ = σ(Wi ∙ [hₜ₋₁, xₜ] + bi)       ...(40)
-C̃ₜ = tanh(WC ∙ [hₜ₋₁, xₜ] + bC)    ...(41)
+fₜ = σ(Wf · [hₜ₋₁, xₜ] + bf)  ... (38)
 ```
 
-**Cell State Update:**
+Input Gate:
 ```
-Cₜ = fₜ ∗ Cₜ₋₁ + iₜ ∗ C̃ₜ    ...(42)
-```
-
-**Output Gate:**
-```
-oₜ = σ(Wo ∙ [hₜ₋₁, xₜ] + bo)    ...(43)
-hₜ = oₜ ∗ tanh(Cₜ)              ...(44)
+iₜ = σ(Wᵢ · [hₜ₋₁, xₜ] + bᵢ)  ... (39)
+C̃ₜ = tanh(Wc · [hₜ₋₁, xₜ] + bc)  ... (40)
 ```
 
-Ensemble integration menggunakan weighted averaging:
-
+Cell State Update:
 ```
-ŷensemble = Σ(wi ∙ ŷi) dari i=1 hingga n    ...(45)
-```
-
-dengan constraint Σwi = 1 dan wi ≥ 0.
-
-HuberRegressor menggunakan huber loss function:
-
-```
-Lδ(y, f(x)) = { ½(y − f(x))²                    untuk |y − f(x)| ≤ δ
-              { δ|y − f(x)| − ½δ²               untuk |y − f(x)| > δ    ...(46)
+Cₜ = fₜ * Cₜ₋₁ + iₜ * C̃ₜ  ... (41)
 ```
 
-Adam Optimizer digunakan untuk training dengan:
+Output Gate:
+```
+oₜ = σ(Wₒ · [hₜ₋₁, xₜ] + b₀)  ... (42)
+hₜ = oₜ * tanh(Cₜ)  ... (43)
+```
+
+Ensemble integration menggunakan weighted averaging sebagaimana disajikan pada persamaan (44):
 
 ```
-θₜ₊₁ = θₜ − α/(√v̂ₜ + ε) m̂ₜ    ...(47)
+ŷensemble = ∑wᵢ · ŷᵢ  ... (44)
 ```
 
-Di mana m̂ₜ dan v̂ₜ adalah bias-corrected first dan second moment estimates.
+dengan constraint ∑wᵢ = 1 dan wᵢ ≥ 0.
+
+HuberRegressor menggunakan huber loss function yang ditunjukkan pada persamaan (45) berikut:
+
+```
+           ⎧ ½(y − f(x))²                  untuk |y − f(x)| ≤ δ
+Lδ(y,f(x)) = ⎨
+           ⎩ δ|y − f(x)| − ½δ²            untuk |y − f(x)| > δ
+... (45)
+```
+
+Adam Optimizer digunakan untuk training dengan persamaan (46) yang disajikan sebagai berikut:
+
+```
+θₜ₊₁ = θₜ − (α / √(v̂ₜ + ε)) m̂ₜ  ... (46)
+```
+
+m̂ₜ dan v̂ₜ adalah bias-corrected first dan second moment estimates.
 
 #### e. Evaluation
 
-Evaluasi performa model menggunakan multiple metrics untuk comprehensive assessment:
+Evaluasi performa model menggunakan multiple metrics untuk comprehensive assessment.
 
-**Root Mean Square Error (RMSE)** untuk measuring prediction accuracy dengan emphasis pada large errors:
-
-```
-RMSE = √[1/n Σ(yi − ŷi)²]    ...(48)
-```
-
-**Mean Absolute Error (MAE)** memberikan robust metric untuk average prediction deviation:
+- **Root Mean Square Error (RMSE)** untuk measuring prediction accuracy dengan emphasis pada large errors sebagaimana ditunjukkan pada persamaan (47) berikut:
 
 ```
-MAE = 1/n Σ|yi − ŷi|    ...(49)
+RMSE = √[(1/n) ∑(yᵢ − ŷᵢ)²]  ... (47)
 ```
 
-**Mean Absolute Percentage Error (MAPE)** menjadi metric utama dengan target < 10% untuk business acceptability berdasarkan praktik standar industri dan benchmarks dari literatur terkait:
+- **Mean Absolute Error (MAE)** memberikan robust metric untuk average prediction deviation sebagaimana disajikan pada persamaan (48):
 
 ```
-MAPE = (100%/n) Σ|yi − ŷi|/yi    ...(50)
+MAE = (1/n) ∑|yᵢ − ŷᵢ|  ... (48)
 ```
 
-**R-Squared** untuk measuring explained variance proportion:
+- **Mean Absolute Percentage Error (MAPE)** menjadi metric utama dengan target < 10% untuk business acceptability berdasarkan praktik standar industri dan benchmarks dari literatur terkait dengan persamaan (49) yang ditunjukkan sebagai berikut:
 
 ```
-R² = 1 − SSres/SStot = 1 − [Σ(yi − ŷi)²] / [Σ(yi − ȳ)²]    ...(51)
+MAPE = (100%/n) ∑|(yᵢ − ŷᵢ)/yᵢ|  ... (49)
 ```
 
-**Directional Accuracy** untuk percentage of correct trend predictions:
+- **R-Squared** untuk measuring explained variance proportion sebagaimana disajikan pada persamaan (50):
 
 ```
-DA = [1/(n−1)] Σ I[(yi − yi−1)(ŷi − ŷi−1) > 0]    ...(52)
+R² = 1 − (SSres/SStot) = 1 − [∑(yᵢ − ŷᵢ)² / ∑(yᵢ − ȳ)²]  ... (50)
 ```
 
-Di mana I[·] adalah indicator function.
+- **Directional Accuracy** untuk percentage of correct trend predictions dengan persamaan (51) yang ditunjukkan sebagai berikut:
+
+```
+DA = [1/(n−1)] ∑I[(yᵢ − ŷᵢ₋₁)(yᵢ − ŷᵢ₋₁) > 0]  ... (51)
+```
+
+Indicator function dilambangkan dengan I[·].
 
 Validation strategy menggunakan time series cross-validation dengan expanding window, walk-forward validation untuk real-world simulation, dan robustness testing under extreme scenarios. Model interpretability analysis menggunakan SHAP values untuk feature importance dan residual analysis untuk error pattern identification.
 
@@ -766,32 +741,32 @@ Validation strategy menggunakan time series cross-validation dengan expanding wi
 Implementasi sistem menggunakan containerized microservices architecture dengan separation of concerns. Frontend service dikembangkan menggunakan Laravel dengan Livewire components untuk reactive interface. Backend machine learning service menggunakan FastAPI dengan RESTful API endpoints untuk model serving.
 
 Arsitektur sistem menggunakan request-response pattern:
-1. User request → Laravel Frontend
-2. API call → FastAPI ML Service
-3. Model inference → Prediction result
-4. Response → Frontend display
+- User request → Laravel Frontend
+- API call → FastAPI ML Service
+- Model inference → Prediction result
+- Response → Frontend display
 
 Optimasi performa menggunakan strategi caching, database indexing, dan API rate limiting. Security implementation meliputi authentication, input validation, dan secure communication protocols. Monitoring dan logging menggunakan structured logging untuk system observability dan performance tracking.
 
 ### 3.3 Jadwal Penelitian
 
-Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu yang sistematis untuk memastikan setiap tahap RnD dapat dilaksanakan secara optimal. Rincian jadwal pelaksanaan penelitian dapat dilihat pada **Tabel 2** yang menunjukkan timeline dan distribusi kegiatan penelitian dari bulan November 2025 hingga Januari 2026.
+Penelitian direncanakan berlangsung selama 3 bulan dengan distribusi waktu yang sistematis untuk memastikan setiap tahap RnD dapat dilaksanakan secara optimal. Rincian jadwal pelaksanaan penelitian dapat dilihat pada Tabel 2 yang menunjukkan timeline dan distribusi kegiatan penelitian dari bulan November 2025 hingga Januari 2026.
 
-#### Tabel 2. Jadwal Penelitian
+**Tabel 2. Jadwal Penelitian**
 
 | Tahap Penelitian | November 2025 | Desember 2025 | Januari 2026 |
-|-----------------|---------------|---------------|--------------|
-| Research and Collection Preliminary | ✓ | | |
-| Research Planning | ✓ | | |
-| Early Product Development | ✓ | ✓ | |
-| Expert Validation | | ✓ | |
-| Product Revision | | ✓ | |
-| Early Test (Implementasi dan Uji Coba Model) | | ✓ | ✓ |
-| Product Revision | | | ✓ |
-| Field Test | | | ✓ |
-| Final Product Revision | | | ✓ |
-| Dissemination | | | ✓ |
-| Penyusunan Laporan | ✓ | ✓ | ✓ |
+|------------------|---------------|---------------|--------------|
+| Research and Collection Preliminary | ████ | | |
+| Research Planning | ████ | | |
+| Early Product Development | | ████ | |
+| Expert Validation | | ████ | |
+| Product Revision | | ████ | |
+| Early Test (Implementasi dan Uji Coba Model) | | ████ | ████ |
+| Product Revision | | | ████ |
+| Field Test | | | ████ |
+| Final Product Revision | | | ████ |
+| Dissemination | | | ████ |
+| Penyusunan Laporan | ████ | ████ | ████ |
 
 ---
 
@@ -807,7 +782,7 @@ ASEAN Secretariat. (2024). *Enhancing and Integrating Regional Food Safety to Fa
 
 Asian Development Bank. (2023). *Asian Development Outlook April 2023*. Asian Development Bank.
 
-Badan Pangan Nasional. (2021). Berita Negara. *Peraturan Menteri Kesehatan Republik Indonesia Nomor 4 Tahun 2018*, 1301, 1–8.
+Badan Pangan Nasional. (2021). Berita Negara. *Peraturan Menteri Kesehatan Republik Indonesia Nomor 4 Tahun 2018*, *1301*, 1–8.
 
 Benos, L., Tagarakis, A. C., Dolias, G., Berruto, R., Kateris, D., & Bochtis, D. (2021). Machine learning in agriculture: A comprehensive updated review. *Sensors*, *21*(11), 1–55. https://doi.org/10.3390/s21113758
 
@@ -815,7 +790,7 @@ BPS. (2023). *Proyeksi Penduduk Indonesia 2020–2050 Hasil Sensus Penduduk 2020
 
 Cahyani, J., Mujahidin, S., & Fiqar, T. P. (2023). Implementasi Metode Long Short Term Memory (LSTM) untuk Memprediksi Harga Bahan Pokok Nasional. *Jurnal Sistem Dan Teknologi Informasi (JustIN)*, *11*(2), 346. https://doi.org/10.26418/justin.v11i2.57395
 
-Fadila, L. Moh. A., & Putri, N. A. (2023). Analisis Perkembangan Ketahanan Pangan di Indonesia : Pendekatan Menggunakan Big Data dan Data Mining. *Seminar Nasional Official Statistics*, *2023*(1), 247–256. https://doi.org/10.34123/semnasoffstat.v2023i1.1890
+Fadila, L. Moh. A., & Putri, N. A. (2023). Analisis Perkembangan Ketahanan Pangan di Indonesia: Pendekatan Menggunakan Big Data dan Data Mining. *Seminar Nasional Official Statistics*, *2023*(1), 247–256. https://doi.org/10.34123/semnasoffstat.v2023i1.1890
 
 FAO. (2023). *The State of Food Security and Nutrition in the World 2023*. https://doi.org/10.4060/cc3017en
 
@@ -825,7 +800,7 @@ Iannone, A. (2023). Unveiling the Impact of the COVID-19 Pandemic (2019-2021) on
 
 Kamil, M. Z. F., Purnamasari, R., & Eliskar, Y. (2024). Perancangan Sistem Deploy Untuk Menghubungkan Machine learning Ke Website. *E-Proceeding of Engineering*, *11*(6), 6394–6396. https://openlibrarypublications.telkomuniversity.ac.id/index.php/engineering/article/view/24940
 
-Kementerian Pertanian. (2023). *Laporan Kinerja Kementerian Pertanian Tahun 2023*, 1–230.
+Kementerian Pertanian. (2023). *Laporan Kinerja Kementerian Pertanian Tahun 2023*. Kementerian Pertanian, 1–230.
 
 Kong, X., Chen, Z., Liu, W., Ning, K., Zhang, L., Muhammad Marier, S., Liu, Y., Chen, Y., & Xia, F. (2025). Deep learning for time series forecasting: a survey. *International Journal of Machine Learning and Cybernetics*, *16*(7–8). https://doi.org/10.1007/s13042-025-02560-w
 
@@ -833,7 +808,7 @@ Magalhães, Sais, A. C., & Rossi, F. (2025). Research on Using Ensemble Models t
 
 Narkunam, G. A. (2025). Enhancing Agricultural Forecasting with an Ensemble Learning Approach for Broccoli Yield Prediction. *Journal of Information Systems Engineering and Management*, *10*(41s), 105–116. https://doi.org/10.52783/jisem.v10i41s.7754
 
-OECD. (2021). *Membangun Ketahanan Pangan dan Mengelola Risiko di Asia Tenggara*. Yayasan Cipta Sentosa. https://doi.org/10.1787/9789264272392-en
+OECD. (2021). *Membangun Ketahanan Pangan dan Mengelola Risiko di Asia Tenggara*. (M. G. F. E. B. Suwastoyo, Ed.). Yayasan Cipta Sentosa. https://doi.org/10.1787/9789264272392-en
 
 Okpatrioka. (2023). Research and development (R&D) penelitian yang inovatif dalam pendidikan [Innovative research and development (R&D) in education]. *Dharma Acariya Nusantara: Jurnal Pendidikan, Bahasa Dan Budaya*, *1*(1), 86–100.
 
@@ -843,9 +818,9 @@ Paudel, D., Neupane, R. C., Sigdel, S., Poudel, P., & Khanal, A. R. (2023). COVI
 
 Pawar, A., Manjula Shenoy, K., Prabhu, S., & Guruprasad Rai, D. (2023). Performance analysis of machine learning algorithms: Single Model VS Ensemble Model. *Journal of Physics: Conference Series*, *2571*(1). https://doi.org/10.1088/1742-6596/2571/1/012007
 
-Raharjo, A. B., Wakhid, M. A., & Purwitasari, D. (2022). Load Forecasting for Daily Load Operational Plan Using Lstm (Case Study: South Sulawesi Sub System). *JUTI: Jurnal Ilmiah Teknologi Informasi*, 99–108. https://doi.org/10.12962/j24068535.v20i2.a1138
+Raharjo, A. B., Wakhid, M. A., & Purwitasari, D. (2022). Load Forecasting for Daily Load Operational Plan Using LSTM (Case Study: South Sulawesi Sub System). *JUTI: Jurnal Ilmiah Teknologi Informasi*, 99–108. https://doi.org/10.12962/j24068535.v20i2.a1138
 
-Rozaki, Z. (2021). Food security challenges and opportunities in indonesia post COVID-19. *Advances in Food Security and Sustainability* (1st ed., Vol. 6). Elsevier Inc. https://doi.org/10.1016/bs.af2s.2021.07.002
+Rozaki, Z. (2021). Food security challenges and opportunities in Indonesia post COVID-19. *Advances in Food Security and Sustainability* (1st ed., Vol. 6). Elsevier Inc. https://doi.org/10.1016/bs.af2s.2021.07.002
 
 Sarku, R., Clemen, U. A., & Clemen, T. (2023). The Application of Artificial Intelligence Models for Food Security: A Review. *Agriculture (Switzerland)*, *13*(10). https://doi.org/10.3390/agriculture13102037
 
