@@ -740,13 +740,270 @@ Validation strategy menggunakan time series cross-validation dengan expanding wi
 
 Implementasi sistem menggunakan containerized microservices architecture dengan separation of concerns. Frontend service dikembangkan menggunakan Laravel dengan Livewire components untuk reactive interface. Backend machine learning service menggunakan FastAPI dengan RESTful API endpoints untuk model serving.
 
-Arsitektur sistem menggunakan request-response pattern:
-- User request → Laravel Frontend
-- API call → FastAPI ML Service
-- Model inference → Prediction result
-- Response → Frontend display
+**i. Arsitektur Sistem Web**
 
-Optimasi performa menggunakan strategi caching, database indexing, dan API rate limiting. Security implementation meliputi authentication, input validation, dan secure communication protocols. Monitoring dan logging menggunakan structured logging untuk system observability dan performance tracking.
+Sistem SIKOLBIA dibangun dengan arsitektur microservices berbasis Docker yang memisahkan concerns antara presentation layer (Laravel), business logic, dan machine learning service (FastAPI), sebagaimana divisualisasikan pada Gambar 6.
+
+**Gambar 6. Arsitektur Microservices SIKOLBIA**
+
+Arsitektur sistem menggunakan request-response pattern yang dimulai dari user request melalui Laravel Frontend, kemudian Laravel Controller melakukan HTTP request ke FastAPI ML Service untuk inference prediksi. FastAPI memuat model LSTM Enhanced Ensemble dan melakukan prediksi, kemudian mengembalikan JSON response dengan prediksi dan confidence interval yang akan ditampilkan Laravel dalam bentuk tabel dan grafik interaktif.
+
+Komponen utama arsitektur meliputi Nginx sebagai reverse proxy dan web server pada port 8000, Laravel App dengan PHP 8.3 dan Livewire 3 untuk reactive components, MySQL sebagai relational database pada port 3306 untuk data persistence, Redis sebagai in-memory caching pada port 6379 untuk session dan query cache, FastAPI ML dengan Python 3.10 pada port 8082 untuk model inference, serta phpMyAdmin pada port 8081 untuk database management interface.
+
+**ii. Pengguna Sistem dan Hak Akses**
+
+Sistem SIKOLBIA dirancang untuk melayani empat kategori pengguna dengan kebutuhan dan hak akses yang berbeda menggunakan role-based access control (RBAC) dengan Spatie Laravel Permission.
+
+Administrator merupakan pengelola sistem dari Kementerian Pertanian atau lembaga terkait yang memiliki full CRUD untuk semua data (user, NBM, kelompok, komoditi, alamat), user management, permission assignment, dan system monitoring. Output yang dihasilkan berupa dashboard admin dengan user activity logs, system health metrics, data statistics, dan audit trails.
+
+Pemerintah mencakup pejabat atau staf dari Kementerian Pertanian, Bappenas, atau BPKP yang dapat menjalankan prediksi, melihat data historis, export prediction reports dalam format Excel atau PDF, dan mengakses chatbot AI. Output yang dihasilkan meliputi prediksi konsumsi kalori 1-12 bulan ke depan dengan LSTM Enhanced Ensemble, confidence interval (±15%) untuk setiap prediksi, trend indicator (↗ naik / ↘ turun / → stabil) berdasarkan data historis, comparison chart antara data historis dan prediksi, serta export laporan untuk presentasi kebijakan.
+
+Akademisi merupakan peneliti, dosen, atau mahasiswa dari universitas atau lembaga penelitian yang dapat melihat data historis, melakukan filter dan query NBM, export data dalam format CSV atau Excel, dan mengakses visualization tools. Output yang dihasilkan berupa dataset NBM untuk analisis statistik, time series plots, correlation matrix, dan data dictionary.
+
+Pengunjung adalah masyarakat umum yang tertarik dengan ketahanan pangan dengan akses read-only ke dashboard publik dan view aggregated statistics. Output yang dihasilkan berupa ringkasan konsumsi pangan nasional (agregat) dan infografis ketahanan pangan.
+
+**Tabel 3. Matrix Hak Akses dan Fitur Sistem**
+
+| Fitur | Admin | Pemerintah | Akademisi | Pengunjung |
+|-------|-------|-----------|-----------|-----------|
+| View Dashboard | ✓ | ✓ | ✓ | ✓ (terbatas) |
+| User Management (CRUD) | ✓ | ✗ | ✗ | ✗ |
+| Data Master NBM (CRUD) | ✓ | ✗ | ✗ | ✗ |
+| Kelompok & Komoditi (CRUD) | ✓ | ✗ | ✗ | ✗ |
+| Run Prediction LSTM | ✓ | ✓ | ✗ | ✗ |
+| View Historical Data | ✓ | ✓ | ✓ | ✗ |
+| Export Data (Excel/CSV/PDF) | ✓ | ✓ | ✓ | ✗ |
+| Chatbot AI | ✓ | ✓ | ✓ | ✗ |
+
+**iii. Alur Kerja Sistem (System Workflow)**
+
+Sistem SIKOLBIA mengimplementasikan workflow multi-tier dengan separation of concerns sebagaimana divisualisasikan pada Gambar 7 dengan flowchart 5 kolom untuk menunjukkan interaksi antar pengguna dan sistem.
+
+**Gambar 7. Flowchart Sistem SIKOLBIA (5 Kolom)**
+
+```
+┌──────────────┬──────────────┬──────────────┬──────────────┬──────────────┐
+│   SISTEM     │    ADMIN     │  PEMERINTAH  │  AKADEMISI   │  PENGUNJUNG  │
+├──────────────┼──────────────┼──────────────┼──────────────┼──────────────┤
+│   START      │              │              │              │              │
+│     │        │              │              │              │              │
+│     ▼        │              │              │              │              │
+│  Login Page──┼──Login───────┼──Login───────┼──Login───────┼──Browse──────┤
+│     │        │   as Admin   │ as Pemerintah│ as Akademisi │  as Guest    │
+│     ▼        │      │       │      │       │      │       │      │       │
+│ Autentikasi  │      ▼       │      ▼       │      ▼       │      ▼       │
+│ (Spatie      │   Verify     │   Verify     │   Verify     │   Public     │
+│ Permission)  │   Role       │   Role       │   Role       │   Access     │
+│     │        │      │       │      │       │      │       │      │       │
+│     ▼        │      ▼       │      ▼       │      ▼       │      ▼       │
+│  Dashboard───┼──Dashboard───┼──Dashboard───┼──Dashboard───┼──Home Page───┤
+│              │   Admin      │  Pemerintah  │  Akademisi   │   Public     │
+│              │      │       │      │       │      │       │      │       │
+│              │      ▼       │      ▼       │      ▼       │      ▼       │
+│              │  User Mgmt   │  Pilih Param │  Query Data  │  View Stats  │
+│              │  NBM CRUD    │  (Kelompok,  │  Historis    │  (Read-Only) │
+│              │              │   Komoditi,  │              │              │
+│              │              │    Bulan)    │      │       │              │
+│              │              │      │       │      ▼       │              │
+│              │              │      ▼       │  Export Data │              │
+│              │              │  Query Data  │  (Excel/CSV) │              │
+│              │              │  Historis    │      │       │              │
+│              │              │  (6 bulan)   │      ▼       │              │
+│              │              │      │       │  Download    │              │
+│  FastAPI ML  │              │      ▼       │  File        │              │
+│  Service ◄───┼──────────────┼──Call API────┼──────────────┼──────────────┤
+│     │        │              │  /predict    │              │              │
+│     ▼        │              │      │       │              │              │
+│ Load Model   │              │      │       │              │              │
+│ (LSTM        │              │      │       │              │              │
+│  Enhanced    │              │      │       │              │              │
+│  Ensemble)   │              │      │       │              │              │
+│     │        │              │      │       │              │              │
+│     ▼        │              │      │       │              │              │
+│ Preprocess   │              │      │       │              │              │
+│ Input Data   │              │      │       │              │              │
+│     │        │              │      │       │              │              │
+│     ▼        │              │      │       │              │              │
+│ LSTM Infer   │              │      │       │              │              │
+│ + Trend Anal │              │      │       │              │              │
+│     │        │              │      │       │              │              │
+│     ▼        │              │      │       │              │              │
+│ Calculate CI │              │      │       │              │              │
+│ (±15%)       │              │      │       │              │              │
+│     │        │              │      │       │              │              │
+│     ▼        │              │      ▼       │              │              │
+│ Return JSON──┼──────────────┼──Receive─────┼──────────────┼──────────────┤
+│              │              │  Response    │              │              │
+│              │              │      │       │              │              │
+│              │              │      ▼       │              │              │
+│              │              │  Display:    │              │              │
+│              │              │  - Prediksi  │              │              │
+│              │              │  - CI (±15%) │              │              │
+│              │              │  - Trend     │              │              │
+│              │              │  - Chart     │              │              │
+│              │              │      │       │              │              │
+│              │      │       │      ▼       │      │       │      │       │
+│              │      ▼       │  Save/Export │      ▼       │      ▼       │
+│              │  Logout      │  Laporan     │  Logout      │  Exit        │
+│              │      │       │      │       │      │       │      │       │
+│     END ◄────┴──────┴───────┴──────┴───────┴──────┴───────┴──────┘       │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+Alur sistem dimulai dari tahap autentikasi dimana user melakukan login dengan email dan password, kemudian sistem memverifikasi credentials dan role menggunakan Spatie Permission. Setelah berhasil login, middleware melakukan otorisasi dengan memeriksa permission untuk setiap route berdasarkan role pengguna.
+
+Pada proses prediksi, pengguna Pemerintah memilih parameter yang terdiri dari kelompok komoditas, jenis komoditi, dan jumlah bulan prediksi yang diinginkan. Laravel Controller kemudian melakukan query data historis 6 bulan terakhir dari database MySQL. Setelah data terkumpul, Controller melakukan HTTP POST request ke FastAPI endpoint `/predict` dengan payload dalam format JSON. FastAPI menerima request, memuat model LSTM Enhanced Ensemble, dan melakukan inference untuk menghasilkan prediksi dengan confidence interval (±15%). Hasil prediksi dikembalikan dalam bentuk JSON response ke Laravel, yang kemudian menampilkan hasil berupa tabel prediksi, grafik tren, dan informasi model. Pengguna dapat melakukan export hasil prediksi atau data historis dalam format Excel atau PDF.
+
+**iv. Struktur Database**
+
+Database SIKOLBIA menggunakan MySQL 8.0 dengan normalisasi hingga 3NF untuk menghindari redundansi data. Entity Relationship Diagram (ERD) divisualisasikan pada Gambar 8.
+
+**Gambar 8. Entity Relationship Diagram (ERD) SIKOLBIA**
+
+**Tabel Utama:**
+
+**a. users** (Authentication & Authorization)
+- `id` (PK, BIGINT AUTO_INCREMENT)
+- `name` (VARCHAR 255)
+- `email` (VARCHAR 255, UNIQUE)
+- `password` (VARCHAR 255, HASHED dengan bcrypt)
+- `created_at`, `updated_at` (TIMESTAMP)
+
+**b. roles** (Spatie Permission)
+- `id` (PK, BIGINT AUTO_INCREMENT)
+- `name` (VARCHAR 255): 'admin', 'pemerintah', 'akademisi', 'pengunjung'
+- `guard_name` (VARCHAR 255): 'web'
+
+**c. permissions** (Spatie Permission)
+- `id` (PK, BIGINT AUTO_INCREMENT)
+- `name` (VARCHAR 255): 'view-dashboard', 'run-prediction', 'manage-users', dll.
+- `guard_name` (VARCHAR 255): 'web'
+
+**d. role_has_permissions** (Pivot Table)
+- `role_id` (FK → roles.id)
+- `permission_id` (FK → permissions.id)
+- PRIMARY KEY (`role_id`, `permission_id`)
+
+**e. model_has_roles** (Pivot Table untuk User-Role)
+- `role_id` (FK → roles.id)
+- `model_type` (VARCHAR 255): 'App\\Models\\User'
+- `model_id` (BIGINT, FK → users.id)
+
+**f. transaksi_nbms** (Data Utama NBM)
+- `id` (PK, BIGINT AUTO_INCREMENT)
+- `tahun` (INT)
+- `bulan` (INT, 1-12)
+- `kode_kelompok` (VARCHAR 10, FK → kelompok.kode_kelompok)
+- `kode_komoditi` (VARCHAR 10, FK → komoditi.kode_komoditi)
+- `produksi` (DECIMAL 15,2): dalam ton
+- `impor` (DECIMAL 15,2): dalam ton
+- `ekspor` (DECIMAL 15,2): dalam ton
+- `stok` (DECIMAL 15,2): perubahan stok
+- `makanan` (DECIMAL 15,2): konsumsi untuk pangan
+- `populasi_indonesia` (BIGINT): jumlah penduduk
+- `created_at`, `updated_at` (TIMESTAMP)
+
+**g. kelompok** (Kelompok Komoditas)
+- `kode_kelompok` (PK, VARCHAR 10)
+- `nama` (VARCHAR 255): 'Padi-padian', 'Umbi-umbian', dll.
+- `deskripsi` (TEXT)
+
+**h. komoditi** (Komoditas Pangan)
+- `kode_komoditi` (PK, VARCHAR 10)
+- `kode_kelompok` (FK → kelompok.kode_kelompok)
+- `nama` (VARCHAR 255): 'Gabah', 'Jagung', 'Ubi Kayu', dll.
+- `kalori_per_100g` (DECIMAL 8,2): energi dalam kkal
+- `protein_per_100g` (DECIMAL 8,2): dalam gram
+- `lemak_per_100g` (DECIMAL 8,2): dalam gram
+
+**i. provinsi** (Data Alamat)
+- `kode_provinsi` (PK, VARCHAR 10)
+- `nama` (VARCHAR 255)
+
+**j. kabupaten**
+- `kode_kabupaten` (PK, VARCHAR 10)
+- `kode_provinsi` (FK → provinsi.kode_provinsi)
+- `nama` (VARCHAR 255)
+
+**k. kecamatan**
+- `kode_kecamatan` (PK, VARCHAR 10)
+- `kode_kabupaten` (FK → kabupaten.kode_kabupaten)
+- `nama` (VARCHAR 255)
+
+**l. prediction_logs** (Logging Prediksi)
+- `id` (PK, BIGINT AUTO_INCREMENT)
+- `user_id` (FK → users.id)
+- `kelompok` (VARCHAR 255)
+- `komoditi` (VARCHAR 255)
+- `bulan_prediksi` (INT): jumlah bulan yang diprediksi (1-12)
+- `prediction_result` (JSON): array prediksi
+- `confidence_interval` (JSON): array CI lower dan upper bounds
+- `created_at` (TIMESTAMP)
+
+Relasi database utama mencakup relasi many-to-many antara tabel `users` dan `roles` melalui pivot table `model_has_roles`, serta relasi many-to-many antara `roles` dan `permissions` melalui pivot table `role_has_permissions`. Tabel `transaksi_nbms` memiliki relasi many-to-one dengan tabel `kelompok` dan `komoditi`, sedangkan `komoditi` memiliki relasi many-to-one dengan `kelompok`. Untuk data alamat, tabel `kabupaten` memiliki relasi many-to-one dengan `provinsi`, dan `kecamatan` memiliki relasi many-to-one dengan `kabupaten`. Tabel `prediction_logs` memiliki relasi many-to-one dengan `users` untuk tracking aktivitas prediksi.
+
+**v. Basis Prediksi Konsumsi Pangan**
+
+Prediksi konsumsi kalori harian dalam sistem SIKOLBIA didasarkan pada data historis NBM 6 bulan terakhir untuk setiap komoditas yang diambil dari tabel `transaksi_nbms`. Data yang digunakan mencakup jumlah produksi domestik dalam ton, volume impor komoditi, volume ekspor komoditi, perubahan stok di gudang atau pasar, konsumsi untuk pangan dalam ton, dan jumlah penduduk Indonesia.
+
+Kalori konsumsi harian per kapita dihitung menggunakan formula NBM sebagaimana ditunjukkan pada persamaan (52), (53), dan (54):
+
+```
+Makanan (ton) = Produksi + Impor − Ekspor ± ΔStok  ... (52)
+
+Makanan (kg) = Makanan (ton) × 1000 × 1000  ... (53)
+
+Kalori/Hari = (Makanan kg / Populasi / 365) × (Kalori per 100g / 100)  ... (54)
+```
+
+Model LSTM menggunakan fitur temporal yang terdiri dari tahun yang di-encode sebagai numeric feature untuk menangkap trend jangka panjang, bulan dengan cyclic encoding menggunakan fungsi sin dan cos untuk menangkap pola seasonality, rolling statistics berupa Moving Average 3, 6, dan 12 bulan untuk menangkap trend, serta lag features yang merupakan nilai kalori pada waktu t-1, t-2, dan t-3 sebagai input sequence.
+
+Model LSTM Enhanced Ensemble merupakan kombinasi dari beberapa algoritma yang mencakup LSTM Layer untuk menangkap long-term dependencies dan pola temporal kompleks, HuberRegressor yang robust terhadap outliers dalam data NBM, weighted averaging dengan ensemble weights yang dioptimasi melalui grid search untuk kombinasi optimal, serta trend analysis menggunakan linear regression untuk extrapolasi jangka panjang dan dampening negative trends.
+
+Confidence interval dihitung dengan margin ±15% dari nilai prediksi yang merupakan industri standard untuk food security forecasting. Uncertainty quantification menggunakan Monte Carlo Simulation dengan 1000 iterations untuk robustness estimation, historical standard deviation berdasarkan error distribution pada validation set, dengan formula Lower Bound = Prediction × 0.85 dan Upper Bound = Prediction × 1.15.
+
+Validasi model dilakukan menggunakan time series cross-validation dengan expanding window untuk memastikan model tidak overfitting, walk-forward validation untuk simulasi real-world forecasting pada test set 2020-2024, serta backtesting untuk menguji performance under COVID-19 shock pada periode 2020-2021 sebagai robustness check.
+
+**vi. Metodologi Pengujian Sistem**
+
+Pengujian sistem SIKOLBIA menggunakan kombinasi metode untuk memastikan fungsionalitas, akurasi, dan usability. Unit testing menggunakan PHPUnit untuk Laravel dan Pytest untuk FastAPI dengan target code coverage lebih dari 80%. Scope testing mencakup individual functions seperti controller methods, API endpoints, dan helper functions dengan contoh test seperti `test_prediction_endpoint_valid_input()`, `test_nbm_calculation_formula()`, dan `test_permission_middleware()`.
+
+Integration testing menggunakan Laravel HTTP Tests dan Postman Collection untuk menguji interaksi antar komponen. Target testing mencakup komunikasi antara Laravel dengan MySQL melalui Eloquent queries, Laravel dengan FastAPI melalui HTTP requests dengan timeout handling, FastAPI dengan LSTM Model untuk inference pipeline, serta authentication and authorization flow yang dimulai dari login hingga permission check dan access resource.
+
+**c. Functional Testing**
+- **Method**: Manual testing dan automated testing dengan Pest
+- **Test Cases**:
+  - **TC-001**: Login Admin (valid credentials) → Redirect to Admin Dashboard
+  - **TC-002**: Login Failed (invalid credentials) → Error message displayed
+  - **TC-003**: Create NBM Data (complete form) → Success message + data stored in DB
+  - **TC-004**: Run Prediction (valid parameters: kelompok='01', komoditi='0101', bulan=6) → 6 predictions with CI
+  - **TC-005**: Run Prediction (empty data commodity) → Warning message displayed
+  - **TC-006**: Export Excel (NBM dataset) → Download .xlsx file successfully
+  - **TC-007**: Permission Check (Akademisi tries to run prediction) → Access denied (403)
+
+Functional testing menggunakan manual testing dan automated testing dengan Pest untuk menguji fitur sesuai requirements. Test cases mencakup login Admin dengan valid credentials yang harus redirect ke Admin Dashboard, login failed dengan invalid credentials yang harus menampilkan error message, create NBM data dengan complete form yang harus menampilkan success message dan data tersimpan di database, run prediction dengan parameter valid (kelompok='01', komoditi='0101', bulan=6) yang harus menghasilkan 6 predictions with CI, run prediction untuk empty data commodity yang harus menampilkan warning message, export Excel untuk NBM dataset yang harus berhasil download file .xlsx, serta permission check dimana Akademisi mencoba run prediction harus mendapat access denied dengan status code 403.
+
+Performance testing menggunakan Apache JMeter dan Laravel Telescope untuk menguji metrik sistem. Target metrics mencakup response time kurang dari 3 detik untuk endpoint `/predict`, throughput lebih dari 100 requests per minute, concurrent users support minimal 50 simultaneous users tanpa degradasi performa, dan database query time kurang dari 500ms untuk complex joins. Load scenarios didesain untuk normal load dengan 10 users, peak load dengan 50 users, dan stress test dengan 100+ users.
+
+Accuracy testing atau model evaluation menggunakan metrik target berupa MAPE kurang dari 10% yang merupakan acceptable business error untuk food security planning, RMSE dengan target minimize prediction error kurang dari 100 kkal/hari, MAE kurang dari 50 kalori/hari sebagai average absolute deviation, R² lebih dari 0.85 untuk explained variance proportion, serta directional accuracy lebih dari 80% untuk correct trend prediction. Test data menggunakan NBM periode 2020-2024 yang merupakan 48 bulan unseen data dengan validasi menggunakan time series cross-validation dengan expanding window.
+
+Usability testing menggunakan metode User Acceptance Testing (UAT) dengan actual stakeholders yang terdiri dari 5 users Pemerintah, 3 users Akademisi, dan 2 administrators. Tasks yang dilakukan mencakup complete prediction workflow mulai dari pilih parameter hingga run prediksi, view results, dan export, rate ease of use menggunakan Likert scale 1-5, serta identify confusing UI elements dan pain points. Target metrics meliputi task completion rate lebih dari 90%, average satisfaction score lebih dari 4.0/5.0, time to complete task kurang dari 5 menit, dan learning curve kurang dari 30 menit untuk first-time users.
+
+Security testing menggunakan OWASP ZAP dan manual penetration testing untuk menguji keamanan sistem. Target testing mencakup SQL injection protection menggunakan prepared statements dan ORM, XSS prevention menggunakan blade escaping, CSRF token validation dengan Laravel built-in, authentication bypass attempts, authorization checks untuk privilege escalation testing, serta API rate limiting untuk prevent brute force. Standar yang digunakan adalah OWASP Top 10 compliance.
+
+**vii. Kriteria Keberhasilan Sistem**
+
+Sistem SIKOLBIA dinyatakan berhasil jika memenuhi kriteria fungsional yang mencakup semua fitur sesuai requirements berjalan tanpa critical error, role-based access control berfungsi dengan benar untuk permission enforcement, prediksi menghasilkan output valid tanpa null atau NaN dengan range realistis, serta export data berhasil dalam format yang diminta yaitu Excel, PDF, dan CSV.
+
+Kriteria non-fungsional meliputi response time rata-rata kurang dari 3 detik untuk prediction endpoint, system uptime lebih dari 99% untuk high availability, support minimum 50 concurrent users without performance degradation, serta mobile responsive untuk viewport kurang dari 768px menggunakan Tailwind CSS.
+
+Kriteria akurasi model mencakup MAPE kurang dari 10% pada test set yang merupakan industri standard untuk food forecasting, directional accuracy lebih dari 80% untuk correct trend prediction, serta confidence interval coverage lebih dari 90% dimana actual values berada within CI bounds.
+
+Kriteria usability meliputi user satisfaction score minimal 4.0 dari 5.0 berdasarkan UAT, task completion rate minimal 90%, serta learning curve kurang dari 30 menit dimana first-time users dapat menjalankan prediksi dengan mudah.
+
+Kriteria security mencakup no critical vulnerabilities dengan OWASP Top 10 compliant, all inputs validated dan sanitized untuk prevent injection attacks, serta authentication dan authorization robust tanpa bypass exploits.
+
+Optimasi performa menggunakan strategi caching (Redis untuk session dan query cache), database indexing (pada kolom `tahun`, `bulan`, `kode_kelompok`, `kode_komoditi`), dan API rate limiting (throttle middleware untuk prevent abuse). Security implementation meliputi authentication (Laravel Sanctum/Breeze), input validation (Form Request validation), dan secure communication protocols (HTTPS untuk production). Monitoring dan logging menggunakan structured logging (Laravel Log channels) untuk system observability dan performance tracking (Laravel Telescope untuk development).
 
 ### 3.3 Jadwal Penelitian
 
