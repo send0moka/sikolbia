@@ -67,6 +67,7 @@ Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')
     Route::get('/api/komoditi', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getKomoditi'])->name('api.komoditi');
     
     Route::get('/prediksi-nbm', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'prediksiNbm'])->name('prediksi-nbm');
+    Route::post('/prediksi-nbm/run', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'runPrediksi'])->name('prediksi-nbm.run');
     
     // Pertanian
     Route::get('/lahan', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'lahan'])->name('lahan');

@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | ML API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | URL untuk Machine Learning API (FastAPI service) yang digunakan untuk
+    | prediksi NBM. Dalam Docker environment, gunakan service name.
+    |
+    */
+
+    'ml_api_url' => env('ML_API_URL', 'http://localhost:8082'),
+
 ];

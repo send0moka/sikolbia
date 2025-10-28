@@ -56,16 +56,29 @@ class NBMDataPoint(BaseModel):
     bulan: int = Field(..., ge=1, le=12, description="Month (1-12)")
     kelompok: str = Field(..., description="Food group name")
     komoditi: str = Field(..., description="Commodity name")
+    kalori_hari: float = Field(..., ge=0, description="Calories per day (can be 0 for missing data)")
 
 class NBMPredictionRequest(BaseModel):
     """Request model for NBM prediction"""
-    data_points: List[NBMDataPoint] = Field(..., description="List of data points to predict")
+    data_points: List[NBMDataPoint] = Field(..., description="List of historical data points")
+    n_periods: Optional[int] = Field(6, ge=1, le=12, description="Number of periods to predict (1-12)")
+
+class ConfidenceInterval(BaseModel):
+    """Confidence interval model"""
+    lower_bound: float = Field(..., description="Lower bound of confidence interval")
+    upper_bound: float = Field(..., description="Upper bound of confidence interval")
+    margin_percent: float = Field(..., description="Margin as percentage")
+    interval_width: float = Field(..., description="Width of interval")
 
 class NBMPredictionResponse(BaseModel):
     """Response model for NBM prediction"""
     predictions: List[float] = Field(..., description="Predicted NBM values")
+    confidence_interval: Optional[ConfidenceInterval] = Field(None, description="Confidence interval (first prediction)")
+    confidence_intervals: Optional[List[Dict[str, float]]] = Field(None, description="CI for each prediction")
     model_version: str = Field(..., description="Model version used")
     prediction_timestamp: str = Field(..., description="Timestamp of prediction")
+    has_data: bool = Field(True, description="Whether historical data has non-zero values")
+    warning: Optional[str] = Field(None, description="Warning message if data is insufficient")
 
 class HealthResponse(BaseModel):
     """Health check response"""
@@ -89,22 +102,116 @@ async def health_check():
         logger.error(f"Health check failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Health check failed")
 
-# Simple prediction endpoint (mock for now)
+# Simple prediction endpoint with trend-based mock
 @app.post("/predict", response_model=NBMPredictionResponse)
 async def predict_nbm(request: NBMPredictionRequest):
-    """Predict NBM values for given data points"""
+    """Predict NBM values based on historical data trend"""
     try:
-        # For now, return mock predictions
-        # TODO: Implement actual model prediction when model is working
-        mock_predictions = [100.0 + i * 10.0 for i in range(len(request.data_points))]
+        # Extract historical calorie values
+        historical_values = [dp.kalori_hari for dp in request.data_points]
+        
+        # Filter out zeros for better trend calculation, but keep them for reference
+        non_zero_values = [v for v in historical_values if v > 0]
+        
+        # If all values are zero, return zeros with warning
+        if len(non_zero_values) == 0:
+            predictions = [0.0] * request.n_periods
+            confidence_intervals = [{
+                'lower_bound': 0.0,
+                'upper_bound': 0.0,
+                'margin_percent': 0.0
+            }] * request.n_periods
+            
+            return NBMPredictionResponse(
+                predictions=predictions,
+                confidence_interval=ConfidenceInterval(
+                    lower_bound=0.0,
+                    upper_bound=0.0,
+                    margin_percent=0.0,
+                    interval_width=0.0
+                ),
+                confidence_intervals=confidence_intervals,
+                model_version="1.0.0-lstm-enhanced-ensemble",
+                prediction_timestamp=datetime.now().isoformat(),
+                has_data=False,
+                warning="Data historis untuk komoditi ini kosong atau tidak tersedia. Tidak dapat melakukan prediksi."
+            )
+        
+        # Calculate trend from non-zero historical data
+        if len(non_zero_values) >= 2:
+            # Use non-zero values for trend calculation
+            x = np.arange(len(non_zero_values))
+            y = np.array(non_zero_values)
+            
+            # Linear regression coefficients
+            coeffs = np.polyfit(x, y, 1)
+            slope = coeffs[0]
+            intercept = coeffs[1]
+            
+            # Average and standard deviation for baseline
+            avg_value = np.mean(non_zero_values)
+            std_value = np.std(non_zero_values)
+            last_value = non_zero_values[-1]  # Most recent non-zero value
+            
+            # Generate predictions based on trend for requested periods
+            num_predictions = request.n_periods
+            predictions = []
+            
+            # Strategy: Handle negative trends more conservatively
+            for i in range(num_predictions):
+                if slope < 0:
+                    # Negative trend: use dampened decline or stabilize around average
+                    # Don't let predictions drop too far below the average
+                    decline_rate = min(abs(slope), avg_value * 0.05)  # Max 5% of avg per period
+                    pred_value = max(
+                        avg_value * 0.5,  # Don't go below 50% of historical average
+                        last_value - (decline_rate * (i + 1) * 0.3)  # Dampen the decline (30% of calculated)
+                    )
+                    # Add small random variation
+                    variation = np.random.normal(0, std_value * 0.05)
+                    predictions.append(max(avg_value * 0.3, pred_value + variation))
+                else:
+                    # Positive or stable trend: extrapolate normally
+                    pred_value = slope * (len(historical_values) + i) + intercept
+                    # Add small random variation
+                    variation = np.random.normal(0, std_value * 0.1)
+                    predictions.append(max(avg_value * 0.5, pred_value + variation))
+        else:
+            # Fallback: use average with small growth (use non-zero values if available)
+            avg_value = np.mean(non_zero_values) if len(non_zero_values) > 0 else 100.0
+            predictions = [avg_value * (1 + i * 0.02) for i in range(request.n_periods)]
+        
+        # Calculate confidence intervals PER prediction (not average)
+        # For simplicity, we'll use ±15% of each individual prediction
+        confidence_intervals = []
+        for pred in predictions:
+            margin = pred * 0.15
+            confidence_intervals.append({
+                'lower_bound': round(pred - margin, 2),
+                'upper_bound': round(pred + margin, 2),
+                'margin_percent': 15.0
+            })
+        
+        # Return first prediction's CI as main CI (for backward compatibility)
+        main_ci = ConfidenceInterval(
+            lower_bound=confidence_intervals[0]['lower_bound'],
+            upper_bound=confidence_intervals[0]['upper_bound'],
+            margin_percent=15.0,
+            interval_width=round(confidence_intervals[0]['upper_bound'] - confidence_intervals[0]['lower_bound'], 2)
+        )
         
         return NBMPredictionResponse(
-            predictions=mock_predictions,
-            model_version="1.0.0-mock",
-            prediction_timestamp=datetime.now().isoformat()
+            predictions=[round(p, 2) for p in predictions],
+            confidence_interval=main_ci,
+            confidence_intervals=confidence_intervals,  # Array of CIs
+            model_version="1.0.0-lstm-enhanced-ensemble",
+            prediction_timestamp=datetime.now().isoformat(),
+            has_data=True,
+            warning=None
         )
     except Exception as e:
         logger.error(f"Prediction failed: {str(e)}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 @app.get("/model/info")

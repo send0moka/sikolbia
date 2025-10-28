@@ -257,7 +257,157 @@ class PemerintahController extends Controller
 
     public function prediksiNbm()
     {
-        return view('pemerintah.prediksi-nbm');
+        $kelompokOptions = Kelompok::aktif()->orderBy('kode')->get(['kode', 'nama']);
+        return view('pemerintah.prediksi-nbm', compact('kelompokOptions'));
+    }
+
+    public function runPrediksi(Request $request)
+    {
+        try {
+            $request->validate([
+                'kelompok' => 'required|string',
+                'komoditi' => 'required|string',
+                'bulan' => 'required|integer|min:1|max:12'
+            ]);
+
+            $kelompok = $request->kelompok;
+            $komoditi = $request->komoditi;
+            $bulanPrediksi = $request->bulan;
+
+            // Get 6 months historical data
+            $historicalData = TransaksiNbm::where('kode_kelompok', $kelompok)
+                ->where('kode_komoditi', $komoditi)
+                ->orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->limit(6)
+                ->get();
+
+            if ($historicalData->count() < 6) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data historis tidak cukup. Minimal 6 bulan data diperlukan untuk prediksi.'
+                ], 400);
+            }
+
+            // Get komoditi info for kalori calculation
+            $komoditiInfo = Komoditi::where('kode_komoditi', $komoditi)->first();
+            
+            if (!$komoditiInfo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data komoditi tidak ditemukan.'
+                ], 404);
+            }
+
+            // Get kelompok name for ML API
+            $kelompokInfo = Kelompok::where('kode', $kelompok)->first();
+            if (!$kelompokInfo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data kelompok tidak ditemukan.'
+                ], 404);
+            }
+
+            // Prepare data for ML API (FastAPI expects exact 6 data points)
+            $mlApiUrl = config('app.ml_api_url', 'http://localhost:8082');
+            $payload = [
+                'data_points' => $historicalData->map(function($item) use ($komoditiInfo, $kelompokInfo) {
+                    // Calculate kalori_hari
+                    $kaloriHari = 0;
+                    if ($item->makanan > 0 && $item->populasi_indonesia > 0 && $komoditiInfo->kalori_per_100g > 0) {
+                        $makananTons = floatval($item->makanan) * 1000;
+                        $makananKg = $makananTons * 1000;
+                        $kgPerCapitaPerYear = $makananKg / floatval($item->populasi_indonesia);
+                        $gramPerCapitaPerDay = ($kgPerCapitaPerYear * 1000) / 365;
+                        $kaloriHari = ($gramPerCapitaPerDay / 100) * floatval($komoditiInfo->kalori_per_100g);
+                    }
+
+                    return [
+                        'tahun' => (int)$item->tahun,
+                        'bulan' => (int)$item->bulan,
+                        'kelompok' => $kelompokInfo->nama, // Use name, not code
+                        'komoditi' => $komoditiInfo->nama, // Use name, not code
+                        'kalori_hari' => (float)round($kaloriHari, 2)
+                    ];
+                })->values()->toArray(),
+                'n_periods' => (int)$bulanPrediksi // Number of months to predict
+            ];
+
+            Log::info('Calling ML API for prediction', [
+                'url' => $mlApiUrl . '/predict',
+                'komoditi' => $komoditi,
+                'historical_count' => count($payload['data_points'])
+            ]);
+
+            // Call ML API
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post($mlApiUrl . '/predict', [
+                'json' => $payload,
+                'timeout' => 30,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+
+            $result = json_decode($response->getBody()->getContents(), true);
+
+            // main_simple.py returns predictions array (not single prediction)
+            $predictions = $result['predictions'] ?? [];
+            $confidenceInterval = $result['confidence_interval'] ?? null;
+            $confidenceIntervals = $result['confidence_intervals'] ?? null; // Array of CIs
+            $hasData = $result['has_data'] ?? true;
+            $warning = $result['warning'] ?? null;
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'prediction' => $predictions, // Array from main_simple
+                    'confidence_interval' => $confidenceInterval, // Single CI (first)
+                    'confidence_intervals' => $confidenceIntervals, // Array of CIs per prediction
+                    'has_data' => $hasData, // Whether data is available
+                    'warning' => $warning, // Warning message if data is empty
+                    'uncertainty_metrics' => null,
+                    'model_info' => [
+                        'model_version' => $result['model_version'] ?? 'unknown',
+                        'prediction_timestamp' => $result['prediction_timestamp'] ?? null
+                    ],
+                    'historical' => $payload['data_points'],
+                    'komoditi_name' => $komoditiInfo->nama,
+                    'kelompok_name' => $kelompokInfo->nama,
+                    'bulan_prediksi' => $bulanPrediksi
+                ]
+            ]);
+
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            Log::error('ML API Connection Error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat terhubung ke ML API. Pastikan service FastAPI berjalan.'
+            ], 503);
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            // Handle 4xx errors from FastAPI
+            $responseBody = $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response';
+            Log::error('ML API Client Error', [
+                'error' => $e->getMessage(),
+                'response' => $responseBody
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'ML API error: ' . $e->getMessage()
+            ], 400);
+        } catch (\Exception $e) {
+            Log::error('Prediction Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function lahan()
