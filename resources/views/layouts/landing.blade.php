@@ -137,6 +137,10 @@
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Data Iklim, dan OPT DPI
                                     </a>
+                                    <a href="{{ route('chatbot.index') }}"
+                                       class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+                                        Chatbot Asisten Data Pertanian
+                                    </a>
                                     <a href="{{ route('pertanian.daftar-alamat') }}"
                                        class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
                                         Daftar Alamat

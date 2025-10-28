@@ -43,10 +43,12 @@ Dokumentasi fitur chatbot untuk modul pertanian (Benih & Pupuk, Lahan, Iklim & O
 
 1) Buka chatbot → tampil "Pilih Modul" dan "Mulai Cepat"
 2) Pilih modul/topik/variabel → tampil Data Dictionary (nama, satuan, deskripsi)
-3) Pilih klasifikasi → pilih tahun (opsi cepat: tahun terbaru) → pilih bulan (kecuali Lahan)
-4) Pilih wilayah (tingkat nasional → provinsi, atau tingkat provinsi → kabupaten/kota)
+3) Pilih klasifikasi → pilih tahun (opsi cepat: tahun terbaru) → "Gunakan semua bulan?" (jika Ya: semua bulan; jika Tidak: muncul checklist bulan; modul Lahan melewati langkah ini)
+4) Pilih wilayah (tingkat nasional → provinsi; jika pilih provinsi, opsional lanjut ke kabupaten/kota)
 5) Pilih tampilan hasil: Ringkasan atau Tabel
 6) Simpan ke Panel bila perlu → lanjut bantuan atau ketik pertanyaan bebas
+
+Mode teks bebas (structured-first): saat user mengetik pertanyaan natural, sistem menjalankan structured search ringan untuk mendeteksi modul/periode/wilayah/variabel, menampilkan ringkasan deteksi, dan menawarkan tombol "Gunakan hasil terstruktur ini?". Jika dipilih, alur melompat ke slot yang belum lengkap (mis. klasifikasi, pilihan bulan, atau rincian wilayah).
 
 Quick Start melewati langkah 2–4 dengan default: tahun terbaru, semua bulan (non-Lahan), top-5 provinsi.
 
@@ -66,6 +68,8 @@ Quick Start melewati langkah 2–4 dengan default: tahun terbaru, semua bulan (n
 - Ringkasan (summary): menampilkan beberapa baris ringkas (3 wilayah, hingga 6 metrik) + tombol "Tampilkan Tabel"
 - Pratinjau Tabel: membatasi 8 baris di chat untuk performa; tampilan penuh di panel hasil
 - Reset Konfirmasi: modal in-panel mencegah reset tak sengaja
+- Structured-first suggestion: prioritas kecocokan tepat (exact match) untuk wilayah/variabel, batasi jumlah item yang disarankan agar tidak bising, dan urutkan variabel berdasar overlap token dengan teks user
+- Pilihan bulan: selalu menanyakan "Gunakan semua bulan?" untuk modul non-Lahan; jika Tidak, render checklist bulan; data bulan di-fetch meski topik sudah dimuat sebelumnya
 
 ## 🧪 Pengembangan & Build
 
