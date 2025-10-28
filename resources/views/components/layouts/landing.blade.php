@@ -158,6 +158,10 @@
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Iklim, dan OPT DPI
                                         </a>
+                                        <a href="{{ route('chatbot.index') }}"
+                                           class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
+                                            Chatbot Asisten Data Pertanian
+                                        </a>
                                         <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Lahan
@@ -291,6 +295,10 @@
                             <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}"
                                  class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Iklim, dan OPT DPI
+                            </a>
+                            <a href="{{ route('chatbot.index') }}"
+                                 class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
+                                Chatbot Asisten Data Pertanian
                             </a>
                             <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                  class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">

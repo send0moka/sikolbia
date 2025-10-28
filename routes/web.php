@@ -357,6 +357,9 @@ Route::prefix('pertanian')->name('pertanian.')->group(function () {
 
     // Existing daftar-alamat page retained
     Route::get('daftar-alamat', function () { return view('pertanian.daftar-alamat'); })->name('daftar-alamat');
+
+    // Public helper for wilayah tree used by chatbot and report UI
+    Route::get('wilayahs', [App\Http\Controllers\PertanianReportController::class, 'wilayahs'])->name('wilayahs');
 });
 
 // Unified export route and legacy aliases
@@ -457,5 +460,10 @@ Route::prefix('api')->name('api.')->group(function () {
         Route::get('mock/prediction-stats', [App\Http\Controllers\Admin\MockPredictionController::class, 'mockStats'])->name('mock.prediction-stats');
     });
 });
+
+// Public Chatbot Page (dedicated)
+Route::get('/chatbot', function () {
+    return view('chatbot.index');
+})->name('chatbot.index');
 
 require __DIR__.'/auth.php';

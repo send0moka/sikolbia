@@ -77,6 +77,10 @@ export default function pertanianReportForm(config) {
                 userMessage: '',
                 conversation: [],
                 showChatResetConfirm: false,
+                // Help modal visibility
+                showHelp: false,
+                // Help modal active tab (persist while page active)
+                helpTab: 'examples',
                 // Structured search integration state
                 structuredSuggestion: null,
                 useStructuredAfterModule: false,
