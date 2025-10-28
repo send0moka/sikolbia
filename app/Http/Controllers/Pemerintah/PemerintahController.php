@@ -9,6 +9,7 @@ use App\Models\TransaksiNbm;
 use App\Models\Komoditi;
 use App\Exports\PemerintahNbmExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 
 class PemerintahController extends Controller
@@ -56,6 +57,24 @@ class PemerintahController extends Controller
 
             // Transform data to include needed properties
             $data->getCollection()->transform(function ($item) {
+                // Calculate calories per day directly using available data
+                if ($item->komoditi && 
+                    $item->makanan > 0 && 
+                    $item->populasi_indonesia > 0 && 
+                    $item->komoditi->kalori_per_100g > 0) {
+                    
+                    // makanan is in thousand tons, convert to grams per capita per day
+                    $makananTons = floatval($item->makanan) * 1000; // convert to tons
+                    $makananKg = $makananTons * 1000; // convert to kg
+                    $kgPerCapitaPerYear = $makananKg / floatval($item->populasi_indonesia);
+                    $gramPerCapitaPerDay = ($kgPerCapitaPerYear * 1000) / 365;
+                    $kaloriPerHari = ($gramPerCapitaPerDay / 100) * floatval($item->komoditi->kalori_per_100g);
+                    
+                    $item->kalori_hari = round($kaloriPerHari, 2);
+                } else {
+                    $item->kalori_hari = 0;
+                }
+                
                 // Ensure kelompok has deskripsi field (use nama as fallback)
                 if ($item->kelompok) {
                     $item->kelompok->deskripsi = $item->kelompok->nama;
@@ -82,12 +101,22 @@ class PemerintahController extends Controller
             }
             
             $avgMakanan = $totalQuery->avg('makanan');
-            $latestRecord = $totalQuery->orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->first();
+            
+            // Get latest record from all data, not filtered
+            $latestRecord = TransaksiNbm::orderBy('tahun', 'desc')
+                                      ->orderBy('bulan', 'desc')
+                                      ->whereNotNull('tahun')
+                                      ->whereNotNull('bulan')
+                                      ->first();
 
             $statistics = [
                 'total_data' => $data->total(),
                 'rata_rata_kalori' => $avgMakanan ? round($avgMakanan, 2) : 0,
-                'periode_terbaru' => $latestRecord ? $latestRecord->periode_display : '-'
+                'periode_terbaru' => $latestRecord ? [
+                    'tahun' => $latestRecord->tahun,
+                    'bulan' => $latestRecord->bulan,
+                    'display' => $latestRecord->periode_display
+                ] : null
             ];
 
             return response()->json([
@@ -109,6 +138,10 @@ class PemerintahController extends Controller
     public function exportExcelNbm(Request $request)
     {
         try {
+            // Increase execution time for large exports
+            set_time_limit(300); // 5 minutes
+            ini_set('memory_limit', '512M');
+            
             $kelompok = $request->input('kelompok');
             $tahun = $request->input('tahun');
             $bulan = $request->input('bulan');
@@ -117,7 +150,7 @@ class PemerintahController extends Controller
             
             Log::info('Pemerintah NBM Export initiated', [
                 'user_id' => auth()->id(),
-                'user_name' => auth()->user()->name,
+                'user_name' => auth()->user()->name ?? 'Guest',
                 'kelompok' => $kelompok,
                 'tahun' => $tahun,
                 'bulan' => $bulan,
@@ -129,10 +162,11 @@ class PemerintahController extends Controller
         } catch (\Exception $e) {
             Log::error('Pemerintah NBM Export failed', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->with('error', 'Export gagal. Silakan coba lagi.');
+            return back()->with('error', 'Export gagal: ' . $e->getMessage());
         }
     }
 
@@ -145,22 +179,42 @@ class PemerintahController extends Controller
 
             $query = TransaksiNbm::with(['kelompok', 'komoditi']);
 
-            if ($kelompok) $query->where('kelompok_id', $kelompok);
+            if ($kelompok) $query->where('kode_kelompok', $kelompok);
             if ($tahun) $query->where('tahun', $tahun);
             if ($bulan) $query->where('bulan', $bulan);
 
             $data = $query->orderBy('tahun', 'desc')
                          ->orderBy('bulan', 'desc')
-                         ->orderBy('kelompok_id')
-                         ->orderBy('komoditi_id')
-                         ->limit(1000) // Limit for PDF performance
+                         ->orderBy('kode_kelompok')
+                         ->orderBy('kode_komoditi')
+                         ->limit(500) // Limit for PDF performance
                          ->get();
 
-            $pdf = app('dompdf.wrapper');
-            $pdf->loadView('exports.nbm-pdf', [
+            // Calculate kalori_hari for each item
+            $data->transform(function ($item) {
+                if ($item->komoditi && 
+                    $item->makanan > 0 && 
+                    $item->populasi_indonesia > 0 && 
+                    $item->komoditi->kalori_per_100g > 0) {
+                    
+                    $makananTons = floatval($item->makanan) * 1000;
+                    $makananKg = $makananTons * 1000;
+                    $kgPerCapitaPerYear = $makananKg / floatval($item->populasi_indonesia);
+                    $gramPerCapitaPerDay = ($kgPerCapitaPerYear * 1000) / 365;
+                    $kaloriPerHari = ($gramPerCapitaPerDay / 100) * floatval($item->komoditi->kalori_per_100g);
+                    
+                    $item->kalori_hari = round($kaloriPerHari, 2);
+                } else {
+                    $item->kalori_hari = 0;
+                }
+                
+                return $item;
+            });
+
+            $pdf = Pdf::loadView('exports.pemerintah-nbm-pdf', [
                 'data' => $data,
                 'filters' => compact('kelompok', 'tahun', 'bulan'),
-                'generated_by' => auth()->user()->name,
+                'generated_by' => auth()->user()->name ?? 'System',
                 'generated_at' => now()->format('d/m/Y H:i:s')
             ]);
 
@@ -168,7 +222,7 @@ class PemerintahController extends Controller
 
             Log::info('Pemerintah NBM PDF Export', [
                 'user_id' => auth()->id(),
-                'user_name' => auth()->user()->name,
+                'user_name' => auth()->user()->name ?? 'Guest',
                 'filename' => $filename,
                 'data_count' => $data->count()
             ]);
@@ -178,10 +232,11 @@ class PemerintahController extends Controller
         } catch (\Exception $e) {
             Log::error('Pemerintah NBM PDF Export failed', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
-            return back()->with('error', 'Export PDF gagal. Silakan coba lagi.');
+            return back()->with('error', 'Export PDF gagal: ' . $e->getMessage());
         }
     }
 

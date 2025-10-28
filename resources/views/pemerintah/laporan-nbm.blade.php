@@ -114,12 +114,12 @@
 
             <!-- Pagination -->
             <div class="flex items-center justify-between px-6 py-4 border-t border-neutral-200 dark:border-neutral-700">
-                <div class="text-sm text-neutral-600 dark:text-neutral-400">
-                    Menampilkan <span class="font-medium">0</span> data
+                <div class="text-sm text-neutral-600 dark:text-neutral-400 pagination-caption">
+                    Menampilkan 0 data
                 </div>
                 <div class="flex gap-2">
-                    <button disabled class="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed">Previous</button>
-                    <button disabled class="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed">Next</button>
+                    <button disabled class="pagination-prev px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed">Previous</button>
+                    <button disabled class="pagination-next px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed">Next</button>
                 </div>
             </div>
         </div>
@@ -183,26 +183,50 @@
             const tahunSelect = document.getElementById('tahunSelect');
             const bulanSelect = document.getElementById('bulanSelect');
 
+            // Pagination variables
+            let currentPage = 1;
+            let lastPage = 1;
+            let currentFilters = {};
+
             // Filter Data Function
             filterBtn.addEventListener('click', function() {
+                currentPage = 1; // Reset to first page when filtering
+                currentFilters = {
+                    kelompok: kelompokSelect.value,
+                    tahun: tahunSelect.value,
+                    bulan: bulanSelect.value
+                };
+                loadData(currentPage);
+            });
+
+            // Load Data Function
+            function loadData(page = 1) {
                 const formData = new FormData();
                 formData.append('_token', '{{ csrf_token() }}');
-                formData.append('kelompok', kelompokSelect.value);
-                formData.append('tahun', tahunSelect.value);
-                formData.append('bulan', bulanSelect.value);
+                formData.append('kelompok', currentFilters.kelompok || '');
+                formData.append('tahun', currentFilters.tahun || '');
+                formData.append('bulan', currentFilters.bulan || '');
+                
+                // Add page parameter to URL instead of form data
+                const url = new URL('{{ route("pemerintah.laporan-nbm.filter") }}');
+                if (page > 1) {
+                    url.searchParams.set('page', page);
+                }
 
                 // Show loading state
                 filterBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Loading...';
                 filterBtn.disabled = true;
 
-                fetch('{{ route("pemerintah.laporan-nbm.filter") }}', {
+                fetch(url.toString(), {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        currentPage = page;
                         updateTable(data.data);
+                        updatePaginationInfo(data.data); // Pass pagination data
                         updateStatistics(data.statistics);
                     } else {
                         alert('Error: ' + data.message);
@@ -216,6 +240,15 @@
                     filterBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Tampilkan Data';
                     filterBtn.disabled = false;
                 });
+            }
+
+            // Pagination Event Listeners
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('pagination-prev') && !e.target.disabled) {
+                    loadData(currentPage - 1);
+                } else if (e.target.classList.contains('pagination-next') && !e.target.disabled) {
+                    loadData(currentPage + 1);
+                }
             });
 
             // Reset Filter Function
@@ -223,6 +256,10 @@
                 kelompokSelect.value = '';
                 tahunSelect.value = '';
                 bulanSelect.value = '';
+                
+                // Reset pagination variables
+                currentPage = 1;
+                currentFilters = {};
                 
                 // Reset table to default empty state
                 const tbody = document.querySelector('tbody');
@@ -238,18 +275,36 @@
                     </tr>
                 `;
                 
-                // Reset statistics
+                // Reset statistics and pagination
                 resetStatistics();
+                updatePaginationInfo(null);
             });
 
             // Export Excel Function
             exportExcelBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+                // Show confirmation with info about limit
+                if (!confirm('Export akan memproses maksimal 1000 data terbaru sesuai filter.\n\nTIPS: Gunakan filter (Tahun/Bulan) untuk export data spesifik.\n\nLanjutkan export?')) {
+                    return;
+                }
+                
+                // Show loading
+                const originalText = this.innerHTML;
+                this.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Exporting...';
+                this.style.pointerEvents = 'none';
+                
                 const params = new URLSearchParams({
                     kelompok: kelompokSelect.value,
                     tahun: tahunSelect.value,
                     bulan: bulanSelect.value
                 });
+                
+                // Reset button after download starts (or after timeout)
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.pointerEvents = 'auto';
+                }, 5000);
                 
                 window.location.href = '{{ route("pemerintah.laporan-nbm.export.excel") }}?' + params.toString();
             });
@@ -257,11 +312,28 @@
             // Export PDF Function
             exportPdfBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+                // Show confirmation with info about limit
+                if (!confirm('Export PDF akan memproses maksimal 500 data terbaru sesuai filter.\n\nTIPS: Gunakan filter (Tahun/Bulan) untuk export data spesifik.\n\nLanjutkan export?')) {
+                    return;
+                }
+                
+                // Show loading
+                const originalText = this.innerHTML;
+                this.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Exporting...';
+                this.style.pointerEvents = 'none';
+                
                 const params = new URLSearchParams({
                     kelompok: kelompokSelect.value,
                     tahun: tahunSelect.value,
                     bulan: bulanSelect.value
                 });
+                
+                // Reset button after download starts (or after timeout)
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.pointerEvents = 'auto';
+                }, 5000);
                 
                 window.location.href = '{{ route("pemerintah.laporan-nbm.export.pdf") }}?' + params.toString();
             });
@@ -272,9 +344,10 @@
                 if (data.data && data.data.length > 0) {
                     let html = '';
                     data.data.forEach((item, index) => {
+                        const startIndex = ((data.current_page - 1) * data.per_page) + 1;
                         html += `
                             <tr class="border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700">
-                                <td class="px-6 py-4">${index + 1}</td>
+                                <td class="px-6 py-4">${startIndex + index}</td>
                                 <td class="px-6 py-4">${item.kelompok ? item.kelompok.deskripsi : '-'}</td>
                                 <td class="px-6 py-4">${item.komoditi ? item.komoditi.deskripsi : '-'}</td>
                                 <td class="px-6 py-4">${item.tahun}</td>
@@ -282,13 +355,16 @@
                                 <td class="px-6 py-4">${item.kalori_hari || '-'}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                                        ${item.status || 'Active'}
+                                        ${item.validation_status || 'verified'}
                                     </span>
                                 </td>
                             </tr>
                         `;
                     });
                     tbody.innerHTML = html;
+                    
+                    // Update pagination and caption
+                    updatePaginationInfo(data);
                 } else {
                     tbody.innerHTML = `
                         <tr class="border-b border-neutral-200 dark:border-neutral-700">
@@ -298,6 +374,62 @@
                             </td>
                         </tr>
                     `;
+                    // Reset pagination for no data
+                    updatePaginationInfo(null);
+                }
+            }
+
+            // Update Pagination Info Function
+            function updatePaginationInfo(data) {
+                // Store last page for pagination logic
+                if (data && data.last_page) {
+                    lastPage = data.last_page;
+                }
+                
+                // Update caption
+                const captionElement = document.querySelector('.pagination-caption');
+                if (captionElement) {
+                    if (data && data.total > 0) {
+                        captionElement.textContent = `Menampilkan ${data.from}-${data.to} dari ${data.total} data`;
+                    } else {
+                        captionElement.textContent = 'Menampilkan 0 data';
+                    }
+                }
+
+                // Update pagination buttons
+                const prevBtn = document.querySelector('.pagination-prev');
+                const nextBtn = document.querySelector('.pagination-next');
+                
+                if (prevBtn && nextBtn) {
+                    if (data && data.total > 0) {
+                        // Previous button
+                        if (data.current_page > 1) {
+                            prevBtn.disabled = false;
+                            prevBtn.classList.remove('cursor-not-allowed', 'bg-neutral-100', 'dark:bg-neutral-700', 'text-neutral-400', 'dark:text-neutral-500');
+                            prevBtn.classList.add('hover:bg-neutral-50', 'dark:hover:bg-neutral-600', 'text-neutral-700', 'dark:text-neutral-300');
+                        } else {
+                            prevBtn.disabled = true;
+                            prevBtn.classList.add('cursor-not-allowed', 'bg-neutral-100', 'dark:bg-neutral-700', 'text-neutral-400', 'dark:text-neutral-500');
+                            prevBtn.classList.remove('hover:bg-neutral-50', 'dark:hover:bg-neutral-600', 'text-neutral-700', 'dark:text-neutral-300');
+                        }
+
+                        // Next button
+                        if (data.current_page < data.last_page) {
+                            nextBtn.disabled = false;
+                            nextBtn.classList.remove('cursor-not-allowed', 'bg-neutral-100', 'dark:bg-neutral-700', 'text-neutral-400', 'dark:text-neutral-500');
+                            nextBtn.classList.add('hover:bg-neutral-50', 'dark:hover:bg-neutral-600', 'text-neutral-700', 'dark:text-neutral-300');
+                        } else {
+                            nextBtn.disabled = true;
+                            nextBtn.classList.add('cursor-not-allowed', 'bg-neutral-100', 'dark:bg-neutral-700', 'text-neutral-400', 'dark:text-neutral-500');
+                            nextBtn.classList.remove('hover:bg-neutral-50', 'dark:hover:bg-neutral-600', 'text-neutral-700', 'dark:text-neutral-300');
+                        }
+                    } else {
+                        // No data - disable both buttons
+                        prevBtn.disabled = true;
+                        nextBtn.disabled = true;
+                        prevBtn.classList.add('cursor-not-allowed', 'bg-neutral-100', 'dark:bg-neutral-700', 'text-neutral-400', 'dark:text-neutral-500');
+                        nextBtn.classList.add('cursor-not-allowed', 'bg-neutral-100', 'dark:bg-neutral-700', 'text-neutral-400', 'dark:text-neutral-500');
+                    }
                 }
             }
 
