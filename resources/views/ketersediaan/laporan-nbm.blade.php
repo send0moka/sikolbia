@@ -600,11 +600,6 @@
                         <h4 class="font-medium text-blue-600">📖 Konsep dan Metode</h4>
                         <p class="text-sm text-neutral-600 mt-1">Metodologi NBM dan indikator pendukung</p>
                     </a>
-                    <a href="{{ route('ketersediaan.dashboard-komoditas') }}"
-                        class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
-                        <h4 class="font-medium text-blue-600">📊 Dashboard Komoditas</h4>
-                        <p class="text-sm text-neutral-600 mt-1">Monitor harga dan tren komoditas real-time</p>
-                    </a>
                     <a href="{{ route('login') }}"
                         class="block p-4 bg-white rounded border hover:shadow-md transition duration-200">
                         <h4 class="font-medium text-blue-600">⚙️ Manajemen Data</h4>

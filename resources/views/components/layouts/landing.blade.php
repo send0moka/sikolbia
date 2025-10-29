@@ -70,10 +70,6 @@
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Laporan Data NBM
                                         </a>
-                                        <a href="{{ route('ketersediaan.dashboard-komoditas') }}" 
-                                           class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
-                                            Dashboard Komoditas
-                                        </a>
                                         <div class="border-t border-gray-200 my-1"></div>
                                         <div class="px-4 py-2">
                                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Akses Publik</p>
@@ -219,10 +215,6 @@
                             <a href="{{ route('ketersediaan.laporan-nbm') }}" 
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Laporan Data NBM
-                            </a>
-                            <a href="{{ route('ketersediaan.dashboard-komoditas') }}" 
-                               class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
-                                Dashboard Komoditas
                             </a>
                             <div class="border-t border-gray-300 my-2"></div>
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider py-1">Akses Publik</p>
@@ -394,15 +386,6 @@
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                                     </svg>
                                     Laporan Data NBM
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('ketersediaan.dashboard-komoditas') }}" 
-                                   class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
-                                    <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Dashboard Komoditas
                                 </a>
                             </li>
                             <li class="pt-2 border-t border-white/20">
