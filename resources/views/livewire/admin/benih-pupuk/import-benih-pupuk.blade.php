@@ -12,18 +12,21 @@
 
             <!-- Import Form Section -->
             <div class="flex-shrink-0">
-                <form action="{{ route('admin.benih-pupuk.preview') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 sm:gap-3">
-                    @csrf
-                    <input type="file" name="importFile" accept=".csv,.xlsx,.xls"
+                <form wire:submit.prevent="previewImport" class="flex items-center gap-2 sm:gap-3">
+                    <input type="file" wire:model="importFile" accept=".csv,.xlsx,.xls"
                            class="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded border border-blue-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-1 sm:file:mr-2 file:py-1 file:px-1 sm:file:px-2 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                    <button type="submit"
-                            class="inline-flex items-center px-3 sm:px-4 py-1 sm:py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded transition-colors duration-200 shadow-sm text-sm">
-                        <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="submit" wire:loading.attr="disabled" wire:target="importFile,previewImport"
+                            class="inline-flex items-center px-3 sm:px-4 py-1 sm:py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded transition-colors duration-200 shadow-sm text-sm">
+                        <svg wire:loading.remove wire:target="importFile,previewImport" class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
-                        <span class="hidden sm:inline">Preview</span>
-                        <span>Preview</span>
+                        <svg wire:loading wire:target="importFile,previewImport" class="animate-spin h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span wire:loading.remove wire:target="importFile,previewImport">Preview</span>
+                        <span wire:loading wire:target="importFile,previewImport">Loading...</span>
                     </button>
                 </form>
                 @error('importFile')
@@ -74,50 +77,35 @@
 </div>
 
 <!-- Preview Modal -->
-@if(session('showPreviewModal'))
-<div class="fixed inset-0 z-60 overflow-y-auto pointer-events-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 pointer-events-auto">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity pointer-events-none" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen pointer-events-none" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full pointer-events-auto max-h-screen overflow-y-auto">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+@if($showPreviewModal)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-data="{ open: true }">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div wire:click="$set('showPreviewModal', false)" class="fixed inset-0 bg-gray-500/75 transition-opacity cursor-pointer" aria-hidden="true"></div>
+        
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <!-- Modal panel -->
+        <div class="relative inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full z-50">
+            <div class="bg-white dark:bg-neutral-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4" id="modal-title">
                             Preview Data Import
                         </h3>
                         <div class="mb-4">
-                            <p class="text-sm text-gray-600">
-                                Total Baris: <strong>{{ Cache::get('totalRows') }}</strong> | Total Kolom: <strong>{{ Cache::get('totalColumns') }}</strong>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                                Total Baris: <strong>{{ $totalRows }}</strong> | Total Kolom: <strong>{{ $totalColumns }}</strong>
                             </p>
-                            @if(Cache::get('warnings'))
-                                <div class="mt-2 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-                                    <strong>Peringatan Kolom:</strong>
-                                    <ul class="list-disc list-inside mt-1">
-                                        @foreach(Cache::get('warnings') as $warning)
-                                            <li>{{ $warning }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-                            @if(Cache::get('rowWarnings'))
-                                <div class="mt-2 p-3 text-left bg-red-100 border border-red-400 text-red-700 rounded">
-                                    <strong>Peringatan Data:</strong>
-                                    <ul class="list-disc list-inside mt-1">
-                                        @foreach(Cache::get('rowWarnings') as $rowWarning)
-                                            <li>Baris {{ $rowWarning['row'] }}: {{ implode(', ', $rowWarning['warnings']) }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
                         </div>
-                        <div class="overflow-x-auto max-h-96">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach(Cache::get('previewData', []) as $rowIndex => $row)
-                                        <tr class="{{ $rowIndex == 0 ? 'bg-gray-50 font-semibold' : '' }}">
+                        <div class="overflow-x-auto max-h-96 border border-gray-200 dark:border-neutral-700 rounded">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                <tbody class="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+                                    @foreach($previewData as $rowIndex => $row)
+                                        <tr class="{{ $rowIndex == 0 ? 'bg-gray-50 dark:bg-neutral-700 font-semibold' : '' }}">
                                             @foreach($row as $cell)
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                                     {{ $cell }}
                                                 </td>
                                             @endforeach
@@ -129,16 +117,13 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <form action="{{ route('admin.benih-pupuk.import') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" {{ (Cache::get('warnings') || Cache::get('rowWarnings')) ? 'disabled' : '' }} class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 {{ (Cache::get('warnings') || Cache::get('rowWarnings')) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700' }} text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Konfirmasi Import
-                    </button>
-                </form>
-                <a href="{{ route('admin.benih-pupuk.cancel-preview') }}" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            <div class="bg-gray-50 dark:bg-neutral-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                <button wire:click="startImport" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm">
+                    Konfirmasi Import
+                </button>
+                <button wire:click="$set('showPreviewModal', false)" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
                     Batal
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -148,27 +133,31 @@
 <!-- Import Progress Modal -->
 @if($showImportModal)
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="relative inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-50">
+            <div class="bg-white dark:bg-neutral-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4" id="modal-title">
                             Proses Import
                         </h3>
                         <div class="mb-4">
-                            <div class="bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gray-200 dark:bg-neutral-700 rounded-full h-2.5">
                                 <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: {{ $importProgress }}%"></div>
                             </div>
-                            <p class="text-sm text-gray-600 mt-2">{{ $importStatus }}</p>
+                            <div class="mt-3 {{ $importProgress === 0 || str_contains($importStatus, 'Error') ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-300' }}">
+                                <p class="text-sm font-medium whitespace-pre-line">{{ $importStatus }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button wire:click="$set('showImportModal', false)" type="button" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm" :disabled="$importProgress < 100">
+            <div class="bg-gray-50 dark:bg-neutral-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button wire:click="$set('showImportModal', false)" type="button" 
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-800 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
+                        @if($importProgress > 0 && $importProgress < 100 && !str_contains($importStatus, 'Error')) disabled @endif>
                     Tutup
                 </button>
             </div>

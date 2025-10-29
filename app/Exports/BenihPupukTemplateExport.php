@@ -31,8 +31,20 @@ class TemplateSheet implements FromCollection, WithHeadings, WithStyles, ShouldA
 {
     public function collection()
     {
-        // Get sample data for reference
-        $sampleData = collect([
+        // Return empty collection for clean template
+        // Users should fill in their own data
+        return collect([
+            // Instruction row (will be in row 2)
+            [
+                'tahun' => '** HAPUS BARIS INI DAN ISI DATA ANDA **',
+                'id_bulan' => 'Lihat sheet "Referensi Bulan"',
+                'id_wilayah' => 'Lihat sheet "Referensi Wilayah"',
+                'id_variabel' => 'Lihat sheet "Referensi Variabel"',
+                'id_klasifikasi' => 'Lihat sheet "Referensi Klasifikasi"',
+                'nilai' => 'Contoh: 100.50',
+                'status' => 'A/I/D'
+            ],
+            // Sample data row for reference
             [
                 'tahun' => date('Y'),
                 'id_bulan' => 1,
@@ -41,19 +53,8 @@ class TemplateSheet implements FromCollection, WithHeadings, WithStyles, ShouldA
                 'id_klasifikasi' => 1,
                 'nilai' => 100.50,
                 'status' => 'A'
-            ],
-            [
-                'tahun' => date('Y'),
-                'id_bulan' => 2,
-                'id_wilayah' => 2,
-                'id_variabel' => 2,
-                'id_klasifikasi' => 2,
-                'nilai' => 200.75,
-                'status' => 'A'
             ]
         ]);
-
-        return $sampleData;
     }
 
     public function headings(): array
@@ -80,6 +81,30 @@ class TemplateSheet implements FromCollection, WithHeadings, WithStyles, ShouldA
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'startColor' => ['rgb' => '4F81BD'],
+            ],
+        ]);
+
+        // Style untuk instruction row (row 2)
+        $sheet->getStyle('A2:G2')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FF0000'], // Red color
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'FFFF00'], // Yellow background
+            ],
+        ]);
+
+        // Style untuk sample data row (row 3)
+        $sheet->getStyle('A3:G3')->applyFromArray([
+            'font' => [
+                'italic' => true,
+                'color' => ['rgb' => '808080'], // Gray color
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E7E6E6'], // Light gray background
             ],
         ]);
 

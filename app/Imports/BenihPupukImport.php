@@ -6,13 +6,39 @@ use App\Models\BenihPupukData;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Validators\Failure;
 
-class BenihPupukImport implements ToModel, WithHeadingRow, WithValidation
+class BenihPupukImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
+    use SkipsFailures;
+
     public function model(array $row)
     {
         // Skip empty rows
         if (empty($row['tahun']) && empty($row['id_bulan']) && empty($row['id_wilayah'])) {
+            return null;
+        }
+
+        // Skip instruction row (contains text like "HAPUS BARIS INI")
+        if (isset($row['tahun']) && is_string($row['tahun']) && 
+            (str_contains(strtoupper($row['tahun']), 'HAPUS') || 
+             str_contains(strtoupper($row['tahun']), 'DELETE') ||
+             str_contains(strtoupper($row['tahun']), 'INSTRUKSI') ||
+             str_contains(strtoupper($row['tahun']), 'BARIS'))) {
+            return null;
+        }
+
+        // Skip sample/example rows (with specific sample values)
+        if (isset($row['tahun']) && isset($row['id_bulan']) && isset($row['nilai']) &&
+            $row['tahun'] == date('Y') && 
+            $row['id_bulan'] == 1 && 
+            $row['id_wilayah'] == 1 &&
+            $row['id_variabel'] == 1 &&
+            $row['id_klasifikasi'] == 1 &&
+            $row['nilai'] == 100.50) {
+            // This is the sample row from template, skip it
             return null;
         }
 

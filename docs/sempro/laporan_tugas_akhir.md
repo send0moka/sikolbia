@@ -756,7 +756,7 @@ Sistem SIKOLBIA dirancang untuk melayani empat kategori pengguna dengan kebutuha
 
 Administrator merupakan pengelola sistem dari Kementerian Pertanian atau lembaga terkait yang memiliki full CRUD untuk semua data (user, NBM, kelompok, komoditi, alamat), user management, permission assignment, dan system monitoring. Output yang dihasilkan berupa dashboard admin dengan user activity logs, system health metrics, data statistics, dan audit trails.
 
-Pemerintah mencakup pejabat atau staf dari Kementerian Pertanian, Bappenas, atau BPKP yang dapat menjalankan prediksi, melihat data historis, export prediction reports dalam format Excel atau PDF, dan mengakses chatbot AI. Output yang dihasilkan meliputi prediksi konsumsi kalori 1-12 bulan ke depan dengan LSTM Enhanced Ensemble, confidence interval (±15%) untuk setiap prediksi, trend indicator (↗ naik / ↘ turun / → stabil) berdasarkan data historis, comparison chart antara data historis dan prediksi, serta export laporan untuk presentasi kebijakan.
+Pemerintah mencakup pejabat atau staf dari Kementerian Pertanian, Bappenas, atau BPKP yang dapat menjalankan prediksi, melihat data historis, dan export prediction reports dalam format Excel atau PDF. Output yang dihasilkan meliputi prediksi konsumsi kalori 1-12 bulan ke depan dengan LSTM Enhanced Ensemble, confidence interval (±15%) untuk setiap prediksi, trend indicator (↗ naik / ↘ turun / → stabil) berdasarkan data historis, comparison chart antara data historis dan prediksi, serta export laporan untuk presentasi kebijakan.
 
 Akademisi merupakan peneliti, dosen, atau mahasiswa dari universitas atau lembaga penelitian yang dapat melihat data historis, melakukan filter dan query NBM, export data dalam format CSV atau Excel, dan mengakses visualization tools. Output yang dihasilkan berupa dataset NBM untuk analisis statistik, time series plots, correlation matrix, dan data dictionary.
 
@@ -773,7 +773,6 @@ Pengunjung adalah masyarakat umum yang tertarik dengan ketahanan pangan dengan a
 | Run Prediction LSTM | ✓ | ✓ | ✗ | ✗ |
 | View Historical Data | ✓ | ✓ | ✓ | ✗ |
 | Export Data (Excel/CSV/PDF) | ✓ | ✓ | ✓ | ✗ |
-| Chatbot AI | ✓ | ✓ | ✓ | ✗ |
 
 **iii. Alur Kerja Sistem (System Workflow)**
 
@@ -788,16 +787,58 @@ Sistem SIKOLBIA mengimplementasikan workflow multi-tier dengan separation of con
 │   START      │              │              │              │              │
 │     │        │              │              │              │              │
 │     ▼        │              │              │              │              │
-│  Login Page──┼──Login───────┼──Login───────┼──Login───────┼──Browse──────┤
-│     │        │   as Admin   │ as Pemerintah│ as Akademisi │  as Guest    │
+│  Home Page───┼──Klik────────┼──────────────┼──────────────┼──Browse──────┤
+│  Public      │  "Login"     │              │              │  as Guest    │
+│     │        │      │       │              │              │      │       │
+│     │        │      ▼       │              │              │      ▼       │
+│     │        │  Login Page  │              │              │  Dashboard   │
+│     │        │      │       │              │              │  Publik /    │
+│     │        │      ▼       │              │              │  Laporan     │
+│     │        │  Login───────┤              │              │  Publik      │
+│     │        │   as Admin   │              │              │      │       │
+│     │        │      │       │  Browse      │  Browse      │      │       │
+│     ▼        │      ▼       │  as Guest    │  as Guest    │      │       │
+│ Autentikasi  │   Verify     │      │       │      │       │      │       │
+│ (Spatie      │   Role       │      ▼       │      ▼       │      │       │
+│ Permission)  │      │       │  Dashboard   │  Dashboard   │      │       │
+│     │        │      │       │  Publik /    │  Publik /    │      │       │
+│     ▼        │      │       │  Laporan     │  Laporan     │      │       │
+│  Dashboard───┼──Dashboard───┤  Publik      │  Publik      │      │       │
+│              │   Admin      │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │  Klik        │  Klik        │      │       │
+│              │      │       │  "Daftar"    │  "Daftar"    │      ▼       │
+│              │      │       │      │       │      │       │  View Stats  │
+│              │      │       │      ▼       │      ▼       │  (Read-Only) │
+│              │      │       │  Form        │  Form        │      │       │
+│              │      │       │  Registrasi  │  Registrasi  │      │       │
 │     ▼        │      │       │      │       │      │       │      │       │
-│ Autentikasi  │      ▼       │      ▼       │      ▼       │      ▼       │
-│ (Spatie      │   Verify     │   Verify     │   Verify     │   Public     │
-│ Permission)  │   Role       │   Role       │   Role       │   Access     │
-│     │        │      │       │      │       │      │       │      │       │
-│     ▼        │      ▼       │      ▼       │      ▼       │      ▼       │
-│  Dashboard───┼──Dashboard───┼──Dashboard───┼──Dashboard───┼──Home Page───┤
-│              │   Admin      │  Pemerintah  │  Akademisi   │   Public     │
+│  Dashboard───┼──Dashboard───┤      ▼       │      ▼       │      │       │
+│              │   Admin      │  Submit      │  Submit      │      │       │
+│              │      │       │  Pengajuan   │  Pengajuan   │      │       │
+│              │      │       │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │  Admin       │  Admin       │      │       │
+│              │      │       │  Approve     │  Approve     │      │       │
+│              │      │       │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │  Notifikasi  │  Notifikasi  │      │       │
+│              │      │       │  Approval    │  Approval    │      │       │
+│              │      │       │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │  Login Page  │  Login Page  │      │       │
+│              │      │       │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │  Login       │  Login       │      │       │
+│              │      │       │ as Pemerintah│ as Akademisi │      │       │
+│              │      │       │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │   Verify     │   Verify     │      │       │
+│              │      │       │   Role       │   Role       │      │       │
+│              │      │       │      │       │      │       │      │       │
+│              │      │       │      ▼       │      ▼       │      │       │
+│              │      │       │  Dashboard   │  Dashboard   │      │       │
+│              │      │       │  Pemerintah  │  Akademisi   │      │       │
 │              │      │       │      │       │      │       │      │       │
 │              │      ▼       │      ▼       │      ▼       │      ▼       │
 │              │  User Mgmt   │  Pilih Param │  Query Data  │  View Stats  │
@@ -858,7 +899,7 @@ Pada proses prediksi, pengguna Pemerintah memilih parameter yang terdiri dari ke
 
 Database SIKOLBIA menggunakan MySQL 8.0 dengan normalisasi hingga 3NF untuk menghindari redundansi data. Entity Relationship Diagram (ERD) divisualisasikan pada Gambar 8.
 
-**Gambar 8. Entity Relationship Diagram (ERD) SIKOLBIA**
+**Gambar 8. Entity Relationship Diagram (ERD) Modul Konsumsi Pangan NBM**
 
 **Tabel Utama:**
 
@@ -873,11 +914,13 @@ Database SIKOLBIA menggunakan MySQL 8.0 dengan normalisasi hingga 3NF untuk meng
 - `id` (PK, BIGINT AUTO_INCREMENT)
 - `name` (VARCHAR 255): 'admin', 'pemerintah', 'akademisi', 'pengunjung'
 - `guard_name` (VARCHAR 255): 'web'
+- `created_at`, `updated_at` (TIMESTAMP)
 
 **c. permissions** (Spatie Permission)
 - `id` (PK, BIGINT AUTO_INCREMENT)
 - `name` (VARCHAR 255): 'view-dashboard', 'run-prediction', 'manage-users', dll.
 - `guard_name` (VARCHAR 255): 'web'
+- `created_at`, `updated_at` (TIMESTAMP)
 
 **d. role_has_permissions** (Pivot Table)
 - `role_id` (FK → roles.id)
@@ -889,74 +932,56 @@ Database SIKOLBIA menggunakan MySQL 8.0 dengan normalisasi hingga 3NF untuk meng
 - `model_type` (VARCHAR 255): 'App\\Models\\User'
 - `model_id` (BIGINT, FK → users.id)
 
-**f. transaksi_nbms** (Data Utama NBM)
+**f. transaksi_nbms** (Data Utama NBM Nasional)
 - `id` (PK, BIGINT AUTO_INCREMENT)
-- `tahun` (INT)
-- `bulan` (INT, 1-12)
-- `kode_kelompok` (VARCHAR 10, FK → kelompok.kode_kelompok)
-- `kode_komoditi` (VARCHAR 10, FK → komoditi.kode_komoditi)
-- `produksi` (DECIMAL 15,2): dalam ton
-- `impor` (DECIMAL 15,2): dalam ton
-- `ekspor` (DECIMAL 15,2): dalam ton
-- `stok` (DECIMAL 15,2): perubahan stok
-- `makanan` (DECIMAL 15,2): konsumsi untuk pangan
-- `populasi_indonesia` (BIGINT): jumlah penduduk
+- `kode_kelompok` (VARCHAR, FK → kelompok.kode)
+- `kode_komoditi` (VARCHAR, FK → komoditi.kode_komoditi)
+- `tahun` (INT): tahun data NBM
+- `status_angka` (ENUM: 'tetap', 'sementara', 'sangat sementara')
+- `masukan` (DECIMAL 12,4): produksi domestik dalam ton
+- `keluaran` (DECIMAL 12,4): penggunaan total dalam ton
+- `impor` (DECIMAL 12,4): volume impor dalam ton
+- `ekspor` (DECIMAL 12,4): volume ekspor dalam ton
+- `perubahan_stok` (DECIMAL 12,4): delta stok gudang dalam ton
+- `pakan` (DECIMAL 12,4): konsumsi untuk pakan ternak
+- `bibit` (DECIMAL 12,4): penggunaan untuk bibit
+- `makanan` (DECIMAL 12,4): konsumsi untuk pangan manusia
+- `bukan_makanan` (DECIMAL 12,4): industri non-pangan
+- `tercecer` (DECIMAL 12,4): susut dan tercecer
+- `penggunaan_lain` (DECIMAL 12,4): penggunaan lainnya
+- `bahan_makanan` (DECIMAL 12,4): ketersediaan akhir untuk pangan
 - `created_at`, `updated_at` (TIMESTAMP)
 
-**g. kelompok** (Kelompok Komoditas)
-- `kode_kelompok` (PK, VARCHAR 10)
-- `nama` (VARCHAR 255): 'Padi-padian', 'Umbi-umbian', dll.
-- `deskripsi` (TEXT)
-
-**h. komoditi** (Komoditas Pangan)
-- `kode_komoditi` (PK, VARCHAR 10)
-- `kode_kelompok` (FK → kelompok.kode_kelompok)
-- `nama` (VARCHAR 255): 'Gabah', 'Jagung', 'Ubi Kayu', dll.
-- `kalori_per_100g` (DECIMAL 8,2): energi dalam kkal
-- `protein_per_100g` (DECIMAL 8,2): dalam gram
-- `lemak_per_100g` (DECIMAL 8,2): dalam gram
-
-**i. provinsi** (Data Alamat)
-- `kode_provinsi` (PK, VARCHAR 10)
-- `nama` (VARCHAR 255)
-
-**j. kabupaten**
-- `kode_kabupaten` (PK, VARCHAR 10)
-- `kode_provinsi` (FK → provinsi.kode_provinsi)
-- `nama` (VARCHAR 255)
-
-**k. kecamatan**
-- `kode_kecamatan` (PK, VARCHAR 10)
-- `kode_kabupaten` (FK → kabupaten.kode_kabupaten)
-- `nama` (VARCHAR 255)
-
-**l. prediction_logs** (Logging Prediksi)
+**g. kelompok** (Kelompok Komoditas NBM)
 - `id` (PK, BIGINT AUTO_INCREMENT)
-- `user_id` (FK → users.id)
-- `kelompok` (VARCHAR 255)
-- `komoditi` (VARCHAR 255)
-- `bulan_prediksi` (INT): jumlah bulan yang diprediksi (1-12)
-- `prediction_result` (JSON): array prediksi
-- `confidence_interval` (JSON): array CI lower dan upper bounds
-- `created_at` (TIMESTAMP)
+- `kode` (VARCHAR, UNIQUE): '01', '02', '03', dll.
+- `nama` (VARCHAR 255): 'Padi-padian', 'Umbi-umbian', 'Ikan', 'Daging', dll.
+- `created_at`, `updated_at` (TIMESTAMP)
 
-Relasi database utama mencakup relasi many-to-many antara tabel `users` dan `roles` melalui pivot table `model_has_roles`, serta relasi many-to-many antara `roles` dan `permissions` melalui pivot table `role_has_permissions`. Tabel `transaksi_nbms` memiliki relasi many-to-one dengan tabel `kelompok` dan `komoditi`, sedangkan `komoditi` memiliki relasi many-to-one dengan `kelompok`. Untuk data alamat, tabel `kabupaten` memiliki relasi many-to-one dengan `provinsi`, dan `kecamatan` memiliki relasi many-to-one dengan `kabupaten`. Tabel `prediction_logs` memiliki relasi many-to-one dengan `users` untuk tracking aktivitas prediksi.
+**h. komoditi** (Komoditas Pangan NBM)
+- `id` (PK, BIGINT AUTO_INCREMENT)
+- `kode_kelompok` (VARCHAR, FK → kelompok.kode)
+- `kode_komoditi` (VARCHAR, UNIQUE): '0101', '0102', '0201', dll.
+- `nama` (VARCHAR 255): 'Gabah', 'Beras', 'Jagung', 'Ubi Kayu', dll.
+- `created_at`, `updated_at` (TIMESTAMP)
+
+Relasi database utama mencakup relasi many-to-many antara tabel `users` dan `roles` melalui pivot table `model_has_roles`, serta relasi many-to-many antara `roles` dan `permissions` melalui pivot table `role_has_permissions` untuk implementasi RBAC dengan Spatie Permission. Tabel `transaksi_nbms` memiliki relasi many-to-one dengan tabel `kelompok` melalui field `kode_kelompok` untuk mengelompokkan komoditas (padi-padian, umbi-umbian, ikan, daging, dll), dan relasi many-to-one dengan `komoditi` melalui field `kode_komoditi` untuk detail jenis komoditas spesifik. Tabel `komoditi` memiliki relasi many-to-one dengan `kelompok` melalui field `kode_kelompok` untuk membentuk hierarki klasifikasi komoditas pangan. Data NBM bersifat nasional agregat tanpa dimensi regional (provinsi/kabupaten/kecamatan) karena sumber data dari Pusdatin Kementerian Pertanian merupakan agregasi tingkat nasional.
 
 **v. Basis Prediksi Konsumsi Pangan**
 
-Prediksi konsumsi kalori harian dalam sistem SIKOLBIA didasarkan pada data historis NBM 6 bulan terakhir untuk setiap komoditas yang diambil dari tabel `transaksi_nbms`. Data yang digunakan mencakup jumlah produksi domestik dalam ton, volume impor komoditi, volume ekspor komoditi, perubahan stok di gudang atau pasar, konsumsi untuk pangan dalam ton, dan jumlah penduduk Indonesia.
+Prediksi konsumsi kalori harian dalam sistem SIKOLBIA didasarkan pada data historis NBM 6 bulan terakhir untuk setiap komoditas yang diambil dari tabel `transaksi_nbms`. Data yang digunakan mencakup field `masukan` (produksi domestik), `impor` (volume impor), `ekspor` (volume ekspor), `perubahan_stok` (delta stok), dan `makanan` (konsumsi untuk pangan manusia) yang semuanya dalam satuan ton.
 
 Kalori konsumsi harian per kapita dihitung menggunakan formula NBM sebagaimana ditunjukkan pada persamaan (52), (53), dan (54):
 
 ```
-Makanan (ton) = Produksi + Impor − Ekspor ± ΔStok  ... (52)
+Ketersediaan (ton) = Masukan + Impor − Ekspor ± ΔStok  ... (52)
 
-Makanan (kg) = Makanan (ton) × 1000 × 1000  ... (53)
+Makanan (kg) = Makanan (ton) × 1000  ... (53)
 
-Kalori/Hari = (Makanan kg / Populasi / 365) × (Kalori per 100g / 100)  ... (54)
+Kalori/Hari = (Makanan kg / Populasi / 365) × Kalori per 100g / 100  ... (54)
 ```
 
-Model LSTM menggunakan fitur temporal yang terdiri dari tahun yang di-encode sebagai numeric feature untuk menangkap trend jangka panjang, bulan dengan cyclic encoding menggunakan fungsi sin dan cos untuk menangkap pola seasonality, rolling statistics berupa Moving Average 3, 6, dan 12 bulan untuk menangkap trend, serta lag features yang merupakan nilai kalori pada waktu t-1, t-2, dan t-3 sebagai input sequence.
+Model LSTM menggunakan fitur temporal yang terdiri dari tahun yang di-encode sebagai numeric feature untuk menangkap trend jangka panjang, rolling statistics berupa Moving Average untuk menangkap trend historis, serta lag features yang merupakan nilai kalori pada periode sebelumnya sebagai input sequence.
 
 Model LSTM Enhanced Ensemble merupakan kombinasi dari beberapa algoritma yang mencakup LSTM Layer untuk menangkap long-term dependencies dan pola temporal kompleks, HuberRegressor yang robust terhadap outliers dalam data NBM, weighted averaging dengan ensemble weights yang dioptimasi melalui grid search untuk kombinasi optimal, serta trend analysis menggunakan linear regression untuk extrapolasi jangka panjang dan dampening negative trends.
 

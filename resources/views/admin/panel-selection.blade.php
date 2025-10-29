@@ -50,14 +50,6 @@
                             'bg' => 'from-blue-600 to-blue-800',
                         ],
                         [
-                            'url' => route('admin.prediction-dashboard'),
-                            'img' => 'prediction-dashboard.jpg',
-                            'emoji' => '🤖',
-                            'title' => 'AI Prediction',
-                            'desc' => 'Dashboard Prediksi NBM',
-                            'bg' => 'from-indigo-600 to-indigo-800',
-                        ],
-                        [
                             'url' => '/admin/lahan',
                             'img' => 'lahan.jpg',
                             'emoji' => '🌾',
