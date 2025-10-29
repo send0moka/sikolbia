@@ -5,13 +5,88 @@ namespace App\Livewire\Admin;
 use App\Models\TbKelompokbps;
 use App\Models\TbKomoditibps;
 use App\Exports\KomoditibpsExport;
+use App\Exports\KomoditibpsTemplateExport;
+use App\Imports\KomoditibpsImport;
+use Livewire\WithFileUploads;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KomoditibpsManagement extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
+    public $showBulkImportModal = false;
+    public $importFile = null;
+
+    public function openBulkImportModal()
+    {
+        $this->showBulkImportModal = true;
+        $this->importFile = null;
+    }
+
+    public function closeBulkImportModal()
+    {
+        $this->showBulkImportModal = false;
+        $this->importFile = null;
+        $this->resetErrorBag('importFile');
+    }
+
+    public function bulkImport()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:2048',
+        ], [
+            'importFile.required' => 'File wajib dipilih.',
+            'importFile.file' => 'File tidak valid.',
+            'importFile.mimes' => 'File harus berformat XLSX, XLS, atau CSV.',
+            'importFile.max' => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        try {
+            $import = new KomoditibpsImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $this->importFile);
+
+            $imported = $import->imported;
+            $skipped = $import->skipped;
+            $skippedRows = $import->skippedRows;
+
+            $skippedDetails = array_map(function($row) {
+                $reason = isset($row['reason']) ? $row['reason'] : '';
+                $kode = $row['kd_komoditibps'] . ' - ' . $row['nm_komoditibps'] . ' (' . $row['kd_kelompokbps'] . ')';
+                return $kode . ($reason ? " (" . $reason . ")" : '');
+            }, $skippedRows);
+
+            if ($imported > 0 && $skipped > 0) {
+                $message = "Berhasil mengimport {$imported} data. {$skipped} data dilewati: ";
+                $message .= implode(', ', $skippedDetails);
+                session()->flash('warning', $message);
+            } elseif ($imported > 0) {
+                session()->flash('message', "Berhasil mengimport {$imported} data komoditi BPS.");
+            } elseif ($skipped > 0) {
+                $message = "Tidak ada data yang diimport. {$skipped} data dilewati: ";
+                $message .= implode(', ', $skippedDetails);
+                session()->flash('error', $message);
+            } else {
+                session()->flash('error', 'Tidak ada data yang diimport.');
+            }
+
+            $this->closeBulkImportModal();
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            session()->flash('error', 'Validasi gagal: ' . implode(' | ', $errorMessages));
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new KomoditibpsTemplateExport, 'template-komoditibps.xlsx');
+    }
 
     public $kd_komoditibps = '';
     public $nm_komoditibps = '';

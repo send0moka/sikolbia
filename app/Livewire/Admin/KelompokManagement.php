@@ -27,8 +27,6 @@ class KelompokManagement extends Component
     public $deletingKelompok = null;
     public $exportFormat = 'xlsx';
     public $importFile = null;
-    public $importPreview = [];
-    public $importPreviewReady = false;
 
     public $deskripsi = '';
     public $ake_ketersediaan = '';
@@ -241,46 +239,13 @@ class KelompokManagement extends Component
     {
         $this->showBulkImportModal = true;
         $this->importFile = null;
-        $this->importPreview = [];
-        $this->importPreviewReady = false;
     }
 
     public function closeBulkImportModal()
     {
         $this->showBulkImportModal = false;
         $this->importFile = null;
-        $this->importPreview = [];
-        $this->importPreviewReady = false;
         $this->resetErrorBag('importFile');
-    }
-
-    public function previewImport()
-    {
-        $this->validate([
-            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:2048',
-        ], [
-            'importFile.required' => 'File wajib dipilih.',
-            'importFile.file' => 'File tidak valid.',
-            'importFile.mimes' => 'File harus berformat XLSX, XLS, atau CSV.',
-            'importFile.max' => 'Ukuran file maksimal 2MB.',
-        ]);
-
-        try {
-            $rows = [];
-            $filePath = $this->importFile->getRealPath();
-            $extension = strtolower($this->importFile->getClientOriginalExtension());
-            $readerType = $extension === 'csv' ? \Maatwebsite\Excel\Excel::CSV : \Maatwebsite\Excel\Excel::XLSX;
-            $collection = Excel::toCollection(null, $filePath, null, $readerType);
-            if ($collection->count() > 0) {
-                $rows = $collection[0]->take(20)->toArray(); // preview max 20 rows
-            }
-            $this->importPreview = $rows;
-            $this->importPreviewReady = true;
-        } catch (\Exception $e) {
-            $this->importPreview = [];
-            $this->importPreviewReady = false;
-            session()->flash('error', 'Gagal membaca file: ' . $e->getMessage());
-        }
     }
 
     public function bulkImport()

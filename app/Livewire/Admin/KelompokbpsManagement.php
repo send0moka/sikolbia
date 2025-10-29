@@ -4,13 +4,17 @@ namespace App\Livewire\Admin;
 
 use App\Models\TbKelompokbps;
 use App\Exports\KelompokbpsExport;
+use App\Exports\KelompokbpsTemplateExport;
+use App\Imports\KelompokbpsImport;
+use Livewire\WithFileUploads;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
+
 class KelompokbpsManagement extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $kd_kelompokbps = '';
     public $nm_kelompokbps = '';
@@ -22,6 +26,77 @@ class KelompokbpsManagement extends Component
     public $perPage = 10;
     public array $perPageOptions = [5, 10, 25, 100];
     public $exportFormat = 'xlsx';
+    public $showBulkImportModal = false;
+    public $importFile = null;
+    public function openBulkImportModal()
+    {
+        $this->showBulkImportModal = true;
+        $this->importFile = null;
+    }
+
+    public function closeBulkImportModal()
+    {
+        $this->showBulkImportModal = false;
+        $this->importFile = null;
+        $this->resetErrorBag('importFile');
+    }
+
+    public function bulkImport()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:2048',
+        ], [
+            'importFile.required' => 'File wajib dipilih.',
+            'importFile.file' => 'File tidak valid.',
+            'importFile.mimes' => 'File harus berformat XLSX, XLS, atau CSV.',
+            'importFile.max' => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        try {
+            $import = new KelompokbpsImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $this->importFile);
+
+            $imported = $import->imported;
+            $skipped = $import->skipped;
+            $skippedRows = $import->skippedRows;
+
+            $skippedDetails = array_map(function($row) {
+                $reason = isset($row['reason']) ? $row['reason'] : '';
+                $kode = $row['kd_kelompokbps'] . ' - ' . $row['nm_kelompokbps'];
+                return $kode . ($reason ? " (" . $reason . ")" : '');
+            }, $skippedRows);
+
+            if ($imported > 0 && $skipped > 0) {
+                $message = "Berhasil mengimport {$imported} data. {$skipped} data dilewati: ";
+                $message .= implode(', ', $skippedDetails);
+                session()->flash('warning', $message);
+            } elseif ($imported > 0) {
+                session()->flash('message', "Berhasil mengimport {$imported} data kelompok BPS.");
+            } elseif ($skipped > 0) {
+                $message = "Tidak ada data yang diimport. {$skipped} data dilewati: ";
+                $message .= implode(', ', $skippedDetails);
+                session()->flash('error', $message);
+            } else {
+                session()->flash('error', 'Tidak ada data yang diimport.');
+            }
+
+            $this->closeBulkImportModal();
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            session()->flash('error', 'Validasi gagal: ' . implode(' | ', $errorMessages));
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new KelompokbpsTemplateExport, 'template-kelompokbps.xlsx');
+    }
 
     protected $queryString = [
         'search' => ['except' => ''],

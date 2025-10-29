@@ -5,13 +5,16 @@ namespace App\Livewire\Admin;
 use App\Models\Komoditi;
 use App\Models\Kelompok;
 use App\Exports\KomoditiExport;
+use App\Exports\KomoditiTemplateExport;
+use App\Imports\KomoditiImport;
+use Livewire\WithFileUploads;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KomoditiManagement extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $search = '';
     public $perPage = 10;
@@ -39,6 +42,77 @@ class KomoditiManagement extends Component
     public $editingKomoditi = null;
     public $deletingKomoditi = null;
     public $exportFormat = 'xlsx';
+    public $showBulkImportModal = false;
+    public $importFile = null;
+    public function openBulkImportModal()
+    {
+        $this->showBulkImportModal = true;
+        $this->importFile = null;
+    }
+
+    public function closeBulkImportModal()
+    {
+        $this->showBulkImportModal = false;
+        $this->importFile = null;
+        $this->resetErrorBag('importFile');
+    }
+
+    public function bulkImport()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:2048',
+        ], [
+            'importFile.required' => 'File wajib dipilih.',
+            'importFile.file' => 'File tidak valid.',
+            'importFile.mimes' => 'File harus berformat XLSX, XLS, atau CSV.',
+            'importFile.max' => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        try {
+            $import = new KomoditiImport;
+            Excel::import($import, $this->importFile);
+
+            $imported = $import->imported;
+            $skipped = $import->skipped;
+            $skippedRows = $import->skippedRows;
+
+            if ($imported > 0 && $skipped > 0) {
+                $message = "Berhasil mengimport {$imported} data. {$skipped} data dilewati karena kode sudah ada: ";
+                $skippedCodes = array_map(function($row) {
+                    return $row['kode_kelompok'] . '-' . $row['kode_komoditi'];
+                }, $skippedRows);
+                $message .= implode(', ', $skippedCodes);
+                session()->flash('warning', $message);
+            } elseif ($imported > 0) {
+                session()->flash('message', "Berhasil mengimport {$imported} data komoditi.");
+            } elseif ($skipped > 0) {
+                $message = "Tidak ada data yang diimport. {$skipped} data dilewati karena kode sudah ada: ";
+                $skippedCodes = array_map(function($row) {
+                    return $row['kode_kelompok'] . '-' . $row['kode_komoditi'];
+                }, $skippedRows);
+                $message .= implode(', ', $skippedCodes);
+                session()->flash('error', $message);
+            } else {
+                session()->flash('error', 'Tidak ada data yang diimport.');
+            }
+
+            $this->closeBulkImportModal();
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            session()->flash('error', 'Validasi gagal: ' . implode(' | ', $errorMessages));
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new KomoditiTemplateExport, 'template-komoditi.xlsx');
+    }
 
     protected $queryString = [
         'search' => ['except' => ''],
