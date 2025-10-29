@@ -8,9 +8,27 @@
                     Kelola data kelompok pangan
                 </p>
             </div>
-            <flux:button wire:click="openCreateModal" variant="primary">
-                Tambah Kelompok
-            </flux:button>
+            <div class="flex gap-2">
+                <flux:button wire:click="downloadTemplate" variant="outline">
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Download Template</span>
+                    </div>
+                </flux:button>
+                <flux:button wire:click="openBulkImportModal" variant="outline">
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span>Bulk Import</span>
+                    </div>
+                </flux:button>
+                <flux:button wire:click="openCreateModal" variant="primary">
+                    Tambah Kelompok
+                </flux:button>
+            </div>
         </div>
     </div>
 
@@ -18,6 +36,18 @@
     @if (session()->has('message'))
         <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded dark:bg-green-900/30 dark:border-green-700 dark:text-green-300">
             {{ session('message') }}
+        </div>
+    @endif
+
+    @if (session()->has('warning'))
+        <div class="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-300">
+            {{ session('warning') }}
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded dark:bg-red-900/30 dark:border-red-700 dark:text-red-300">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -252,6 +282,61 @@
                         Hapus
                     </flux:button>
                 </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Bulk Import Modal -->
+    @if($showBulkImportModal)
+    <div class="fixed inset-0 bg-neutral-900/70 dark:bg-neutral-950/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border border-neutral-200 dark:border-neutral-700 w-96 shadow-xl rounded-md bg-white dark:!bg-neutral-800">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-4">Bulk Import Kelompok</h3>
+                <form wire:submit="bulkImport">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                Upload File Excel/CSV
+                            </label>
+                            <input 
+                                type="file" 
+                                wire:model="importFile" 
+                                accept=".xlsx,.xls,.csv"
+                                class="block w-full text-sm text-neutral-900 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-600 rounded-lg cursor-pointer bg-neutral-50 dark:bg-neutral-700 focus:outline-none"
+                            />
+                            <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                                Format: XLSX, XLS, atau CSV. Gunakan template yang disediakan.
+                            </p>
+                            @error('importFile') <span class="text-red-500 dark:text-red-400 text-sm">{{ $message }}</span> @enderror
+                        </div>
+
+                        @if($importFile)
+                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <p class="text-sm text-blue-800 dark:text-blue-300">
+                                <strong>File:</strong> {{ $importFile->getClientOriginalName() }}
+                            </p>
+                            <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                Ukuran: {{ number_format($importFile->getSize() / 1024, 2) }} KB
+                            </p>
+                        </div>
+                        @endif
+
+                        <div class="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                            <p class="text-xs text-yellow-800 dark:text-yellow-300">
+                                <strong>Perhatian:</strong> Pastikan file sesuai template. Data yang sudah ada dengan kode sama akan dilewati.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <flux:button type="button" wire:click="closeBulkImportModal" variant="ghost">
+                            Batal
+                        </flux:button>
+                        <flux:button type="submit" variant="primary" :disabled="!$importFile">
+                            Upload & Import
+                        </flux:button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
