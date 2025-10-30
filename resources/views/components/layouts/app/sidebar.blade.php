@@ -23,6 +23,12 @@
                         <span class="nav-link-text transition-colors {{ request()->routeIs('admin.users') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Kelola User') }}</span>
                     </flux:navlist.item>
                     @endcan
+
+                    @can('view users')
+                    <flux:navlist.item icon="document-text" :href="route('admin.registrasi-akses')" :current="request()->routeIs('admin.registrasi-akses')" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.registrasi-akses') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Registrasi Akses') }}</span>
+                    </flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
                 <flux:navlist.group :heading="__('Data NBM')" class="grid">
                     @can('view kelompok')
@@ -69,14 +75,6 @@
                     <flux:navlist.item icon="chart-pie" :href="route('admin.konsep-transaksi-susenas')" :current="request()->routeIs('admin.konsep-transaksi-susenas')" wire:navigate class="group active-icon">
                         <span class="nav-link-text transition-colors {{ request()->routeIs('admin.konsep-transaksi-susenas') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Konsep Transaksi Susenas') }}</span>
                     </flux:navlist.item>
-                </flux:navlist.group>
-
-                <flux:navlist.group :heading="__('User Management')" class="grid">
-                    @can('view users')
-                    <flux:navlist.item icon="document-text" :href="route('admin.registrasi-akses')" :current="request()->routeIs('admin.registrasi-akses')" wire:navigate class="group active-icon">
-                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.registrasi-akses') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Registrasi Akses') }}</span>
-                    </flux:navlist.item>
-                    @endcan
                 </flux:navlist.group>
             </flux:navlist>
 
