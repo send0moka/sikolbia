@@ -197,6 +197,15 @@ Route::middleware(['auth'])->prefix('admin/konsumsi-pangan')->name('admin.')->gr
     Route::middleware(['permission:view transaksi_nbm'])->group(function () {
         Route::view('transaksi-nbm', 'admin.transaksi-nbm')->name('transaksi-nbm');
     });
+    
+    // Backup & Restore - hanya untuk superadmin
+    Route::middleware(['permission:view users'])->group(function () {
+        Route::get('backup-restore', [App\Http\Controllers\BackupRestoreController::class, 'index'])->name('backup-restore');
+        Route::post('backup-restore/backup', [App\Http\Controllers\BackupRestoreController::class, 'backup'])->name('backup-restore.backup');
+        Route::post('backup-restore/restore', [App\Http\Controllers\BackupRestoreController::class, 'restore'])->name('backup-restore.restore');
+        Route::get('backup-restore/download/{filename}', [App\Http\Controllers\BackupRestoreController::class, 'download'])->name('backup-restore.download');
+        Route::post('backup-restore/delete', [App\Http\Controllers\BackupRestoreController::class, 'delete'])->name('backup-restore.delete');
+    });
 });
 
 // Lahan Routes - HANYA UNTUK ADMIN/SUPERADMIN
