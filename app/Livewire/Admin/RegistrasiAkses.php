@@ -64,7 +64,8 @@ class RegistrasiAkses extends Component
     public function showDetail($registrasiId)
     {
         Log::info('showDetail called with ID: ' . $registrasiId);
-        $this->selectedRegistrasi = RegistrasiAksesModel::findOrFail($registrasiId);
+        // Always fetch fresh data from database to avoid cache issues
+        $this->selectedRegistrasi = RegistrasiAksesModel::with('reviewer')->findOrFail($registrasiId);
         $this->showDetailModal = true;
         Log::info('Modal state set: showDetailModal = true');
     }
@@ -251,6 +252,13 @@ class RegistrasiAkses extends Component
         $catatan = !empty($this->catatanAdmin) 
             ? $this->catatanAdmin 
             : 'Untuk melanjutkan proses verifikasi, kami memerlukan dokumen atau informasi tambahan dari Anda. Silakan hubungi kami untuk detail lebih lanjut.';
+        
+        // Generate resubmit token (valid for 30 days)
+        $token = bin2hex(random_bytes(32));
+        $registrasi->update([
+            'resubmit_token' => $token,
+            'resubmit_token_expires_at' => now()->addDays(30)
+        ]);
         
         $registrasi->needDocuments(Auth::id(), $catatan);
         

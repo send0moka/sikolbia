@@ -18,22 +18,27 @@ class RedirectBasedOnRole
         if (Auth::check()) {
             $user = Auth::user();
             
-            // Check role dan redirect ke panel yang sesuai
-            if ($user->hasRole('superadmin') || $user->hasRole('admin')) {
-                // Admin/Superadmin → Admin Panel Selection
-                if (!$request->is('admin/*') && !$request->is('dashboard')) {
-                    return redirect()->route('admin.panel-selection');
-                }
-            } elseif ($user->hasRole('pemerintah')) {
+            // Skip redirect if already on the correct panel or public routes
+            if ($request->is('pemerintah/*') || 
+                $request->is('akademisi/*') || 
+                $request->is('admin/*') || 
+                $request->is('dashboard') ||
+                $request->is('registrasi/*') ||
+                $request->is('ketersediaan/*') ||
+                $request->is('logout')) {
+                return $next($request);
+            }
+            
+            // Check role dan redirect ke panel yang sesuai HANYA untuk root atau home requests
+            if ($user->hasRole('pemerintah')) {
                 // Pemerintah → Pemerintah Dashboard
-                if (!$request->is('pemerintah/*')) {
-                    return redirect()->route('pemerintah.dashboard');
-                }
+                return redirect()->route('pemerintah.dashboard');
             } elseif ($user->hasRole('akademisi')) {
                 // Akademisi → Akademisi Dashboard
-                if (!$request->is('akademisi/*')) {
-                    return redirect()->route('akademisi.dashboard');
-                }
+                return redirect()->route('akademisi.dashboard');
+            } elseif ($user->hasRole('superadmin') || $user->hasRole('admin')) {
+                // Admin/Superadmin → Admin Panel Selection
+                return redirect()->route('admin.panel-selection');
             }
         }
         

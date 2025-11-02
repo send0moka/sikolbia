@@ -4,11 +4,17 @@
             <!-- Header -->
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
-                    Registrasi Akses Pemerintah
+                    {{ isset($isResubmit) && $isResubmit ? 'Lengkapi Dokumen Registrasi' : 'Registrasi Akses Pemerintah' }}
                 </h1>
                 <p class="text-neutral-600 dark:text-neutral-400">
-                    Lengkapi formulir di bawah untuk mendapatkan akses ke sistem SIKOLBIA
+                    {{ isset($isResubmit) && $isResubmit ? 'Silakan lengkapi atau perbarui dokumen yang diperlukan' : 'Lengkapi formulir di bawah untuk mendapatkan akses ke sistem SIKOLBIA' }}
                 </p>
+                @if(isset($isResubmit) && $isResubmit && isset($registrasi) && $registrasi->catatan_admin)
+                <div class="mt-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                    <p class="text-sm text-orange-800 dark:text-orange-300 font-medium">Catatan Admin:</p>
+                    <p class="text-sm text-orange-700 dark:text-orange-400 mt-1">{{ $registrasi->catatan_admin }}</p>
+                </div>
+                @endif
             </div>
 
             <!-- Success/Error Messages -->
@@ -27,7 +33,7 @@
             <!-- Form Card -->
             <div class="bg-white dark:bg-neutral-800 shadow-xl rounded-lg overflow-hidden">
                 <div class="px-6 py-8">
-                    <form action="{{ route('public.registrasi.proses') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ isset($isResubmit) && $isResubmit ? route('public.registrasi.resubmit.process', $token) : route('public.registrasi.proses') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="tipe_akses" value="pemerintah">
 
@@ -43,7 +49,7 @@
                                         Nama Lengkap <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" name="nama_lengkap" id="nama_lengkap" 
-                                        value="{{ old('nama_lengkap') }}"
+                                        value="{{ old('nama_lengkap', isset($registrasi) ? $registrasi->nama_lengkap : '') }}"
                                         class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('nama_lengkap') border-red-500 @enderror" 
                                         required>
                                     @error('nama_lengkap')
@@ -56,7 +62,7 @@
                                         Email <span class="text-red-500">*</span>
                                     </label>
                                     <input type="email" name="email" id="email" 
-                                        value="{{ old('email') }}"
+                                        value="{{ old('email', isset($registrasi) ? $registrasi->email : '') }}"
                                         class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('email') border-red-500 @enderror" 
                                         required>
                                     @error('email')
@@ -69,7 +75,7 @@
                                         No. Telepon <span class="text-red-500">*</span>
                                     </label>
                                     <input type="tel" name="telepon" id="telepon" 
-                                        value="{{ old('telepon') }}"
+                                        value="{{ old('telepon', isset($registrasi) ? $registrasi->telepon : '') }}"
                                         class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('telepon') border-red-500 @enderror" 
                                         required>
                                     @error('telepon')
@@ -91,7 +97,7 @@
                                         Nama Instansi <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" name="instansi" id="instansi" 
-                                        value="{{ old('instansi') }}"
+                                        value="{{ old('instansi', isset($registrasi) ? $registrasi->instansi : '') }}"
                                         class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('instansi') border-red-500 @enderror" 
                                         required>
                                     @error('instansi')
@@ -106,11 +112,11 @@
                                     <select name="jenis_dinas" id="jenis_dinas" 
                                         class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('jenis_dinas') border-red-500 @enderror">
                                         <option value="">Pilih Jenis Dinas</option>
-                                        <option value="Dinas Pertanian" {{ old('jenis_dinas') == 'Dinas Pertanian' ? 'selected' : '' }}>Dinas Pertanian</option>
-                                        <option value="Dinas Pangan" {{ old('jenis_dinas') == 'Dinas Pangan' ? 'selected' : '' }}>Dinas Pangan</option>
-                                        <option value="Dinas Ketahanan Pangan" {{ old('jenis_dinas') == 'Dinas Ketahanan Pangan' ? 'selected' : '' }}>Dinas Ketahanan Pangan</option>
-                                        <option value="BPS" {{ old('jenis_dinas') == 'BPS' ? 'selected' : '' }}>BPS</option>
-                                        <option value="Lainnya" {{ old('jenis_dinas') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                        <option value="Dinas Pertanian" {{ old('jenis_dinas', isset($registrasi) ? $registrasi->jenis_dinas : '') == 'Dinas Pertanian' ? 'selected' : '' }}>Dinas Pertanian</option>
+                                        <option value="Dinas Pangan" {{ old('jenis_dinas', isset($registrasi) ? $registrasi->jenis_dinas : '') == 'Dinas Pangan' ? 'selected' : '' }}>Dinas Pangan</option>
+                                        <option value="Dinas Ketahanan Pangan" {{ old('jenis_dinas', isset($registrasi) ? $registrasi->jenis_dinas : '') == 'Dinas Ketahanan Pangan' ? 'selected' : '' }}>Dinas Ketahanan Pangan</option>
+                                        <option value="BPS" {{ old('jenis_dinas', isset($registrasi) ? $registrasi->jenis_dinas : '') == 'BPS' ? 'selected' : '' }}>BPS</option>
+                                        <option value="Lainnya" {{ old('jenis_dinas', isset($registrasi) ? $registrasi->jenis_dinas : '') == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
                                     </select>
                                     @error('jenis_dinas')
                                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
@@ -122,7 +128,7 @@
                                         Jabatan <span class="text-red-500">*</span>
                                     </label>
                                     <input type="text" name="jabatan" id="jabatan" 
-                                        value="{{ old('jabatan') }}"
+                                        value="{{ old('jabatan', isset($registrasi) ? $registrasi->jabatan : '') }}"
                                         class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('jabatan') border-red-500 @enderror" 
                                         required>
                                     @error('jabatan')
@@ -138,24 +144,32 @@
                                 Tujuan Penggunaan Data
                             </h2>
 
+                            @php
+                                $tujuanPenggunaan = old('tujuan_penggunaan', isset($registrasi) && $registrasi->tujuan_penggunaan ? $registrasi->tujuan_penggunaan : []);
+                            @endphp
+
                             <div class="space-y-2">
                                 <label class="flex items-center">
                                     <input type="checkbox" name="tujuan_penggunaan[]" value="Perencanaan Kebijakan" 
+                                        {{ in_array('Perencanaan Kebijakan', $tujuanPenggunaan) ? 'checked' : '' }}
                                         class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700">
                                     <span class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">Perencanaan Kebijakan</span>
                                 </label>
                                 <label class="flex items-center">
                                     <input type="checkbox" name="tujuan_penggunaan[]" value="Monitoring dan Evaluasi" 
+                                        {{ in_array('Monitoring dan Evaluasi', $tujuanPenggunaan) ? 'checked' : '' }}
                                         class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700">
                                     <span class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">Monitoring dan Evaluasi</span>
                                 </label>
                                 <label class="flex items-center">
                                     <input type="checkbox" name="tujuan_penggunaan[]" value="Penelitian" 
+                                        {{ in_array('Penelitian', $tujuanPenggunaan) ? 'checked' : '' }}
                                         class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700">
                                     <span class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">Penelitian</span>
                                 </label>
                                 <label class="flex items-center">
                                     <input type="checkbox" name="tujuan_penggunaan[]" value="Analisis Data" 
+                                        {{ in_array('Analisis Data', $tujuanPenggunaan) ? 'checked' : '' }}
                                         class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700">
                                     <span class="ml-2 text-sm text-neutral-700 dark:text-neutral-300">Analisis Data</span>
                                 </label>
@@ -169,7 +183,7 @@
                             </label>
                             <textarea name="deskripsi_kebutuhan" id="deskripsi_kebutuhan" rows="4" 
                                 class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-700 dark:text-white @error('deskripsi_kebutuhan') border-red-500 @enderror" 
-                                placeholder="Jelaskan kebutuhan data Anda...">{{ old('deskripsi_kebutuhan') }}</textarea>
+                                placeholder="Jelaskan kebutuhan data Anda...">{{ old('deskripsi_kebutuhan', isset($registrasi) ? $registrasi->deskripsi_kebutuhan : '') }}</textarea>
                             @error('deskripsi_kebutuhan')
                                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                             @enderror
@@ -212,7 +226,26 @@
                                         Surat Permohonan Akses Data <span class="text-red-500">*</span>
                                         <span class="text-neutral-500">(PDF, maksimal 5MB)</span>
                                     </label>
-                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-blue-400 transition @error('surat_permohonan') border-red-500 @enderror">
+                                    
+                                    @if(isset($registrasi) && $registrasi->surat_permohonan)
+                                    <!-- Existing File Display -->
+                                    <div id="existing_surat_permohonan" class="mb-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                <span class="text-sm text-green-800 dark:text-green-300 font-medium">File sudah ada: {{ basename($registrasi->surat_permohonan) }}</span>
+                                            </div>
+                                            <button type="button" onclick="clearExistingFile('surat_permohonan')" class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 font-medium">
+                                                Ganti File
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    <div id="upload_surat_permohonan" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-blue-400 transition @error('surat_permohonan') border-red-500 @enderror" 
+                                         style="{{ isset($registrasi) && $registrasi->surat_permohonan ? 'display: none;' : '' }}">
                                         <div class="space-y-1 text-center">
                                             <svg class="mx-auto h-12 w-12 text-neutral-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -220,7 +253,7 @@
                                             <div class="flex justify-center items-center text-sm text-neutral-600 dark:text-neutral-400">
                                                 <label for="surat_permohonan" class="relative cursor-pointer bg-white dark:bg-neutral-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                                     <span>Upload file</span>
-                                                    <input id="surat_permohonan" name="surat_permohonan" type="file" accept=".pdf" class="sr-only" required>
+                                                    <input id="surat_permohonan" name="surat_permohonan" type="file" accept=".pdf" class="sr-only" {{ isset($registrasi) && $registrasi->surat_permohonan ? '' : 'required' }}>
                                                 </label>
                                                 <p class="pl-1">atau drag & drop</p>
                                             </div>
@@ -238,7 +271,26 @@
                                         Kartu Pegawai/ID Instansi <span class="text-red-500">*</span>
                                         <span class="text-neutral-500">(PDF/JPG/PNG, maksimal 2MB)</span>
                                     </label>
-                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-blue-400 transition @error('id_instansi') border-red-500 @enderror">
+                                    
+                                    @if(isset($registrasi) && $registrasi->id_instansi)
+                                    <!-- Existing File Display -->
+                                    <div id="existing_id_instansi" class="mb-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                <span class="text-sm text-green-800 dark:text-green-300 font-medium">File sudah ada: {{ basename($registrasi->id_instansi) }}</span>
+                                            </div>
+                                            <button type="button" onclick="clearExistingFile('id_instansi')" class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 font-medium">
+                                                Ganti File
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    <div id="upload_id_instansi" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-blue-400 transition @error('id_instansi') border-red-500 @enderror"
+                                         style="{{ isset($registrasi) && $registrasi->id_instansi ? 'display: none;' : '' }}">
                                         <div class="space-y-1 text-center">
                                             <svg class="mx-auto h-12 w-12 text-neutral-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -246,7 +298,7 @@
                                             <div class="flex justify-center items-center text-sm text-neutral-600 dark:text-neutral-400">
                                                 <label for="id_instansi" class="relative cursor-pointer bg-white dark:bg-neutral-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                                     <span>Upload file</span>
-                                                    <input id="id_instansi" name="id_instansi" type="file" accept=".pdf,.jpg,.jpeg,.png" class="sr-only" required>
+                                                    <input id="id_instansi" name="id_instansi" type="file" accept=".pdf,.jpg,.jpeg,.png" class="sr-only" {{ isset($registrasi) && $registrasi->id_instansi ? '' : 'required' }}>
                                                 </label>
                                                 <p class="pl-1">atau drag & drop</p>
                                             </div>
@@ -264,7 +316,26 @@
                                         Surat Keterangan Atasan
                                         <span class="text-neutral-500">(PDF, maksimal 3MB, opsional)</span>
                                     </label>
-                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-blue-400 transition @error('surat_atasan') border-red-500 @enderror">
+                                    
+                                    @if(isset($registrasi) && $registrasi->surat_atasan)
+                                    <!-- Existing File Display -->
+                                    <div id="existing_surat_atasan" class="mb-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                <span class="text-sm text-green-800 dark:text-green-300 font-medium">File sudah ada: {{ basename($registrasi->surat_atasan) }}</span>
+                                            </div>
+                                            <button type="button" onclick="clearExistingFile('surat_atasan')" class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 font-medium">
+                                                Ganti File
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    
+                                    <div id="upload_surat_atasan" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-lg hover:border-blue-400 transition @error('surat_atasan') border-red-500 @enderror"
+                                         style="{{ isset($registrasi) && $registrasi->surat_atasan ? 'display: none;' : '' }}">
                                         <div class="space-y-1 text-center">
                                             <svg class="mx-auto h-12 w-12 text-neutral-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -316,7 +387,7 @@
                             </a>
                             <button type="submit" 
                                 class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                                Kirim Registrasi
+                                {{ isset($isResubmit) && $isResubmit ? 'Kirim Ulang Dokumen' : 'Kirim Registrasi' }}
                             </button>
                         </div>
                     </form>
@@ -354,6 +425,17 @@
     </div>
 
     <script>
+        // Function to clear existing file and show upload zone
+        function clearExistingFile(inputId) {
+            const existingDiv = document.getElementById('existing_' + inputId);
+            const uploadDiv = document.getElementById('upload_' + inputId);
+            const input = document.getElementById(inputId);
+            
+            if (existingDiv) existingDiv.style.display = 'none';
+            if (uploadDiv) uploadDiv.style.display = 'flex';
+            if (input) input.required = true; // Make file required when replacing
+        }
+        
         // Simple file upload functionality without DOM manipulation issues
         document.addEventListener('DOMContentLoaded', function() {
             const fileInputs = ['surat_permohonan', 'id_instansi', 'surat_atasan'];
@@ -363,7 +445,6 @@
                 if (!input) return;
                 
                 const dropZone = input.closest('.border-dashed');
-                
                 // File input change handler - safe approach that preserves input and updates text
                 input.addEventListener('change', function(e) {
                     if (e.target.files.length > 0) {
@@ -375,20 +456,21 @@
                             dropZone.classList.add('border-green-400', 'bg-green-50');
                             dropZone.classList.remove('border-neutral-300', 'border-red-500');
                             
-                            // Update the text content while preserving the input element
+                            // Update the text content WITHOUT destroying the input element
                             const textContainer = dropZone.querySelector('.flex');
                             if (textContainer) {
-                                // Store original content for potential reset
-                                if (!textContainer.dataset.originalContent) {
-                                    textContainer.dataset.originalContent = textContainer.innerHTML;
+                                // Find the paragraph text element (not the label with input)
+                                const dragDropText = textContainer.querySelector('p');
+                                if (dragDropText && !dragDropText.dataset.originalContent) {
+                                    dragDropText.dataset.originalContent = dragDropText.textContent;
                                 }
                                 
-                                // Replace the text content with success message
-                                textContainer.innerHTML = `
-                                    <span class="text-green-600 dark:text-green-400 font-medium">
-                                        ✓ ${file.name}
-                                    </span>
-                                `;
+                                // Update only the drag & drop text, not the entire container
+                                if (dragDropText) {
+                                    dragDropText.textContent = `✓ ${file.name}`;
+                                    dragDropText.classList.add('text-green-600', 'dark:text-green-400', 'font-medium');
+                                    dragDropText.classList.remove('pl-1');
+                                }
                             }
                             
                             // Update the file size text
@@ -479,8 +561,13 @@
             
             function resetTextToOriginal(dropZone) {
                 const textContainer = dropZone.querySelector('.flex');
-                if (textContainer && textContainer.dataset.originalContent) {
-                    textContainer.innerHTML = textContainer.dataset.originalContent;
+                if (textContainer) {
+                    const dragDropText = textContainer.querySelector('p');
+                    if (dragDropText && dragDropText.dataset.originalContent) {
+                        dragDropText.textContent = dragDropText.dataset.originalContent;
+                        dragDropText.classList.remove('text-green-600', 'dark:text-green-400', 'font-medium');
+                        dragDropText.classList.add('pl-1');
+                    }
                 }
                 
                 const sizeText = dropZone.querySelector('.text-xs');

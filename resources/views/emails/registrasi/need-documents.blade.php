@@ -28,10 +28,10 @@ Terima kasih atas registrasi Anda ke sistem SIKOLBIA. Untuk melanjutkan proses v
 Mohon hubungi kami untuk informasi lebih lanjut mengenai dokumen yang diperlukan.
 @endif
 
-Silakan kirimkan dokumen atau informasi tambahan tersebut melalui email ini atau hubungi admin kami.
+Silakan klik tombol di bawah untuk melengkapi dokumen atau informasi tambahan yang diperlukan.
 
-<x-mail::button :url="config('app.url')">
-Kunjungi SIKOLBIA
+<x-mail::button :url="route('public.registrasi.resubmit', ['token' => $registrasi->resubmit_token])">
+Lengkapi Dokumen
 </x-mail::button>
 
 Jika Anda memiliki pertanyaan, silakan hubungi kami melalui email ini.

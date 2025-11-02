@@ -488,7 +488,7 @@
                                             Download
                                         </a>
                                         @if(Str::endsWith($doc['path'], '.pdf'))
-                                            <a href="{{ Storage::url($doc['path']) }}" 
+                                            <a href="{{ Storage::url($doc['path']) }}?v={{ Storage::disk('public')->lastModified($doc['path']) }}" 
                                                target="_blank"
                                                class="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -26,6 +26,10 @@ Route::prefix('registrasi')->name('public.registrasi.')->group(function () {
     Route::get('akademisi', [App\Http\Controllers\RegistrasiAksesController::class, 'showFormAkademisi'])->name('akademisi');
     Route::post('proses', [App\Http\Controllers\RegistrasiAksesController::class, 'proses'])->name('proses');
     
+    // Resubmit with token
+    Route::get('resubmit/{token}', [App\Http\Controllers\RegistrasiAksesController::class, 'showResubmitForm'])->name('resubmit');
+    Route::post('resubmit/{token}', [App\Http\Controllers\RegistrasiAksesController::class, 'processResubmit'])->name('resubmit.process');
+    
     // Check status
     Route::get('check-status', [App\Http\Controllers\RegistrasiAksesController::class, 'checkStatus'])->name('check-status');
     

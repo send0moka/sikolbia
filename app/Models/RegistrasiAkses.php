@@ -41,13 +41,16 @@ class RegistrasiAkses extends Model
         'catatan_admin',
         'tanggal_review',
         'tanggal_approval',
-        'reviewed_by'
+        'reviewed_by',
+        'resubmit_token',
+        'resubmit_token_expires_at'
     ];
 
     protected $casts = [
         'tujuan_penggunaan' => 'array',
         'tanggal_review' => 'datetime',
         'tanggal_approval' => 'datetime',
+        'resubmit_token_expires_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
