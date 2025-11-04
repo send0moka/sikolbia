@@ -22,8 +22,8 @@
 
             <!-- Header -->
             <div class="mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">Asisten Data Pertanian</h1>
-                <p class="text-xl text-neutral-600">Tanyakan data pertanian (Lahan, Benih & Pupuk, Iklim & OPT DPI) dan biarkan asisten memandu pilihan dimensi.</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">Asisten Data Pertanian Non-Komoditas</h1>
+                <p class="text-xl text-neutral-600">Tanyakan data pertanian non-komoditas (Lahan, Benih & Pupuk, Iklim & OPT DPI) dan biarkan asisten memandu pilihan dimensi.</p>
             </div>
 
             <!-- Chat Container -->
@@ -33,7 +33,7 @@
 
                 <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
                     <header class="p-4 border-b flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-neutral-800">Chatbot — Asisten Data Pertanian</h3>
+                        <h3 class="font-bold text-lg text-neutral-800">Chatbot — Asisten Data Pertanian Non-Komoditas</h3>
                         <div class="flex items-center gap-2">
                             <!-- Help icon button (info) -->
                             <button type="button" @click="showHelp = true" class="inline-flex items-center justify-center h-9 w-9 rounded-md border bg-white hover:bg-neutral-50 text-neutral-600 hover:text-neutral-900" title="Bantuan & Contoh Prompt" aria-label="Bantuan & Contoh Prompt">

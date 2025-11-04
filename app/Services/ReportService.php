@@ -18,6 +18,213 @@ use Illuminate\Support\Facades\Log;
 class ReportService
 {
     /**
+     * Lightweight intent router for chatbot queries.
+     * - Handles informational/general intents with natural responses (no extractor call).
+     * - Falls through to structured-first pipeline for data-specific queries.
+     *
+     * Return shape: ['message'=>string] plus optional ['structured_result'=>array] when structured.
+     */
+    public function handleChatIntent(string $query): array
+    {
+        $q = trim($query ?? '');
+        $lower = mb_strtolower($q, 'UTF-8');
+
+        // Informational: capabilities overview
+        if (
+            ($lower !== '') && (
+                str_contains($lower, 'data apa') ||
+                str_contains($lower, 'bisa diambil') ||
+                str_contains($lower, 'kategori data')
+            )
+        ) {
+            return [
+                'message' => 'Sistem ini dapat menampilkan tiga kategori data utama: Lahan, Benih & Pupuk, serta Iklim & OPT DPI. Anda bisa memilih salah satu untuk melihat detailnya.'
+            ];
+        }
+
+        // Informational: availability beyond the three datasets
+        if (($lower !== '') && str_contains($lower, 'selain') && str_contains($lower, 'data')) {
+            return [
+                'message' => 'Untuk saat ini hanya tiga kategori tersebut yang tersedia, tetapi sistem dapat diperluas di masa depan.'
+            ];
+        }
+
+        // Default: try structured-first pipeline
+        return $this->buildStructuredFirstResponse($query);
+    }
+    /**
+     * Build a structured-first response for chatbot: run extractor → keep structured_result → format a natural message.
+     * Does not change the core retrieval pipeline; only adds human-friendly text around detected entities.
+     *
+     * Contract:
+     * - Input: free-form $query from user
+     * - Output: [ 'structured_result' => array, 'message' => string ]
+     * - Error modes: on extractor failure, returns minimal payload with gentle guidance
+     */
+    public function buildStructuredFirstResponse(string $query): array
+    {
+        $query = trim($query ?? '');
+        try {
+            // 0) LLM-assisted normalization (bounded, optional)
+            $normalizer = new \App\Services\ChatNormalizationService();
+            $norm = $normalizer->normalize($query);
+
+            // 1) Build a lightly augmented query to bias deterministic extraction
+            // Guard against LLM hint overriding explicit user intent. If the user
+            // already mentions a module keyword (benih/pupuk, iklim/OPT/DPI, lahan/sawah),
+            // we will NOT add the LLM-proposed module tag, as it can reorder detection.
+            $aug = $query;
+            $lowerOrig = mb_strtolower($query, 'UTF-8');
+            $explicitModule = null;
+            if (str_contains($lowerOrig, 'benih') || str_contains($lowerOrig, 'pupuk')) {
+                $explicitModule = 'benih-pupuk';
+            } elseif (str_contains($lowerOrig, 'iklim') || str_contains($lowerOrig, 'opt') || str_contains($lowerOrig, 'dpi') || str_contains($lowerOrig, 'hujan') || str_contains($lowerOrig, 'curah')) {
+                $explicitModule = 'iklim-opt-dpi';
+            } elseif (str_contains($lowerOrig, 'lahan') || str_contains($lowerOrig, 'sawah') || str_contains($lowerOrig, 'panen') || str_contains($lowerOrig, 'kebun')) {
+                $explicitModule = 'lahan';
+            }
+            if (!empty($norm['module']) && !$explicitModule) {
+                // Add module hint only when the user's text is ambiguous.
+                $aug .= ' module: '.$norm['module'];
+            }
+            if (!empty($norm['wilayah_phrases'])) {
+                foreach ($norm['wilayah_phrases'] as $p) { $aug .= ' di '.$p; }
+            }
+            if (!empty($norm['years'])) { $aug .= ' tahun '.implode(' ', $norm['years']); }
+            if (!empty($norm['months'])) { $aug .= ' bulan '.implode(' ', $norm['months']); }
+
+            // 2) Deterministic extractor remains the backbone
+            $ss = new \App\Services\StructuredSearchService();
+            $structured = $ss->search($aug);
+
+            // 3) Filter and rerank wilayah based on evidence in the query
+            $phrases = array_values(array_filter(array_map('strval', $norm['wilayah_phrases'] ?? [])));
+            $normFn = function(string $name): string {
+                $s = mb_strtolower(trim($name), 'UTF-8');
+                $s = preg_replace('/^(kab\\.?|kabupaten|kota|provinsi)\\s+/u', '', $s);
+                $s = str_replace(['.', ',', '  '], ['','', ' '], $s);
+                $s = preg_replace('/\\s+/u', ' ', $s);
+                return trim($s ?? '');
+            };
+            $qLower = mb_strtolower($query, 'UTF-8');
+            $targets = array_map($normFn, $phrases);
+            if (!empty($structured['wilayah_hits'])) {
+                $filtered = [];$preferred=[];$exact=[];
+                foreach ($structured['wilayah_hits'] as $row) {
+                    $nm = (string)($row['nama'] ?? '');
+                    $nn = $normFn($nm);
+                    $appearsInQuery = ($nn !== '' && str_contains($qLower, $nn));
+                    $listedInNorm = in_array($nn, $targets, true) || in_array('provinsi '.$nn, $targets, true) || in_array('kab '.$nn, $targets, true) || in_array('kota '.$nn, $targets, true);
+                    if ($appearsInQuery || $listedInNorm) {
+                        if ($listedInNorm) { $preferred[] = $row; }
+                        else { $exact[] = $row; }
+                    }
+                }
+                $filtered = array_values(array_merge($preferred, $exact));
+                // Only keep wilayah hits when there is evidence in the query text or normalization hints
+                $structured['wilayah_hits'] = $filtered;
+            }
+            try { Log::info('[StructuredFirst] norm+extract', ['query'=>$query,'aug'=>$aug,'norm'=>$norm,'wilayah_top'=>array_slice($structured['wilayah_hits'] ?? [],0,3)]); } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            $structured = [
+                'query' => $query,
+                'tokens' => [],
+                'bigrams' => [],
+                'modules' => [],
+                'years' => [],
+                'months' => [],
+                'wilayah_hits' => [],
+                'variabel_hits' => [],
+            ];
+        }
+
+        $message = $this->formatStructuredResponse($structured);
+        return [
+            'structured_result' => $structured,
+            'message' => $message,
+        ];
+    }
+
+    /**
+     * Turn structured extraction result into a natural Indonesian sentence with light clarifications.
+     * Keeps domain labels consistent (e.g., Benih & Pupuk, Iklim & OPT DPI).
+     *
+     * Rules:
+     * - If modules AND wilayah available → confirm finding + optionally mention years/months.
+     * - If only wilayah → ask which module is intended.
+     * - If only modules → ask which wilayah is intended (or suggest to pilih wilayah).
+     * - If neither → prompt for either module or wilayah.
+     */
+    private function formatStructuredResponse(array $s): string
+    {
+        $modules = array_values(array_filter(array_map('strval', $s['modules'] ?? [])));
+        $years = array_values(array_filter(array_map('intval', $s['years'] ?? [])));
+        $months = array_values($s['months'] ?? []); // each: ['id'=>..,'nama'=>..]
+        $wilayahHits = array_values($s['wilayah_hits'] ?? []); // each: ['id','nama','id_parent']
+
+        // Human-friendly labels for modules
+        $label = function(string $mod): string {
+            $m = strtolower(trim($mod));
+            return $m === 'benih-pupuk' ? 'Benih & Pupuk' : ($m === 'iklim-opt-dpi' ? 'Iklim & OPT DPI' : 'Lahan');
+        };
+        $modulesLabeled = array_map($label, $modules);
+
+        // Helper: natural join with comma and 'dan'
+        $join = function(array $items): string {
+            $items = array_values(array_filter(array_map('strval', $items)));
+            $n = count($items);
+            if ($n === 0) return '';
+            if ($n === 1) return $items[0];
+            if ($n === 2) return $items[0].' dan '.$items[1];
+            return implode(', ', array_slice($items, 0, $n-1)).' dan '.$items[$n-1];
+        };
+
+        $wilayahNames = array_values(array_unique(array_map(function($w){ return (string)($w['nama'] ?? ''); }, $wilayahHits)));
+        $monthNames = array_values(array_unique(array_map(function($m){ return (string)($m['nama'] ?? ''); }, $months)));
+
+        // Compose suffixes for years and months
+        $timePhrase = '';
+        if (!empty($years)) {
+            $timePhrase = ' pada tahun '.$join($years);
+        } else {
+            $timePhrase = ' pada tahun terbaru';
+        }
+        if (!empty($monthNames)) {
+            // Keep it short; show up to first 3 months
+            $mn = count($monthNames) > 3 ? array_slice($monthNames, 0, 3) : $monthNames;
+            $timePhrase .= ', bulan '.$join($mn);
+            if (count($monthNames) > 3) { $timePhrase .= ', dan seterusnya'; }
+        }
+
+        // Main branches
+        if (!empty($modulesLabeled) && !empty($wilayahNames)) {
+            $modStr = $join($modulesLabeled);
+            $wilSubset = count($wilayahNames) > 2 ? array_slice($wilayahNames, 0, 2) : $wilayahNames;
+            $wilStr = $join($wilSubset);
+            if (count($wilayahNames) > 2) { $wilStr .= ', dan lainnya'; }
+            return "Baik, saya menemukan data untuk modul {$modStr} di wilayah {$wilStr}{$timePhrase}. Apakah Anda ingin saya tampilkan hasilnya sekarang?";
+        }
+
+        if (empty($modulesLabeled) && !empty($wilayahNames)) {
+            $wilSubset = count($wilayahNames) > 2 ? array_slice($wilayahNames, 0, 2) : $wilayahNames;
+            $wilStr = $join($wilSubset);
+            if (count($wilayahNames) > 2) { $wilStr .= ', dan lainnya'; }
+            return "Saya mendeteksi wilayah {$wilStr}. Modul apa yang Anda maksud? (Lahan, Benih & Pupuk, atau Iklim & OPT DPI)";
+        }
+
+        if (!empty($modulesLabeled) && empty($wilayahNames)) {
+            $modStr = $join($modulesLabeled);
+            if (count($modulesLabeled) === 1) {
+                return "Untuk modul {$modStr}, wilayah mana yang Anda inginkan? Anda bisa sebutkan provinsi atau kabupaten/kota.";
+            }
+            return "Saya mendeteksi modul {$modStr}. Modul mana yang ingin digunakan, dan di wilayah apa?";
+        }
+
+        // Fallback gentle prompt (more natural per requirements)
+        return 'Saya belum menemukan data spesifik dari pertanyaan Anda, tapi saya bisa bantu mencari data pertanian berdasarkan modul Lahan, Benih & Pupuk, atau Iklim & OPT DPI.';
+    }
+
+    /**
      * Internal static cache so repeated calls don't rebuild the map.
      * @var array<string,array<string,string>>
      */

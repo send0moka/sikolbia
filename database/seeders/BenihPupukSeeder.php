@@ -159,7 +159,7 @@ class BenihPupukSeeder extends Seeder
 
     private function seedData(): void
     {
-        $this->info('Generating comprehensive benih pupuk data (2014-2025, all variables, all regions)...');
+        $this->info('Generating comprehensive benih pupuk data (2020-2024, all variables, all regions)...');
         
         $data = [];
         $now = Carbon::now();
@@ -208,7 +208,8 @@ class BenihPupukSeeder extends Seeder
         $bulanIds = range(1, 13);
 
         // Generate data for each year, month, region, variable, and classification
-        for ($tahun = 2014; $tahun <= 2025; $tahun++) {
+        // Limited to years 2020-2024 per performance requirement
+        for ($tahun = 2020; $tahun <= 2024; $tahun++) {
             foreach ($bulanIds as $bulanId) {
                 foreach ($regionIds as $regionId) {
                     foreach ($variabelKlasifikasiData as $variabelId => $klasifikasiIds) {
