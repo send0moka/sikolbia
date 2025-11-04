@@ -72,6 +72,14 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
+        // Dedicated channel for orchestrator metrics and traces
+        'orchestrator' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/orchestrator.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
 
         'slack' => [
             'driver' => 'slack',

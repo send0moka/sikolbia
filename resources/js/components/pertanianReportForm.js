@@ -16,10 +16,11 @@ export default function pertanianReportForm(config) {
                     // Auto-scroll chat on open and when messages change
                     this.$watch('chatOpen', (open) => {
                         if (open) {
-                            // If conversation empty or has no interactive bubble, reset to guided welcome
-                            const hasInteractive = Array.isArray(this.conversation) && this.conversation.some(c => c && (c.type === 'options' || c.type === 'checklist'));
-                            if (!this.conversation || this.conversation.length === 0 || !hasInteractive) {
+                            // Onboarding: show guided wizard only once when the chat is first opened
+                            if (!this.didOnboardingGuided) {
+                                this.switchChatMode('guided', { silent: true });
                                 this.resetGuidedChat();
+                                this.didOnboardingGuided = true;
                             }
                             this.$nextTick(() => this.scrollChatToBottom());
                         }
@@ -39,8 +40,7 @@ export default function pertanianReportForm(config) {
                     // Equalize Wilayah container height with layout container
                     this.$nextTick(() => this.setupHeightSync());
 
-                    // Initialize guided chatbot flow
-                    this.resetGuidedChat();
+                    // Do not auto-start guided here; onboarding handled when chat opens
                 },
 
                 // Form state
@@ -73,10 +73,22 @@ export default function pertanianReportForm(config) {
                 selectedResultIndex: null,
                 // ChatBot state
                 chatOpen: false,
+                // Chat mode routing: 'natural' | 'structured' | 'guided'
+                chatMode: 'natural',
+                // One-time onboarding: show guided wizard only once when chat is opened
+                didOnboardingGuided: false,
+                // Prevent repeated guided fallback on unknown intent
+                guidedFallbackShown: false,
                 isLoading: false,
                 userMessage: '',
                 conversation: [],
+                // When natural reply contains structured suggestion, hold it until user confirms via text
+                pendingStructured: false,
+                // Pending typed clarifications (no bubbles), e.g., { type:'klasifikasi', candidates:[{id,nama}], module, variableId }
+                pendingPrompt: null,
                 showChatResetConfirm: false,
+                // Compact mode: minimize bubbles, avoid option prompts in natural/structured
+                compactChat: true,
                 // Help modal visibility
                 showHelp: false,
                 // Help modal active tab (persist while page active)
@@ -179,7 +191,7 @@ export default function pertanianReportForm(config) {
             resetGuidedChat() {
                 this.wizard = { step: 'module', moduleType: null, topikId: null, variabelId: null, klasifikasiIds: [], tahunIds: [], bulanIds: [], provinsiIds: [], kabupatenIds: [] };
                 this.conversation = [
-                    { sender: 'bot', type: 'text', text: 'Selamat datang! Data apa yang ingin Anda cari?' },
+                    { sender: 'bot', type: 'text', text: this.sanitizeHtml('Saya bisa bantu mencari data <strong>Lahan</strong>, <strong>Benih & Pupuk</strong>, atau <strong>Iklim & OPT DPI</strong>. Mau mulai dari modulnya?') },
                     { sender: 'bot', type: 'options', title: 'Pilih Modul', options: [
                         { value: 'benih-pupuk', label: 'Benih & Pupuk' },
                         { value: 'lahan', label: 'Lahan' },
@@ -283,7 +295,12 @@ export default function pertanianReportForm(config) {
                 }
                 // Handle structured search decision buttons
                 if (opt && opt.value === 'use_structured' && this.structuredSuggestion) {
+                    // User picked to use structured result
                     this.conversation.push({ sender:'user', type:'text', text: opt.label || 'Gunakan hasil terstruktur' });
+                    // NEW: add a natural confirmation bubble so the flow feels human
+                    // This acknowledges the user's choice before heavy processing starts
+                    this.conversation.push({ sender:'bot', type:'text', text:'Baik, sedang saya ambilkan datanya...' });
+                    this.$nextTick(()=>this.scrollChatToBottom());
                     await this.applyStructuredSuggestion(null);
                     this.$nextTick(()=>this.scrollChatToBottom());
                     return;
@@ -298,7 +315,11 @@ export default function pertanianReportForm(config) {
                 }
                 // If user is choosing module from structured suggestions
                 if (this.useStructuredAfterModule && opt && opt.value && ['lahan','benih-pupuk','iklim-opt-dpi'].includes(opt.value)) {
+                    // User chose a specific module stemming from structured suggestion
                     this.conversation.push({ sender:'user', type:'text', text: opt.label || opt.value });
+                    // NEW: confirm naturally before applying the structured plan
+                    this.conversation.push({ sender:'bot', type:'text', text:'Baik, sedang saya ambilkan datanya...' });
+                    this.$nextTick(()=>this.scrollChatToBottom());
                     await this.applyStructuredSuggestion(opt.value);
                     this.useStructuredAfterModule = false;
                     this.$nextTick(()=>this.scrollChatToBottom());
@@ -330,8 +351,8 @@ export default function pertanianReportForm(config) {
                             const nama = varObj.nama || 'Variabel';
                             const satuan = varObj.satuan ? ` (${varObj.satuan})` : '';
                             const desc = varObj.deskripsi || varObj.keterangan || 'Deskripsi tidak tersedia.';
-                            const html = `<div><div><strong>Variabel:</strong> ${nama}${satuan}</div><div class="mt-1 text-neutral-700">${desc}</div></div>`;
-                            this.conversation.push({ sender:'bot', type:'text', text: html });
+                            const html = `<div><div><strong>Variabel:</strong> ${nama}${satuan}</div><div class=\"mt-1 text-neutral-700\">${desc}</div></div>`;
+                            this.conversation.push({ sender:'bot', type:'text', text: this.sanitizeHtml(html) });
                         }
                     } catch(_) { /* noop */ }
                     this.loadWizardKlasifikasis();
@@ -401,6 +422,32 @@ export default function pertanianReportForm(config) {
             getCsrfToken() {
                 try { return (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')) || ''; } catch (_) { return ''; }
             },
+            // Basic HTML sanitizer (allow simple inline formatting; strip scripts and event handlers)
+            sanitizeHtml(input) {
+                try {
+                    const allowedTags = new Set(['b','i','em','strong','u','br','ul','ol','li','p','span','div']);
+                    const allowedAttrs = new Set(['class']);
+                    const tpl = document.createElement('template');
+                    tpl.innerHTML = String(input || '');
+                    const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_ELEMENT, null);
+                    const toRemove = [];
+                    while (walker.nextNode()) {
+                        const el = walker.currentNode;
+                        const tag = (el.tagName || '').toLowerCase();
+                        if (!allowedTags.has(tag)) { toRemove.push(el); continue; }
+                        // Strip event handlers and javascript: URLs
+                        for (const attr of Array.from(el.attributes || [])) {
+                            const name = attr.name.toLowerCase();
+                            const val = String(attr.value || '');
+                            if (!allowedAttrs.has(name) || /^on/i.test(name) || /^javascript:/i.test(val)) {
+                                el.removeAttribute(attr.name);
+                            }
+                        }
+                    }
+                    for (const n of toRemove) { n.replaceWith(document.createTextNode(n.textContent || '')); }
+                    return tpl.innerHTML;
+                } catch (_) { return String(input || ''); }
+            },
             async parseJsonOrText(res) {
                 const ct = res.headers.get('content-type') || '';
                 if (ct.includes('application/json')) {
@@ -410,11 +457,35 @@ export default function pertanianReportForm(config) {
                 // Surface first chars of HTML/text to user for easier debugging
                 throw new Error(txt?.slice(0, 200) || 'Non-JSON response');
             },
-            async applyStructuredSuggestion(moduleChoice) {
+            async applyStructuredSuggestion(moduleChoice, options = {}) {
                 try {
+                    const forceCompact = !!(options && options.forceCompact);
                     const s = this.structuredSuggestion || {};
                     const mods = Array.isArray(s.modules) ? s.modules : [];
-                    const chosenModule = moduleChoice || (mods.length ? mods[0] : (this.wizard.moduleType || this.moduleType));
+                    // Prefer module explicitly mentioned in the user's text over the first suggestion
+                    const detectExplicitModule = (txt) => {
+                        const t = String(txt || '').toLowerCase();
+                        if (/(benih|pupuk)/i.test(t)) return 'benih-pupuk';
+                        if (/(iklim|\bopt\b|\bdpi\b|hujan|curah)/i.test(t)) return 'iklim-opt-dpi';
+                        if (/(lahan|sawah|panen|kebun)/i.test(t)) return 'lahan';
+                        return null;
+                    };
+                    const detectExplicitTopik = (txt) => {
+                        const t = String(txt || '').toLowerCase();
+                        if (/\bpupuk\b|\b(urea|npk|za|kcl)\b/i.test(t)) return 'pupuk';
+                        if (/\bbenih\b|sebar/i.test(t)) return 'benih';
+                        return null;
+                    };
+                    let chosenModule = moduleChoice || null;
+                    if (!chosenModule) {
+                        const explicit = detectExplicitModule(s.query);
+                        if (explicit && mods.includes(explicit)) {
+                            chosenModule = explicit;
+                        }
+                    }
+                    if (!chosenModule) {
+                        chosenModule = (mods.length ? mods[0] : (this.wizard.moduleType || this.moduleType));
+                    }
                     if (!chosenModule) {
                         this.conversation.push({ sender:'bot', type:'text', text:'Tidak ada modul yang terdeteksi dari pencarian terstruktur.' });
                         return;
@@ -443,8 +514,51 @@ export default function pertanianReportForm(config) {
                     }
                     this.wizard.kabupatenIds = [];
 
+                    // Topik selection per module using backend topik hints
+                    await this.ensureModuleData(chosenModule);
+                    const topiks = this.wizardData.topiks || [];
+                    let topikId = null;
+                    const topikHintsByModule = (s.topik_hint_by_module && typeof s.topik_hint_by_module === 'object') ? s.topik_hint_by_module : {};
+                    let topikHint = null;
+                    if (chosenModule === 'benih-pupuk') {
+                        // Prefer backend hint; fallback to explicit token detection in query
+                        topikHint = (typeof s.topik_hint === 'string' && s.topik_hint) ? s.topik_hint : detectExplicitTopik(s.query);
+                    } else if (chosenModule === 'iklim-opt-dpi') {
+                        // Use backend module-specific hint if present
+                        topikHint = topikHintsByModule['iklim-opt-dpi'] || null;
+                        // Light fallback from query tokens if absent
+                        if (!topikHint) {
+                            const t = String(s.query||'').toLowerCase();
+                            if (/(curah|hujan|suhu|kelembaban|penyinaran)/i.test(t)) topikHint = 'iklim';
+                            else if (/(banjir|kekeringan|puso|terkena|terdampak)/i.test(t)) topikHint = 'dpi';
+                            else if (/(\bopt\b|organisme pengganggu|hama|penyakit)/i.test(t)) topikHint = 'opt';
+                        }
+                    } else if (chosenModule === 'lahan') {
+                        // Single topik in schema (e.g., 'Luas Lahan') – pick it if available
+                        topikHint = topikHintsByModule['lahan'] || 'lahan';
+                    }
+                    if (topikHint) {
+                        const match = topiks.find(tp => String(tp.nama||'').toLowerCase().includes(String(topikHint)));
+                        if (match) topikId = match.id;
+                    }
+                    if (!topikId && topiks.length === 1) {
+                        // If only one topik exists, select it by default
+                        topikId = topiks[0].id;
+                    }
+                    if (topikId) {
+                        this.wizard.topikId = topikId;
+                        await this.ensureVariabels(chosenModule, topikId);
+                    }
+
                     // Pick best-matching variabel by query token overlap; prioritize tokens present in the query (e.g., 'jagung')
-                    const varsForModule = (s.variabel_hits && s.variabel_hits[chosenModule]) ? s.variabel_hits[chosenModule] : [];
+                    let varsForModule = (s.variabel_hits && s.variabel_hits[chosenModule]) ? s.variabel_hits[chosenModule] : [];
+                    // If a topik is selected and we have the module's full list for that topik, prefer that list
+                    if (this.wizard.topikId) {
+                        const listByTopik = this.wizardData.variabelsByTopik[String(this.wizard.topikId)] || [];
+                        if (Array.isArray(listByTopik) && listByTopik.length) {
+                            varsForModule = listByTopik.map(v => ({ id: v.id, nama: v.nama, topik_id: this.wizard.topikId }));
+                        }
+                    }
                     let pickedVar = null;
                     if (Array.isArray(varsForModule) && varsForModule.length) {
                         const qTokens = String(s.query || '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(t=>t && t.length>=3);
@@ -458,22 +572,78 @@ export default function pertanianReportForm(config) {
                     }
                     if (pickedVar && pickedVar.id) {
                         this.wizard.variabelId = pickedVar.id;
-                        await this.ensureKlasifikasis(chosenModule, pickedVar.id);
-                        const klasList = this.wizardData.klasifikasisByVariabel[String(pickedVar.id)] || [];
-                        this.wizard.klasifikasiIds = klasList.map(k => k.id);
-                    } else {
-                        // If we couldn't infer a variable, fall back to guided variable pick
-                        this.conversation.push({ sender:'bot', type:'text', text:'Tidak menemukan variabel yang cocok dari pencarian. Silakan pilih variabel.' });
-                        await this.ensureModuleData(chosenModule);
-                        // If we have at least one topik, ask user to choose variabel via wizard
-                        const topiks = this.wizardData.topiks || [];
-                        if (topiks.length) {
-                            this.wizard.topikId = topiks[0].id;
+                        // If variabel contains topik_id info and no topik chosen yet, align topik
+                        if (!this.wizard.topikId && pickedVar.topik_id) {
+                            this.wizard.topikId = pickedVar.topik_id;
                             await this.ensureVariabels(chosenModule, this.wizard.topikId);
-                            this.loadWizardVariabels();
-                            this.wizard.step = 'variabel';
+                        }
+                        await this.ensureKlasifikasis(chosenModule, pickedVar.id);
+                        let klasList = this.wizardData.klasifikasisByVariabel[String(pickedVar.id)] || [];
+                        // If user mentions specific klasifikasi in the query, filter to those
+                        const ql = String(s.query || '').toLowerCase();
+                        const wanted = [];
+                        if (/hibrida/i.test(ql)) wanted.push('hibrida');
+                        if (/komposit/i.test(ql)) wanted.push('komposit');
+                        if (wanted.length) {
+                            const subset = klasList.filter(k => wanted.some(w => String(k.nama||'').toLowerCase().includes(w)));
+                            if (subset.length) klasList = subset;
+                        }
+                        // If user didn't specify and multiple klasifikasi exist, ask via typed clarification (no bubbles)
+                        if (!wanted.length && Array.isArray(klasList) && klasList.length > 1) {
+                            // Ensure months and other slots are prepared so we can finish right after reply
+                            if (chosenModule !== 'lahan') {
+                                const monthIds = Array.isArray(s.months) ? s.months.map(m=>parseInt(m.id,10)).filter(n=>n>=1 && n<=12) : [];
+                                if (monthIds.length) {
+                                    this.wizard.bulanIds = monthIds.slice(0,12);
+                                } else {
+                                    const preferDefault = this.compactChat || this.pendingStructured || forceCompact;
+                                    if (preferDefault) {
+                                        const bulans = this.wizardData.bulans || [];
+                                        this.wizard.bulanIds = bulans.map(b => b.id);
+                                    } else {
+                                        this.wizard.step = 'waktu_bulan';
+                                        this.loadWizardBulans();
+                                        this.structuredSuggestion = null;
+                                        return;
+                                    }
+                                }
+                            }
+                            // Ask user to type the klasifikasi name(s)
+                            this.pendingPrompt = { type:'klasifikasi', candidates: (klasList||[]).map(k=>({id:k.id, nama:k.nama})), module: chosenModule, variableId: pickedVar.id };
+                            const names = (klasList||[]).map(k=>k.nama).join(', ');
+                            this.conversation.push({ sender:'bot', type:'text', text:`Klasifikasi apa yang Anda inginkan? Ketik salah satu atau lebih: ${names}.` });
                             this.structuredSuggestion = null;
                             return;
+                        }
+                        this.wizard.klasifikasiIds = klasList.map(k => k.id);
+                        // Compact clarification (no bubbles): summarize inferred variable/klasifikasi
+                        const klasNames = (klasList||[]).map(k=>k.nama).filter(Boolean);
+                        const varName = String(pickedVar.nama||'');
+                        if (this.compactChat) {
+                            const klasText = klasNames.length ? `; klasifikasi: ${klasNames.join(', ')}` : '';
+                            this.conversation.push({ sender:'bot', type:'text', text:`Saya gunakan variabel: ${varName}${klasText}. Ketik nama variabel/klasifikasi bila ingin diubah.` });
+                        }
+                    } else {
+                        // If we couldn't infer a variable
+                        if (this.compactChat || this.pendingStructured || forceCompact) {
+                            // Stay compact: avoid option bubbles; ask user in-text
+                            this.conversation.push({ sender:'bot', type:'text', text:'Saya belum menemukan variabel yang dimaksud dari kalimat tersebut. Sebutkan nama variabelnya (mis. "Benih Jagung"), nanti saya tampilkan.' });
+                            // Do not switch into wizard steps here to keep flow natural/compact
+                            this.structuredSuggestion = null;
+                            return;
+                        } else {
+                            // Non-compact: fall back to guided variable pick
+                            this.conversation.push({ sender:'bot', type:'text', text:'Tidak menemukan variabel yang cocok dari pencarian. Silakan pilih variabel.' });
+                            await this.ensureModuleData(chosenModule);
+                            const topiks = this.wizardData.topiks || [];
+                            if (topiks.length) {
+                                this.wizard.topikId = topiks[0].id;
+                                await this.ensureVariabels(chosenModule, this.wizard.topikId);
+                                this.loadWizardVariabels();
+                                this.wizard.step = 'variabel';
+                                this.structuredSuggestion = null;
+                                return;
+                            }
                         }
                     }
 
@@ -483,11 +653,18 @@ export default function pertanianReportForm(config) {
                         if (monthIds.length) {
                             this.wizard.bulanIds = monthIds.slice(0,12);
                         } else {
-                            // Ask months explicitly
-                            this.wizard.step = 'waktu_bulan';
-                            this.loadWizardBulans();
-                            this.structuredSuggestion = null;
-                            return;
+                            // Compact default: pick all months to avoid extra bubbles
+                            const preferDefault = this.compactChat || this.pendingStructured || forceCompact;
+                            if (preferDefault) {
+                                const bulans = this.wizardData.bulans || [];
+                                this.wizard.bulanIds = bulans.map(b => b.id);
+                            } else {
+                                // Ask months explicitly (non-compact)
+                                this.wizard.step = 'waktu_bulan';
+                                this.loadWizardBulans();
+                                this.structuredSuggestion = null;
+                                return;
+                            }
                         }
                     }
 
@@ -737,7 +914,15 @@ export default function pertanianReportForm(config) {
                     const data = await this.parseJsonOrText(res);
                     if (!res.ok) throw new Error(data?.message || 'Gagal memuat pratinjau');
                     // Build minimal meta text for preview
-                    const topikObj = (this.wizardData.topiks || []).find(t => String(t.id) === String(this.wizard.topikId));
+                    let topikObj = (this.wizardData.topiks || []).find(t => String(t.id) === String(this.wizard.topikId));
+                    if (!topikObj && this.wizard.moduleType === 'benih-pupuk') {
+                        // Derive topik by variable or hint when missing
+                        const explicitTopik = /\b(pupuk)\b/i.test(String(this.structuredSuggestion?.query||'')) ? 'pupuk' : (/\b(benih)\b|sebar/i.test(String(this.structuredSuggestion?.query||'')) ? 'benih' : null);
+                        if (explicitTopik) {
+                            const tps = this.wizardData.topiks || [];
+                            topikObj = tps.find(tp => String(tp.nama||'').toLowerCase().includes(explicitTopik));
+                        }
+                    }
                     const variabelList = this.wizardData.variabelsByTopik[String(this.wizard.topikId)] || [];
                     const varObj = variabelList.find(v => String(v.id) === String(this.wizard.variabelId));
                     const klasList = (this.wizardData.klasifikasisByVariabel[String(this.wizard.variabelId)] || [])
@@ -750,12 +935,16 @@ export default function pertanianReportForm(config) {
                             variabel: varObj ? (varObj.nama + (varObj.satuan ? ` (${varObj.satuan})` : '')) : null,
                             klasifikasi: klasList.length ? klasList.join(', ') : null,
                     };
-                    // Ask user which preview style they want
-                    this.conversation.push({ sender:'bot', type:'options', title:'Tampilkan hasil sebagai?', options:[
-                        { value:'table', label:'Tabel' }, { value:'summary', label:'Ringkasan' }
-                    ]});
+                    // Always show summary only (compact assistant behavior)
                     this.wizard._pendingPreview = { results: tablePayload, meta, selections, config, moduleType: this.wizard.moduleType };
-                    this.wizard.step = 'choose_preview_style';
+                    const lines = this.buildSummaryLines(tablePayload);
+                    this.conversation.push({ sender:'bot', type:'summary', title:'Ringkasan', summaryLines: lines, meta, payload: this.wizard._pendingPreview });
+                    this.wizard.step = 'preview';
+                    // Ask (typed) whether user wants a tutorial to find full table on module page
+                    const modSlug = this.wizard.moduleType;
+                    const labelMod = meta.module || modSlug;
+                    this.pendingPrompt = { type:'tutorial', module: modSlug, preview: this.wizard._pendingPreview };
+                    this.renderBotText(`Perlu panduan mencari tabel lengkap di halaman ${labelMod}? Ketik "ya" untuk pandu, atau ketik bebas untuk lanjut.`);
                 } catch (e) {
                     this.conversation.push({ sender:'bot', type:'text', text: 'Gagal memuat pratinjau: ' + (e.message || e) });
                 } finally {
@@ -766,18 +955,14 @@ export default function pertanianReportForm(config) {
             // After choosing a preview style, render it
             presentPreview(style) {
                 const pend = this.wizard._pendingPreview; if (!pend) return;
-                if (style === 'table') {
-                    this.conversation.push({ sender:'bot', type:'table', title:'Pratinjau Hasil', results: pend.results, meta: pend.meta, payload: pend });
-                } else {
-                    const lines = this.buildSummaryLines(pend.results);
-                    this.conversation.push({ sender:'bot', type:'summary', title:'Ringkasan', summaryLines: lines, meta: pend.meta, payload: pend });
-                }
+                // Force summary always
+                const lines = this.buildSummaryLines(pend.results);
+                this.conversation.push({ sender:'bot', type:'summary', title:'Ringkasan', summaryLines: lines, meta: pend.meta, payload: pend });
                 this.wizard.step = 'preview';
-                    this.conversation.push({ sender:'bot', type:'options', title:'Ingin dibantu lagi?', options:[
-                        { value: 'yes', label: 'Ya, lanjut pandu' },
-                        { value: 'no', label: 'Tidak, saya ketik saja' },
-                    ]});
-                    this.wizard.step = 'post_preview_help';
+                // After summary, ask for tutorial via typed confirmation
+                this.pendingPrompt = { type:'tutorial', module: pend.moduleType || (this.wizard.moduleType), preview: pend };
+                const labelMod = (pend.meta?.module) || (this.wizard.moduleType?.replace('benih-pupuk','Benih & Pupuk')?.replace('iklim-opt-dpi','Iklim & OPT DPI')?.replace('lahan','Lahan'));
+                this.renderBotText(`Perlu panduan mencari tabel lengkap di halaman ${labelMod}? Ketik "ya" untuk pandu, atau ketik bebas untuk lanjut.`);
             },
             showAsTable(chat) {
                 if (chat && chat.type === 'summary') {
@@ -806,6 +991,33 @@ export default function pertanianReportForm(config) {
                 if (!lines.length) lines.push('Tidak ada data untuk diringkas.');
                 return lines;
             },
+            buildTutorialText(moduleSlug, pend) {
+                try {
+                    const labelMod = (pend?.meta?.module) || (String(moduleSlug||'').replace('benih-pupuk','Benih & Pupuk').replace('iklim-opt-dpi','Iklim & OPT DPI').replace('lahan','Lahan'));
+                    const url = `/pertanian/${moduleSlug}`;
+                    const meta = pend?.meta || {};
+                    const sel = pend?.selections?.[0] || {};
+                    const cfg = pend?.config || {};
+                    const wilayahNames = (pend?.results?.rows||[]).slice(0,3).map(r=>r.wilayah).filter(Boolean);
+                    const wilayahText = wilayahNames.length ? wilayahNames.join(', ') + ( (pend?.results?.rows||[]).length>3 ? ', dan lainnya' : '' ) : 'sesuai pratinjau';
+                    const tahun = (sel.tahun_ids && sel.tahun_ids.length) ? sel.tahun_ids.join(', ') : (sel.tahuns && sel.tahuns.length ? sel.tahuns.join(', ') : 'terbaru');
+                    const bulanIds = Array.isArray(sel.bulan_ids) ? sel.bulan_ids : [];
+                    const bulanText = bulanIds.length ? 'semua bulan yang tersedia' : (moduleSlug==='lahan' ? '(tidak bulanan)' : 'semua bulan');
+                    const steps = [
+                        `Buka halaman ${labelMod}: <a href="${url}" target="_blank" rel="noopener">${url}</a>`,
+                        `Pilih modul: ${labelMod}`,
+                        meta.topik ? `Pilih topik: ${meta.topik}` : null,
+                        meta.variabel ? `Pilih variabel: ${meta.variabel}` : null,
+                        meta.klasifikasi ? `Centang klasifikasi: ${meta.klasifikasi}` : 'Centang klasifikasi yang diinginkan',
+                        `Pilih tahun: ${tahun}`,
+                        moduleSlug!=='lahan' ? `Pilih bulan: ${bulanText}` : null,
+                        `Pilih wilayah: ${wilayahText}`,
+                        `Atur tata letak tabel: ${cfg.tata_letak || 'tipe_1'}`,
+                        `Tekan Tampilkan untuk melihat tabel lengkap.`
+                    ].filter(Boolean);
+                    return `Tutorial singkat membuka tabel lengkap:\n- ` + steps.join('\n- ');
+                } catch(_) { return 'Tutorial tidak tersedia saat ini.'; }
+            },
             saveWizardResult(chat) {
                 const payload = chat?.payload; if (!payload) return;
                 const results = chat?.results || chat?.payload?.results || { headers: [], rows: [] };
@@ -823,12 +1035,6 @@ export default function pertanianReportForm(config) {
                 this.storedResults.push(stored);
                 this.selectedResultIndex = this.storedResults.length - 1;
                 this.conversation.push({ sender:'bot', type:'text', text: 'Hasil disimpan ke panel. Anda dapat membuka tab Tabel/Grafik untuk melihat lebih lengkap.' });
-                // Offer to continue guided assistance
-                this.conversation.push({ sender:'bot', type:'options', title:'Ingin dibantu lagi?', options:[
-                    { value: 'yes', label: 'Ya, lanjut pandu' },
-                    { value: 'no', label: 'Tidak, saya ketik saja' },
-                ]});
-                this.wizard.step = 'post_preview_help';
             },
             
                 // Methods
@@ -1247,102 +1453,297 @@ export default function pertanianReportForm(config) {
                 initChartResizeHandlerOnce: (function() { let initialized = false; return function() { if (!initialized) { initialized = true; window.addEventListener('resize', () => { this.renderChart(); }); } }; })(),
                 
                 // ChatBot Methods
+                renderBotText(text) {
+                    this.conversation.push({ sender: 'bot', type: 'text', text: this.sanitizeHtml(String(text || '')) });
+                },
+                switchChatMode(mode, { silent = false } = {}) {
+                    const m = String(mode || '').toLowerCase();
+                    if (!['natural','structured','guided'].includes(m)) return;
+                    this.chatMode = m;
+                    if (!silent) {
+                        const label = m === 'natural' ? 'chat bebas' : (m === 'structured' ? 'pencarian terstruktur' : 'pandu');
+                        this.renderBotText(`Mode diubah ke ${label}.`);
+                    }
+                    // If switching to guided, ensure the wizard has a prompt on screen
+                    if (m === 'guided' && (!this.conversation || this.conversation.length === 0)) {
+                        this.resetGuidedChat();
+                    }
+                    this.$nextTick(() => this.scrollChatToBottom());
+                },
+                async rePromptCurrentStep() {
+                    try {
+                        const step = this.wizard.step;
+                        if (step === 'module') {
+                            this.conversation.push({ sender:'bot', type:'options', title:'Pilih Modul', options:[
+                                { value:'benih-pupuk', label:'Benih & Pupuk' },
+                                { value:'lahan', label:'Lahan' },
+                                { value:'iklim-opt-dpi', label:'Iklim & OPT DPI' },
+                            ]});
+                        } else if (step === 'topik') {
+                            await this.ensureModuleData(this.wizard.moduleType || this.moduleType);
+                            this.loadWizardTopiks();
+                        } else if (step === 'variabel') {
+                            await this.ensureVariabels(this.wizard.moduleType || this.moduleType, this.wizard.topikId);
+                            this.loadWizardVariabels();
+                        } else if (step === 'klasifikasi') {
+                            await this.ensureKlasifikasis(this.wizard.moduleType || this.moduleType, this.wizard.variabelId);
+                            this.loadWizardKlasifikasis();
+                        } else if (step === 'waktu_tahun') {
+                            this.askYears();
+                        } else if (step === 'waktu_bulan_choice') {
+                            this.loadWizardBulans();
+                        } else if (step === 'waktu_bulan') {
+                            this.renderBulanChecklist();
+                        } else if (step === 'wilayah_level') {
+                            this.askWilayah();
+                        } else if (step === 'wilayah_provinsi') {
+                            await this.ensureWilayahs();
+                            this.askProvinces();
+                        } else if (step === 'wilayah_pilih_provinsi') {
+                            await this.ensureWilayahs();
+                            this.askProvinces(true);
+                        } else if (step === 'wilayah_kabupaten') {
+                            await this.ensureWilayahs();
+                            const provId = (this.wizard.provinsiIds && this.wizard.provinsiIds[0]) || this.selectedProvinsiId;
+                            if (provId) this.askKabupaten(provId);
+                        } else if (step === 'choose_preview_style') {
+                            // We no longer offer style options; always show summary
+                            this.presentPreview('summary');
+                        } else if (step === 'preview' || step === 'post_preview_help') {
+                            // After summary we ask for tutorial via typed prompt elsewhere; nothing to re-prompt here
+                        } else {
+                            // Default: restart guided prompt
+                            this.resetGuidedChat();
+                        }
+                    } finally {
+                        this.$nextTick(() => this.scrollChatToBottom());
+                    }
+                },
+                async handleNaturalMessage(messageToSend) {
+                    // Intercept pending typed clarifications first
+                    if (this.pendingPrompt && this.pendingPrompt.type === 'klasifikasi') {
+                        const raw = String(messageToSend||'');
+                        const lower = raw.toLowerCase();
+                        const cand = Array.isArray(this.pendingPrompt.candidates)?this.pendingPrompt.candidates:[];
+                        const matched = cand.filter(k => lower.includes(String(k.nama||'').toLowerCase()));
+                        if (!matched.length) {
+                            this.renderBotText('Saya belum mengenali klasifikasi dari teks tersebut. Ketik salah satu nama klasifikasi yang ada.');
+                            return;
+                        }
+                        this.wizard.klasifikasiIds = matched.map(k=>k.id);
+                        this.pendingPrompt = null;
+                        // Proceed to preview now that klasifikasi chosen
+                        await this.finishPreview();
+                        return;
+                    }
+                    // Intercept tutorial confirmation
+                    if (this.pendingPrompt && this.pendingPrompt.type === 'tutorial') {
+                        const raw = String(messageToSend||'');
+                        const l = raw.trim().toLowerCase();
+                        const yes = /^(ya|iya|ok|oke|baik|lanjut|mau|boleh|yes|y)$/i.test(l);
+                        const no  = /^(tidak|ga|gak|nggak|enggak|no|n|skip|nanti)$/i.test(l);
+                        const pend = this.pendingPrompt.preview;
+                        const mod = this.pendingPrompt.module;
+                        this.pendingPrompt = null;
+                        if (yes) {
+                            this.renderBotText(this.buildTutorialText(mod, pend));
+                            return;
+                        }
+                        if (no) {
+                            this.renderBotText('Baik, lanjutkan chat bebas.');
+                            return;
+                        }
+                        // neither yes nor no: continue as normal
+                    }
+                    // If user confirms to show results and we have a pending structured plan, execute it directly
+                    const raw = String(messageToSend || '');
+                    const txtLower = raw.trim().toLowerCase();
+                    if (this.pendingStructured && /\b(tampilkan|ya tampilkan|ok tampilkan|silakan tampilkan|tolong tampilkan)\b/i.test(txtLower)) {
+                        this.pendingStructured = false;
+                        // Acknowledge and run structured suggestion
+                        this.renderBotText('Baik, sedang saya ambilkan datanya...');
+                        try { await this.applyStructuredSuggestion(null); } catch(_) {}
+                        this.$nextTick(() => this.scrollChatToBottom());
+                        return;
+                    }
+                    this.isLoading = true;
+                    try {
+                        const csrfEl = typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]') : null;
+                        const csrf = csrfEl ? csrfEl.getAttribute('content') : null;
+                        const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+                        if (csrf) headers['X-CSRF-TOKEN'] = csrf;
+                        const response = await fetch('/api/chatbot', { method: 'POST', headers, body: JSON.stringify({ message: messageToSend, mode: 'natural' }) });
+                        if (!response.ok) throw new Error('Gagal merespons.');
+                        const data = await response.json();
+                        const baseReply = data.reply || data.error || 'Maaf, terjadi kesalahan.';
+                        let reply = baseReply;
+                        const intent = data && typeof data === 'object' ? (data.intent || null) : null;
+                        let hasSignals = false;
+                        // If structured suggestion exists, do NOT show options bubble in natural mode.
+                        // Instead, set a pending flag and guide the user with a concise line.
+                        if (data && data.structured && typeof data.structured === 'object') {
+                            this.structuredSuggestion = data.structured;
+                            const s = this.structuredSuggestion || {};
+                            hasSignals = (Array.isArray(s.modules) && s.modules.length) || (Array.isArray(s.wilayah_hits) && s.wilayah_hits.length) || (Array.isArray(s.years) && s.years.length);
+                            if (hasSignals) {
+                                this.pendingStructured = true;
+                                if (this.compactChat) {
+                                    reply = `${baseReply} — Ketik \"ya tampilkan\" untuk menampilkan, atau lanjutkan chat bebas.`;
+                                } else {
+                                    this.renderBotText(baseReply);
+                                    this.renderBotText('Ketik "ya tampilkan" bila ingin saya ambilkan hasilnya sekarang, atau lanjutkan chat bebas.');
+                                    this.$nextTick(() => this.scrollChatToBottom());
+                                    return;
+                                }
+                            }
+                        }
+                        // Fallback gating: when backend intent is 'unknown' and no strong structured signals, show guided inline
+                        if (intent === 'unknown' && !hasSignals && !this.guidedFallbackShown) {
+                            this.guidedFallbackShown = true;
+                            this.switchChatMode('guided', { silent: true });
+                            this.startGuidedInline();
+                            this.$nextTick(() => this.scrollChatToBottom());
+                            return;
+                        }
+                        this.renderBotText(reply);
+                    } catch (error) {
+                        const msg = (error && error.message) ? String(error.message) : 'Maaf, terjadi kesalahan.';
+                        this.renderBotText(msg);
+                    } finally {
+                        this.isLoading = false;
+                        this.$nextTick(() => this.scrollChatToBottom());
+                    }
+                },
+                async handleStructuredMessage(messageToSend) {
+                    // Intercept pending typed clarifications first
+                    if (this.pendingPrompt && this.pendingPrompt.type === 'klasifikasi') {
+                        const raw = String(messageToSend||'');
+                        const lower = raw.toLowerCase();
+                        const cand = Array.isArray(this.pendingPrompt.candidates)?this.pendingPrompt.candidates:[];
+                        const matched = cand.filter(k => lower.includes(String(k.nama||'').toLowerCase()));
+                        if (!matched.length) {
+                            this.renderBotText('Saya belum mengenali klasifikasi dari teks tersebut. Ketik salah satu nama klasifikasi yang ada.');
+                            return;
+                        }
+                        this.wizard.klasifikasiIds = matched.map(k=>k.id);
+                        this.pendingPrompt = null;
+                        await this.finishPreview();
+                        return;
+                    }
+                    if (this.pendingPrompt && this.pendingPrompt.type === 'tutorial') {
+                        const raw = String(messageToSend||'');
+                        const l = raw.trim().toLowerCase();
+                        const yes = /^(ya|iya|ok|oke|baik|lanjut|mau|boleh|yes|y)$/i.test(l);
+                        const no  = /^(tidak|ga|gak|nggak|enggak|no|n|skip|nanti)$/i.test(l);
+                        const pend = this.pendingPrompt.preview;
+                        const mod = this.pendingPrompt.module;
+                        this.pendingPrompt = null;
+                        if (yes) {
+                            this.renderBotText(this.buildTutorialText(mod, pend));
+                            return;
+                        }
+                        if (no) {
+                            this.renderBotText('Baik, lanjutkan chat bebas.');
+                            return;
+                        }
+                    }
+                    // If user confirms to show results and we already have a structured suggestion, execute directly
+                    const raw = String(messageToSend || '');
+                    const txtLower = raw.trim().toLowerCase();
+                    if (this.structuredSuggestion && /\b(tampilkan|ya tampilkan|ok tampilkan|silakan tampilkan|tolong tampilkan)\b/i.test(txtLower)) {
+                        this.pendingStructured = false;
+                        this.renderBotText('Baik, sedang saya ambilkan datanya...');
+                        try { await this.applyStructuredSuggestion(null, { forceCompact: true }); } catch(_) {}
+                        this.$nextTick(() => this.scrollChatToBottom());
+                        return;
+                    }
+                    this.isLoading = true;
+                    try {
+                        const csrfEl = typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]') : null;
+                        const csrf = csrfEl ? csrfEl.getAttribute('content') : null;
+                        const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+                        if (csrf) headers['X-CSRF-TOKEN'] = csrf;
+                        const response = await fetch('/api/chatbot', { method: 'POST', headers, body: JSON.stringify({ message: messageToSend, mode: 'structured' }) });
+                        if (!response.ok) throw new Error('Gagal merespons.');
+                        const data = await response.json();
+                        let reply = data.reply || data.error || 'Maaf, terjadi kesalahan.';
+
+                        // Present structured-first options when available
+                        if (data && data.structured && typeof data.structured === 'object') {
+                            this.structuredSuggestion = data.structured;
+                            const s = this.structuredSuggestion || {};
+                            const modules = Array.isArray(s.modules) ? s.modules : [];
+                            const wilayahs = Array.isArray(s.wilayah_hits) ? s.wilayah_hits : [];
+
+                            const labelFor = (m) => {
+                                const mm = String(m||'').toLowerCase();
+                                if (mm === 'benih-pupuk') return 'Benih & Pupuk';
+                                if (mm === 'iklim-opt-dpi') return 'Iklim & OPT DPI';
+                                return 'Lahan';
+                            };
+
+                            if (this.compactChat && (modules.length || wilayahs.length)) {
+                                // Compact: avoid options bubble; provide a single hint and set pending
+                                this.pendingStructured = true;
+                                reply = `${reply} — Ketik \"ya tampilkan\" untuk menampilkan.`;
+                            } else if (modules.length || wilayahs.length) {
+                                // Non-compact structured mode still avoids bubbles per requirement
+                                this.pendingStructured = true;
+                                reply = `${reply} — Ketik \"ya tampilkan\" untuk menampilkan.`;
+                            }
+                        }
+                        this.renderBotText(reply);
+                    } catch (error) {
+                        const msg = (error && error.message) ? String(error.message) : 'Saya belum dapat semua detail. Mau mulai dari modulnya?';
+                        this.renderBotText(msg);
+                        // Do not push options in structured mode
+                    } finally {
+                        this.isLoading = false;
+                        this.$nextTick(() => this.scrollChatToBottom());
+                    }
+                },
+                async handleGuidedFlow(messageToSend) {
+                    // In guided mode, if user types free text (non-command), auto-switch to natural and process it.
+                    const raw = String(messageToSend || '');
+                    const txt = raw.trim().toLowerCase();
+                    if (txt === '') {
+                        await this.rePromptCurrentStep();
+                        return;
+                    }
+                    if (txt === '/bebas' || txt === '/natural') {
+                        this.switchChatMode('natural');
+                        return;
+                    }
+                    if (txt === '/terstruktur' || txt === '/structured') {
+                        this.switchChatMode('structured');
+                        return;
+                    }
+                    // Auto-switch to structured if the text clearly requests to display results,
+                    // otherwise switch to natural. This matches the "ya tampilkan" user phrasing.
+                    const wantsShow = /\b(tampilkan|show|ya tampilkan|ok tampilkan|silakan tampilkan)\b/i.test(txt);
+                    if (wantsShow && this.structuredSuggestion) {
+                        this.switchChatMode('structured', { silent: true });
+                        await this.handleStructuredMessage(raw);
+                    } else {
+                        this.switchChatMode('natural', { silent: true });
+                        await this.handleNaturalMessage(raw);
+                    }
+                },
                 async sendMessage() {
                     if (!this.userMessage.trim()) return;
 
                     // Tambahkan pesan user ke histori & kosongkan input
-                    this.conversation.push({ sender: 'user', text: this.userMessage });
+                    this.conversation.push({ sender: 'user', text: this.sanitizeHtml(this.userMessage) });
                     this.$nextTick(() => this.scrollChatToBottom());
                     const messageToSend = this.userMessage;
                     this.userMessage = '';
-                    this.isLoading = true;
-
-                    try {
-                        // 1) Try structured search first
-                        let structuredOk = false;
-                        try {
-                            const qs = encodeURIComponent(messageToSend);
-                            const sr = await fetch(`/api/structured/search?q=${qs}`, { headers: { 'Accept':'application/json' } });
-                            if (sr.ok) {
-                                const sjson = await sr.json();
-                                const hasSignals = (Array.isArray(sjson.modules) && sjson.modules.length)
-                                    || (Array.isArray(sjson.years) && sjson.years.length)
-                                    || (Array.isArray(sjson.months) && sjson.months.length)
-                                    || (Array.isArray(sjson.wilayah_hits) && sjson.wilayah_hits.length)
-                                    || (sjson.variabel_hits && Object.values(sjson.variabel_hits).some(arr => Array.isArray(arr) && arr.length));
-                                if (hasSignals) {
-                                    structuredOk = true;
-                                    this.structuredSuggestion = sjson;
-                                    // Summarize results to user
-                                    try {
-                                        const modules = (sjson.modules || []).join(', ');
-                                        const years = (sjson.years || []).join(', ');
-                                        const months = (sjson.months || []).map(m => m.nama).slice(0,6).join(', ');
-                                        // Prefer exact wilayah match in summary
-                                        const qLower = String(sjson.query || '').toLowerCase();
-                                        const wilayahList = (sjson.wilayah_hits || []);
-                                        const exact = wilayahList.find(w => qLower.includes(String(w.nama||'').toLowerCase()));
-                                        const wilayahs = exact ? exact.nama : wilayahList.slice(0,3).map(w => w.nama).join(', ');
-                                        // Only show up to 3 variable names for the chosen module to reduce noise
-                                        const chosenMod = (sjson.modules || [])[0];
-                                        const varArr = chosenMod ? ((sjson.variabel_hits||{})[chosenMod]||[]) : [];
-                                        const varPreview = varArr.slice(0,3).map(v=>v.nama).join(', ');
-                                        const lines = [
-                                            modules ? `Modul: ${modules}` : null,
-                                            years ? `Tahun: ${years}` : null,
-                                            months ? `Bulan: ${months}` : null,
-                                            wilayahs ? `Wilayah: ${wilayahs}` : null,
-                                            varPreview ? `Variabel: ${varPreview}` : null,
-                                        ].filter(Boolean).join('\n');
-                                        this.conversation.push({ sender:'bot', type:'text', text: `Hasil pencarian terstruktur:\n${lines}` });
-                                    } catch(_) { /* noop */ }
-
-                                    // Offer next actions depending on module count
-                                    const mods = Array.isArray(this.structuredSuggestion.modules) ? this.structuredSuggestion.modules : [];
-                                    if (mods.length === 1) {
-                                        this.conversation.push({ sender:'bot', type:'options', title:'Gunakan hasil terstruktur?', options:[
-                                            { value:'use_structured', label:'Ya, lanjutkan dengan hasil ini' },
-                                            { value:'skip_structured', label:'Tidak, lanjutkan dengan chatbot' }
-                                        ]});
-                                    } else if (mods.length > 1) {
-                                        // Let user choose a module first, then we apply the rest
-                                        this.useStructuredAfterModule = true;
-                                        this.conversation.push({ sender:'bot', type:'options', title:'Pilih Modul dari hasil terstruktur', options: mods.map(m => ({ value:m, label: m==='benih-pupuk'?'Benih & Pupuk': (m==='iklim-opt-dpi'?'Iklim & OPT DPI': 'Lahan') })) });
-                                    }
-                                    this.$nextTick(()=>this.scrollChatToBottom());
-                                }
-                            }
-                        } catch(err) {
-                            // Log visible error to chat to aid debugging
-                            try { this.conversation.push({ sender:'bot', type:'text', text: 'Pencarian terstruktur gagal, mencoba chatbot...' }); } catch(_) {}
-                        }
-
-                        if (!structuredOk) {
-                            // 2) Fallback to chatbot RAG (guard CSRF header presence)
-                            const csrfEl = typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]') : null;
-                            const csrf = csrfEl ? csrfEl.getAttribute('content') : null;
-                            const headers = {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                            };
-                            if (csrf) headers['X-CSRF-TOKEN'] = csrf;
-                            const response = await fetch('/api/chatbot', {
-                                method: 'POST',
-                                headers,
-                                body: JSON.stringify({ message: messageToSend })
-                            });
-                            if (!response.ok) throw new Error('Gagal merespons.');
-                            const data = await response.json();
-                            this.conversation.push({ sender: 'bot', text: data.reply || data.error || 'Maaf, terjadi kesalahan.' });
-                            this.$nextTick(() => this.scrollChatToBottom());
-                        }
-
-                    } catch (error) {
-                        const msg = (error && error.message) ? String(error.message) : 'Maaf, terjadi kesalahan. Coba lagi nanti.';
-                        this.conversation.push({ sender: 'bot', text: msg });
-                        this.$nextTick(() => this.scrollChatToBottom());
-                    } finally {
-                        this.isLoading = false;
+                    // Route by chat mode
+                    if (this.chatMode === 'natural') {
+                        await this.handleNaturalMessage(messageToSend);
+                    } else if (this.chatMode === 'structured') {
+                        await this.handleStructuredMessage(messageToSend);
+                    } else {
+                        await this.handleGuidedFlow(messageToSend);
                     }
                 }
             };
