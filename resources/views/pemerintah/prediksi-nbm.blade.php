@@ -146,6 +146,8 @@
             kelompokSelect.addEventListener('change', function() {
                 const kelompokKode = this.value;
                 
+                console.log('Kelompok selected:', kelompokKode);
+                
                 // Reset komoditi
                 komoditiSelect.innerHTML = '<option value="">Loading...</option>';
                 komoditiSelect.disabled = true;
@@ -156,12 +158,21 @@
                 }
 
                 // Fetch komoditi
-                fetch(`{{ route('pemerintah.api.komoditi') }}?kelompok_id=${kelompokKode}`)
-                    .then(response => response.json())
+                const url = `{{ route('pemerintah.api.komoditi') }}?kelompok_id=${kelompokKode}`;
+                console.log('Fetching komoditi from:', url);
+                
+                fetch(url)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        console.log('Response ok:', response.ok);
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Komoditi data received:', data);
                         komoditiSelect.innerHTML = '<option value="">Pilih Komoditi</option>';
                         
                         if (data.komoditi && data.komoditi.length > 0) {
+                            console.log('Found', data.komoditi.length, 'komoditi items');
                             data.komoditi.forEach(item => {
                                 const option = document.createElement('option');
                                 option.value = item.kode;
@@ -169,12 +180,14 @@
                                 komoditiSelect.appendChild(option);
                             });
                             komoditiSelect.disabled = false;
+                            console.log('Komoditi select enabled with', data.komoditi.length, 'options');
                         } else {
+                            console.warn('No komoditi found in response');
                             komoditiSelect.innerHTML = '<option>Tidak ada komoditi</option>';
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        console.error('Error fetching komoditi:', error);
                         komoditiSelect.innerHTML = '<option>Error memuat komoditi</option>';
                     });
             });
