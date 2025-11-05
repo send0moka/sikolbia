@@ -247,3 +247,141 @@ Setelah approve:
 **Last Updated**: 2025-11-05
 **Tested By**: System Admin
 **Status**: ✅ Production Ready
+
+---
+
+## ⚠️ ADDITIONAL FIX: Role Assignment Issue
+
+### Problem
+User yang dibuat dari approval registrasi redirect ke `/admin` instead of `/pemerintah/dashboard` atau `/akademisi/dashboard`.
+
+### Root Cause
+Role "pemerintah" dan "akademisi" tidak ada di database. `RolePermissionSeeder` hanya membuat role "superadmin" dan "admin".
+
+### Solution Applied
+
+**1. Update RolePermissionSeeder.php**
+
+Added pemerintah and akademisi roles with appropriate permissions:
+
+```php
+$pemerintahRole = Role::firstOrCreate(['name' => 'pemerintah']);
+$akademisiRole = Role::firstOrCreate(['name' => 'akademisi']);
+
+// Pemerintah role - read-only access to reports
+$pemerintahRole->syncPermissions([
+    'view dashboard',
+    'view transaksi_nbm',
+    'view komoditi',
+    'view kelompok',
+    'export transaksi_nbm',
+    'view ml_predictions',
+]);
+
+// Akademisi role - read-only access to reports + ML features
+$akademisiRole->syncPermissions([
+    'view dashboard',
+    'view transaksi_nbm',
+    'view komoditi',
+    'view kelompok',
+    'export transaksi_nbm',
+    'view ml_dashboard',
+    'view ml_predictions',
+]);
+```
+
+**2. Fixed createUserFromRegistrasi() in RegistrasiAkses.php**
+
+Changed from checking if role exists to **creating role if not exists**:
+
+```php
+// Before (fallback to non-existent 'user' role)
+if (\Spatie\Permission\Models\Role::where('name', $roleName)->exists()) {
+    $user->assignRole($roleName);
+} else {
+    Log::warning("Role '$roleName' not found, assigning 'user' role instead");
+    if (\Spatie\Permission\Models\Role::where('name', 'user')->exists()) {
+        $user->assignRole('user');
+    }
+}
+
+// After (auto-create role if missing)
+$role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => $roleName]);
+$user->assignRole($role);
+```
+
+**3. Run Seeder**
+
+```bash
+docker-compose exec app php artisan db:seed --class=RolePermissionSeeder
+```
+
+**4. Fix Existing Users Without Roles**
+
+```bash
+docker-compose exec app php artisan tinker --execute="
+\$users = App\Models\User::whereDoesntHave('roles')->get();
+foreach(\$users as \$user) {
+    \$registrasi = App\Models\RegistrasiAkses::where('email', \$user->email)->first();
+    if(\$registrasi && \$registrasi->tipe_akses === 'pemerintah') {
+        \$user->assignRole('pemerintah');
+        echo \$user->email . ' => assigned pemerintah role\n';
+    } elseif(\$registrasi && \$registrasi->tipe_akses === 'akademisi') {
+        \$user->assignRole('akademisi');
+        echo \$user->email . ' => assigned akademisi role\n';
+    }
+}
+"
+```
+
+### Expected Behavior After Fix
+
+**Login Redirect Logic** (in `resources/views/livewire/auth/login.blade.php`):
+
+```php
+$user = Auth::user();
+if ($user->hasRole('pemerintah')) {
+    $this->redirect(route('pemerintah.dashboard'));
+} elseif ($user->hasRole('akademisi')) {
+    $this->redirect(route('akademisi.dashboard'));
+} else {
+    // superadmin / admin
+    $this->redirect(route('admin.panel-selection'));
+}
+```
+
+**Result:**
+- ✅ Pemerintah user → `/pemerintah/dashboard`
+- ✅ Akademisi user → `/akademisi/dashboard`
+- ✅ Admin/Superadmin → `/admin` (panel selection)
+
+### Verification
+
+```bash
+# Check all roles
+docker-compose exec app php artisan tinker --execute="
+echo 'Roles in database:\n';
+foreach(Spatie\Permission\Models\Role::all() as \$role) {
+    echo '- ' . \$role->name . '\n';
+}
+"
+
+# Check user roles
+docker-compose exec app php artisan tinker --execute="
+echo 'Users and their roles:\n';
+foreach(App\Models\User::with('roles')->get() as \$user) {
+    echo \$user->email . ' => ' . \$user->roles->pluck('name')->implode(', ') . '\n';
+}
+"
+```
+
+### Files Modified
+
+1. `database/seeders/RolePermissionSeeder.php` - Added pemerintah & akademisi roles
+2. `app/Livewire/Admin/RegistrasiAkses.php` - Fixed role assignment logic
+
+---
+
+**Last Updated**: 2025-11-05
+**Tested By**: System Admin
+**Status**: ✅ Production Ready

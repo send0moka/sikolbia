@@ -86,6 +86,8 @@ class RolePermissionSeeder extends Seeder
         // Create / fetch roles
         $superadminRole = Role::firstOrCreate(['name' => 'superadmin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $pemerintahRole = Role::firstOrCreate(['name' => 'pemerintah']);
+        $akademisiRole = Role::firstOrCreate(['name' => 'akademisi']);
 
         // Assign permissions idempotently
         $superadminRole->syncPermissions(Permission::all());
@@ -143,6 +145,27 @@ class RolePermissionSeeder extends Seeder
             // ML Dashboard permissions
             'view ml_dashboard',
             'manage ml_models',
+            'view ml_predictions',
+        ]);
+
+        // Pemerintah role - read-only access to reports
+        $pemerintahRole->syncPermissions([
+            'view dashboard',
+            'view transaksi_nbm',
+            'view komoditi',
+            'view kelompok',
+            'export transaksi_nbm',
+            'view ml_predictions',
+        ]);
+
+        // Akademisi role - read-only access to reports + ML features
+        $akademisiRole->syncPermissions([
+            'view dashboard',
+            'view transaksi_nbm',
+            'view komoditi',
+            'view kelompok',
+            'export transaksi_nbm',
+            'view ml_dashboard',
             'view ml_predictions',
         ]);
 

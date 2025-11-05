@@ -201,15 +201,9 @@ class RegistrasiAkses extends Component
         // Assign role based on tipe_akses
         $roleName = $registrasi->tipe_akses === 'pemerintah' ? 'pemerintah' : 'akademisi';
         
-        if (\Spatie\Permission\Models\Role::where('name', $roleName)->exists()) {
-            $user->assignRole($roleName);
-        } else {
-            // Fallback to default role if specific role doesn't exist
-            Log::warning("Role '$roleName' not found, assigning 'user' role instead");
-            if (\Spatie\Permission\Models\Role::where('name', 'user')->exists()) {
-                $user->assignRole('user');
-            }
-        }
+        // Ensure the role exists, create if not
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => $roleName]);
+        $user->assignRole($role);
         
         Log::info('User created', [
             'user_id' => $user->id,
