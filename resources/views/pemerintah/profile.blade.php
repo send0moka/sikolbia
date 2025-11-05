@@ -1,11 +1,11 @@
 <x-layouts.pemerintah title="Profile - Panel Pemerintah - {{ config('app.name') }}">
     <div class="container mx-auto px-4 py-8 max-w-3xl">
         <div class="mb-6">
-            <flux:heading size="xl">Profile</flux:heading>
-            <flux:subheading>Informasi Akun Anda</flux:subheading>
+            <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">Profile</h1>
+            <p class="text-neutral-600 dark:text-neutral-400 mt-1">Informasi Akun Anda</p>
         </div>
 
-        <flux:card class="mb-6">
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
             <div class="flex items-center gap-6 mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
                 <div class="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
                     {{ Auth::user()->initials() }}
@@ -21,46 +21,46 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <flux:field>
-                        <flux:label>Nama Lengkap</flux:label>
-                        <flux:input value="{{ Auth::user()->name }}" disabled />
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Nama Lengkap</label>
+                        <input value="{{ Auth::user()->name }}" disabled class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white" />
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Email</flux:label>
-                        <flux:input value="{{ Auth::user()->email }}" disabled />
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</label>
+                        <input value="{{ Auth::user()->email }}" disabled class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white" />
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Role</flux:label>
-                        <flux:input value="Pemerintah" disabled />
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Role</label>
+                        <input value="Pemerintah" disabled class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white" />
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Status</flux:label>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Status</label>
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                             <span class="text-sm text-green-600 dark:text-green-400 font-medium">Aktif</span>
                         </div>
-                    </flux:field>
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Terdaftar Sejak</flux:label>
-                        <flux:input value="{{ Auth::user()->created_at->format('d M Y') }}" disabled />
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Terdaftar Sejak</label>
+                        <input value="{{ Auth::user()->created_at->format('d M Y') }}" disabled class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white" />
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Email Verified</flux:label>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email Verified</label>
                         <div class="flex items-center gap-2">
                             @if(Auth::user()->email_verified_at)
                                 <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -74,13 +74,13 @@
                                 <span class="text-sm text-yellow-600 dark:text-yellow-400">Belum Terverifikasi</span>
                             @endif
                         </div>
-                    </flux:field>
+                    </div>
                 </div>
             </div>
-        </flux:card>
+        </div>
 
-        <flux:card>
-            <flux:heading size="lg" class="mb-4">Aktivitas Terakhir</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Aktivitas Terakhir</h2>
             <div class="space-y-3">
                 <div class="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                     <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -102,6 +102,6 @@
                     </div>
                 </div>
             </div>
-        </flux:card>
+        </div>
     </div>
 </x-layouts.pemerintah>

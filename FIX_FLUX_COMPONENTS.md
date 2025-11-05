@@ -22,6 +22,7 @@ Replaced all Flux UI components with semantic HTML + Tailwind CSS equivalents to
 - ✅ `resources/views/pemerintah/iklim.blade.php`
 - ✅ `resources/views/pemerintah/settings.blade.php`
 - ✅ `resources/views/pemerintah/panduan.blade.php`
+- ✅ `resources/views/pemerintah/profile.blade.php`
 
 ### 2. Shared Partials
 - ✅ `resources/views/partials/settings-heading.blade.php`
@@ -143,7 +144,14 @@ Replaced all Flux UI components with semantic HTML + Tailwind CSS equivalents to
    http://localhost:8000/pemerintah/iklim
    http://localhost:8000/pemerintah/settings
    http://localhost:8000/pemerintah/panduan
+   http://localhost:8000/pemerintah/profile
    ```
+
+2. **Run Laravel Optimize:**
+   ```bash
+   docker-compose exec app php artisan optimize
+   ```
+   Expected result: All caches should build successfully without Flux component errors
 
 2. **Check Console for Errors:**
    - Open browser DevTools (F12)

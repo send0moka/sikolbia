@@ -217,12 +217,12 @@ class RegistrasiAksesController extends Controller
             'deskripsi_kebutuhan' => 'nullable|string',
             
             // Document uploads for pemerintah
-            'surat_permohonan' => 'required_if:tipe_akses,pemerintah|nullable|file|mimes:pdf|max:5120', // 5MB
-            'id_instansi' => 'required_if:tipe_akses,pemerintah|nullable|file|mimes:pdf,jpg,jpeg,png|max:2048', // 2MB
+            'surat_permohonan' => 'nullable|file|mimes:pdf|max:5120', // 5MB
+            'id_instansi' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048', // 2MB
             'surat_atasan' => 'nullable|file|mimes:pdf|max:3072', // 3MB
             
             // Document uploads for akademisi
-            'surat_keterangan_institusi' => 'required_if:tipe_akses,akademisi|nullable|file|mimes:pdf|max:3072',
+            'surat_keterangan_institusi' => 'nullable|file|mimes:pdf|max:3072',
             'proposal_penelitian' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
@@ -273,7 +273,7 @@ class RegistrasiAksesController extends Controller
                 'status' => 'pending',
             ]);
 
-            Log::info('New registration submitted with documents', [
+            Log::info('New registration submitted', [
                 'id' => $registrasi->id,
                 'nama' => $registrasi->nama_lengkap,
                 'tipe' => $registrasi->tipe_akses,
@@ -284,8 +284,11 @@ class RegistrasiAksesController extends Controller
             return redirect()->back()->with('success', 'Registrasi berhasil! Kami akan meninjau aplikasi Anda dan mengirimkan konfirmasi via email.');
             
         } catch (\Exception $e) {
-            Log::error('Registration failed: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            Log::error('Registration failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
