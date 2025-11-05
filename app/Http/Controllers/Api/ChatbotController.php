@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\ReportService;
 use App\Services\ChatOrchestrationService;
+use App\Services\GuidedService;
 
 class ChatbotController extends Controller
 {
@@ -115,7 +116,7 @@ class ChatbotController extends Controller
     public function handleGuided(string $currentStep = 'start', array $context = [])
     {
         try {
-            $svc = new \App\Services\GuidedService();
+            $svc = new GuidedService();
             $res = $svc->getStep($currentStep, $context);
             return response()->json([
                 'reply' => (string)($res['message'] ?? 'Silakan pilih modul data yang ingin Anda lihat.'),
