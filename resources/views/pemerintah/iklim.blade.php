@@ -1,8 +1,8 @@
 <x-layouts.pemerintah title="Iklim OptDPI - Panel Pemerintah - {{ config('app.name') }}">
     <div class="container mx-auto px-4 py-8">
         <div class="mb-6">
-            <flux:heading size="xl">Data Iklim OptDPI</flux:heading>
-            <flux:subheading>Informasi Curah Hujan dan Kondisi Iklim</flux:subheading>
+            <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">Data Iklim OptDPI</h1>
+            <p class="text-neutral-600 dark:text-neutral-400 mt-1">Informasi Curah Hujan dan Kondisi Iklim</p>
         </div>
 
         <div class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
@@ -17,7 +17,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <flux:card>
+            <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
                 <div class="text-center">
                     <div class="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
                         <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -27,9 +27,9 @@
                     <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Curah Hujan</h3>
                     <p class="text-sm text-neutral-600 dark:text-neutral-400">Data curah hujan per wilayah</p>
                 </div>
-            </flux:card>
+            </div>
 
-            <flux:card>
+            <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
                 <div class="text-center">
                     <div class="mx-auto w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-4">
                         <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
@@ -39,9 +39,9 @@
                     <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Suhu</h3>
                     <p class="text-sm text-neutral-600 dark:text-neutral-400">Monitoring suhu udara</p>
                 </div>
-            </flux:card>
+            </div>
 
-            <flux:card>
+            <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
                 <div class="text-center">
                     <div class="mx-auto w-16 h-16 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mb-4">
                         <svg class="w-8 h-8 text-cyan-600 dark:text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
@@ -51,7 +51,7 @@
                     <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Kelembaban</h3>
                     <p class="text-sm text-neutral-600 dark:text-neutral-400">Tingkat kelembaban udara</p>
                 </div>
-            </flux:card>
+            </div>
         </div>
     </div>
 </x-layouts.pemerintah>

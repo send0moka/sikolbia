@@ -1,12 +1,12 @@
 <x-layouts.pemerintah title="Panduan Penggunaan - Panel Pemerintah - {{ config('app.name') }}">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <div class="mb-6">
-            <flux:heading size="xl">Panduan Penggunaan</flux:heading>
-            <flux:subheading>Petunjuk Menggunakan Panel Pemerintah SIKOLBIA</flux:subheading>
+            <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">Panduan Penggunaan</h1>
+            <p class="text-neutral-600 dark:text-neutral-400 mt-1">Petunjuk Menggunakan Panel Pemerintah SIKOLBIA</p>
         </div>
 
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Tentang Akses Pemerintah</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Tentang Akses Pemerintah</h2>
             <div class="prose dark:prose-invert max-w-none">
                 <p class="text-neutral-700 dark:text-neutral-300 mb-4">
                     Sebagai pengguna dengan akses <strong>Pemerintah</strong>, Anda memiliki hak untuk melihat dan mengekspor data dari sistem SIKOLBIA. Akses ini dirancang khusus untuk mendukung pengambilan keputusan dan perencanaan kebijakan ketahanan pangan.
@@ -24,10 +24,10 @@
                     </ul>
                 </div>
             </div>
-        </flux:card>
+        </div>
 
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Cara Menggunakan Sistem</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Cara Menggunakan Sistem</h2>
             
             <div class="space-y-6">
                 <!-- Step 1 -->
@@ -105,10 +105,10 @@
                     </div>
                 </div>
             </div>
-        </flux:card>
+        </div>
 
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Keterbatasan Akses</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Keterbatasan Akses</h2>
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                 <p class="text-sm text-yellow-800 dark:text-yellow-300 mb-2">
                     <strong>Mode Read-Only:</strong> Akses Pemerintah tidak dapat melakukan:
@@ -123,10 +123,10 @@
                     Jika membutuhkan akses lebih lanjut, silakan hubungi administrator sistem.
                 </p>
             </div>
-        </flux:card>
+        </div>
 
-        <flux:card>
-            <flux:heading size="lg" class="mb-4">Bantuan & Dukungan</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Bantuan & Dukungan</h2>
             <div class="space-y-3">
                 <div class="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
                     <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -149,6 +149,6 @@
                     </div>
                 </div>
             </div>
-        </flux:card>
+        </div>
     </div>
 </x-layouts.pemerintah>

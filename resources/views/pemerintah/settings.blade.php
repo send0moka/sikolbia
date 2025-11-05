@@ -1,48 +1,48 @@
 <x-layouts.pemerintah title="Settings - Panel Pemerintah - {{ config('app.name') }}">
     <div class="container mx-auto px-4 py-8 max-w-3xl">
         <div class="mb-6">
-            <flux:heading size="xl">Settings</flux:heading>
-            <flux:subheading>Pengaturan Akun dan Keamanan</flux:subheading>
+            <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">Settings</h1>
+            <p class="text-neutral-600 dark:text-neutral-400 mt-1">Pengaturan Akun dan Keamanan</p>
         </div>
 
         <!-- Change Password -->
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Ubah Password</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Ubah Password</h2>
             
             <form method="POST" class="space-y-4">
                 @csrf
                 <div>
-                    <flux:field>
-                        <flux:label>Password Lama</flux:label>
-                        <flux:input type="password" name="current_password" placeholder="Masukkan password lama" />
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Password Lama</label>
+                        <input type="password" name="current_password" placeholder="Masukkan password lama" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Password Baru</flux:label>
-                        <flux:input type="password" name="new_password" placeholder="Masukkan password baru" />
-                        <flux:description>Minimal 8 karakter, kombinasi huruf dan angka</flux:description>
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Password Baru</label>
+                        <input type="password" name="new_password" placeholder="Masukkan password baru" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Minimal 8 karakter, kombinasi huruf dan angka</p>
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Konfirmasi Password Baru</flux:label>
-                        <flux:input type="password" name="new_password_confirmation" placeholder="Ulangi password baru" />
-                    </flux:field>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Konfirmasi Password Baru</label>
+                        <input type="password" name="new_password_confirmation" placeholder="Ulangi password baru" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
                 </div>
 
                 <div class="flex gap-3">
-                    <flux:button type="submit" variant="primary">Ubah Password</flux:button>
-                    <flux:button type="button" variant="ghost">Cancel</flux:button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">Ubah Password</button>
+                    <button type="button" class="px-4 py-2 bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition-colors">Cancel</button>
                 </div>
             </form>
-        </flux:card>
+        </div>
 
         <!-- Notification Settings -->
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Notifikasi</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Notifikasi</h2>
             
             <div class="space-y-4">
                 <div class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
@@ -50,7 +50,10 @@
                         <p class="font-medium text-neutral-900 dark:text-white">Email Notifikasi</p>
                         <p class="text-sm text-neutral-600 dark:text-neutral-400">Terima notifikasi via email</p>
                     </div>
-                    <flux:switch />
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer">
+                        <div class="w-11 h-6 bg-neutral-200 peer-focus:ring-2 peer-focus:ring-blue-500 dark:bg-neutral-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-blue-600"></div>
+                    </label>
                 </div>
 
                 <div class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
@@ -58,7 +61,10 @@
                         <p class="font-medium text-neutral-900 dark:text-white">Update Data Baru</p>
                         <p class="text-sm text-neutral-600 dark:text-neutral-400">Notifikasi saat ada data baru</p>
                     </div>
-                    <flux:switch />
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer">
+                        <div class="w-11 h-6 bg-neutral-200 peer-focus:ring-2 peer-focus:ring-blue-500 dark:bg-neutral-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-blue-600"></div>
+                    </label>
                 </div>
 
                 <div class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
@@ -66,55 +72,58 @@
                         <p class="font-medium text-neutral-900 dark:text-white">Newsletter</p>
                         <p class="text-sm text-neutral-600 dark:text-neutral-400">Terima newsletter bulanan</p>
                     </div>
-                    <flux:switch />
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer">
+                        <div class="w-11 h-6 bg-neutral-200 peer-focus:ring-2 peer-focus:ring-blue-500 dark:bg-neutral-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-blue-600"></div>
+                    </label>
                 </div>
             </div>
-        </flux:card>
+        </div>
 
         <!-- Display Settings -->
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Tampilan</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Tampilan</h2>
             
             <div class="space-y-4">
                 <div>
-                    <flux:field>
-                        <flux:label>Theme</flux:label>
-                        <flux:select variant="filled">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Theme</label>
+                        <select class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="system">System Default</option>
                             <option value="light">Light Mode</option>
                             <option value="dark">Dark Mode</option>
-                        </flux:select>
-                    </flux:field>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Bahasa</flux:label>
-                        <flux:select variant="filled">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Bahasa</label>
+                        <select class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="id">Indonesia</option>
                             <option value="en">English</option>
-                        </flux:select>
-                    </flux:field>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
-                    <flux:field>
-                        <flux:label>Items per Page</flux:label>
-                        <flux:select variant="filled">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Items per Page</label>
+                        <select class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="10">10</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
-                        </flux:select>
-                        <flux:description>Jumlah data yang ditampilkan per halaman</flux:description>
-                    </flux:field>
+                        </select>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Jumlah data yang ditampilkan per halaman</p>
+                    </div>
                 </div>
             </div>
-        </flux:card>
+        </div>
 
         <!-- Privacy & Security -->
-        <flux:card class="mb-6">
-            <flux:heading size="lg" class="mb-4">Privasi & Keamanan</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Privasi & Keamanan</h2>
             
             <div class="space-y-4">
                 <div class="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
@@ -147,11 +156,11 @@
                     </p>
                 </div>
             </div>
-        </flux:card>
+        </div>
 
         <!-- Danger Zone -->
-        <flux:card>
-            <flux:heading size="lg" class="mb-4" class="text-red-600 dark:text-red-400">Zona Bahaya</flux:heading>
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Zona Bahaya</h2>
             
             <div class="space-y-4">
                 <div class="p-4 border border-red-200 dark:border-red-800 rounded-lg">
@@ -160,9 +169,9 @@
                             <p class="font-medium text-neutral-900 dark:text-white">Hapus Akun</p>
                             <p class="text-sm text-neutral-600 dark:text-neutral-400">Hapus akun Anda secara permanen</p>
                         </div>
-                        <flux:button variant="danger" disabled>
+                        <button disabled class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium opacity-50 cursor-not-allowed">
                             Hapus Akun
-                        </flux:button>
+                        </button>
                     </div>
                     <div class="mt-3 bg-red-50 dark:bg-red-900/20 p-3 rounded">
                         <p class="text-xs text-red-800 dark:text-red-300">
@@ -171,6 +180,6 @@
                     </div>
                 </div>
             </div>
-        </flux:card>
+        </div>
     </div>
 </x-layouts.pemerintah>
