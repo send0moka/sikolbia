@@ -201,17 +201,27 @@
 
             // Load Data Function
             function loadData(page = 1) {
+                console.log('loadData called with page:', page);
+                console.log('currentFilters:', currentFilters);
+                
                 const formData = new FormData();
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('kelompok', currentFilters.kelompok || '');
                 formData.append('tahun', currentFilters.tahun || '');
                 formData.append('bulan', currentFilters.bulan || '');
                 
+                console.log('FormData entries:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+                
                 // Add page parameter to URL instead of form data
                 const url = new URL('{{ route("pemerintah.laporan-nbm.filter") }}');
                 if (page > 1) {
                     url.searchParams.set('page', page);
                 }
+                
+                console.log('Fetching URL:', url.toString());
 
                 // Show loading state
                 filterBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Loading...';
@@ -221,20 +231,26 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response ok:', response.ok);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Response data:', data);
                     if (data.success) {
                         currentPage = page;
                         updateTable(data.data);
                         updatePaginationInfo(data.data); // Pass pagination data
                         updateStatistics(data.statistics);
                     } else {
+                        console.error('Error from server:', data.message);
                         alert('Error: ' + data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat memuat data');
+                    console.error('Fetch error:', error);
+                    alert('Terjadi kesalahan saat memuat data: ' + error.message);
                 })
                 .finally(() => {
                     filterBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Tampilkan Data';
@@ -456,6 +472,14 @@
                 if (avgKaloriElement) avgKaloriElement.textContent = '-';
                 if (periodeTerbaruElement) periodeTerbaruElement.textContent = '-';
             }
+            
+            // Auto-load data on page load (no filters) - for debugging
+            console.log('Page loaded, testing auto-load...');
+            setTimeout(() => {
+                console.log('Attempting auto-load after 500ms');
+                currentFilters = {};
+                loadData(1);
+            }, 500);
         });
     </script>
 </x-layouts.pemerintah>

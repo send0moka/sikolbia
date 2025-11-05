@@ -23,6 +23,14 @@ class PemerintahController extends Controller
     public function filterLaporanNbm(Request $request)
     {
         try {
+            Log::info('Filter NBM Request received', [
+                'user' => auth()->id(),
+                'kelompok' => $request->input('kelompok'),
+                'tahun' => $request->input('tahun'),
+                'bulan' => $request->input('bulan'),
+                'all_params' => $request->all()
+            ]);
+            
             $request->validate([
                 'kelompok' => 'nullable|string',
                 'tahun' => 'nullable|integer|min:2020|max:' . (date('Y') + 1),
