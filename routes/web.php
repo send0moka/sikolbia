@@ -88,6 +88,19 @@ Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')
 // ==================================================
 Route::middleware(['auth', 'verified', 'role:akademisi'])->prefix('akademisi')->name('akademisi.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Akademisi\AkademisiDashboardController::class, 'index'])->name('dashboard');
+    
+    // Data Historis NBM
+    Route::get('/data-nbm', [App\Http\Controllers\Akademisi\DataNbmController::class, 'index'])->name('data-nbm');
+    Route::get('/export-data', [App\Http\Controllers\Akademisi\ExportDataController::class, 'index'])->name('export-data');
+    Route::post('/export-data/download', [App\Http\Controllers\Akademisi\ExportDataController::class, 'download'])->name('export-data.download');
+    
+    // Tools & Visualisasi
+    Route::get('/grafik-statistik', [App\Http\Controllers\Akademisi\GrafikStatistikController::class, 'index'])->name('grafik-statistik');
+    Route::get('/filter-query', [App\Http\Controllers\Akademisi\FilterQueryController::class, 'index'])->name('filter-query');
+    
+    // Dokumentasi
+    Route::get('/panduan-sitasi', [App\Http\Controllers\Akademisi\PanduanSitasiController::class, 'index'])->name('panduan-sitasi');
+    Route::get('/data-dictionary', [App\Http\Controllers\Akademisi\DataDictionaryController::class, 'index'])->name('data-dictionary');
 });
 
 // Ketersediaan Routes
