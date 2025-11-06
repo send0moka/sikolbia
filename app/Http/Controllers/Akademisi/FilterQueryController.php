@@ -41,12 +41,12 @@ class FilterQueryController extends Controller
             $query->whereIn('kode_komoditi', $request->komoditi);
         }
 
-        // Filter berdasarkan range kalori
-        if ($request->filled('kalori_min')) {
-            $query->where('kalori_hari', '>=', $request->kalori_min);
+        // Filter berdasarkan range bahan makanan (ketersediaan)
+        if ($request->filled('bahan_makanan_min')) {
+            $query->where('bahan_makanan', '>=', $request->bahan_makanan_min);
         }
-        if ($request->filled('kalori_max')) {
-            $query->where('kalori_hari', '<=', $request->kalori_max);
+        if ($request->filled('bahan_makanan_max')) {
+            $query->where('bahan_makanan', '<=', $request->bahan_makanan_max);
         }
 
         // Sorting
@@ -55,17 +55,19 @@ class FilterQueryController extends Controller
         $query->orderBy($sortBy, $sortOrder);
 
         // Execute query
-        $results = $query->paginate(50);
+        $results = $query->paginate(50)->withQueryString();
 
         // Summary statistics dari hasil query
         $summary = null;
         if ($results->total() > 0) {
+            // Clone query untuk statistics (tanpa pagination)
+            $statsQuery = clone $query;
             $summary = [
                 'total_records' => $results->total(),
-                'avg_kalori' => round($query->avg('kalori_hari'), 2),
-                'sum_kalori' => round($query->sum('kalori_hari'), 2),
-                'min_kalori' => round($query->min('kalori_hari'), 2),
-                'max_kalori' => round($query->max('kalori_hari'), 2),
+                'avg_bahan_makanan' => round($statsQuery->avg('bahan_makanan'), 2),
+                'sum_bahan_makanan' => round($statsQuery->sum('bahan_makanan'), 2),
+                'min_bahan_makanan' => round($statsQuery->min('bahan_makanan'), 2),
+                'max_bahan_makanan' => round($statsQuery->max('bahan_makanan'), 2),
             ];
         }
 

@@ -20,10 +20,10 @@ class GrafikStatistikController extends Controller
         // Data untuk dropdown
         $kelompokList = Kelompok::orderBy('kode')->get();
 
-        // Query data untuk grafik time series
+        // Query data untuk grafik time series - menggunakan bahan_makanan
         $timeSeriesData = TransaksiNbm::where('kode_kelompok', $kelompokKode)
             ->whereBetween('tahun', [$tahunDari, $tahunSampai])
-            ->select('tahun', 'bulan', DB::raw('SUM(kalori_hari) as total_kalori'))
+            ->select('tahun', 'bulan', DB::raw('SUM(bahan_makanan) as total_bahan_makanan'))
             ->groupBy('tahun', 'bulan')
             ->orderBy('tahun')
             ->orderBy('bulan')
@@ -31,16 +31,16 @@ class GrafikStatistikController extends Controller
 
         // Statistik deskriptif
         $statistics = [
-            'mean' => round($timeSeriesData->avg('total_kalori'), 2),
-            'median' => round($this->calculateMedian($timeSeriesData->pluck('total_kalori')->toArray()), 2),
-            'min' => round($timeSeriesData->min('total_kalori'), 2),
-            'max' => round($timeSeriesData->max('total_kalori'), 2),
-            'std_dev' => round($this->calculateStdDev($timeSeriesData->pluck('total_kalori')->toArray()), 2),
+            'mean' => round($timeSeriesData->avg('total_bahan_makanan'), 2),
+            'median' => round($this->calculateMedian($timeSeriesData->pluck('total_bahan_makanan')->toArray()), 2),
+            'min' => round($timeSeriesData->min('total_bahan_makanan'), 2),
+            'max' => round($timeSeriesData->max('total_bahan_makanan'), 2),
+            'std_dev' => round($this->calculateStdDev($timeSeriesData->pluck('total_bahan_makanan')->toArray()), 2),
         ];
 
         // Data konsumsi per kelompok (untuk pie chart)
         $konsumsiPerKelompok = TransaksiNbm::whereBetween('tahun', [$tahunDari, $tahunSampai])
-            ->select('kode_kelompok', DB::raw('AVG(kalori_hari) as avg_kalori'))
+            ->select('kode_kelompok', DB::raw('AVG(bahan_makanan) as avg_bahan_makanan'))
             ->groupBy('kode_kelompok')
             ->with('kelompok')
             ->get();
