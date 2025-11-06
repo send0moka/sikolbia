@@ -20,27 +20,43 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
 
-                <flux:navlist.group :heading="__('Data NBM')" class="grid">
-                    <flux:navlist.item icon="tag" :href="route('admin.kelompok')" :current="request()->routeIs('admin.kelompok')" wire:navigate class="group active-icon">
-                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.kelompok') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Kelola Kelompok') }}</span>
+                <flux:navlist.group :heading="__('Konsumsi Pangan')" class="grid">
+                    <flux:navlist.item icon="chart-bar" :href="route('ketersediaan.laporan-nbm')" :current="request()->routeIs('ketersediaan.laporan-nbm')" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('ketersediaan.laporan-nbm') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Laporan NBM') }}</span>
                     </flux:navlist.item>
                     
-                    <flux:navlist.item icon="cube" :href="route('admin.komoditi')" :current="request()->routeIs('admin.komoditi')" wire:navigate class="group active-icon">
-                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.komoditi') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Kelola Komoditi') }}</span>
+                    <flux:navlist.item icon="cpu-chip" href="#" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200">{{ __('Prediksi NBM') }}</span>
+                    </flux:navlist.item>
+                </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Pertanian')" class="grid">
+                    <flux:navlist.item icon="map" href="#" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200">{{ __('Data Lahan') }}</span>
                     </flux:navlist.item>
                     
-                    <flux:navlist.item icon="chart-bar" :href="route('admin.transaksi-nbm')" :current="request()->routeIs('admin.transaksi-nbm')" wire:navigate class="group active-icon">
-                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.transaksi-nbm') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Kelola Transaksi NBM') }}</span>
+                    <flux:navlist.item icon="cube" href="#" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200">{{ __('Benih & Pupuk') }}</span>
+                    </flux:navlist.item>
+                    
+                    <flux:navlist.item icon="cloud" href="#" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200">{{ __('Iklim OptDPI') }}</span>
+                    </flux:navlist.item>
+                </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Referensi')" class="grid">
+                    <flux:navlist.item icon="map-pin" href="#" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200">{{ __('Data Alamat') }}</span>
                     </flux:navlist.item>
                 </flux:navlist.group>
 
                 <flux:navlist.group :heading="__('Dokumentasi')" class="grid">
-                    <flux:navlist.item icon="document-text" :href="route('admin.konsep-transaksi-nbm')" :current="request()->routeIs('admin.konsep-transaksi-nbm')" wire:navigate class="group active-icon">
-                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.konsep-transaksi-nbm') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Konsep Transaksi NBM') }}</span>
+                    <flux:navlist.item icon="book-open" :href="route('ketersediaan.konsep-metode')" :current="request()->routeIs('ketersediaan.konsep-metode')" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('ketersediaan.konsep-metode') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Konsep & Metode') }}</span>
                     </flux:navlist.item>
                     
-                    <flux:navlist.item icon="chart-pie" :href="route('admin.konsep-transaksi-susenas')" :current="request()->routeIs('admin.konsep-transaksi-susenas')" wire:navigate class="group active-icon">
-                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.konsep-transaksi-susenas') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Konsep Transaksi Susenas') }}</span>
+                    <flux:navlist.item icon="information-circle" href="#" wire:navigate class="group active-icon">
+                        <span class="nav-link-text transition-colors text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200">{{ __('Panduan Sitasi') }}</span>
                     </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
