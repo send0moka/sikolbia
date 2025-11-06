@@ -4,8 +4,8 @@ import Alpine from 'alpinejs';
 // Make Alpine available globally before Livewire loads
 window.Alpine = Alpine;
 
-// Custom Alpine component for Pertanian Report Form
-import pertanianReportForm from './components/pertanianReportForm.js';
+// Custom Alpine component for Pertanian Report Form (via new compatibility factory)
+import pertanianReportForm from './pertanian/index.js';
 Alpine.data('pertanianReportForm', pertanianReportForm);
 // End Pertanian Report Form
 

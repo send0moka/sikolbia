@@ -58,28 +58,42 @@ docker run -d -p 8000:80 send0moka/sikolbia:latest
 - **API ML** FastAPI server untuk prediksi real-time
 - **Docker Ready** Deployment dengan Docker untuk production
 
-## 🤖 Chatbot Asisten Data Pertanian (Baru)
+## 🤖 Chatbot Asisten Data Pertanian (Refactor Terbaru)
 
-Chatbot membantu pengguna menelusuri data dari 3 modul pertanian dalam satu alur terpandu dan ringkas: Benih & Pupuk, Lahan, dan Iklim & OPT DPI. Fitur-fitur utamanya:
+Chatbot kini memakai pola LLM-as-Orchestrator yang menyatukan RAG + Structured Retrieval. Default-nya natural conversation; guided hanya saat onboarding dan sebagai fallback. Mendukung 3 modul: Benih & Pupuk, Lahan, dan Iklim & OPT DPI.
 
-- Guided conversation (alur pandu) lintas modul: pilih Modul → Topik → Variabel → Klasifikasi → Waktu → Wilayah → Pratinjau
-- Quick Start intents: opsi “Mulai Cepat” (mis. Pupuk Urea/NPK terbaru, Lahan terbaru, Curah Hujan terbaru) untuk langsung mendapatkan pratinjau tanpa banyak klik
-- Data Dictionary bubble: setelah memilih variabel, chatbot menampilkan nama, satuan, dan deskripsi singkat variabel
-- Pilihan tampilan pratinjau: “Tabel” atau “Ringkasan”; ringkasan berisi poin-poin kunci per wilayah dan tombol “Tampilkan Tabel”
-- Navigasi “Kembali satu langkah”: pengguna bisa kembali ke langkah sebelumnya dari bubble opsi maupun checklist
-- “Ingin dibantu lagi?”: setelah pratinjau, pengguna dapat melanjutkan alur pandu atau beralih ke pertanyaan bebas (free text)
-- Simpan ke Panel: hasil pratinjau dapat disimpan ke panel sisi kanan untuk dilihat lengkap (tabel/grafik) dan diekspor
-- Konfirmasi “Mulai Ulang”: tombol “Mulai Ulang” di panel chatbot memunculkan modal konfirmasi agar tidak menghapus chat secara tidak sengaja
+Highlight:
 
-Lokasi kode terkait:
-- UI Blade: `resources/views/components/pertanian-report-page.blade.php`
-- Logika Alpine: `resources/js/components/pertanianReportForm.js`
-- Layanan & RAG: `app/Services/ReportService.php`
+- Natural-first dengan intent routing: smalltalk, definition, data (structured), unknown
+- Handoff ke structured bila sinyal kuat (modul + waktu/wilayah) terdeteksi
+- RAG Summarizer (OpenAI opsional via `OPENAI_API_KEY`; tanpa itu memakai offline fallback)
+- Data Dictionary, Ringkasan ↔ Tabel, Simpan ke Panel, “Kembali satu langkah”, konfirmasi “Mulai Ulang”
 
-Cara menggunakan (singkat):
-1) Klik tombol bulat chatbot di kanan bawah halaman laporan pertanian
-2) Pilih “Mulai Cepat” atau ikuti alur pandu dari “Pilih Modul”
-3) Pilih tampilan hasil sebagai “Tabel” atau “Ringkasan” lalu “Simpan ke Panel” jika ingin dianalisis lebih lanjut
+Endpoint & kontrak:
+
+- POST `/api/chatbot` — body minimal `{ "message": "..." }`
+- Respons natural: `{ reply, mode: "natural", intent? }`
+- Respons structured: `{ reply, mode: "structured", structured: { ... } }`
+- Mode guided: `{ reply, mode: "guided", options: [...] }` via `{ mode: "guided", step, context }`
+
+Konfigurasi:
+
+- `config/chatbot.php` — `orchestrator_enabled`, batas context/summary
+- `config/logging.php` — channel `orchestrator` untuk metrik cabang & latensi (p95 sederhana)
+
+Lokasi kode:
+
+- Controller: `app/Http/Controllers/Api/ChatbotController.php`
+- Orchestrator: `app/Services/ChatOrchestrationService.php`
+- Summarizer: `app/Services/RAGSummarizer.php`
+- Structured Retrieval: `app/Services/ReportService.php`
+- Guided: `app/Services/GuidedService.php`
+- UI: `resources/views/components/pertanian-report-page.blade.php`, `resources/js/components/pertanianReportForm.js`
+
+Cara memakai (singkat):
+1) Buka chatbot di halaman laporan pertanian
+2) Ketik pertanyaan natural (contoh: “data pupuk urea 2024 jawa tengah”) atau pakai onboarding guided
+3) Ikuti tawaran structured atau lanjut natural; simpan hasil ke Panel bila perlu
 
 Dokumentasi lengkap: lihat `docs/chatbot/README.md`.
 
