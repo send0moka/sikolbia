@@ -1,8 +1,6 @@
-<x-layouts.app>
-    <flux:heading size="xl" class="mb-6">Dashboard Akademisi</flux:heading>
-
+<x-layouts.akademisi>
     <!-- Welcome Card -->
-    <div class="mb-8 bg-gradient-to-r from-purple-500 to-purple-700 dark:from-purple-600 dark:to-purple-800 rounded-lg shadow-lg p-6 text-white">
+    <div class="bg-gradient-to-r from-purple-500 to-purple-700 dark:from-purple-600 dark:to-purple-800 rounded-lg shadow-lg p-6 text-white mb-6">
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold mb-2">Selamat Datang, {{ Auth::user()->name }}!</h2>
@@ -18,7 +16,7 @@
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
@@ -77,7 +75,7 @@
     </div>
 
     <!-- Information Panel -->
-    <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 mb-8">
+    <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 mb-6">
         <div class="flex">
             <div class="flex-shrink-0">
                 <svg class="h-6 w-6 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
@@ -180,7 +178,8 @@
                     <p class="font-mono">Sumber: SIKOLBIA - Sistem Kolaborasi Ketahanan Pangan Nasional Indonesia. Diakses: [{{ date('Y') }}]</p>
                 </div>
                 <a href="#" class="mt-3 inline-block text-sm text-purple-600 dark:text-purple-400 hover:underline">Ubah Password →</a>
+                </div>
             </div>
         </div>
     </div>
-</x-layouts.app>
+</x-layouts.akademisi>
