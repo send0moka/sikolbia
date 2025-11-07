@@ -7,6 +7,7 @@ use App\Models\TransaksiNbm;
 use App\Models\Kelompok;
 use App\Models\Komoditi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TransaksiNbmExport;
 
@@ -39,8 +40,12 @@ class ExportDataController extends Controller
             'komoditi' => 'nullable|string',
         ]);
 
+        // Increase memory & time limit for large exports
+        ini_set('memory_limit', '512M');
+        set_time_limit(300); // 5 minutes
+
         // Build query dengan filter
-        $query = TransaksiNbm::with(['kelompok', 'komoditi']);
+        $query = TransaksiNbm::query();
 
         if ($request->filled('tahun_dari')) {
             $query->where('tahun', '>=', $request->tahun_dari);
@@ -58,24 +63,42 @@ class ExportDataController extends Controller
             $query->where('kode_komoditi', $request->komoditi);
         }
 
-        $data = $query->orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->get();
+        $query->orderBy('tahun', 'desc')->orderBy('bulan', 'desc');
 
         $format = $request->format;
         $filename = 'data_nbm_' . date('Y-m-d_His') . '.' . $format;
 
-        // Buat custom export dengan data yang sudah difilter
-        return Excel::download(
-            new class($data) implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithMapping {
-                protected $data;
+        // Count records untuk info
+        $totalRecords = $query->count();
+        
+        // Jika lebih dari 10,000 records, log untuk monitoring
+        if ($totalRecords > 10000) {
+            Log::info("Large export started: {$totalRecords} records");
+        }
 
-                public function __construct($data)
+        // Buat custom export dengan chunking
+        return Excel::download(
+            new class($query) implements 
+                \Maatwebsite\Excel\Concerns\FromQuery,
+                \Maatwebsite\Excel\Concerns\WithHeadings, 
+                \Maatwebsite\Excel\Concerns\WithMapping,
+                \Maatwebsite\Excel\Concerns\WithChunkReading {
+                
+                protected $query;
+
+                public function __construct($query)
                 {
-                    $this->data = $data;
+                    $this->query = $query;
                 }
 
-                public function collection()
+                public function query()
                 {
-                    return $this->data;
+                    return $this->query;
+                }
+
+                public function chunkSize(): int
+                {
+                    return 1000; // Process 1000 rows at a time
                 }
 
                 public function headings(): array
@@ -84,20 +107,21 @@ class ExportDataController extends Controller
                         'ID',
                         'Tahun',
                         'Bulan',
-                        'Kelompok',
-                        'Komoditi',
+                        'Kelompok Kode',
+                        'Komoditi Kode',
                         'Masukan (ton)',
+                        'Keluaran (ton)',
                         'Impor (ton)',
                         'Ekspor (ton)',
                         'Perubahan Stok (ton)',
-                        'Ketersediaan (ton)',
                         'Pakan (ton)',
                         'Bibit (ton)',
                         'Makanan (ton)',
+                        'Bukan Makanan (ton)',
                         'Tercecer (ton)',
-                        'Kalori/Hari (kkal/kapita/hari)',
-                        'Protein/Hari (g/kapita/hari)',
-                        'Lemak/Hari (g/kapita/hari)',
+                        'Bahan Makanan (ton)',
+                        'Harga Produsen (Rp)',
+                        'Harga Konsumen (Rp)',
                     ];
                 }
 
@@ -107,20 +131,21 @@ class ExportDataController extends Controller
                         $transaksi->id,
                         $transaksi->tahun,
                         $transaksi->bulan,
-                        $transaksi->kelompok ? ($transaksi->kelompok->kode . ' - ' . $transaksi->kelompok->nama) : $transaksi->kode_kelompok,
-                        $transaksi->komoditi ? ($transaksi->komoditi->kode_komoditi . ' - ' . $transaksi->komoditi->nama) : $transaksi->kode_komoditi,
+                        $transaksi->kode_kelompok,
+                        $transaksi->kode_komoditi,
                         $transaksi->masukan ?? 0,
+                        $transaksi->keluaran ?? 0,
                         $transaksi->impor ?? 0,
                         $transaksi->ekspor ?? 0,
                         $transaksi->perubahan_stok ?? 0,
-                        $transaksi->ketersediaan ?? 0,
                         $transaksi->pakan ?? 0,
                         $transaksi->bibit ?? 0,
                         $transaksi->makanan ?? 0,
+                        $transaksi->bukan_makanan ?? 0,
                         $transaksi->tercecer ?? 0,
-                        $transaksi->kalori_hari ?? 0,
-                        $transaksi->protein_hari ?? 0,
-                        $transaksi->lemak_hari ?? 0,
+                        $transaksi->bahan_makanan ?? 0,
+                        $transaksi->harga_produsen ?? 0,
+                        $transaksi->harga_konsumen ?? 0,
                     ];
                 }
             },
