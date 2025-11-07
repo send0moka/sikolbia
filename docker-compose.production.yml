@@ -1,0 +1,220 @@
+version: '3.8'
+
+# Production Docker Compose - SIKOLBIA Full Stack
+# This file combines both Laravel app and ML API using pre-built images from Docker Hub
+# 
+# Usage:
+#   1. Replace 'yourusername' with your Docker Hub username
+#   2. docker-compose -f docker-compose.production.yml up -d
+#
+# Access Points:
+#   - Laravel App: http://localhost:8000
+#   - ML API: http://localhost:8082
+#   - PHPMyAdmin: http://localhost:8081
+
+services:
+  # ======================================
+  # Laravel Application Services
+  # ======================================
+  
+  app:
+    image: yourusername/sikolbia-app:latest
+    container_name: sikolbia-app
+    working_dir: /var/www/html
+    volumes:
+      - app_storage:/var/www/html/storage
+      - app_public:/var/www/html/public/storage
+    networks:
+      - sikolbia-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ml-api:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=sikolbia_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootsecret
+      - ML_API_URL=http://ml-api:8000
+      - NBM_API_URL=http://ml-api:8000
+      - APP_ENV=production
+      - APP_DEBUG=false
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+        reservations:
+          memory: 512m
+
+  nginx:
+    image: nginx:alpine
+    container_name: sikolbia-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - app_public:/var/www/html/public
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - sikolbia-network
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  queue:
+    image: yourusername/sikolbia-app:latest
+    container_name: sikolbia-queue
+    working_dir: /var/www/html
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - sikolbia-network
+    depends_on:
+      - mysql
+      - redis
+      - app
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=sikolbia_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootsecret
+      - QUEUE_CONNECTION=database
+    command: php artisan queue:work --tries=3 --timeout=60
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ======================================
+  # Database Services
+  # ======================================
+  
+  mysql:
+    image: mysql:8.0
+    container_name: sikolbia-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sikolbia_db
+      MYSQL_ROOT_PASSWORD: rootsecret
+      MYSQL_USER: sikolbia_user
+      MYSQL_PASSWORD: sikolbia_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql.prod.cnf:/etc/mysql/conf.d/custom.cnf
+    networks:
+      - sikolbia-network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootsecret"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: sikolbia-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - sikolbia-network
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  redis:
+    image: redis:7-alpine
+    container_name: sikolbia-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sikolbia-network
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ======================================
+  # Machine Learning API Service
+  # ======================================
+  
+  ml-api:
+    image: yourusername/sikolbia-ml:latest
+    container_name: sikolbia-ml-api
+    restart: unless-stopped
+    ports:
+      - "8082:8000"
+    volumes:
+      - ml_models:/app/ml_models
+      - ml_logs:/app/logs
+    environment:
+      - APP_ENV=production
+      - MODEL_PATH=/app/ml_models/models/nbm_production
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - sikolbia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+        reservations:
+          memory: 1g
+
+# ======================================
+# Volumes
+# ======================================
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_storage:
+    driver: local
+  app_public:
+    driver: local
+  ml_models:
+    driver: local
+  ml_logs:
+    driver: local
+
+# ======================================
+# Networks
+# ======================================
+
+networks:
+  sikolbia-network:
+    driver: bridge
+    name: sikolbia-network
