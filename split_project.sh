@@ -68,21 +68,28 @@ EXCLUDE_FILES=(
 
 # Copy all files except excluded ones
 echo "🔄 Copying files to $TARGET_APP_DIR..."
-rsync -av --progress \
-    --exclude 'ml_models/' \
-    --exclude 'fastapi/' \
-    --exclude 'node_modules/' \
-    --exclude 'vendor/' \
-    --exclude '.git/' \
-    --exclude 'storage/logs/*' \
-    --exclude 'storage/framework/cache/*' \
-    --exclude 'storage/framework/sessions/*' \
-    --exclude 'storage/framework/views/*' \
-    --exclude 'bootstrap/cache/*' \
-    --exclude '*.py' \
-    --exclude 'requirements.txt' \
-    --exclude '.env' \
-    "$SOURCE_DIR/" "$TARGET_APP_DIR/"
+
+# Use cp instead of rsync (works on Windows Git Bash)
+cp -r "$SOURCE_DIR/"* "$TARGET_APP_DIR/" 2>/dev/null || true
+cp -r "$SOURCE_DIR/".* "$TARGET_APP_DIR/" 2>/dev/null || true
+
+# Remove excluded directories
+echo "🗑️  Removing ML-specific files..."
+rm -rf "$TARGET_APP_DIR/ml_models"
+rm -rf "$TARGET_APP_DIR/fastapi"
+rm -rf "$TARGET_APP_DIR/node_modules"
+rm -rf "$TARGET_APP_DIR/vendor"
+rm -rf "$TARGET_APP_DIR/.git"
+rm -f "$TARGET_APP_DIR/requirements.txt"
+rm -f "$TARGET_APP_DIR/"*.py 2>/dev/null || true
+
+# Clean storage and cache
+echo "🧹 Cleaning cache directories..."
+find "$TARGET_APP_DIR/storage/logs" -type f -name "*.log" -delete 2>/dev/null || true
+rm -rf "$TARGET_APP_DIR/storage/framework/cache/"* 2>/dev/null || true
+rm -rf "$TARGET_APP_DIR/storage/framework/sessions/"* 2>/dev/null || true
+rm -rf "$TARGET_APP_DIR/storage/framework/views/"* 2>/dev/null || true
+rm -rf "$TARGET_APP_DIR/bootstrap/cache/"* 2>/dev/null || true
 
 # Create sikolbia-app specific files
 echo "📝 Creating sikolbia-app Dockerfile..."
