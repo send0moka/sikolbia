@@ -91,6 +91,13 @@ rm -rf "$TARGET_APP_DIR/storage/framework/sessions/"* 2>/dev/null || true
 rm -rf "$TARGET_APP_DIR/storage/framework/views/"* 2>/dev/null || true
 rm -rf "$TARGET_APP_DIR/bootstrap/cache/"* 2>/dev/null || true
 
+# Ensure vite.config.js exists
+echo "📦 Ensuring vite.config.js exists..."
+if [ ! -f "$TARGET_APP_DIR/vite.config.js" ] && [ -f "$SOURCE_DIR/vite.config.js" ]; then
+    cp "$SOURCE_DIR/vite.config.js" "$TARGET_APP_DIR/"
+    echo "✅ vite.config.js copied"
+fi
+
 # Create sikolbia-app specific files
 echo "📝 Creating sikolbia-app Dockerfile..."
 cat > "$TARGET_APP_DIR/Dockerfile" << 'EOF'
