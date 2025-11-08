@@ -387,6 +387,9 @@ cp -r "$SOURCE_DIR/fastapi/"* "$TARGET_ML_DIR/app/"
 echo "📋 Copying requirements.txt..."
 cp "$SOURCE_DIR/requirements.txt" "$TARGET_ML_DIR/"
 
+echo "📋 Copying main API file (nbm_api.py)..."
+cp "$SOURCE_DIR/nbm_api.py" "$TARGET_ML_DIR/" 2>/dev/null || echo "⚠️  Warning: nbm_api.py not found"
+
 # Copy Python test scripts
 echo "📋 Copying test scripts..."
 cp "$SOURCE_DIR/test_api.py" "$TARGET_ML_DIR/tests/" 2>/dev/null || true
