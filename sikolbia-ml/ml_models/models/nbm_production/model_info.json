@@ -1,0 +1,14 @@
+{
+  "name": "NBM Simple Model",
+  "version": "1.0.0",
+  "algorithm": "HuberRegressor",
+  "accuracy": "Testing Mode",
+  "features": [
+    "tahun",
+    "bulan",
+    "kelompok_bps_encoded",
+    "komoditi_bps_encoded"
+  ],
+  "last_trained": "2025-08-15T14:40:34.557817",
+  "description": "Simple model for API testing"
+}

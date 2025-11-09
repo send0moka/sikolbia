@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sikolbia-app:latest
+    container_name: sikolbia-app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html:delegated
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
+    networks:
+      - sikolbia-network
+    depends_on:
+      - mysql
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: sikolbia-nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html:delegated
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - sikolbia-network
+    depends_on:
+      - app
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sikolbia-queue
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html:delegated
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
+    networks:
+      - sikolbia-network
+    depends_on:
+      - mysql
+      - redis
+    command: php artisan queue:work --tries=3 --timeout=90
+
+  mysql:
+    image: mysql:8.0
+    container_name: sikolbia-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sikolbia_db
+      MYSQL_USER: sikolbia_user
+      MYSQL_PASSWORD: sikolbia_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - sikolbia-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sikolbia-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8081:80"
+    networks:
+      - sikolbia-network
+    depends_on:
+      - mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: sikolbia-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sikolbia-network
+    command: redis-server --appendonly yes
+
+volumes:
+  db_data:
+  vendor_data:
+  node_modules_data:
+  redis_data:
+
+networks:
+  sikolbia-network:
+    external: true

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  ml-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sikolbia-ml:latest
+    container_name: sikolbia-ml-api
+    restart: unless-stopped
+    ports:
+      - "8082:8000"
+    volumes:
+      - ./ml_models:/app/ml_models
+      - ./logs:/app/logs
+    environment:
+      - APP_ENV=production
+      - MODEL_PATH=/app/ml_models/models/nbm_production
+    networks:
+      - sikolbia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  sikolbia-network:
+    external: true
+    name: sikolbia-network
