@@ -2,7 +2,7 @@
     <!-- Leaflet.js for interactive maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    
+
     <style>
         #alamatMap {
             height: 500px;
@@ -16,7 +16,7 @@
         .search-input { border-radius: 8px; border: 1px solid #ccc; padding: 8px 12px; width: 100%; }
         .alamat-table th, .alamat-table td { font-size: 14px; padding: 8px 10px; }
         .alamat-table tr:hover { background: #f3f4f6; }
-        
+
         /* Custom popup styling */
         .custom-popup .leaflet-popup-content-wrapper {
             border-radius: 12px;
@@ -86,21 +86,21 @@
             <!-- Search & Filter -->
             <div x-show="!isLoading" class="mb-6 flex flex-col md:flex-row gap-4 items-center">
                 <input type="text" class="search-input" placeholder="Cari alamat, nama, atau wilayah..." x-model="searchQuery" @input="filterAlamat()">
-                
+
                 <select class="search-input md:w-48" x-model="selectedProvinsi" @change="filterAlamat()">
                     <option value="">Semua Provinsi</option>
                     <template x-for="provinsi in provinsiList" :key="provinsi">
                         <option :value="provinsi" x-text="provinsi"></option>
                     </template>
                 </select>
-                
+
                 <select class="search-input md:w-48" x-model="selectedKabupaten" @change="filterAlamat()">
                     <option value="">Semua Kabupaten/Kota</option>
                     <template x-for="kabupaten in kabupatenList" :key="kabupaten">
                         <option :value="kabupaten" x-text="kabupaten"></option>
                     </template>
                 </select>
-                
+
                 <select class="search-input md:w-48" x-model="selectedJenis" @change="filterAlamat()">
                     <option value="">Semua Jenis Instansi</option>
                     <template x-for="jenis in jenisLokasi" :key="jenis">
@@ -204,7 +204,7 @@
                                 <td x-text="alamat.nama"></td>
                                 <td>
                                     <template x-if="alamat.gambar">
-                                        <img :src="alamat.gambar" :alt="alamat.nama" 
+                                        <img :src="alamat.gambar" :alt="alamat.nama"
                                              class="w-16 h-12 object-cover rounded shadow-sm"
                                              onerror="this.style.display='none'">
                                     </template>
@@ -276,6 +276,12 @@
     </div>
 
     <script>
+        window.APP_URL = "{{ config('app.url') }}";
+    </script>
+
+    <script>
+        const baseUrl = window.APP_URL || '';
+
         // Ensure DOM is fully loaded before initializing Alpine
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded, initializing Alpine components...');
@@ -338,7 +344,7 @@
 
                         // Fetch data from public API endpoint
                         const response = await Promise.race([
-                            fetch('/api/daftar-alamat/data', {
+                            fetch(`${baseUrl}/api/daftar-alamat/data`, {
                                 method: 'GET',
                                 headers: {
                                     'Accept': 'application/json',
@@ -368,7 +374,7 @@
                         this.alamatList = data;
                         this.provinsiList = [...new Set(data.map(a => a.provinsi))].filter(p => p).sort();
                         this.kabupatenList = [...new Set(data.map(a => a.kabupaten_kota))].filter(k => k).sort();
-                        
+
                         // Extract individual jenis instansi from arrays
                         const allJenisInstansi = [];
                         data.forEach(item => {
@@ -377,7 +383,7 @@
                             }
                         });
                         this.jenisLokasi = [...new Set(allJenisInstansi)].sort();
-                        
+
                         this.filteredAlamat = [...data]; // Initialize filtered list
 
                         console.log('Processed data:');
@@ -447,7 +453,7 @@
                         ];
                         this.provinsiList = [...new Set(this.alamatList.map(a => a.provinsi))].filter(p => p).sort();
                         this.kabupatenList = [...new Set(this.alamatList.map(a => a.kabupaten_kota))].filter(k => k).sort();
-                        
+
                         // Extract individual jenis instansi from arrays for fallback data
                         const allJenisInstansi = [];
                         this.alamatList.forEach(item => {
@@ -456,7 +462,7 @@
                             }
                         });
                         this.jenisLokasi = [...new Set(allJenisInstansi)].sort();
-                        
+
                         this.filteredAlamat = [...this.alamatList];
 
                         this.dataInitialized = true;
@@ -511,11 +517,11 @@
                                 a.jenis.toLowerCase().includes(this.searchQuery.toLowerCase());
                             const matchProvinsi = this.selectedProvinsi === '' || a.provinsi === this.selectedProvinsi;
                             const matchKabupaten = this.selectedKabupaten === '' || a.kabupaten_kota === this.selectedKabupaten;
-                            
+
                             // Check if selected jenis exists in jenis_instansi array
-                            const matchJenis = this.selectedJenis === '' || 
+                            const matchJenis = this.selectedJenis === '' ||
                                 (a.jenis_instansi && Array.isArray(a.jenis_instansi) && a.jenis_instansi.includes(this.selectedJenis));
-                            
+
                             return matchQuery && matchProvinsi && matchKabupaten && matchJenis;
                         });
 
@@ -619,17 +625,17 @@
                         if (alamat.lat && alamat.lng) {
                             // Create popup content with image if available
                             let popupContent = `<div class="max-w-sm p-4">`;
-                            
+
                             if (alamat.gambar) {
                                 popupContent += `
                                     <div class="mb-1">
-                                        <img src="${alamat.gambar}" alt="${alamat.nama}" 
+                                        <img src="${alamat.gambar}" alt="${alamat.nama}"
                                              class="w-full h-32 object-cover rounded-lg shadow-md"
                                              onerror="this.style.display='none'">
                                     </div>
                                 `;
                             }
-                            
+
                             popupContent += `
                                 <div class="">
                                     <h3 class="p-0 font-bold text-gray-900 text-sm">${alamat.nama}</h3>
@@ -638,19 +644,19 @@
                                     <p class="!m-0 text-xs text-blue-600 font-medium">${alamat.kabupaten_kota}</p>
                                     <p class="!m-0 text-xs text-green-600">${alamat.jenis}</p>
                             `;
-                            
+
                             if (alamat.telp) {
                                 popupContent += `<p class="!m-0 text-xs text-gray-500">📞 ${alamat.telp}</p>`;
                             }
-                            
+
                             if (alamat.email) {
                                 popupContent += `<p class="!m-0 text-xs text-gray-500">✉️ ${alamat.email}</p>`;
                             }
-                            
+
                             if (alamat.website) {
                                 popupContent += `<p class="!m-0 text-xs text-blue-500"><a href="${alamat.website}" target="_blank" class="hover:underline">🌐 Website</a></p>`;
                             }
-                            
+
                             popupContent += `</div></div>`;
 
                             const marker = L.marker([alamat.lat, alamat.lng])
@@ -661,7 +667,7 @@
                                     autoClose: true,
                                     autoPan: false
                                 });
-                            
+
                             // Add marker to map
                             marker.addTo(this.map);
                             this.markers.push(marker);
@@ -682,13 +688,13 @@
                     if (this.map && alamat.lat && alamat.lng) {
                         // Close any open popups first
                         this.map.closePopup();
-                        
+
                         // Set view with smooth transition
                         this.map.setView([alamat.lat, alamat.lng], 14, {
                             animate: true,
                             duration: 1
                         });
-                        
+
                         // Find and open the corresponding marker popup
                         setTimeout(() => {
                             this.markers.forEach(m => {
