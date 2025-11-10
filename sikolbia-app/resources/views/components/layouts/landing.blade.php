@@ -13,7 +13,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <style>
         :root {
             --color-primary: #2f8b3e;
@@ -33,7 +33,7 @@
                     <div class="flex items-center">
                         <!-- Logo (allow shrink; hide long title below lg to avoid overflow) -->
                         <div class="flex items-center min-w-0">
-                            <img src="/favicon.svg" alt="Logo" class="h-8 w-8 mr-3">
+                            <img src="{{ asset('favicon.svg') }}" alt="Logo" class="h-8 w-8 mr-3">
                             <!-- Always show full title; wrap and scale text so it fits on small screens -->
                             <a href="{{ route('home') }}" class="block text-xl max-[1024px]:text-lg max-[768px]:text-base max-[420px]:text-sm font-semibold text-[#6a4c35] hover:text-[#782c7c] transition-colors leading-tight max-w-[55vw] md:max-w-[40vw] lg:max-w-none">
                                 SIKOLBIA
@@ -43,30 +43,30 @@
                         <!-- Navigation Links (show from md and up to avoid overflow on small widths/zoom) -->
                         <div class="hidden md:ml-8 md:flex md:space-x-8 md:items-center">
                             <!-- Home -->
-                            <a href="{{ route('home') }}" 
+                            <a href="{{ route('home') }}"
                                class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
                                 Home
                             </a>
 
                             <!-- Ketersediaan Dropdown -->
                             <div class="relative h-16 flex items-center" x-data="{ open: false }">
-                                <button @click="open = !open" 
+                                <button @click="open = !open"
                                         class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
                                     Ketersediaan
                                     <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
-                                <div x-show="open" 
+                                <div x-show="open"
                                      x-transition
                                      @click.outside="open = false"
                                      class="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                     <div class="py-1">
-                                        <a href="{{ route('ketersediaan.konsep-metode') }}" 
+                                        <a href="{{ route('ketersediaan.konsep-metode') }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Konsep dan Metode
                                         </a>
-                                        <a href="{{ route('ketersediaan.laporan-nbm') }}" 
+                                        <a href="{{ route('ketersediaan.laporan-nbm') }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Laporan Data NBM
                                         </a>
@@ -74,19 +74,19 @@
                                         <div class="px-4 py-2">
                                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Akses Publik</p>
                                         </div>
-                                        <a href="{{ route('public.ketersediaan.dashboard') }}" 
+                                        <a href="{{ route('public.ketersediaan.dashboard') }}"
                                            class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
                                             <i class="fas fa-chart-bar mr-2"></i>Dashboard NBM Publik
                                         </a>
-                                        <a href="{{ route('public.ketersediaan.laporan-publik') }}" 
+                                        <a href="{{ route('public.ketersediaan.laporan-publik') }}"
                                            class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
                                             <i class="fas fa-file-alt mr-2"></i>Laporan NBM Publik
                                         </a>
-                                        <a href="{{ route('public.ketersediaan.tentang-nbm') }}" 
+                                        <a href="{{ route('public.ketersediaan.tentang-nbm') }}"
                                            class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
                                             <i class="fas fa-info-circle mr-2"></i>Tentang NBM
                                         </a>
-                                        <a href="{{ route('public.ketersediaan.metodologi') }}" 
+                                        <a href="{{ route('public.ketersediaan.metodologi') }}"
                                            class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
                                             <i class="fas fa-book mr-2"></i>Metodologi NBM
                                         </a>
@@ -96,31 +96,31 @@
 
                             <!-- Konsumsi Dropdown -->
                             <div class="relative h-16 flex items-center" x-data="{ open: false }">
-                                <button @click="open = !open" 
+                                <button @click="open = !open"
                                         class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
                                     Konsumsi
                                     <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
-                                <div x-show="open" 
+                                <div x-show="open"
                                      x-transition
                                      @click.outside="open = false"
                                      class="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                     <div class="py-1">
-                                        <a href="{{ route('konsumsi.konsep-metode') }}" 
+                                        <a href="{{ route('konsumsi.konsep-metode') }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Konsep dan Metode
                                         </a>
-                                        <a href="{{ route('konsumsi.laporan-susenas') }}" 
+                                        <a href="{{ route('konsumsi.laporan-susenas') }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Laporan Data Susenas
                                         </a>
-                                        <a href="{{ route('konsumsi.per-kapita-seminggu') }}" 
+                                        <a href="{{ route('konsumsi.per-kapita-seminggu') }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Konsumsi Per Kapita Seminggu
                                         </a>
-                                        <a href="{{ route('konsumsi.per-kapita-setahun') }}" 
+                                        <a href="{{ route('konsumsi.per-kapita-setahun') }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Konsumsi Per Kapita Setahun
                                         </a>
@@ -130,14 +130,14 @@
 
                             <!-- Pertanian Dropdown -->
                             <div class="relative h-16 flex items-center" x-data="{ open: false }">
-                                <button @click="open = !open" 
+                                <button @click="open = !open"
                                         class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
                                     Data Non Komoditas Pertanian
                                     <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
-                                <div x-show="open" 
+                                <div x-show="open"
                                      x-transition
                                      @click.outside="open = false"
                                      class="absolute left-0 top-full mt-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
@@ -146,7 +146,7 @@
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Daftar Alamat
                                         </a>
-                                        <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
+                                        <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}"
                                            class="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#efefa4]/20 hover:text-[#6a4c35] font-medium transition-colors">
                                             Data Benih dan Pupuk
                                         </a>
@@ -167,7 +167,7 @@
                             </div>
 
                             <!-- Manajemen Data -->
-                            <a href="{{ route('login') }}" 
+                            <a href="{{ route('login') }}"
                                class="border-transparent text-neutral-500 hover:border-[#2f8b3e] hover:text-[#2f8b3e] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-16">
                                 Manajemen Data
                             </a>
@@ -176,7 +176,7 @@
 
                     <!-- Mobile menu button (visible below md) -->
                     <div class="md:hidden flex items-center">
-                        <button x-data x-on:click="$dispatch('toggle-mobile-menu')" 
+                        <button x-data x-on:click="$dispatch('toggle-mobile-menu')"
                                 class="inline-flex items-center justify-center p-2 rounded-md text-neutral-400 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 transition-colors">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -187,20 +187,20 @@
             </div>
 
           <!-- Mobile menu (visible below md) -->
-            <div x-data="{ open: false }" 
+            <div x-data="{ open: false }"
                  x-on:toggle-mobile-menu.window="open = !open"
-                 x-show="open" 
+                 x-show="open"
                  x-transition
               class="md:hidden bg-white border-t border-neutral-200">
                 <div class="pt-2 pb-3 space-y-1">
-                    <a href="{{ route('home') }}" 
+                    <a href="{{ route('home') }}"
                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 hover:border-[#2f8b3e] transition-colors">
                         Home
                     </a>
-                    
+
                     <!-- Mobile Ketersediaan -->
                     <div x-data="{ open: false }">
-                        <button @click="open = !open" 
+                        <button @click="open = !open"
                                 class="w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 flex justify-between items-center transition-colors">
                             Ketersediaan
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,29 +208,29 @@
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="pl-6 space-y-1 bg-[#efefa4]/10">
-                            <a href="{{ route('ketersediaan.konsep-metode') }}" 
+                            <a href="{{ route('ketersediaan.konsep-metode') }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Konsep dan Metode
                             </a>
-                            <a href="{{ route('ketersediaan.laporan-nbm') }}" 
+                            <a href="{{ route('ketersediaan.laporan-nbm') }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Laporan Data NBM
                             </a>
                             <div class="border-t border-gray-300 my-2"></div>
                             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider py-1">Akses Publik</p>
-                            <a href="{{ route('public.ketersediaan.dashboard') }}" 
+                            <a href="{{ route('public.ketersediaan.dashboard') }}"
                                class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                 <i class="fas fa-chart-bar mr-2"></i>Dashboard NBM Publik
                             </a>
-                            <a href="{{ route('public.ketersediaan.laporan-publik') }}" 
+                            <a href="{{ route('public.ketersediaan.laporan-publik') }}"
                                class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                 <i class="fas fa-file-alt mr-2"></i>Laporan NBM Publik
                             </a>
-                            <a href="{{ route('public.ketersediaan.tentang-nbm') }}" 
+                            <a href="{{ route('public.ketersediaan.tentang-nbm') }}"
                                class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                 <i class="fas fa-info-circle mr-2"></i>Tentang NBM
                             </a>
-                            <a href="{{ route('public.ketersediaan.metodologi') }}" 
+                            <a href="{{ route('public.ketersediaan.metodologi') }}"
                                class="block py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
                                 <i class="fas fa-book mr-2"></i>Metodologi NBM
                             </a>
@@ -239,7 +239,7 @@
 
                     <!-- Mobile Konsumsi -->
                     <div x-data="{ open: false }">
-                        <button @click="open = !open" 
+                        <button @click="open = !open"
                                 class="w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 flex justify-between items-center transition-colors">
                             Konsumsi
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,19 +247,19 @@
                             </svg>
                         </button>
                         <div x-show="open" x-transition class="pl-6 space-y-1 bg-[#efefa4]/10">
-                            <a href="{{ route('konsumsi.konsep-metode') }}" 
+                            <a href="{{ route('konsumsi.konsep-metode') }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Konsep dan Metode
                             </a>
-                            <a href="{{ route('konsumsi.laporan-susenas') }}" 
+                            <a href="{{ route('konsumsi.laporan-susenas') }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Laporan Data Susenas
                             </a>
-                            <a href="{{ route('konsumsi.per-kapita-seminggu') }}" 
+                            <a href="{{ route('konsumsi.per-kapita-seminggu') }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Per Kapita Seminggu
                             </a>
-                            <a href="{{ route('konsumsi.per-kapita-setahun') }}" 
+                            <a href="{{ route('konsumsi.per-kapita-setahun') }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Per Kapita Setahun
                             </a>
@@ -268,7 +268,7 @@
 
                     <!-- Mobile Pertanian -->
                     <div x-data="{ open: false }">
-                        <button @click="open = !open" 
+                        <button @click="open = !open"
                                 class="w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 flex justify-between items-center transition-colors">
                             Data Non Komoditas Pertanian
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -280,7 +280,7 @@
                                  class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Daftar Alamat
                             </a>
-                            <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
+                            <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}"
                                class="block py-2 text-sm text-neutral-600 hover:text-[#6a4c35] font-medium transition-colors">
                                 Data Benih dan Pupuk
                             </a>
@@ -299,7 +299,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('login') }}" 
+                    <a href="{{ route('login') }}"
                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-neutral-500 hover:text-[#2f8b3e] hover:bg-[#efefa4]/20 hover:border-[#2f8b3e] transition-colors">
                         Manajemen Data
                     </a>
@@ -319,7 +319,7 @@
                     <!-- Logo & Contact Info -->
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center mb-6">
-                            <img src="/favicon.svg" alt="Logo" class="h-10 w-10 mr-3">
+                            <img src="{{ asset('favicon.svg') }}" alt="Logo" class="h-10 w-10 mr-3">
                             <div>
                                 <h3 class="text-xl font-semibold text-[#efefa4]">SIKOLBIA</h3>
                                 <p class="text-sm text-white/80">Sistem Informasi Konsumsi + Lahan + Iklim + Benih + Alamat</p>
@@ -365,13 +365,13 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Ketersediaan Section -->
                     <div>
                         <h4 class="text-lg font-semibold mb-4 text-[#efefa4] border-b border-[#efefa4]/30 pb-2">Ketersediaan</h4>
                         <ul class="space-y-2 text-sm">
                             <li>
-                                <a href="{{ route('ketersediaan.konsep-metode') }}" 
+                                <a href="{{ route('ketersediaan.konsep-metode') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -380,7 +380,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('ketersediaan.laporan-nbm') }}" 
+                                <a href="{{ route('ketersediaan.laporan-nbm') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -392,7 +392,7 @@
                                 <span class="text-xs text-[#efefa4]/80 font-medium tracking-wide uppercase">Akses Publik</span>
                             </li>
                             <li>
-                                <a href="{{ route('public.ketersediaan.dashboard') }}" 
+                                <a href="{{ route('public.ketersediaan.dashboard') }}"
                                    class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -401,7 +401,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('public.ketersediaan.laporan-publik') }}" 
+                                <a href="{{ route('public.ketersediaan.laporan-publik') }}"
                                    class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
@@ -411,7 +411,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('public.ketersediaan.tentang-nbm') }}" 
+                                <a href="{{ route('public.ketersediaan.tentang-nbm') }}"
                                    class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
@@ -420,7 +420,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('public.ketersediaan.metodologi') }}" 
+                                <a href="{{ route('public.ketersediaan.metodologi') }}"
                                    class="text-blue-300 hover:text-blue-200 transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
@@ -431,13 +431,13 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Konsumsi Section -->
                     <div>
                         <h4 class="text-lg font-semibold mb-4 text-[#efefa4] border-b border-[#efefa4]/30 pb-2">Konsumsi</h4>
                         <ul class="space-y-2 text-sm">
                             <li>
-                                <a href="{{ route('konsumsi.konsep-metode') }}" 
+                                <a href="{{ route('konsumsi.konsep-metode') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -446,7 +446,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('konsumsi.laporan-susenas') }}" 
+                                <a href="{{ route('konsumsi.laporan-susenas') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -455,7 +455,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('konsumsi.per-kapita-seminggu') }}" 
+                                <a href="{{ route('konsumsi.per-kapita-seminggu') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -464,7 +464,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('konsumsi.per-kapita-setahun') }}" 
+                                <a href="{{ route('konsumsi.per-kapita-setahun') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -474,13 +474,13 @@
                             </li>
                         </ul>
                     </div>
-                    
+
                     <!-- Pertanian Section -->
                     <div>
                         <h4 class="text-lg font-semibold mb-4 text-[#efefa4] border-b border-[#efefa4]/30 pb-2">Pertanian</h4>
                         <ul class="space-y-2 text-sm">
                             <li>
-                                <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}" 
+                                <a href="{{ route('pertanian.report', ['moduleType' => 'benih-pupuk']) }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -489,7 +489,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}" 
+                                <a href="{{ route('pertanian.report', ['moduleType' => 'iklim-opt-dpi']) }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -498,7 +498,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}" 
+                                <a href="{{ route('pertanian.report', ['moduleType' => 'lahan']) }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -507,7 +507,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('pertanian.daftar-alamat') }}" 
+                                <a href="{{ route('pertanian.daftar-alamat') }}"
                                    class="text-white/80 hover:text-[#efefa4] transition-colors duration-200 flex items-center group">
                                     <svg class="w-3 h-3 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
@@ -518,7 +518,7 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <!-- Footer Bottom -->
                 <div class="mt-8 pt-8 border-t border-white/20">
                     <div class="flex flex-col md:flex-row justify-between items-center">
@@ -526,7 +526,7 @@
                             © {{ date('Y') }} Pusat Data dan Sistem Informasi Pertanian. All rights reserved.
                         </p>
                         <div class="flex items-center space-x-4">
-                            <a href="{{ route('login') }}" 
+                            <a href="{{ route('login') }}"
                                class="bg-[#2f8b3e] hover:bg-[#2f8b3e]/80 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
