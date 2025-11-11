@@ -85,6 +85,9 @@ Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')
     Route::post('/benih-pupuk/export', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportBenihPupuk'])->name('benih-pupuk.export');
     
     Route::get('/iklim', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'iklim'])->name('iklim');
+    Route::post('/iklim/filter', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'filterIklim'])->name('iklim.filter');
+    Route::get('/iklim/variabels/{topik}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getVariabelsByTopikIklim'])->name('iklim.variabels');
+    Route::post('/iklim/export', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportIklim'])->name('iklim.export');
     
     // Settings & Profile
     Route::get('/profile', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'profile'])->name('profile');

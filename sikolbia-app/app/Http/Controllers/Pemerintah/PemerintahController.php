@@ -688,7 +688,136 @@ class PemerintahController extends Controller
 
     public function iklim()
     {
-        return view('pemerintah.iklim');
+        $topikOptions = \App\Models\IklimoptdpiTopik::orderBy('deskripsi')->get(['id', 'deskripsi']);
+        $wilayahOptions = \App\Models\Wilayah::orderBy('nama')->get(['id', 'nama']);
+        $klasifikasiOptions = \App\Models\IklimoptdpiKlasifikasi::orderBy('deskripsi')->get(['id', 'deskripsi']);
+        
+        return view('pemerintah.iklim', compact('topikOptions', 'wilayahOptions', 'klasifikasiOptions'));
+    }
+
+    public function filterIklim(Request $request)
+    {
+        try {
+            Log::info('Filter Iklim Request', [
+                'params' => $request->all(),
+                'method' => $request->method()
+            ]);
+
+            $request->validate([
+                'topik' => 'nullable|exists:iklimoptdpi_topik,id',
+                'variabel' => 'nullable|exists:iklimoptdpi_variabel,id',
+                'klasifikasi' => 'nullable|exists:iklimoptdpi_klasifikasi,id',
+                'wilayah' => 'nullable|exists:wilayah,id',
+                'tahun' => 'nullable|integer|min:2020|max:' . (date('Y') + 1),
+                'bulan' => 'nullable|integer|min:1|max:12',
+                'limit' => 'nullable|integer|min:10|max:1000'
+            ]);
+
+            Log::info('Validation passed');
+
+            $query = \App\Models\IklimoptdpiData::with(['bulan', 'wilayah', 'variabel.topik', 'klasifikasi']);
+
+            if ($request->filled('variabel')) {
+                $query->where('id_variabel', $request->variabel);
+            } elseif ($request->filled('topik')) {
+                $query->whereHas('variabel', function($q) use ($request) {
+                    $q->where('id_topik', $request->topik);
+                });
+            }
+
+            if ($request->filled('klasifikasi')) {
+                $query->where('id_klasifikasi', $request->klasifikasi);
+            }
+
+            if ($request->filled('wilayah')) {
+                $query->where('id_wilayah', $request->wilayah);
+            }
+
+            if ($request->filled('tahun')) {
+                $query->where('tahun', $request->tahun);
+            }
+
+            if ($request->filled('bulan')) {
+                $query->where('id_bulan', $request->bulan);
+            }
+
+            $limit = $request->input('limit', 100);
+            $data = $query->orderBy('tahun', 'desc')
+                         ->orderBy('id_bulan', 'desc')
+                         ->paginate($limit);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data->items(),
+                'pagination' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
+                    'per_page' => $data->perPage(),
+                    'total' => $data->total()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Filter Iklim Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memfilter data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getVariabelsByTopikIklim($topikId)
+    {
+        try {
+            $variabels = \App\Models\IklimoptdpiVariabel::where('id_topik', $topikId)
+                ->orderBy('deskripsi')
+                ->get(['id', 'deskripsi', 'satuan']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $variabels
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data variabel',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportIklim(Request $request)
+    {
+        try {
+            $filters = [
+                'topik' => $request->input('topik'),
+                'variabel' => $request->input('variabel'),
+                'klasifikasi' => $request->input('klasifikasi'),
+                'wilayah' => $request->input('wilayah'),
+                'tahun' => $request->input('tahun'),
+                'bulan' => $request->input('bulan')
+            ];
+
+            $filename = 'iklim-opt-dpi-' . date('Y-m-d-His') . '.xlsx';
+            
+            return Excel::download(
+                new \App\Exports\PemerintahIklimExport($filters),
+                $filename
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Export Iklim Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Gagal mengekspor data: ' . $e->getMessage());
+        }
     }
 
     public function profile()
