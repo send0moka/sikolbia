@@ -526,27 +526,164 @@ class PemerintahController extends Controller
     public function exportLahan(Request $request)
     {
         try {
-            session([
-                'lahan_export_filters' => [
-                    'topik' => $request->input('topik'),
-                    'variabel' => $request->input('variabel'),
-                    'klasifikasi' => $request->input('klasifikasi'),
-                    'wilayah' => $request->input('wilayah'),
-                    'tahun' => $request->input('tahun'),
-                    'bulan' => $request->input('bulan')
-                ]
-            ]);
+            $filters = [
+                'topik' => $request->input('topik'),
+                'variabel' => $request->input('variabel'),
+                'klasifikasi' => $request->input('klasifikasi'),
+                'wilayah' => $request->input('wilayah'),
+                'tahun' => $request->input('tahun'),
+                'bulan' => $request->input('bulan')
+            ];
 
-            return redirect()->route('pemerintah.lahan.download');
+            $filename = 'lahan-' . date('Y-m-d-His') . '.xlsx';
+            
+            return Excel::download(
+                new \App\Exports\PemerintahLahanExport($filters),
+                $filename
+            );
 
         } catch (\Exception $e) {
+            Log::error('Export Lahan Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return back()->with('error', 'Gagal mengekspor data: ' . $e->getMessage());
         }
     }
 
     public function benihPupuk()
     {
-        return view('pemerintah.benih-pupuk');
+        $topikOptions = \App\Models\BenihPupukTopik::orderBy('deskripsi')->get(['id', 'deskripsi']);
+        $wilayahOptions = \App\Models\Wilayah::orderBy('nama')->get(['id', 'nama']);
+        $klasifikasiOptions = \App\Models\BenihPupukKlasifikasi::orderBy('deskripsi')->get(['id', 'deskripsi']);
+        
+        return view('pemerintah.benih-pupuk', compact('topikOptions', 'wilayahOptions', 'klasifikasiOptions'));
+    }
+
+    public function filterBenihPupuk(Request $request)
+    {
+        try {
+            Log::info('Filter Benih Pupuk Request', [
+                'params' => $request->all(),
+                'method' => $request->method()
+            ]);
+
+            $request->validate([
+                'topik' => 'nullable|exists:benih_pupuk_topik,id',
+                'variabel' => 'nullable|exists:benih_pupuk_variabel,id',
+                'klasifikasi' => 'nullable|exists:benih_pupuk_klasifikasi,id',
+                'wilayah' => 'nullable|exists:wilayah,id',
+                'tahun' => 'nullable|integer|min:2020|max:' . (date('Y') + 1),
+                'bulan' => 'nullable|integer|min:1|max:12',
+                'limit' => 'nullable|integer|min:10|max:1000'
+            ]);
+
+            Log::info('Validation passed');
+
+            $query = \App\Models\BenihPupukData::with(['bulan', 'wilayah', 'variabel.topik', 'klasifikasi']);
+
+            if ($request->filled('variabel')) {
+                $query->where('id_variabel', $request->variabel);
+            } elseif ($request->filled('topik')) {
+                $query->whereHas('variabel', function($q) use ($request) {
+                    $q->where('id_topik', $request->topik);
+                });
+            }
+
+            if ($request->filled('klasifikasi')) {
+                $query->where('id_klasifikasi', $request->klasifikasi);
+            }
+
+            if ($request->filled('wilayah')) {
+                $query->where('id_wilayah', $request->wilayah);
+            }
+
+            if ($request->filled('tahun')) {
+                $query->where('tahun', $request->tahun);
+            }
+
+            if ($request->filled('bulan')) {
+                $query->where('id_bulan', $request->bulan);
+            }
+
+            $limit = $request->input('limit', 100);
+            $data = $query->orderBy('tahun', 'desc')
+                         ->orderBy('id_bulan', 'desc')
+                         ->paginate($limit);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data->items(),
+                'pagination' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
+                    'per_page' => $data->perPage(),
+                    'total' => $data->total()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Filter Benih Pupuk Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memfilter data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getVariabelsByTopikBenihPupuk($topikId)
+    {
+        try {
+            $variabels = \App\Models\BenihPupukVariabel::where('id_topik', $topikId)
+                ->orderBy('deskripsi')
+                ->get(['id', 'deskripsi', 'satuan']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $variabels
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data variabel',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportBenihPupuk(Request $request)
+    {
+        try {
+            $filters = [
+                'topik' => $request->input('topik'),
+                'variabel' => $request->input('variabel'),
+                'klasifikasi' => $request->input('klasifikasi'),
+                'wilayah' => $request->input('wilayah'),
+                'tahun' => $request->input('tahun'),
+                'bulan' => $request->input('bulan')
+            ];
+
+            $filename = 'benih-pupuk-' . date('Y-m-d-His') . '.xlsx';
+            
+            return Excel::download(
+                new \App\Exports\PemerintahBenihPupukExport($filters),
+                $filename
+            );
+
+        } catch (\Exception $e) {
+            Log::error('Export Benih Pupuk Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Gagal mengekspor data: ' . $e->getMessage());
+        }
     }
 
     public function iklim()

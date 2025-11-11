@@ -80,6 +80,10 @@ Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')
     Route::post('/lahan/export', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportLahan'])->name('lahan.export');
     
     Route::get('/benih-pupuk', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'benihPupuk'])->name('benih-pupuk');
+    Route::post('/benih-pupuk/filter', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'filterBenihPupuk'])->name('benih-pupuk.filter');
+    Route::get('/benih-pupuk/variabels/{topik}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getVariabelsByTopikBenihPupuk'])->name('benih-pupuk.variabels');
+    Route::post('/benih-pupuk/export', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportBenihPupuk'])->name('benih-pupuk.export');
+    
     Route::get('/iklim', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'iklim'])->name('iklim');
     
     // Settings & Profile
