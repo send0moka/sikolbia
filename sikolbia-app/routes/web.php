@@ -75,6 +75,10 @@ Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')
     
     // Pertanian
     Route::get('/lahan', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'lahan'])->name('lahan');
+    Route::post('/lahan/filter', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'filterLahan'])->name('lahan.filter');
+    Route::get('/lahan/variabels/{topik}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getVariabelsByTopik'])->name('lahan.variabels');
+    Route::post('/lahan/export', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportLahan'])->name('lahan.export');
+    
     Route::get('/benih-pupuk', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'benihPupuk'])->name('benih-pupuk');
     Route::get('/iklim', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'iklim'])->name('iklim');
     
