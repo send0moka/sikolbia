@@ -10,12 +10,11 @@ import traceback
 import os
 import sys
 
-# Configure logging - disabled for production
+# Configure logging
 logging.basicConfig(
-    level=logging.ERROR,
+    level=logging.INFO,  # Changed from ERROR to INFO
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        # logging.FileHandler('logs/api_logs.log'),  # Disabled file logging
         logging.StreamHandler()
     ]
 )
@@ -87,6 +86,69 @@ class HealthResponse(BaseModel):
     model_loaded: bool = Field(..., description="Whether ML model is loaded")
     version: str = Field(..., description="API version")
 
+# Helper function for real model prediction
+async def predict_with_real_model(request):
+    """Use loaded LSTM model for prediction"""
+    try:
+        global production_model, model_info
+        
+        # Prepare input data for LSTM
+        historical_values = [dp.kalori_hari for dp in request.data_points]
+        
+        # Take last 6 data points for sequence
+        sequence_length = 6
+        if len(historical_values) < sequence_length:
+            padding_needed = sequence_length - len(historical_values)
+            historical_values = [0.0] * padding_needed + historical_values
+        else:
+            historical_values = historical_values[-sequence_length:]
+        
+        # Simple feature engineering (reshape for LSTM input)
+        input_sequence = np.array([historical_values]).reshape(1, sequence_length, 1)
+        
+        # Generate multi-step predictions
+        predictions = []
+        current_sequence = historical_values.copy()
+        
+        for i in range(request.n_periods):
+            input_seq = np.array([current_sequence[-sequence_length:]]).reshape(1, sequence_length, 1)
+            pred = production_model.predict(input_seq, verbose=0)
+            pred_val = float(pred[0][0])
+            predictions.append(max(0.0, pred_val))
+            current_sequence.append(pred_val)
+        
+        # Calculate confidence intervals (±20%)
+        confidence_intervals = []
+        for pred in predictions:
+            margin = pred * 0.20
+            confidence_intervals.append({
+                'lower_bound': round(max(0.0, pred - margin), 2),
+                'upper_bound': round(pred + margin, 2),
+                'margin_percent': 20.0
+            })
+        
+        main_ci = ConfidenceInterval(
+            lower_bound=confidence_intervals[0]['lower_bound'],
+            upper_bound=confidence_intervals[0]['upper_bound'],
+            margin_percent=20.0,
+            interval_width=round(confidence_intervals[0]['upper_bound'] - confidence_intervals[0]['lower_bound'], 2)
+        )
+        
+        return NBMPredictionResponse(
+            predictions=[round(p, 2) for p in predictions],
+            confidence_interval=main_ci,
+            confidence_intervals=confidence_intervals,
+            model_version=f"{model_info['version']}-lstm",
+            prediction_timestamp=datetime.now().isoformat(),
+            has_data=True,
+            warning=None
+        )
+        
+    except Exception as e:
+        logger.error(f"Real model prediction failed: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise
+
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
@@ -102,11 +164,22 @@ async def health_check():
         logger.error(f"Health check failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Health check failed")
 
-# Simple prediction endpoint with trend-based mock
+# Simple prediction endpoint with real model or fallback
 @app.post("/predict", response_model=NBMPredictionResponse)
 async def predict_nbm(request: NBMPredictionRequest):
-    """Predict NBM values based on historical data trend"""
+    """Predict NBM values using production model or fallback to trend-based"""
     try:
+        global production_model, model_info
+        
+        # If real model is loaded, use it for prediction
+        if production_model is not None and model_info.get('status') == 'loaded':
+            logger.info("Using production LSTM model for prediction")
+            predictions = await predict_with_real_model(request)
+            return predictions
+        
+        # Otherwise fallback to trend-based prediction
+        logger.info("Using trend-based fallback prediction")
+        
         # Extract historical calorie values
         historical_values = [dp.kalori_hari for dp in request.data_points]
         
@@ -131,7 +204,7 @@ async def predict_nbm(request: NBMPredictionRequest):
                     interval_width=0.0
                 ),
                 confidence_intervals=confidence_intervals,
-                model_version="1.0.0-lstm-enhanced-ensemble",
+                model_version=f"{model_info['version']}-fallback" if model_info else "1.0.0-fallback",
                 prediction_timestamp=datetime.now().isoformat(),
                 has_data=False,
                 warning="Data historis untuk komoditi ini kosong atau tidak tersedia. Tidak dapat melakukan prediksi."
@@ -217,15 +290,34 @@ async def predict_nbm(request: NBMPredictionRequest):
 @app.get("/model/info")
 async def get_model_info():
     """Get model information"""
-    return {
-        "model_version": "1.0.0-mock",
-        "model_type": "HuberRegressor Ensemble",
-        "features": ["tahun", "bulan", "kelompok", "komoditi"],
-        "target": "NBM",
-        "accuracy": "8.88% MAPE",
-        "last_trained": "2024-08-14",
-        "status": "development"
-    }
+    global model_info
+    
+    if model_info and model_info.get('status') == 'loaded':
+        return {
+            "model_version": model_info.get('version', '1.0.0'),
+            "model_type": model_info.get('architecture', 'LSTM Enhanced Ensemble'),
+            "status": "production",
+            "sequence_length": model_info.get('sequence_length', 6),
+            "features": model_info.get('features', 19),
+            "target": "NBM Kalori/Hari",
+            "last_trained": model_info.get('last_trained', 'N/A'),
+            "model_path": model_info.get('model_path', 'N/A')
+        }
+    else:
+        return {
+            "model_version": model_info.get('version', '1.0.0-mock') if model_info else '1.0.0-mock',
+            "model_type": "Trend-based Fallback",
+            "status": "mock" if not model_info else model_info.get('status', 'mock'),
+            "reason": model_info.get('reason', 'Model not loaded') if model_info else 'Model not loaded',
+            "features": ["tahun", "bulan", "kelompok", "komoditi"],
+            "target": "NBM Kalori/Hari",
+            "note": "Using trend-based prediction fallback"
+        }
+
+@app.get("/model/stats")
+async def get_model_stats():
+    """Get model statistics - alias for model info"""
+    return await get_model_info()
 
 # Startup event
 @app.on_event("startup")
@@ -234,17 +326,66 @@ async def startup_event():
     global production_model, model_info
     
     try:
-        # logger.info("Starting NBM Prediction API...")  # Disabled startup logging
-        # logger.info("Model loading skipped in development mode")  # Disabled startup logging
-        # TODO: Implement model loading when models are containerized properly
-        model_info = {
-            "version": "1.0.0-development",
-            "status": "mock"
-        }
-        # logger.info("API startup completed successfully")  # Disabled startup logging
+        logger.info("Starting NBM Prediction API...")
+        logger.info("Attempting to load production model...")
+        
+        # Try to load actual model
+        global production_model, model_info
+        
+        model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'nbm_production_model.keras')
+        
+        if os.path.exists(model_path):
+            try:
+                import tensorflow as tf
+                from tensorflow import keras
+                
+                production_model = keras.models.load_model(model_path, compile=False)
+                production_model.compile(
+                    optimizer='adam',
+                    loss='huber',
+                    metrics=['mae', 'mse']
+                )
+                
+                model_info = {
+                    "version": "1.0.0-production",
+                    "status": "loaded",
+                    "model_path": model_path,
+                    "architecture": "LSTM Enhanced Ensemble",
+                    "sequence_length": 6,
+                    "features": 19
+                }
+                logger.info(f"✅ Model loaded successfully from {model_path}")
+                logger.info(f"Model architecture: {model_info['architecture']}")
+                
+            except Exception as model_error:
+                logger.warning(f"⚠️  Failed to load model: {str(model_error)}")
+                logger.warning("Falling back to mock mode...")
+                model_info = {
+                    "version": "1.0.0-mock",
+                    "status": "mock",
+                    "reason": str(model_error)
+                }
+        else:
+            logger.warning(f"⚠️  Model file not found: {model_path}")
+            logger.warning("Running in mock mode...")
+            model_info = {
+                "version": "1.0.0-mock",
+                "status": "mock",
+                "reason": "Model file not found"
+            }
+        
+        logger.info("API startup completed")
+        logger.info(f"Mode: {model_info['status']}")
+        
     except Exception as e:
         logger.error(f"Startup failed: {str(e)}")
-        # Don't fail startup for now, just log the error
+        logger.error(traceback.format_exc())
+        # Don't fail startup, just use mock mode
+        model_info = {
+            "version": "1.0.0-mock",
+            "status": "mock",
+            "reason": str(e)
+        }
 
 if __name__ == "__main__":
     import uvicorn
