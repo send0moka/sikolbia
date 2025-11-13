@@ -3,7 +3,7 @@
 > **Sistem Informasi Ketersediaan Pangan dan Lahan Pertanian**  
 > Laravel 12 + Livewire 3 with FastAPI ML Service
 
-## Ì≥Å Project Structure
+## ÔøΩÔøΩÔøΩ Project Structure
 
 ```
 sikolbia/
@@ -11,7 +11,7 @@ sikolbia/
 ‚îî‚îÄ‚îÄ sikolbia-ml/            # FastAPI ML service
 ```
 
-## Ì∫Ä Quick Start with Docker Hub
+## ÔøΩÔøΩÔøΩ Quick Start with Docker Hub
 
 ```bash
 # Pull images
@@ -33,7 +33,7 @@ exit
 - ML API: http://localhost:8082/docs
 - phpMyAdmin: http://localhost:8081
 
-## Ì≥¶ Services
+## ÔøΩÔøΩÔøΩ Services
 
 ### sikolbia-app
 Laravel 12 + PHP 8.3 + MySQL + Redis + NGINX
@@ -41,10 +41,18 @@ Laravel 12 + PHP 8.3 + MySQL + Redis + NGINX
 ### sikolbia-ml  
 FastAPI + Python 3.10 + TensorFlow 2.15
 
-## Ì≥ö Documentation
+## üìö Documentation
 
-- [sikolbia-app/README.md](sikolbia-app/README.md)
-- [sikolbia-ml/README.md](sikolbia-ml/README.md)
+### Project Setup
+- [sikolbia-app/README.md](sikolbia-app/README.md) - Laravel application
+- [sikolbia-ml/README.md](sikolbia-ml/README.md) - FastAPI ML service
+
+### ML Integration
+- [docs/ml-integration/](docs/ml-integration/) - üìç **ML implementation docs** (LSTM model, API integration, deployment)
+- [docs/ml-integration/ML_PROJECT_INDEX.md](docs/ml-integration/ML_PROJECT_INDEX.md) - Complete navigation guide
+
+### Archive
+- [docs/thesis/](docs/thesis/) - Thesis defense documentation (completed)
 
 ---
 **Version**: 2.0 (Split Docker Project)

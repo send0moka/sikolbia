@@ -12,7 +12,7 @@
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                 </svg>
                 <p class="text-sm text-purple-800 dark:text-purple-300">
-                    <strong>Fitur Prediksi ML:</strong> Sistem akan memprediksi konsumsi pangan berdasarkan data historis 6 bulan terakhir.
+                    <strong>Fitur Prediksi ML:</strong> Sistem menggunakan model LSTM yang dilatih dengan data historis lengkap (1993-2024). Untuk prediksi, model menganalisis pola konsumsi dari 6 bulan terakhir untuk menghasilkan proyeksi yang akurat.
                 </p>
             </div>
         </div>
@@ -62,8 +62,9 @@
                                 <strong>Cara Kerja:</strong>
                             </p>
                             <ul class="text-xs text-neutral-600 dark:text-neutral-400 space-y-1 list-disc list-inside">
-                                <li>Sistem menganalisis data 6 bulan terakhir</li>
-                                <li>Model ML menghitung tren konsumsi</li>
+                                <li>Model dilatih dengan data historis lengkap (1993-2024)</li>
+                                <li>Sistem menganalisis pola 6 bulan terakhir sebagai input</li>
+                                <li>LSTM menghitung tren dan seasonality konsumsi</li>
                                 <li>Prediksi ditampilkan dengan confidence interval</li>
                             </ul>
                         </div>

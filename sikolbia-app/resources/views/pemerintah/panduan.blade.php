@@ -100,7 +100,7 @@
                     <div class="flex-1">
                         <h4 class="font-semibold text-neutral-900 dark:text-white mb-2">Prediksi Machine Learning</h4>
                         <p class="text-neutral-700 dark:text-neutral-300 text-sm">
-                            Fitur Prediksi NBM menggunakan model LSTM untuk memprediksi konsumsi pangan di masa depan berdasarkan data historis 6 bulan terakhir. Hasil prediksi dilengkapi dengan confidence interval.
+                            Fitur Prediksi NBM menggunakan model LSTM yang dilatih dengan data historis lengkap (1993-2024). Model menganalisis pola konsumsi dari 6 bulan terakhir sebagai input untuk menghasilkan proyeksi masa depan yang akurat, lengkap dengan confidence interval.
                         </p>
                     </div>
                 </div>
