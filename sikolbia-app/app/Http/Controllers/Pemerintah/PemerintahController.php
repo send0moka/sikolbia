@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Kelompok;
 use App\Models\TransaksiNbm;
 use App\Models\Komoditi;
+use App\Models\PredictionHistory;
 use App\Exports\PemerintahNbmExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use App\Services\PredictionInsightService;
 
 class PemerintahController extends Controller
 {
@@ -414,6 +416,192 @@ class PemerintahController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save prediction to history with AI insights
+     */
+    public function savePrediction(Request $request)
+    {
+        try {
+            $request->validate([
+                'kode_kelompok' => 'required|string',
+                'kode_komoditi' => 'required|string',
+                'kelompok_name' => 'required|string',
+                'komoditi_name' => 'required|string',
+                'bulan_prediksi' => 'required|integer',
+                'prediction_data' => 'required|array',
+                'historical_data' => 'required|array',
+                'confidence_intervals' => 'nullable|array',
+                'model_version' => 'nullable|string',
+                'notes' => 'nullable|string'
+            ]);
+
+            // Generate AI insights
+            $insightService = new PredictionInsightService();
+            $insights = $insightService->generateInsights(
+                $request->prediction_data,
+                $request->historical_data
+            );
+
+            // Save to database
+            $prediction = PredictionHistory::create([
+                'user_id' => auth()->id(),
+                'kode_kelompok' => $request->kode_kelompok,
+                'kode_komoditi' => $request->kode_komoditi,
+                'kelompok_name' => $request->kelompok_name,
+                'komoditi_name' => $request->komoditi_name,
+                'bulan_prediksi' => $request->bulan_prediksi,
+                'prediction_data' => $request->prediction_data,
+                'historical_data' => $request->historical_data,
+                'confidence_intervals' => $request->confidence_intervals,
+                'model_version' => $request->model_version ?? 'unknown',
+                'notes' => $request->notes,
+                'is_bookmarked' => false
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Prediksi berhasil disimpan',
+                'data' => [
+                    'id' => $prediction->id,
+                    'insights' => $insights
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Save Prediction Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan prediksi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get AI insights for prediction result
+     */
+    public function getInsights(Request $request)
+    {
+        try {
+            $request->validate([
+                'prediction_data' => 'required|array',
+                'historical_data' => 'required|array'
+            ]);
+
+            $insightService = new PredictionInsightService();
+            $insights = $insightService->generateInsights(
+                $request->prediction_data,
+                $request->historical_data
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => $insights
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Get Insights Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghasilkan insights: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * View prediction history
+     */
+    public function viewHistory(Request $request)
+    {
+        try {
+            $query = PredictionHistory::forUser(auth()->id())
+                ->with('user:id,name')
+                ->orderBy('created_at', 'desc');
+
+            // Filter by komoditi if provided
+            if ($request->filled('komoditi')) {
+                $query->where('kode_komoditi', $request->komoditi);
+            }
+
+            // Filter by bookmarked if provided
+            if ($request->boolean('bookmarked')) {
+                $query->bookmarked();
+            }
+
+            // Paginate results
+            $predictions = $query->paginate(20);
+
+            return view('pemerintah.prediksi-history', compact('predictions'));
+
+        } catch (\Exception $e) {
+            Log::error('View History Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Gagal mengambil riwayat prediksi');
+        }
+    }
+
+    /**
+     * Toggle bookmark status
+     */
+    public function toggleBookmark($id)
+    {
+        try {
+            $prediction = PredictionHistory::forUser(auth()->id())->findOrFail($id);
+            $prediction->is_bookmarked = !$prediction->is_bookmarked;
+            $prediction->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $prediction->is_bookmarked ? 'Berhasil ditambahkan ke bookmark' : 'Bookmark dihapus',
+                'is_bookmarked' => $prediction->is_bookmarked
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Toggle Bookmark Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah bookmark'
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete prediction
+     */
+    public function deletePrediction($id)
+    {
+        try {
+            $prediction = PredictionHistory::forUser(auth()->id())->findOrFail($id);
+            $prediction->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Prediksi berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Delete Prediction Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus prediksi'
             ], 500);
         }
     }
@@ -833,5 +1021,198 @@ class PemerintahController extends Controller
     public function panduan()
     {
         return view('pemerintah.panduan');
+    }
+    
+    public function exportPrediksiExcel(Request $request)
+    {
+        try {
+            $request->validate([
+                'kelompok' => 'required|string',
+                'komoditi' => 'required|string',
+                'bulan' => 'required|integer|min:1|max:12'
+            ]);
+            
+            $kelompok = $request->kelompok;
+            $komoditi = $request->komoditi;
+            $bulanPrediksi = $request->bulan;
+            
+            // Get historical data (reusing logic from runPrediksi)
+            $historicalData = TransaksiNbm::where('kode_kelompok', $kelompok)
+                ->where('kode_komoditi', $komoditi)
+                ->orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->limit(6)
+                ->get();
+            
+            if ($historicalData->count() < 6) {
+                return back()->with('error', 'Data historis tidak cukup untuk export.');
+            }
+            
+            // Get komoditi and kelompok info
+            $komoditiInfo = Komoditi::where('kode_komoditi', $komoditi)->first();
+            $kelompokInfo = Kelompok::where('kode', $kelompok)->first();
+            
+            if (!$komoditiInfo || !$kelompokInfo) {
+                return back()->with('error', 'Data komoditi atau kelompok tidak ditemukan.');
+            }
+            
+            // Prepare payload for ML API
+            $mlApiUrl = config('app.ml_api_url', 'http://localhost:8082');
+            $payload = [
+                'data_points' => $historicalData->map(function($item) use ($komoditiInfo, $kelompok, $komoditi) {
+                    $kaloriHari = 0;
+                    if ($item->makanan > 0 && $item->populasi_indonesia > 0 && $komoditiInfo->kalori_per_100g > 0) {
+                        $makananTons = floatval($item->makanan) * 1000;
+                        $makananKg = $makananTons * 1000;
+                        $kgPerCapitaPerYear = $makananKg / floatval($item->populasi_indonesia);
+                        $gramPerCapitaPerDay = ($kgPerCapitaPerYear * 1000) / 365;
+                        $kaloriHari = ($gramPerCapitaPerDay / 100) * floatval($komoditiInfo->kalori_per_100g);
+                    }
+                    
+                    return [
+                        'tahun' => (int)$item->tahun,
+                        'bulan' => (int)$item->bulan,
+                        'kelompok' => str_pad($kelompok, 2, '0', STR_PAD_LEFT),
+                        'komoditi' => str_pad($komoditi, 4, '0', STR_PAD_LEFT),
+                        'kalori_hari' => (float)round($kaloriHari, 2)
+                    ];
+                })->values()->toArray(),
+                'n_periods' => (int)$bulanPrediksi
+            ];
+            
+            // Call ML API
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post($mlApiUrl . '/predict', [
+                'json' => $payload,
+                'timeout' => 30,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+            
+            $result = json_decode($response->getBody()->getContents(), true);
+            
+            // Prepare data for export
+            $exportData = [
+                'prediction' => $result['predictions'] ?? [],
+                'confidence_intervals' => $result['confidence_intervals'] ?? [],
+                'historical' => $payload['data_points'],
+                'model_info' => [
+                    'model_version' => $result['model_version'] ?? 'unknown'
+                ]
+            ];
+            
+            $filename = 'prediksi_nbm_' . $komoditiInfo->nama . '_' . now()->format('Y-m-d_His') . '.xlsx';
+            
+            return Excel::download(
+                new \App\Exports\PrediksiNbmExport($exportData, $komoditiInfo->nama, $kelompokInfo->nama),
+                $filename
+            );
+            
+        } catch (\Exception $e) {
+            Log::error('Export Prediksi Excel Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Gagal mengekspor data prediksi: ' . $e->getMessage());
+        }
+    }
+    
+    public function exportPrediksiPdf(Request $request)
+    {
+        try {
+            $request->validate([
+                'kelompok' => 'required|string',
+                'komoditi' => 'required|string',
+                'bulan' => 'required|integer|min:1|max:12'
+            ]);
+            
+            $kelompok = $request->kelompok;
+            $komoditi = $request->komoditi;
+            $bulanPrediksi = $request->bulan;
+            
+            // Get historical data (reusing logic from runPrediksi)
+            $historicalData = TransaksiNbm::where('kode_kelompok', $kelompok)
+                ->where('kode_komoditi', $komoditi)
+                ->orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->limit(6)
+                ->get();
+            
+            if ($historicalData->count() < 6) {
+                return back()->with('error', 'Data historis tidak cukup untuk export.');
+            }
+            
+            // Get komoditi and kelompok info
+            $komoditiInfo = Komoditi::where('kode_komoditi', $komoditi)->first();
+            $kelompokInfo = Kelompok::where('kode', $kelompok)->first();
+            
+            if (!$komoditiInfo || !$kelompokInfo) {
+                return back()->with('error', 'Data komoditi atau kelompok tidak ditemukan.');
+            }
+            
+            // Prepare payload for ML API
+            $mlApiUrl = config('app.ml_api_url', 'http://localhost:8082');
+            $payload = [
+                'data_points' => $historicalData->map(function($item) use ($komoditiInfo, $kelompok, $komoditi) {
+                    $kaloriHari = 0;
+                    if ($item->makanan > 0 && $item->populasi_indonesia > 0 && $komoditiInfo->kalori_per_100g > 0) {
+                        $makananTons = floatval($item->makanan) * 1000;
+                        $makananKg = $makananTons * 1000;
+                        $kgPerCapitaPerYear = $makananKg / floatval($item->populasi_indonesia);
+                        $gramPerCapitaPerDay = ($kgPerCapitaPerYear * 1000) / 365;
+                        $kaloriHari = ($gramPerCapitaPerDay / 100) * floatval($komoditiInfo->kalori_per_100g);
+                    }
+                    
+                    return [
+                        'tahun' => (int)$item->tahun,
+                        'bulan' => (int)$item->bulan,
+                        'kelompok' => str_pad($kelompok, 2, '0', STR_PAD_LEFT),
+                        'komoditi' => str_pad($komoditi, 4, '0', STR_PAD_LEFT),
+                        'kalori_hari' => (float)round($kaloriHari, 2)
+                    ];
+                })->values()->toArray(),
+                'n_periods' => (int)$bulanPrediksi
+            ];
+            
+            // Call ML API
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post($mlApiUrl . '/predict', [
+                'json' => $payload,
+                'timeout' => 30,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ]);
+            
+            $result = json_decode($response->getBody()->getContents(), true);
+            
+            // Prepare data for PDF
+            $data = [
+                'komoditi_name' => $komoditiInfo->nama,
+                'kelompok_name' => $kelompokInfo->nama,
+                'predictions' => $result['predictions'] ?? [],
+                'confidence_intervals' => $result['confidence_intervals'] ?? [],
+                'historical' => $payload['data_points'],
+                'bulan_prediksi' => $bulanPrediksi,
+                'export_date' => now()->format('d-m-Y H:i:s')
+            ];
+            
+            $filename = 'prediksi_nbm_' . $komoditiInfo->nama . '_' . now()->format('Y-m-d_His') . '.pdf';
+            
+            $pdf = Pdf::loadView('exports.prediksi-nbm-pdf', $data);
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Export Prediksi PDF Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Gagal mengekspor PDF prediksi: ' . $e->getMessage());
+        }
     }
 }

@@ -72,6 +72,15 @@ Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')
     
     Route::get('/prediksi-nbm', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'prediksiNbm'])->name('prediksi-nbm');
     Route::post('/prediksi-nbm/run', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'runPrediksi'])->name('prediksi-nbm.run');
+    Route::get('/prediksi-nbm/export-excel', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPrediksiExcel'])->name('prediksi-nbm.export-excel');
+    Route::get('/prediksi-nbm/export-pdf', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPrediksiPdf'])->name('prediksi-nbm.export-pdf');
+    
+    // Prediction History & AI Insights
+    Route::post('/prediksi-nbm/save', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'savePrediction'])->name('prediksi-nbm.save');
+    Route::post('/prediksi-nbm/insights', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getInsights'])->name('prediksi-nbm.insights');
+    Route::get('/prediksi-nbm/history', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'viewHistory'])->name('prediksi-nbm.history');
+    Route::post('/prediksi-nbm/bookmark/{id}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'toggleBookmark'])->name('prediksi-nbm.bookmark');
+    Route::delete('/prediksi-nbm/{id}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'deletePrediction'])->name('prediksi-nbm.delete');
     
     // Pertanian
     Route::get('/lahan', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'lahan'])->name('lahan');

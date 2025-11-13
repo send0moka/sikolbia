@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-ACflJ9fs.css",
+    "file": "assets/app-DxuVyXbg.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -11,6 +11,12 @@
     "file": "assets/app-B5YI8jtJ.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/prediksi-nbm-enhanced.js": {
+    "file": "assets/prediksi-nbm-enhanced-cPcBjJoi.js",
+    "name": "prediksi-nbm-enhanced",
+    "src": "resources/js/prediksi-nbm-enhanced.js",
     "isEntry": true
   }
 }
