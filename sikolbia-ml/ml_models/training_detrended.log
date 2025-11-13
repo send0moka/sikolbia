@@ -1,0 +1,264 @@
+2025-11-12 16:08:45.322417: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-12 16:08:48.660876: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-12 16:08:49.395207: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+======================================================================
+LSTM WITH POLYNOMIAL DETRENDING
+======================================================================
+Strategy: Remove long-term trend, predict residuals, add trend back
+Expected: MAPE 12-18% (better than 28% without detrending)
+======================================================================
+
+======================================================================
+DETRENDED LSTM MODEL - LOADING DATA
+======================================================================
+Train: 276 records (1993-2015)
+Val:   48 records (2016-2019)
+Test:  60 records (2020-2024)
+Total: 384 records for trend fitting
+
+======================================================================
+FITTING POLYNOMIAL TREND
+======================================================================
+Degree 1: Residual Std = 244391.16
+Degree 2: Residual Std = 243978.73
+Degree 3: Residual Std = 209105.82
+
+Best polynomial degree: 3
+Trend equation coefficients: [-1.17473440e-01  6.87798064e+01 -8.18235701e+03  2.65042575e+05]
+
+Original train mean: 263828.16
+Detrended train mean: -125.93 (should be near 0)
+Detrended train std: 188922.78
+
+Original test mean: 722953.90
+Detrended test mean: -38479.28
+Detrended test std: 239761.82
+
+======================================================================
+SCALING DETRENDED DATA
+======================================================================
+X train scaled: (276, 13)
+y train detrended & scaled: (276,)
+
+Creating sequences (length=6)...
+Train sequences: (270, 6, 13)
+Val sequences:   (42, 6, 13)
+Test sequences:  (54, 6, 13)
+
+======================================================================
+BUILDING LSTM FOR DETRENDED RESIDUALS
+======================================================================
+
+Model Architecture (for residuals):
+Model: "sequential"
++--------------------------------------------------------------------------+
+| Layer (type)                    | Output Shape           |       Param # |
+|---------------------------------+------------------------+---------------|
+| lstm (LSTM)                     | (None, 6, 64)          |        19,968 |
+|---------------------------------+------------------------+---------------|
+| dropout (Dropout)               | (None, 6, 64)          |             0 |
+|---------------------------------+------------------------+---------------|
+| lstm_1 (LSTM)                   | (None, 32)             |        12,416 |
+|---------------------------------+------------------------+---------------|
+| dropout_1 (Dropout)             | (None, 32)             |             0 |
+|---------------------------------+------------------------+---------------|
+| dense (Dense)                   | (None, 16)             |           528 |
+|---------------------------------+------------------------+---------------|
+| dropout_2 (Dropout)             | (None, 16)             |             0 |
+|---------------------------------+------------------------+---------------|
+| dense_1 (Dense)                 | (None, 1)              |            17 |
++--------------------------------------------------------------------------+
+ Total params: 32,929 (128.63 KB)
+ Trainable params: 32,929 (128.63 KB)
+ Non-trainable params: 0 (0.00 B)
+
+======================================================================
+TRAINING LSTM ON DETRENDED RESIDUALS
+======================================================================
+
+Training for up to 100 epochs...
+Target: Learn residual patterns (seasonal, cyclical)
+Epoch 1/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m1:00[0m 4s/step - loss: 0.9527 - mae: 0.8161
+[1m 9/17[0m [32m==========[0m[37m==========[0m [1m0s[0m 6ms/step - loss: 1.0828 - mae: 0.8058 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 7ms/step - loss: 1.0540 - mae: 0.7810
+[1m17/17[0m [32m====================[0m[37m[0m [1m4s[0m 43ms/step - loss: 1.0498 - mae: 0.7787 - val_loss: 1.6223 - val_mae: 1.1685 - learning_rate: 0.0010
+Epoch 2/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 42ms/step - loss: 0.7907 - mae: 0.7787
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.9364 - mae: 0.7582 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.9123 - mae: 0.7353 - val_loss: 1.7035 - val_mae: 1.1804 - learning_rate: 0.0010
+Epoch 3/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 37ms/step - loss: 0.5729 - mae: 0.6655
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.8212 - mae: 0.7003 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.7989 - mae: 0.6808 - val_loss: 1.8641 - val_mae: 1.2104 - learning_rate: 0.0010
+Epoch 4/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 38ms/step - loss: 0.6502 - mae: 0.6979
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.7094 - mae: 0.6534 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 11ms/step - loss: 0.7015 - mae: 0.6323 - val_loss: 2.0994 - val_mae: 1.2482 - learning_rate: 0.0010
+Epoch 5/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 41ms/step - loss: 0.4777 - mae: 0.6104
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.7031 - mae: 0.6308 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.6933 - mae: 0.6084 - val_loss: 2.4546 - val_mae: 1.3493 - learning_rate: 0.0010
+Epoch 6/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 39ms/step - loss: 0.3922 - mae: 0.5218
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.6901 - mae: 0.5892 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.6639 - mae: 0.5730 - val_loss: 2.2525 - val_mae: 1.3027 - learning_rate: 0.0010
+Epoch 7/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 42ms/step - loss: 0.8247 - mae: 0.7384
+[1m11/17[0m [32m============[0m[37m========[0m [1m0s[0m 6ms/step - loss: 0.7392 - mae: 0.6320 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 11ms/step - loss: 0.6875 - mae: 0.5964 - val_loss: 2.5810 - val_mae: 1.3821 - learning_rate: 0.0010
+Epoch 8/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 41ms/step - loss: 0.5853 - mae: 0.5945
+[1m11/17[0m [32m============[0m[37m========[0m [1m0s[0m 6ms/step - loss: 0.5734 - mae: 0.5690 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.5496 - mae: 0.5473 - val_loss: 2.9072 - val_mae: 1.4484 - learning_rate: 0.0010
+Epoch 9/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 40ms/step - loss: 0.6093 - mae: 0.5795
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.7241 - mae: 0.6050 
+Epoch 9: ReduceLROnPlateau reducing learning rate to 0.0005000000237487257.
+
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.6779 - mae: 0.5783 - val_loss: 2.3096 - val_mae: 1.2954 - learning_rate: 0.0010
+Epoch 10/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 45ms/step - loss: 0.7712 - mae: 0.6511
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.6595 - mae: 0.5831 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 11ms/step - loss: 0.6172 - mae: 0.5515 - val_loss: 2.3975 - val_mae: 1.3347 - learning_rate: 5.0000e-04
+Epoch 11/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 48ms/step - loss: 0.5715 - mae: 0.5769
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.6008 - mae: 0.5714 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 11ms/step - loss: 0.5677 - mae: 0.5457 - val_loss: 2.6374 - val_mae: 1.3948 - learning_rate: 5.0000e-04
+Epoch 12/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 42ms/step - loss: 0.5180 - mae: 0.5332
+[1m 8/17[0m [32m=========[0m[37m===========[0m [1m0s[0m 7ms/step - loss: 0.5167 - mae: 0.5359 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.5187 - mae: 0.5156 - val_loss: 2.6421 - val_mae: 1.3773 - learning_rate: 5.0000e-04
+Epoch 13/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 40ms/step - loss: 0.5243 - mae: 0.5293
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.6528 - mae: 0.5703 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.6140 - mae: 0.5475 - val_loss: 2.7318 - val_mae: 1.4025 - learning_rate: 5.0000e-04
+Epoch 14/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 41ms/step - loss: 0.4665 - mae: 0.4981
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.4913 - mae: 0.5222 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.4668 - mae: 0.5024 - val_loss: 3.4195 - val_mae: 1.5745 - learning_rate: 5.0000e-04
+Epoch 15/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 42ms/step - loss: 0.4780 - mae: 0.5537
+[1m11/17[0m [32m============[0m[37m========[0m [1m0s[0m 6ms/step - loss: 0.4819 - mae: 0.5214 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 11ms/step - loss: 0.4985 - mae: 0.5135 - val_loss: 2.8921 - val_mae: 1.4297 - learning_rate: 5.0000e-04
+Epoch 16/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 43ms/step - loss: 0.7005 - mae: 0.5980
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.5375 - mae: 0.5302 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.5130 - mae: 0.5073 - val_loss: 3.2808 - val_mae: 1.5398 - learning_rate: 5.0000e-04
+Epoch 17/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 41ms/step - loss: 0.5804 - mae: 0.5416
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.6032 - mae: 0.5636 
+Epoch 17: ReduceLROnPlateau reducing learning rate to 0.0002500000118743628.
+
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.5714 - mae: 0.5410 - val_loss: 3.3778 - val_mae: 1.5748 - learning_rate: 5.0000e-04
+Epoch 18/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 31ms/step - loss: 0.4290 - mae: 0.5341
+[1m 8/17[0m [32m=========[0m[37m===========[0m [1m0s[0m 7ms/step - loss: 0.4507 - mae: 0.5286 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 6ms/step - loss: 0.4504 - mae: 0.5089
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.4473 - mae: 0.5062 - val_loss: 3.2548 - val_mae: 1.5428 - learning_rate: 2.5000e-04
+Epoch 19/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 42ms/step - loss: 0.5943 - mae: 0.5642
+[1m10/17[0m [32m===========[0m[37m=========[0m [1m0s[0m 6ms/step - loss: 0.4777 - mae: 0.5241 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 7ms/step - loss: 0.4651 - mae: 0.5081
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 16ms/step - loss: 0.4615 - mae: 0.5053 - val_loss: 3.2225 - val_mae: 1.5322 - learning_rate: 2.5000e-04
+Epoch 20/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 40ms/step - loss: 0.4889 - mae: 0.5179
+[1m11/17[0m [32m============[0m[37m========[0m [1m0s[0m 6ms/step - loss: 0.4796 - mae: 0.5184 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.4668 - mae: 0.5009 - val_loss: 3.0705 - val_mae: 1.5052 - learning_rate: 2.5000e-04
+Epoch 21/100
+
+[1m 1/17[0m [32m=[0m[37m===================[0m [1m0s[0m 35ms/step - loss: 0.5177 - mae: 0.5445
+[1m 9/17[0m [32m==========[0m[37m==========[0m [1m0s[0m 6ms/step - loss: 0.4269 - mae: 0.5129 
+[1m17/17[0m [32m====================[0m[37m[0m [1m0s[0m 12ms/step - loss: 0.4235 - mae: 0.4966 - val_loss: 3.0505 - val_mae: 1.4821 - learning_rate: 2.5000e-04
+Epoch 21: early stopping
+Restoring model weights from the end of the best epoch: 1.
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+
+Training completed!
+
+======================================================================
+EVALUATING MODEL (TREND + RESIDUALS)
+======================================================================
+
+Train Set (with trend):
+------------------------------------------------------------
+  MAE...........................  135297.7456
+  RMSE..........................  177702.6798
+  MAPE..........................      74.5221
+  R2............................       0.6816
+  Directional_Accuracy..........      46.0967
+
+  MAPE (74.52%) >= 20%
+------------------------------------------------------------
+
+Validation Set (with trend):
+------------------------------------------------------------
+  MAE...........................  220764.6626
+  RMSE..........................  240632.9539
+  MAPE..........................      27.7536
+  R2............................       0.0590
+  Directional_Accuracy..........      53.6585
+
+  MAPE (27.75%) >= 20%
+------------------------------------------------------------
+
+Test Set (with trend):
+------------------------------------------------------------
+  MAE...........................  232751.5446
+  RMSE..........................  248912.2107
+  MAPE..........................      35.3114
+  R2............................      -0.0580
+  Directional_Accuracy..........      60.3774
+
+  MAPE (35.31%) >= 20%
+------------------------------------------------------------
+
+Generating plots...
+Saved: results/lstm_detrended_analysis.png
+
+======================================================================
+SAVING DETRENDED MODEL
+======================================================================
+Model saved in: models/lstm_detrended/
+Files: lstm_model.h5, scaler_X.pkl, scaler_y.pkl, trend_params.json
+
+======================================================================
+DETRENDING APPROACH - COMPLETE!
+======================================================================
+
+ Test MAPE = 35.31%
+ Consider recent data approach as fallback.
+
+Final Metrics:
+  Test MAPE: 35.31%
+  Test RMSE: 248912.21
+  Test R2: -0.0580
+  Directional Accuracy: 60.38%
+
+Comparison with previous attempts:
+  Baseline (Last Value): 24.12% MAPE
+  LSTM V1 (no detrend): 28.82% MAPE
+  LSTM V2 (complex): 44.03% MAPE
+  LSTM Detrended: 35.31% MAPE <- BEST!

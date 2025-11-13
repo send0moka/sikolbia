@@ -1,0 +1,380 @@
+2025-11-12 15:47:33.883038: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-12 15:47:37.150035: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-11-12 15:47:37.923164: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+======================================================================
+LSTM ENHANCED ENSEMBLE V2 - IMPROVED TRAINING
+======================================================================
+Improvements:
+  - Sequence length: 12 months (more context)
+  - Deeper LSTM: 3 layers (128-64-32)
+  - BatchNormalization added
+  - Huber loss (robust to outliers)
+  - Lower learning rate (0.0005)
+  - Optimized ensemble weights
+======================================================================
+
+======================================================================
+LOADING DATA (V2 - IMPROVED)
+======================================================================
+Train: 276 records (1993-2015)
+Val:   48 records (2016-2019)
+Test:  60 records (2020-2024)
+Sequence length: 12 months (MORE CONTEXT)
+
+======================================================================
+SCALING DATA
+======================================================================
+X train scaled: (276, 13)
+y train scaled: (276,)
+
+Creating sequences (length=12)...
+Train sequences: (264, 12, 13)
+Val sequences:   (36, 12, 13)
+Test sequences:  (48, 12, 13)
+
+======================================================================
+BUILDING IMPROVED LSTM MODEL
+======================================================================
+
+Model Architecture (DEEPER & MORE ROBUST):
+Model: "sequential"
++--------------------------------------------------------------------------+
+| Layer (type)                    | Output Shape           |       Param # |
+|---------------------------------+------------------------+---------------|
+| lstm (LSTM)                     | (None, 12, 128)        |        72,704 |
+|---------------------------------+------------------------+---------------|
+| batch_normalization             | (None, 12, 128)        |           512 |
+| (BatchNormalization)            |                        |               |
+|---------------------------------+------------------------+---------------|
+| dropout (Dropout)               | (None, 12, 128)        |             0 |
+|---------------------------------+------------------------+---------------|
+| lstm_1 (LSTM)                   | (None, 12, 64)         |        49,408 |
+|---------------------------------+------------------------+---------------|
+| batch_normalization_1           | (None, 12, 64)         |           256 |
+| (BatchNormalization)            |                        |               |
+|---------------------------------+------------------------+---------------|
+| dropout_1 (Dropout)             | (None, 12, 64)         |             0 |
+|---------------------------------+------------------------+---------------|
+| lstm_2 (LSTM)                   | (None, 32)             |        12,416 |
+|---------------------------------+------------------------+---------------|
+| batch_normalization_2           | (None, 32)             |           128 |
+| (BatchNormalization)            |                        |               |
+|---------------------------------+------------------------+---------------|
+| dropout_2 (Dropout)             | (None, 32)             |             0 |
+|---------------------------------+------------------------+---------------|
+| dense (Dense)                   | (None, 32)             |         1,056 |
+|---------------------------------+------------------------+---------------|
+| batch_normalization_3           | (None, 32)             |           128 |
+| (BatchNormalization)            |                        |               |
+|---------------------------------+------------------------+---------------|
+| dropout_3 (Dropout)             | (None, 32)             |             0 |
+|---------------------------------+------------------------+---------------|
+| dense_1 (Dense)                 | (None, 16)             |           528 |
+|---------------------------------+------------------------+---------------|
+| dropout_4 (Dropout)             | (None, 16)             |             0 |
+|---------------------------------+------------------------+---------------|
+| dense_2 (Dense)                 | (None, 1)              |            17 |
++--------------------------------------------------------------------------+
+ Total params: 137,153 (535.75 KB)
+ Trainable params: 136,641 (533.75 KB)
+ Non-trainable params: 512 (2.00 KB)
+
+======================================================================
+TRAINING IMPROVED LSTM MODEL
+======================================================================
+
+Training for up to 150 epochs...
+Batch size: 8 (SMALLER for better gradients)
+Early stopping patience: 25 (MORE PATIENT)
+Loss: Huber (robust to outliers)
+Epoch 1/150
+
+Epoch 1: val_loss improved from inf to 1.30388, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 8s - 250ms/step - loss: 0.6036 - mae: 0.9987 - val_loss: 1.3039 - val_mae: 1.8039 - learning_rate: 5.0000e-04
+Epoch 2/150
+
+Epoch 2: val_loss improved from 1.30388 to 1.07065, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.4483 - mae: 0.8272 - val_loss: 1.0706 - val_mae: 1.5692 - learning_rate: 5.0000e-04
+Epoch 3/150
+
+Epoch 3: val_loss improved from 1.07065 to 0.92582, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 22ms/step - loss: 0.3521 - mae: 0.6986 - val_loss: 0.9258 - val_mae: 1.4089 - learning_rate: 5.0000e-04
+Epoch 4/150
+
+Epoch 4: val_loss improved from 0.92582 to 0.81927, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.3222 - mae: 0.6690 - val_loss: 0.8193 - val_mae: 1.2867 - learning_rate: 5.0000e-04
+Epoch 5/150
+
+Epoch 5: val_loss improved from 0.81927 to 0.66994, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.2863 - mae: 0.6109 - val_loss: 0.6699 - val_mae: 1.0831 - learning_rate: 5.0000e-04
+Epoch 6/150
+
+Epoch 6: val_loss improved from 0.66994 to 0.53338, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.2834 - mae: 0.5998 - val_loss: 0.5334 - val_mae: 0.8618 - learning_rate: 5.0000e-04
+Epoch 7/150
+
+Epoch 7: val_loss improved from 0.53338 to 0.36030, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 20ms/step - loss: 0.2238 - mae: 0.5290 - val_loss: 0.3603 - val_mae: 0.6892 - learning_rate: 5.0000e-04
+Epoch 8/150
+
+Epoch 8: val_loss did not improve from 0.36030
+33/33 - 1s - 16ms/step - loss: 0.2250 - mae: 0.5239 - val_loss: 0.3908 - val_mae: 0.7193 - learning_rate: 5.0000e-04
+Epoch 9/150
+
+Epoch 9: val_loss improved from 0.36030 to 0.33512, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.2471 - mae: 0.5531 - val_loss: 0.3351 - val_mae: 0.7400 - learning_rate: 5.0000e-04
+Epoch 10/150
+
+Epoch 10: val_loss did not improve from 0.33512
+33/33 - 1s - 18ms/step - loss: 0.1826 - mae: 0.4659 - val_loss: 0.3498 - val_mae: 0.7509 - learning_rate: 5.0000e-04
+Epoch 11/150
+
+Epoch 11: val_loss improved from 0.33512 to 0.33426, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 20ms/step - loss: 0.1683 - mae: 0.4320 - val_loss: 0.3343 - val_mae: 0.7502 - learning_rate: 5.0000e-04
+Epoch 12/150
+
+Epoch 12: val_loss improved from 0.33426 to 0.31769, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.2066 - mae: 0.4919 - val_loss: 0.3177 - val_mae: 0.7275 - learning_rate: 5.0000e-04
+Epoch 13/150
+
+Epoch 13: val_loss did not improve from 0.31769
+33/33 - 1s - 16ms/step - loss: 0.1717 - mae: 0.4289 - val_loss: 0.3240 - val_mae: 0.7456 - learning_rate: 5.0000e-04
+Epoch 14/150
+
+Epoch 14: val_loss improved from 0.31769 to 0.30584, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 18ms/step - loss: 0.1925 - mae: 0.4652 - val_loss: 0.3058 - val_mae: 0.7147 - learning_rate: 5.0000e-04
+Epoch 15/150
+
+Epoch 15: val_loss did not improve from 0.30584
+33/33 - 1s - 16ms/step - loss: 0.1762 - mae: 0.4393 - val_loss: 0.3664 - val_mae: 0.7817 - learning_rate: 5.0000e-04
+Epoch 16/150
+
+Epoch 16: val_loss did not improve from 0.30584
+33/33 - 1s - 16ms/step - loss: 0.1805 - mae: 0.4449 - val_loss: 0.3087 - val_mae: 0.7208 - learning_rate: 5.0000e-04
+Epoch 17/150
+
+Epoch 17: val_loss did not improve from 0.30584
+33/33 - 1s - 16ms/step - loss: 0.1717 - mae: 0.4196 - val_loss: 0.3193 - val_mae: 0.7369 - learning_rate: 5.0000e-04
+Epoch 18/150
+
+Epoch 18: val_loss improved from 0.30584 to 0.30048, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 20ms/step - loss: 0.2026 - mae: 0.4588 - val_loss: 0.3005 - val_mae: 0.7087 - learning_rate: 5.0000e-04
+Epoch 19/150
+
+Epoch 19: val_loss did not improve from 0.30048
+33/33 - 1s - 19ms/step - loss: 0.1608 - mae: 0.4115 - val_loss: 0.3166 - val_mae: 0.7181 - learning_rate: 5.0000e-04
+Epoch 20/150
+
+Epoch 20: val_loss did not improve from 0.30048
+33/33 - 1s - 16ms/step - loss: 0.1684 - mae: 0.4227 - val_loss: 0.3323 - val_mae: 0.7479 - learning_rate: 5.0000e-04
+Epoch 21/150
+
+Epoch 21: val_loss did not improve from 0.30048
+33/33 - 1s - 16ms/step - loss: 0.1326 - mae: 0.3586 - val_loss: 0.3177 - val_mae: 0.7354 - learning_rate: 5.0000e-04
+Epoch 22/150
+
+Epoch 22: val_loss improved from 0.30048 to 0.29164, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.1509 - mae: 0.3888 - val_loss: 0.2916 - val_mae: 0.7215 - learning_rate: 5.0000e-04
+Epoch 23/150
+
+Epoch 23: val_loss did not improve from 0.29164
+33/33 - 1s - 16ms/step - loss: 0.1358 - mae: 0.3780 - val_loss: 0.3033 - val_mae: 0.7324 - learning_rate: 5.0000e-04
+Epoch 24/150
+
+Epoch 24: val_loss improved from 0.29164 to 0.28426, saving model to models/lstm_v2_best.h5
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+33/33 - 1s - 19ms/step - loss: 0.1363 - mae: 0.3597 - val_loss: 0.2843 - val_mae: 0.7119 - learning_rate: 5.0000e-04
+Epoch 25/150
+
+Epoch 25: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1488 - mae: 0.3789 - val_loss: 0.3312 - val_mae: 0.7743 - learning_rate: 5.0000e-04
+Epoch 26/150
+
+Epoch 26: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1371 - mae: 0.3606 - val_loss: 0.3013 - val_mae: 0.7311 - learning_rate: 5.0000e-04
+Epoch 27/150
+
+Epoch 27: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1497 - mae: 0.3767 - val_loss: 0.3774 - val_mae: 0.8094 - learning_rate: 5.0000e-04
+Epoch 28/150
+
+Epoch 28: val_loss did not improve from 0.28426
+33/33 - 1s - 17ms/step - loss: 0.1076 - mae: 0.3318 - val_loss: 0.3796 - val_mae: 0.7907 - learning_rate: 5.0000e-04
+Epoch 29/150
+
+Epoch 29: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1215 - mae: 0.3436 - val_loss: 0.3521 - val_mae: 0.7686 - learning_rate: 5.0000e-04
+Epoch 30/150
+
+Epoch 30: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1133 - mae: 0.3224 - val_loss: 0.3739 - val_mae: 0.8164 - learning_rate: 5.0000e-04
+Epoch 31/150
+
+Epoch 31: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1113 - mae: 0.3284 - val_loss: 0.3354 - val_mae: 0.7243 - learning_rate: 5.0000e-04
+Epoch 32/150
+
+Epoch 32: ReduceLROnPlateau reducing learning rate to 0.0002500000118743628.
+
+Epoch 32: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1130 - mae: 0.3276 - val_loss: 0.3914 - val_mae: 0.8076 - learning_rate: 5.0000e-04
+Epoch 33/150
+
+Epoch 33: val_loss did not improve from 0.28426
+33/33 - 1s - 17ms/step - loss: 0.1188 - mae: 0.3299 - val_loss: 0.4691 - val_mae: 0.8963 - learning_rate: 2.5000e-04
+Epoch 34/150
+
+Epoch 34: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1184 - mae: 0.3328 - val_loss: 0.4643 - val_mae: 0.8963 - learning_rate: 2.5000e-04
+Epoch 35/150
+
+Epoch 35: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0919 - mae: 0.3035 - val_loss: 0.4386 - val_mae: 0.8548 - learning_rate: 2.5000e-04
+Epoch 36/150
+
+Epoch 36: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1149 - mae: 0.3222 - val_loss: 0.4046 - val_mae: 0.8294 - learning_rate: 2.5000e-04
+Epoch 37/150
+
+Epoch 37: val_loss did not improve from 0.28426
+33/33 - 1s - 18ms/step - loss: 0.0887 - mae: 0.2846 - val_loss: 0.3964 - val_mae: 0.8266 - learning_rate: 2.5000e-04
+Epoch 38/150
+
+Epoch 38: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1041 - mae: 0.3122 - val_loss: 0.3678 - val_mae: 0.7941 - learning_rate: 2.5000e-04
+Epoch 39/150
+
+Epoch 39: val_loss did not improve from 0.28426
+33/33 - 1s - 19ms/step - loss: 0.1046 - mae: 0.3135 - val_loss: 0.3617 - val_mae: 0.8020 - learning_rate: 2.5000e-04
+Epoch 40/150
+
+Epoch 40: ReduceLROnPlateau reducing learning rate to 0.0001250000059371814.
+
+Epoch 40: val_loss did not improve from 0.28426
+33/33 - 1s - 17ms/step - loss: 0.0977 - mae: 0.3092 - val_loss: 0.3881 - val_mae: 0.8299 - learning_rate: 2.5000e-04
+Epoch 41/150
+
+Epoch 41: val_loss did not improve from 0.28426
+33/33 - 1s - 17ms/step - loss: 0.1001 - mae: 0.2963 - val_loss: 0.4197 - val_mae: 0.8602 - learning_rate: 1.2500e-04
+Epoch 42/150
+
+Epoch 42: val_loss did not improve from 0.28426
+33/33 - 1s - 17ms/step - loss: 0.0945 - mae: 0.3007 - val_loss: 0.4253 - val_mae: 0.8600 - learning_rate: 1.2500e-04
+Epoch 43/150
+
+Epoch 43: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0952 - mae: 0.3000 - val_loss: 0.4549 - val_mae: 0.8791 - learning_rate: 1.2500e-04
+Epoch 44/150
+
+Epoch 44: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.1021 - mae: 0.3053 - val_loss: 0.4654 - val_mae: 0.8934 - learning_rate: 1.2500e-04
+Epoch 45/150
+
+Epoch 45: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0873 - mae: 0.2849 - val_loss: 0.4290 - val_mae: 0.8647 - learning_rate: 1.2500e-04
+Epoch 46/150
+
+Epoch 46: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0929 - mae: 0.2901 - val_loss: 0.4132 - val_mae: 0.8531 - learning_rate: 1.2500e-04
+Epoch 47/150
+
+Epoch 47: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0869 - mae: 0.2914 - val_loss: 0.4442 - val_mae: 0.8897 - learning_rate: 1.2500e-04
+Epoch 48/150
+
+Epoch 48: ReduceLROnPlateau reducing learning rate to 6.25000029685907e-05.
+
+Epoch 48: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0980 - mae: 0.3098 - val_loss: 0.4722 - val_mae: 0.9198 - learning_rate: 1.2500e-04
+Epoch 49/150
+
+Epoch 49: val_loss did not improve from 0.28426
+33/33 - 1s - 16ms/step - loss: 0.0969 - mae: 0.2974 - val_loss: 0.4842 - val_mae: 0.9313 - learning_rate: 6.2500e-05
+Epoch 49: early stopping
+Restoring model weights from the end of the best epoch: 24.
+WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`. 
+
+Training completed!
+Best epoch: 24
+
+======================================================================
+TRAINING ENSEMBLE MODELS
+======================================================================
+
+1. Training Huber Regressor...
+2. Training Ridge Regression...
+3. Training Gradient Boosting Regressor...
+
+Ensemble models trained: 3
+
+======================================================================
+EVALUATING MODELS
+======================================================================
+
+Huber Model (Test Set): MAPE=48.84%
+
+Ridge Model (Test Set): MAPE=63.94%
+
+GradientBoosting Model (Test Set): MAPE=61.21%
+
+
+Optimizing ensemble weights on validation set...
+Best weights found: LSTM=0.45, Huber=0.10, Ridge=0.05, GBR=0.40
+Val MAPE with best weights: 27.16%
+
+
+LSTM Model (Test Set):
+------------------------------------------------------------
+  MAE...........................  219508.1610
+  RMSE..........................  230522.6422
+  MAPE..........................      35.6899
+  R2............................      -0.2589
+  Directional_Accuracy..........      53.1915
+
+  TARGET NOT MET: MAPE (35.69%) >= 10%
+------------------------------------------------------------
+
+Optimized Ensemble (Test Set):
+------------------------------------------------------------
+  MAE...........................  258138.9911
+  RMSE..........................  284878.3924
+  MAPE..........................      44.0276
+  R2............................      -0.9226
+  Directional_Accuracy..........      51.0638
+
+  TARGET NOT MET: MAPE (44.03%) >= 10%
+------------------------------------------------------------
+
+Generating plots...
+Saved: results/lstm_v2_improved_results.png
+
+======================================================================
+SAVING V2 MODELS
+======================================================================
+All V2 models saved in: models/lstm_v2_improved/
+
+======================================================================
+V2 TRAINING COMPLETE!
+======================================================================
+
+ Test MAPE = 44.03%
+ Need more improvements or feature engineering.
+
+Test MAPE: 44.03%
+Test RMSE: 284878.39
+Test R2: -0.9226
