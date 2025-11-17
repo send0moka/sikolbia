@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- Title -->
+  <text x="400" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333">Gambar 1. Struktur Sel LSTM</text>
+  
+  <!-- Cell State (horizontal line) -->
+  <line x1="50" y1="200" x2="750" y2="200" stroke="#4CAF50" stroke-width="4" marker-end="url(#arrowgreen)"/>
+  <text x="400" y="185" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#4CAF50">Cell State (Ct)</text>
+  
+  <!-- Previous hidden state input -->
+  <line x1="50" y1="500" x2="150" y2="500" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="100" y="520" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">ht-1</text>
+  
+  <!-- Current input -->
+  <line x1="50" y1="550" x2="150" y2="550" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="100" y="570" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">xt</text>
+  
+  <!-- Forget Gate -->
+  <rect x="180" y="350" width="100" height="80" fill="#FF9800" stroke="#E65100" stroke-width="2" rx="5"/>
+  <text x="230" y="385" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Forget</text>
+  <text x="230" y="405" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Gate</text>
+  <text x="230" y="420" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">σ(ft)</text>
+  
+  <!-- Input Gate -->
+  <rect x="350" y="350" width="100" height="80" fill="#2196F3" stroke="#0D47A1" stroke-width="2" rx="5"/>
+  <text x="400" y="385" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Input</text>
+  <text x="400" y="405" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Gate</text>
+  <text x="400" y="420" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">σ(it)</text>
+  
+  <!-- Candidate Cell State -->
+  <rect x="480" y="350" width="100" height="80" fill="#9C27B0" stroke="#4A148C" stroke-width="2" rx="5"/>
+  <text x="530" y="385" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Cell</text>
+  <text x="530" y="405" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Candidate</text>
+  <text x="530" y="420" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">tanh(C̃t)</text>
+  
+  <!-- Output Gate -->
+  <rect x="620" y="350" width="100" height="80" fill="#F44336" stroke="#B71C1C" stroke-width="2" rx="5"/>
+  <text x="670" y="385" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Output</text>
+  <text x="670" y="405" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Gate</text>
+  <text x="670" y="420" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">σ(ot)</text>
+  
+  <!-- Connections from inputs to gates -->
+  <line x1="150" y1="525" x2="230" y2="430" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="150" y1="525" x2="400" y2="430" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="150" y1="525" x2="530" y2="430" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="150" y1="525" x2="670" y2="430" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Forget gate to cell state (multiplication) -->
+  <circle cx="230" cy="200" r="15" fill="white" stroke="#666" stroke-width="2"/>
+  <text x="230" y="207" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#666">×</text>
+  <line x1="230" y1="350" x2="230" y2="215" stroke="#FF9800" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Input gate × candidate (multiplication) -->
+  <circle cx="450" cy="280" r="15" fill="white" stroke="#666" stroke-width="2"/>
+  <text x="450" y="287" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#666">×</text>
+  <line x1="400" y1="350" x2="400" y2="295" stroke="#2196F3" stroke-width="2"/>
+  <line x1="400" y1="295" x2="435" y2="280" stroke="#2196F3" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="530" y1="350" x2="530" y2="295" stroke="#9C27B0" stroke-width="2"/>
+  <line x1="530" y1="295" x2="465" y2="280" stroke="#9C27B0" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Addition to cell state -->
+  <circle cx="450" cy="200" r="15" fill="white" stroke="#666" stroke-width="2"/>
+  <text x="450" y="207" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#666">+</text>
+  <line x1="450" y1="265" x2="450" y2="215" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Cell state to output -->
+  <line x1="600" y1="200" x2="600" y2="250" stroke="#4CAF50" stroke-width="2"/>
+  <rect x="585" y="250" width="30" height="30" fill="white" stroke="#666" stroke-width="2" rx="3"/>
+  <text x="600" y="270" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">tanh</text>
+  
+  <!-- Output multiplication -->
+  <circle cx="650" cy="280" r="15" fill="white" stroke="#666" stroke-width="2"/>
+  <text x="650" y="287" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#666">×</text>
+  <line x1="600" y1="280" x2="635" y2="280" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="670" y1="350" x2="670" y2="295" stroke="#F44336" stroke-width="2"/>
+  <line x1="670" y1="295" x2="665" y2="280" stroke="#F44336" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Hidden state output -->
+  <line x1="650" y1="265" x2="650" y2="100" stroke="#666" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="650" y="85" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#666">ht</text>
+  
+  <!-- Legend -->
+  <text x="50" y="590" font-family="Arial, sans-serif" font-size="11" fill="#666">Legend:</text>
+  <line x1="120" y1="587" x2="150" y2="587" stroke="#4CAF50" stroke-width="3"/>
+  <text x="155" y="590" font-family="Arial, sans-serif" font-size="10" fill="#666">Cell State Flow</text>
+  
+  <circle cx="255" cy="587" r="8" fill="white" stroke="#666" stroke-width="2"/>
+  <text x="265" y="587" font-family="Arial, sans-serif" font-size="10" text-anchor="start" fill="#666" dy="3">Operations (×, +)</text>
+  
+  <rect x="380" y="580" width="30" height="14" fill="#2196F3" stroke="#0D47A1" stroke-width="1" rx="2"/>
+  <text x="415" y="590" font-family="Arial, sans-serif" font-size="10" fill="#666">Gates (σ, tanh)</text>
+  
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+    <marker id="arrowgreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#4CAF50"/>
+    </marker>
+  </defs>
+</svg>

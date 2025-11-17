@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750">
+  <!-- Title -->
+  <text x="500" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333">Gambar 6. Arsitektur Microservices SIKOLBIA</text>
+  
+  <!-- User Layer -->
+  <text x="500" y="70" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#666">USERS</text>
+  
+  <rect x="100" y="80" width="150" height="50" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" rx="5"/>
+  <text x="175" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1565C0">👤 Admin</text>
+  <text x="175" y="118" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#666">Full Access</text>
+  
+  <rect x="280" y="80" width="150" height="50" fill="#E8F5E9" stroke="#388E3C" stroke-width="2" rx="5"/>
+  <text x="355" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2E7D32">👔 Pemerintah</text>
+  <text x="355" y="118" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#666">Prediksi + Report</text>
+  
+  <rect x="460" y="80" width="150" height="50" fill="#FFF3E0" stroke="#F57C00" stroke-width="2" rx="5"/>
+  <text x="535" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#E65100">🎓 Akademisi</text>
+  <text x="535" y="118" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#666">View Data + Export</text>
+  
+  <rect x="640" y="80" width="150" height="50" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2" rx="5"/>
+  <text x="715" y="100" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6A1B9A">👥 Pengunjung</text>
+  <text x="715" y="118" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#666">Read-only</text>
+  
+  <!-- User connections to Nginx -->
+  <line x1="175" y1="130" x2="300" y2="190" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="355" y1="130" x2="400" y2="190" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="535" y1="130" x2="500" y2="190" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="715" y1="130" x2="600" y2="190" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Nginx Layer -->
+  <rect x="300" y="190" width="300" height="60" fill="#FF6B6B" stroke="#C62828" stroke-width="3" rx="5"/>
+  <text x="450" y="215" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">🌐 NGINX (Port 8000)</text>
+  <text x="450" y="235" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Reverse Proxy &amp; Load Balancer</text>
+  
+  <!-- Connection to Laravel -->
+  <line x1="450" y1="250" x2="300" y2="310" stroke="#1976D2" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="360" y="280" font-family="Arial, sans-serif" font-size="10" fill="#1976D2">HTTP</text>
+  
+  <!-- Connection to FastAPI -->
+  <line x1="450" y1="250" x2="600" y2="310" stroke="#F9A825" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="540" y="280" font-family="Arial, sans-serif" font-size="10" fill="#F9A825">ML API</text>
+  
+  <!-- Laravel Application Layer -->
+  <rect x="50" y="310" width="400" height="150" fill="#4A90E2" stroke="#1565C0" stroke-width="3" rx="8"/>
+  <text x="250" y="335" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">Laravel 11 + Livewire 3</text>
+  <text x="250" y="355" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Frontend Service (PHP 8.3)</text>
+  
+  <rect x="70" y="370" width="160" height="35" fill="white" stroke="#1976D2" stroke-width="1" rx="3"/>
+  <text x="150" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">📊 Dashboard UI</text>
+  
+  <rect x="250" y="370" width="180" height="35" fill="white" stroke="#1976D2" stroke-width="1" rx="3"/>
+  <text x="340" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">🔐 Auth &amp; Permission</text>
+  
+  <rect x="70" y="415" width="160" height="35" fill="white" stroke="#1976D2" stroke-width="1" rx="3"/>
+  <text x="150" y="435" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">📈 Report Generation</text>
+  
+  <rect x="250" y="415" width="180" height="35" fill="white" stroke="#1976D2" stroke-width="1" rx="3"/>
+  <text x="340" y="435" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">📁 Excel/PDF Export</text>
+  
+  <!-- FastAPI ML Service Layer -->
+  <rect x="550" y="310" width="400" height="150" fill="#F9A825" stroke="#F57F17" stroke-width="3" rx="8"/>
+  <text x="750" y="335" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">FastAPI ML Service</text>
+  <text x="750" y="355" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">ML Inference (Python 3.10, Port 8082)</text>
+  
+  <rect x="570" y="370" width="160" height="35" fill="white" stroke="#F9A825" stroke-width="1" rx="3"/>
+  <text x="650" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">🧠 LSTM Ensemble</text>
+  
+  <rect x="750" y="370" width="180" height="35" fill="white" stroke="#F9A825" stroke-width="1" rx="3"/>
+  <text x="840" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">📊 Model Inference</text>
+  
+  <rect x="570" y="415" width="160" height="35" fill="white" stroke="#F9A825" stroke-width="1" rx="3"/>
+  <text x="650" y="435" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">🎯 Prediction API</text>
+  
+  <rect x="750" y="415" width="180" height="35" fill="white" stroke="#F9A825" stroke-width="1" rx="3"/>
+  <text x="840" y="435" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#333">📈 Confidence Interval</text>
+  
+  <!-- Database and Cache Layer -->
+  <text x="500" y="495" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#666">DATA PERSISTENCE</text>
+  
+  <!-- MySQL -->
+  <rect x="100" y="510" width="250" height="100" fill="#00758F" stroke="#004D66" stroke-width="2" rx="5"/>
+  <text x="225" y="535" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">🗄️ MySQL 8.0 (Port 3306)</text>
+  <text x="225" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• User data</text>
+  <text x="225" y="572" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• NBM historical data</text>
+  <text x="225" y="589" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Prediction results</text>
+  
+  <!-- Redis -->
+  <rect x="400" y="510" width="200" height="100" fill="#DC382D" stroke="#A82C23" stroke-width="2" rx="5"/>
+  <text x="500" y="535" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">⚡ Redis (Port 6379)</text>
+  <text x="500" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Session storage</text>
+  <text x="500" y="572" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Query cache</text>
+  <text x="500" y="589" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• Prediction cache</text>
+  
+  <!-- PHPMyAdmin -->
+  <rect x="650" y="510" width="250" height="100" fill="#6C78AF" stroke="#4E5A8C" stroke-width="2" rx="5"/>
+  <text x="775" y="535" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">🔧 phpMyAdmin</text>
+  <text x="775" y="552" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">(Port 8081)</text>
+  <text x="775" y="575" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Database Management</text>
+  <text x="775" y="592" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Administration Tool</text>
+  
+  <!-- Connections from Laravel to databases -->
+  <line x1="250" y1="460" x2="225" y2="510" stroke="#00758F" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="250" y1="460" x2="500" y2="510" stroke="#DC382D" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Connections from FastAPI to Redis -->
+  <line x1="750" y1="460" x2="550" y2="510" stroke="#DC382D" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Docker Container boundary -->
+  <rect x="20" y="290" width="960" height="340" fill="none" stroke="#2962FF" stroke-width="3" stroke-dasharray="10,5" rx="10"/>
+  <text x="30" y="280" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2962FF">🐳 Docker Compose (Multi-container)</text>
+  
+  <!-- Legend -->
+  <rect x="50" y="650" width="900" height="80" fill="#F5F5F5" stroke="#999" stroke-width="1" rx="5"/>
+  <text x="60" y="670" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">Keterangan:</text>
+  
+  <line x1="130" y1="667" x2="180" y2="667" stroke="#1976D2" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="185" y="670" font-family="Arial, sans-serif" font-size="10" fill="#666">HTTP Request/Response</text>
+  
+  <line x1="350" y1="667" x2="400" y2="667" stroke="#F9A825" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="405" y="670" font-family="Arial, sans-serif" font-size="10" fill="#666">ML API Call</text>
+  
+  <line x1="540" y1="667" x2="590" y2="667" stroke="#00758F" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="595" y="670" font-family="Arial, sans-serif" font-size="10" fill="#666">Database Query</text>
+  
+  <rect x="730" y="660" width="80" height="15" fill="none" stroke="#2962FF" stroke-width="2" stroke-dasharray="5,3" rx="2"/>
+  <text x="815" y="670" font-family="Arial, sans-serif" font-size="10" fill="#666">Docker Container</text>
+  
+  <text x="60" y="690" font-family="Arial, sans-serif" font-size="9" fill="#666">• Separation of concerns: Frontend (Laravel) | ML Service (FastAPI) | Data (MySQL + Redis)</text>
+  <text x="60" y="705" font-family="Arial, sans-serif" font-size="9" fill="#666">• Scalability: Each service can scale independently based on load</text>
+  <text x="60" y="720" font-family="Arial, sans-serif" font-size="9" fill="#666">• Deployment: Docker Compose orchestrates multi-container setup with single command</text>
+  
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+</svg>

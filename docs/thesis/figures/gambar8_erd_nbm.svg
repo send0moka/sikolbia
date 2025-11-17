@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+  <!-- Title -->
+  <text x="500" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#333">Gambar 8. Entity Relationship Diagram (ERD) Modul Konsumsi Pangan NBM</text>
+  
+  <!-- Users Table -->
+  <rect x="50" y="80" width="200" height="200" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" rx="5"/>
+  <rect x="50" y="80" width="200" height="35" fill="#1976D2" stroke="#1565C0" stroke-width="2" rx="5"/>
+  <text x="150" y="102" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">USERS</text>
+  
+  <text x="60" y="135" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333">PK id</text>
+  <line x1="60" y1="137" x2="110" y2="137" stroke="#333" stroke-width="1"/>
+  <text x="60" y="155" font-family="Arial, sans-serif" font-size="9" fill="#666">name</text>
+  <text x="60" y="170" font-family="Arial, sans-serif" font-size="9" fill="#666">email (unique)</text>
+  <text x="60" y="185" font-family="Arial, sans-serif" font-size="9" fill="#666">password</text>
+  <text x="60" y="200" font-family="Arial, sans-serif" font-size="9" fill="#666">role_id (FK)</text>
+  <text x="60" y="215" font-family="Arial, sans-serif" font-size="9" fill="#666">instansi</text>
+  <text x="60" y="230" font-family="Arial, sans-serif" font-size="9" fill="#666">created_at</text>
+  <text x="60" y="245" font-family="Arial, sans-serif" font-size="9" fill="#666">updated_at</text>
+  
+  <!-- Roles Table -->
+  <rect x="50" y="320" width="200" height="120" fill="#E8F5E9" stroke="#388E3C" stroke-width="2" rx="5"/>
+  <rect x="50" y="320" width="200" height="35" fill="#388E3C" stroke="#2E7D32" stroke-width="2" rx="5"/>
+  <text x="150" y="342" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">ROLES</text>
+  
+  <text x="60" y="375" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333">PK id</text>
+  <line x1="60" y1="377" x2="110" y2="377" stroke="#333" stroke-width="1"/>
+  <text x="60" y="392" font-family="Arial, sans-serif" font-size="9" fill="#666">name (unique)</text>
+  <text x="60" y="407" font-family="Arial, sans-serif" font-size="9" fill="#666">description</text>
+  <text x="60" y="422" font-family="Arial, sans-serif" font-size="9" fill="#666">created_at</text>
+  
+  <!-- Kelompok Komoditas Table -->
+  <rect x="400" y="80" width="220" height="150" fill="#FFF3E0" stroke="#F57C00" stroke-width="2" rx="5"/>
+  <rect x="400" y="80" width="220" height="35" fill="#F57C00" stroke="#E65100" stroke-width="2" rx="5"/>
+  <text x="510" y="102" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">KELOMPOK_KOMODITAS</text>
+  
+  <text x="410" y="135" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333">PK kode_kelompok</text>
+  <line x1="410" y1="137" x2="530" y2="137" stroke="#333" stroke-width="1"/>
+  <text x="410" y="152" font-family="Arial, sans-serif" font-size="9" fill="#666">nama_kelompok</text>
+  <text x="410" y="167" font-family="Arial, sans-serif" font-size="9" fill="#666">deskripsi</text>
+  <text x="410" y="182" font-family="Arial, sans-serif" font-size="9" fill="#666">created_at</text>
+  <text x="410" y="197" font-family="Arial, sans-serif" font-size="9" fill="#666">updated_at</text>
+  
+  <!-- Komoditas Table -->
+  <rect x="400" y="270" width="220" height="170" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2" rx="5"/>
+  <rect x="400" y="270" width="220" height="35" fill="#7B1FA2" stroke="#6A1B9A" stroke-width="2" rx="5"/>
+  <text x="510" y="292" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">KOMODITAS</text>
+  
+  <text x="410" y="325" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333">PK kode_komoditi</text>
+  <line x1="410" y1="327" x2="520" y2="327" stroke="#333" stroke-width="1"/>
+  <text x="410" y="342" font-family="Arial, sans-serif" font-size="9" fill="#666">FK kode_kelompok</text>
+  <text x="410" y="357" font-family="Arial, sans-serif" font-size="9" fill="#666">nama_komoditi</text>
+  <text x="410" y="372" font-family="Arial, sans-serif" font-size="9" fill="#666">deskripsi</text>
+  <text x="410" y="387" font-family="Arial, sans-serif" font-size="9" fill="#666">satuan</text>
+  <text x="410" y="402" font-family="Arial, sans-serif" font-size="9" fill="#666">created_at</text>
+  <text x="410" y="417" font-family="Arial, sans-serif" font-size="9" fill="#666">updated_at</text>
+  
+  <!-- Transaksi NBM Table (Central) -->
+  <rect x="700" y="200" width="250" height="240" fill="#FFFDE7" stroke="#F9A825" stroke-width="2" rx="5"/>
+  <rect x="700" y="200" width="250" height="35" fill="#F9A825" stroke="#F57F17" stroke-width="2" rx="5"/>
+  <text x="825" y="222" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">TRANSAKSI_NBM</text>
+  
+  <text x="710" y="255" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333">PK id</text>
+  <line x1="710" y1="257" x2="760" y2="257" stroke="#333" stroke-width="1"/>
+  <text x="710" y="272" font-family="Arial, sans-serif" font-size="9" fill="#666">FK kode_kelompok</text>
+  <text x="710" y="287" font-family="Arial, sans-serif" font-size="9" fill="#666">FK kode_komoditi</text>
+  <text x="710" y="302" font-family="Arial, sans-serif" font-size="9" fill="#666">tahun</text>
+  <text x="710" y="317" font-family="Arial, sans-serif" font-size="9" fill="#666">bulan</text>
+  <text x="710" y="332" font-family="Arial, sans-serif" font-size="9" fill="#666">produksi</text>
+  <text x="710" y="347" font-family="Arial, sans-serif" font-size="9" fill="#666">impor</text>
+  <text x="710" y="362" font-family="Arial, sans-serif" font-size="9" fill="#666">ekspor</text>
+  <text x="710" y="377" font-family="Arial, sans-serif" font-size="9" fill="#666">perubahan_stok</text>
+  <text x="710" y="392" font-family="Arial, sans-serif" font-size="9" fill="#666">kalori_hari (decimal)</text>
+  <text x="710" y="407" font-family="Arial, sans-serif" font-size="9" fill="#666">created_at</text>
+  <text x="710" y="422" font-family="Arial, sans-serif" font-size="9" fill="#666">updated_at</text>
+  
+  <!-- Predictions Table -->
+  <rect x="700" y="480" width="250" height="180" fill="#E1F5FE" stroke="#0288D1" stroke-width="2" rx="5"/>
+  <rect x="700" y="480" width="250" height="35" fill="#0288D1" stroke="#01579B" stroke-width="2" rx="5"/>
+  <text x="825" y="502" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">PREDICTIONS</text>
+  
+  <text x="710" y="535" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#333">PK id</text>
+  <line x1="710" y1="537" x2="760" y2="537" stroke="#333" stroke-width="1"/>
+  <text x="710" y="552" font-family="Arial, sans-serif" font-size="9" fill="#666">FK user_id</text>
+  <text x="710" y="567" font-family="Arial, sans-serif" font-size="9" fill="#666">FK kode_komoditi</text>
+  <text x="710" y="582" font-family="Arial, sans-serif" font-size="9" fill="#666">prediction_date</text>
+  <text x="710" y="597" font-family="Arial, sans-serif" font-size="9" fill="#666">predicted_value</text>
+  <text x="710" y="612" font-family="Arial, sans-serif" font-size="9" fill="#666">confidence_lower</text>
+  <text x="710" y="627" font-family="Arial, sans-serif" font-size="9" fill="#666">confidence_upper</text>
+  <text x="710" y="642" font-family="Arial, sans-serif" font-size="9" fill="#666">created_at</text>
+  
+  <!-- Relationships -->
+  <!-- Users to Roles (Many-to-One) -->
+  <line x1="150" y1="280" x2="150" y2="320" stroke="#388E3C" stroke-width="2"/>
+  <circle cx="150" cy="315" r="5" fill="#388E3C"/>
+  <text x="165" y="305" font-family="Arial, sans-serif" font-size="9" fill="#666">N:1</text>
+  
+  <!-- Kelompok to Komoditas (One-to-Many) -->
+  <line x1="510" y1="230" x2="510" y2="270" stroke="#7B1FA2" stroke-width="2"/>
+  <path d="M 505 265 L 510 270 L 515 265" stroke="#7B1FA2" stroke-width="2" fill="none"/>
+  <text x="525" y="255" font-family="Arial, sans-serif" font-size="9" fill="#666">1:N</text>
+  
+  <!-- Kelompok to Transaksi_NBM (One-to-Many) -->
+  <line x1="620" y1="155" x2="700" y2="280" stroke="#F9A825" stroke-width="2"/>
+  <path d="M 695 275 L 700 280 L 695 285" stroke="#F9A825" stroke-width="2" fill="none"/>
+  <text x="650" y="210" font-family="Arial, sans-serif" font-size="9" fill="#666">1:N</text>
+  
+  <!-- Komoditas to Transaksi_NBM (One-to-Many) -->
+  <line x1="620" y1="340" x2="700" y2="320" stroke="#F9A825" stroke-width="2"/>
+  <path d="M 695 315 L 700 320 L 695 325" stroke="#F9A825" stroke-width="2" fill="none"/>
+  <text x="650" y="325" font-family="Arial, sans-serif" font-size="9" fill="#666">1:N</text>
+  
+  <!-- Users to Predictions (One-to-Many) -->
+  <line x1="250" y1="180" x2="700" y2="550" stroke="#0288D1" stroke-width="2"/>
+  <path d="M 695 545 L 700 550 L 695 555" stroke="#0288D1" stroke-width="2" fill="none"/>
+  <text x="470" y="360" font-family="Arial, sans-serif" font-size="9" fill="#666">1:N</text>
+  
+  <!-- Komoditas to Predictions (One-to-Many) -->
+  <line x1="510" y1="440" x2="510" y2="550" stroke="#0288D1" stroke-width="2"/>
+  <line x1="510" y1="550" x2="700" y2="550" stroke="#0288D1" stroke-width="2"/>
+  <path d="M 695 545 L 700 550 L 695 555" stroke="#0288D1" stroke-width="2" fill="none"/>
+  <text x="600" y="540" font-family="Arial, sans-serif" font-size="9" fill="#666">1:N</text>
+  
+  <!-- Legend -->
+  <rect x="50" y="480" width="300" height="120" fill="#F5F5F5" stroke="#999" stroke-width="1" rx="5"/>
+  <text x="60" y="500" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">Keterangan:</text>
+  
+  <text x="60" y="518" font-family="Arial, sans-serif" font-size="9" fill="#666">PK = Primary Key (identifier unik)</text>
+  <text x="60" y="533" font-family="Arial, sans-serif" font-size="9" fill="#666">FK = Foreign Key (relasi ke tabel lain)</text>
+  
+  <line x1="60" y1="545" x2="100" y2="545" stroke="#666" stroke-width="2"/>
+  <path d="M 95 540 L 100 545 L 95 550" stroke="#666" stroke-width="2" fill="none"/>
+  <text x="105" y="548" font-family="Arial, sans-serif" font-size="9" fill="#666">One-to-Many (1:N)</text>
+  
+  <circle cx="70" cy="563" r="4" fill="#666"/>
+  <text x="80" y="566" font-family="Arial, sans-serif" font-size="9" fill="#666">Many side (N)</text>
+  
+  <text x="60" y="583" font-family="Arial, sans-serif" font-size="9" fill="#666">• TRANSAKSI_NBM: 41,316 records</text>
+  <text x="60" y="595" font-family="Arial, sans-serif" font-size="9" fill="#666">• Periode: 1993-2024 (372 time points)</text>
+</svg>
