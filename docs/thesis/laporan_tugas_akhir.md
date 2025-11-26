@@ -970,7 +970,7 @@ Monitoring dan logging menggunakan structured logging (Laravel Log channels) unt
 
 Tahap pertama dalam metodologi Research and Development (RnD) yang terintegrasi dengan CRISP-DM berfokus pada pengumpulan dan pemahaman data historis Neraca Bahan Makanan Indonesia. Proses ini sangat krusial karena kualitas model prediksi sangat bergantung pada representasi data yang akurat dan konsisten selama periode pelatihan yang panjang.
 
-4.1.1 Dataset Neraca Bahan Makanan Indonesia
+#### a. Dataset Neraca Bahan Makanan Indonesia
 
 Dataset yang digunakan dalam penelitian ini merupakan kompilasi lengkap data Neraca Bahan Makanan (NBM) Indonesia yang mencakup periode tiga dekade dari tahun 1993 hingga 2024. Data dikumpulkan dari Pusat Data dan Sistem Informasi Pertanian, Kementerian Pertanian Republik Indonesia, serta publikasi tahunan Badan Pusat Statistik (BPS) mengenai konsumsi pangan nasional. Dataset ini tersedia dalam dua representasi utama yang saling melengkapi.
 
@@ -978,7 +978,7 @@ Representasi pertama berbentuk transaksi granular yang mencatat setiap komponen 
 
 Representasi kedua merupakan agregasi time-series bulanan yang menghasilkan 372 titik data observasi untuk total konsumsi kalori per kapita per hari pada tingkat nasional. Time-series ini dihitung dengan mengintegrasikan seluruh komoditas dalam kelompok pangan (serealia, umbi-umbian, ikan, daging, telur & susu, sayuran, buah-buahan, lemak & minyak, serta bahan minuman) sesuai dengan formula konversi standar yang telah ditetapkan oleh FAO (Food and Agriculture Organization). Agregasi ini penting karena menjadi target variable utama yang akan diprediksi oleh model LSTM enhanced ensemble.
 
-4.1.2 Analisis Kualitas Data
+#### b. Analisis Kualitas Data
 
 Sebelum memasuki tahap preprocessing, dilakukan analisis menyeluruh terhadap kualitas dataset untuk mengidentifikasi potensi masalah yang dapat mempengaruhi performa model. Analisis ini mencakup pemeriksaan missing values, deteksi outlier, validasi konsistensi temporal, dan evaluasi distribusi statistik setiap variabel.
 
@@ -986,9 +986,7 @@ Hasil analisis menunjukkan bahwa missing values ditemukan pada sekitar 4,8% dari
 
 Outlier ekstrem teridentifikasi pada beberapa periode spesifik yang berkorelasi dengan kejadian ekonomi dan sosial signifikan. Krisis moneter 1998 menyebabkan lonjakan drastis pada nilai impor beberapa komoditas strategis akibat depresiasi rupiah, sementara nilai produksi domestik menurun tajam untuk komoditas yang memerlukan input impor. Periode pandemi COVID-19 (2020-2021) menunjukkan pola yang berbeda dengan fluktuasi tinggi pada konsumsi komoditas tertentu (serealia dan telur meningkat signifikan) sementara komoditas lain (daging sapi, buah impor) mengalami penurunan konsumsi yang tajam.
 
-Distribusi statistik menunjukkan bahwa sebagian besar variabel numerik (produksi, impor, ekspor) memiliki skewness positif yang signifikan, dengan nilai median jauh lebih rendah dari mean. Hal ini mengindikasikan keberadaan outlier pada ekor kanan distribusi yang perlu ditangani secara hati-hati untuk menghindari bias pada proses normalisasi.
-
-Tabel 4.1 merangkum hasil analisis kualitas data secara kuantitatif:
+Distribusi statistik menunjukkan bahwa sebagian besar variabel numerik (produksi, impor, ekspor) memiliki skewness positif yang signifikan, dengan nilai median jauh lebih rendah dari mean. Hal ini mengindikasikan keberadaan outlier pada ekor kanan distribusi yang perlu ditangani secara hati-hati untuk menghindari bias pada proses normalisasi. Hasil analisis kualitas data secara kuantitatif dapat dilihat pada Tabel 4.1 berikut.
 
 **Tabel 4.1 Analisis Kualitas Data NBM Indonesia (1993-2024)**
 
@@ -1004,7 +1002,7 @@ Tabel 4.1 merangkum hasil analisis kualitas data secara kuantitatif:
 | Consistency Check | 100% | Manual verification | Validasi komponen neraca |
 | Temporal Gap | 0 bulan | - | Tidak ada missing months |
 
-4.1.3 Preprocessing dan Transformasi Data
+#### c. Preprocessing dan Transformasi Data
 
 Berdasarkan hasil analisis kualitas data, dirancang pipeline preprocessing yang komprehensif untuk memastikan dataset siap digunakan dalam pelatihan model deep learning. Pipeline ini diimplementasikan sebagai fungsi modular dalam `ml_models/data_loader.py` yang dapat dijalankan secara konsisten baik pada tahap training maupun inference.
 
@@ -1015,8 +1013,7 @@ Strategi imputasi yang dipilih adalah forward-fill temporal, dimana nilai yang h
 Berikut adalah cuplikan implementasi fungsi imputasi dalam `data_loader.py`:
 
 ```python
-def impute_missing_values(df: pd.DataFrame, 
-                          max_forward_fill: int = 6) -> pd.DataFrame:
+def impute_missing_values(df: pd.DataFrame, max_forward_fill: int = 6) -> pd.DataFrame:
     """
     Imputasi missing values dengan strategi temporal forward-fill
     dan fallback median untuk rentang panjang.
@@ -1051,8 +1048,7 @@ Untuk mengurangi pengaruh outlier ekstrem yang dapat mendistorsi proses learning
 ```python
 from scipy.stats.mstats import winsorize
 
-def apply_winsorization(df: pd.DataFrame, 
-                        limits: tuple = (0.01, 0.01)) -> pd.DataFrame:
+def apply_winsorization(df: pd.DataFrame, limits: tuple = (0.01, 0.01)) -> pd.DataFrame:
     """
     Terapkan winsorization pada kolom numerik untuk handle outlier.
     
@@ -1086,8 +1082,7 @@ Implementasi normalisasi dilakukan per-komoditi untuk mempertahankan karakterist
 ```python
 from sklearn.preprocessing import StandardScaler, RobustScaler
 
-def normalize_features(df: pd.DataFrame, 
-                       scaler_type: str = 'robust') -> pd.DataFrame:
+def normalize_features(df: pd.DataFrame, scaler_type: str = 'robust') -> pd.DataFrame:
     """
     Normalisasi fitur numerik dengan scaler yang sesuai.
     
@@ -1123,78 +1118,75 @@ Hasil akhir dari tahap preprocessing ini adalah dataset yang bersih, konsisten, 
 
 **Catatan: Struktur Klasifikasi Kelompok Komoditas**
 
-Dataset NBM Indonesia menggunakan klasifikasi standar kelompok komoditas berdasarkan Kementerian Pertanian. Sistem SIKOLBIA mengimplementasikan 10 kelompok utama yang disimpan dalam tabel `kelompok` database:
+Dataset NBM Indonesia menggunakan klasifikasi standar kelompok komoditas berdasarkan Kementerian Pertanian. Sistem SIKOLBIA mengimplementasikan 11 kelompok utama yang disimpan dalam tabel `kelompok` database. Klasifikasi lengkap kelompok komoditas beserta contoh komoditas di dalamnya dapat dilihat pada Tabel 4.1b berikut.
 
 **Tabel 4.1b Klasifikasi Kelompok Komoditas NBM Indonesia**
 
 | Kode | Nama Kelompok | Deskripsi | Contoh Komoditas |
 |------|---------------|-----------|------------------|
-| 01 | **Padi-padian** | Serealia/biji-bijian sebagai sumber karbohidrat utama | Gabah, Beras, Jagung, Jagung basah, Gandum, Tepung Gandum |
-| 02 | **Makanan berpati** | Umbi-umbian dan sumber karbohidrat non-serealia | Ubi Jalar, Ubi Kayu, Ubi Kayu/Gaplek, Ubi Kayu/Tapioka, Sagu/Tepung sagu |
-| 03 | **Gula** | Produk pemanis | Gula Pasir, Gula Mangkok |
-| 04 | **Buah Biji Berminyak** | Kacang-kacangan dan kelapa | Kacang tanah (berkulit/lepas kulit), Kedelai, Kacang Hijau, Kelapa (berkulit/kopra) |
-| 05 | **Buah-buahan** | Buah segar | Alpokat, Jeruk, Duku, Durian, Jambu, Mangga |
-| 06 | **Sayur-sayuran** | Sayuran segar | (berbagai jenis sayuran hijau dan umbi) |
-| 07 | **Daging** | Protein hewani dari ternak | (daging sapi, ayam, kambing, dll) |
-| 08 | **Telur** | Produk telur | (telur ayam, bebek, dll) |
-| 09 | **Susu** | Produk susu dan olahannya | (susu segar, bubuk, kental manis) |
-| 10 | **Minyak dan Lemak** | Sumber lemak nabati dan hewani | (minyak kelapa, sawit, mentega, margarin) |
+| 01 | **Padi-padian** | Serealia/biji-bijian sebagai sumber karbohidrat utama | Gabah, Beras, Jagung, Jagung Basah, Gandum, Tepung Gandum |
+| 02 | **Makanan berpati** | Umbi-umbian dan sumber karbohidrat non-serealia | Ubi Jalar, Ubi Kayu, Gaplek, Tapioka, Tepung Sagu |
+| 03 | **Gula** | Produk pemanis alami dan olahan | Gula Pasir, Gula Merah |
+| 04 | **Buah Biji Berminyak** | Kacang-kacangan dan biji berminyak | Kacang Tanah (Berkulit/Lepas Kulit), Kedelai, Kacang Hijau, Kacang Merah, Kacang Panjang, Kelapa Daging, Biji Bunga Matahari, Kopra |
+| 05 | **Buah-buahan** | Buah segar lokal dan impor | Alpokat, Jeruk, Duku, Durian, Jambu Biji, Mangga, Nanas, Pepaya, Pisang, Rambutan, Salak, Sawo, Leci, Matoa, Kiwi, Stroberi, Kurma, Tin, Buah Naga, Kesemek, Kelengkeng, Jambu Air, Semangka, Melon, Apel Malang, Anggur, Manggis, Belimbing, Sirsak, Sukun, Nangka, Kedondong, Markisa, Cempedak, Jambu Bol, Srikaya, Apel Batu, Timun Suri |
+| 06 | **Sayur-sayuran** | Sayuran segar dan bumbu dapur | Kangkung, Bayam, Kubis, Wortel, Buncis, Tomat, Daun Singkong, Terong, Pare, Labu, Kemangi, Seledri, Selada, Sawi, Jamur, Kentang, Bawang Merah, Bawang Putih, Jahe, Kunyit, Lengkuas, Kencur, Cabai, Daun Bawang, Lobak, Labu Siam, Mentimun |
+| 07 | **Daging** | Protein hewani dari ternak dan unggas | Daging Sapi, Daging Ayam Buras, Daging Kambing, Daging Kerbau, Daging Domba, Daging Kuda, Daging Bebek, Daging Angsa, Daging Ayam Ras, Daging Babi, Jeroan |
+| 08 | **Telur** | Produk telur dari berbagai unggas | Telur Ayam, Telur Bebek, Telur Puyuh |
+| 09 | **Susu** | Produk susu dan olahannya | Susu Segar, Susu UHT, Susu Rendah Lemak, Susu Kemasan, Susu Pasteurisasi |
+| 10 | **Ikan** | Ikan dan biota perairan | Ikan Lele, Ikan Kakap, Ikan Bandeng, Ikan Tuna, Udang, Cumi-cumi, Ikan Nila, Ikan Kerapu, Ikan Tongkol |
+| 11 | **Minyak dan Lemak** | Sumber lemak nabati dan hewani | Minyak Kacang Tanah, Lemak Sapi, Minyak Goreng Kelapa, Lemak Babi, Minyak Goreng Sawit |
 
 *Sumber: Database SIKOLBIA, tabel `kelompok` dan `komoditi`*
 
-Setiap komoditas individual memiliki kode unik format `XXYY` dimana `XX` adalah `kode_kelompok` (01-10) dan `YY` adalah `kode_komoditi` dalam kelompok tersebut (01-99). Sebagai contoh:
+Setiap komoditas individual memiliki kode unik format `XXYY` dimana `XX` adalah `kode_kelompok` (01-11) dan `YY` adalah `kode_komoditi` dalam kelompok tersebut (01-99). Sebagai contoh:
 - `0101` = Gabah (kelompok 01: Padi-padian, komoditi 01)
 - `0102` = Beras (kelompok 01: Padi-padian, komoditi 02)  
 - `0201` = Ubi Jalar (kelompok 02: Makanan berpati, komoditi 01)
 
-Total terdapat 372 time-series bulanan (1993-2024) untuk agregasi nasional, dengan 41.316 records transaksi granular yang mencakup seluruh komoditas across 10 kelompok ini.
+Total terdapat 372 time-series bulanan (1993-2024) untuk agregasi nasional, dengan 41.316 records transaksi granular yang mencakup seluruh komoditas across 11 kelompok ini.
 
 4.2 Research Planning
 
 Tahap Research Planning dalam metodologi RnD-CRISP-DM berfokus pada perencanaan eksperimen yang sistematis untuk mencapai tujuan penelitian. Pada tahap ini, dilakukan analisis mendalam terhadap karakteristik problem forecasting time-series NBM, pemilihan arsitektur model yang sesuai, serta perancangan strategi eksperimen yang komprehensif untuk memvalidasi hipotesis penelitian.
 
-4.2.1 Definisi Masalah dan Target Performa
+#### a. Definisi Masalah dan Target Performa
 
 Masalah utama yang dihadapi adalah ketidakpastian proyeksi konsumsi pangan nasional dalam jangka menengah (3-6 bulan), yang menyebabkan kesulitan dalam perencanaan kebijakan ketahanan pangan. Pendekatan manual existing dengan trend linear dan expert judgment menghasilkan error rata-rata sekitar 15-20% (berdasarkan evaluasi internal Kementan 2019-2022), yang dinilai terlalu tinggi untuk mendukung decision-making yang akurat.
 
-Target performa yang ditetapkan dalam penelitian ini adalah:
-1. **Akurasi**: MAPE (Mean Absolute Percentage Error) < 10% pada horizon prediksi 6 bulan
-2. **Precision**: MAE (Mean Absolute Error) < 50 kkal/kapita/hari
-3. **Reliability**: Coverage confidence interval ≥ 90% untuk band ±15%
-4. **Responsiveness**: Latency inferensi < 3 detik per request pada konfigurasi minimal (8 vCPU, 16GB RAM)
-5. **Robustness**: Performa konsisten pada periode shock (volatilitas tinggi) dengan degradasi < 5 poin MAPE
+Penelitian ini menetapkan lima kriteria target performa sebagai berikut:
+1. MAPE (Mean Absolute Percentage Error) kurang dari 10% untuk prediksi 6 bulan ke depan
+2. MAE (Mean Absolute Error) maksimal 50 kkal/kapita/hari sebagai batas toleransi deviasi absolut
+3. Coverage confidence interval minimal 90% dalam band ±15% dari nilai aktual
+4. Latency inferensi maksimal 3 detik per request pada spesifikasi minimal 8 vCPU dan 16GB RAM
+5. Performa stabil pada periode volatilitas tinggi dengan penurunan akurasi maksimal 5 poin MAPE
 
 Target MAPE < 10% dipilih berdasarkan benchmarking terhadap penelitian terkait di domain forecasting konsumsi pangan. Penelitian oleh Zhang et al. (2020) pada food consumption forecasting di China mencapai MAPE 12-14% dengan metode ARIMA, sementara Wang & Li (2021) melaporkan MAPE 9-11% menggunakan hybrid LSTM-ARIMA. Dengan memanfaatkan arsitektur ensemble dan dataset yang lebih lengkap, target < 10% dianggap ambisius namun achievable.
 
-4.2.2 Pemilihan Arsitektur Model
+#### b. Pemilihan Arsitektur Model
 
 Berdasarkan literature review pada BAB II, LSTM (Long Short-Term Memory) dipilih sebagai arsitektur base model karena kemampuannya dalam menangkap long-term dependencies pada data sequential. Keunggulan LSTM dibanding RNN vanilla adalah penanganan vanishing gradient problem melalui mekanisme gate (forget, input, output) yang mengontrol aliran informasi dalam cell state.
 
 Namun, LSTM memiliki kelemahan dalam menangani sudden shifts atau structural breaks yang sering terjadi pada data ekonomi (seperti krisis 1998 atau pandemi 2020). Untuk mengatasi ini, dirancang arsitektur **ensemble** yang mengkombinasikan kekuatan LSTM dalam menangkap pola temporal kompleks dengan robustness metode tradisional terhadap outlier.
 
-Komponen ensemble yang dipilih:
-1. **LSTM Neural Network**: Menangkap non-linear temporal dependencies, seasonal patterns, dan lag effects yang kompleks
-2. **HuberRegressor**: Model linear robust yang menggunakan loss function Huber (kombinasi squared error untuk small residuals dan absolute error untuk large residuals), memberikan stabilitas pada periode anomali
+Arsitektur ensemble menggunakan dua komponen utama:
+1. **LSTM Neural Network** untuk menangkap pola temporal non-linear, pola musiman, dan efek lag yang kompleks dalam data time-series konsumsi pangan
+2. **HuberRegressor** sebagai model linear yang tahan terhadap outlier menggunakan fungsi loss Huber—menggabungkan squared error untuk residual kecil dan absolute error untuk residual besar—sehingga memberikan prediksi yang lebih stabil ketika terjadi anomali atau shock ekonomi
 
 Kombinasi ini didasarkan pada prinsip **diversity** dalam ensemble learning, dimana model dengan karakteristik berbeda (deep learning vs traditional ML, non-linear vs linear) cenderung menghasilkan error yang complementary. Weighted averaging dari prediksi kedua model diharapkan menghasilkan prediksi yang lebih stabil dan akurat dibanding masing-masing model secara individual.
 
-4.2.3 Feature Engineering dan Sequence Design
+#### c. Feature Engineering dan Sequence Design
 
-Untuk memaksimalkan performa LSTM, dirancang feature engineering yang komprehensif untuk mengekstrak informasi temporal dan pola statistik dari raw time-series:
+Proses rekayasa fitur dilakukan untuk mengekstrak informasi temporal dan pola statistik yang relevan dari data time-series mentah, dengan empat jenis fitur utama yang dikembangkan:
 
-**Lag Features**: Nilai konsumsi pada t-1, t-2, t-3 (historical values)
-- Justifikasi: Konsumsi pangan memiliki persistence yang kuat, nilai bulan lalu sangat prediktif untuk bulan ini
+**Lag Features** menggunakan nilai konsumsi pada timestep t-1, t-2, dan t-3 sebagai historical values. Fitur ini dipilih karena data konsumsi pangan Indonesia menunjukkan autokorelasi yang kuat antar periode, dimana pola konsumsi bulan sebelumnya memberikan informasi prediktif yang signifikan untuk bulan berjalan.
 
-**Rolling Statistics**: Rolling mean 3-bulan, rolling std 3-bulan
-- Justifikasi: Menangkap trend jangka pendek dan volatilitas, smoothing out noise
+**Rolling Statistics** dihitung dalam bentuk rolling mean dan rolling standard deviation dengan window 3 bulan. Fitur ini berfungsi untuk menangkap tren jangka pendek sekaligus mengukur volatilitas konsumsi, dengan efek smoothing yang mengurangi noise pada data historis.
 
-**Cyclical Encoding**: sin(2π × bulan/12), cos(2π × bulan/12)
-- Justifikasi: Merepresentasikan seasonality secara kontinyu, menghindari discontinuity antara Desember-Januari
+**Cyclical Encoding** menggunakan transformasi trigonometri sin(2π × bulan/12) dan cos(2π × bulan/12) untuk merepresentasikan pola musiman. Pendekatan ini dipilih untuk mempertahankan sifat kontinuitas temporal, menghindari diskontinuitas artifisial antara bulan Desember dan Januari yang terjadi jika bulan direpresentasikan sebagai nilai ordinal 1-12.
 
-**Growth Rate**: (kalori_t - kalori_t-1) / kalori_t-1
-- Justifikasi: Menangkap momentum perubahan, sensitif terhadap acceleration/deceleration
+**Growth Rate** dihitung dengan formula (kalori_t - kalori_t-1) / kalori_t-1 untuk menangkap momentum perubahan konsumsi. Fitur ini sensitif terhadap akselerasi atau deselerasi tren, memberikan sinyal early warning terhadap perubahan pola konsumsi yang signifikan.
 
-Sequence window length adalah hyperparameter kritis yang menentukan berapa banyak timesteps historis yang digunakan sebagai input untuk memprediksi timestep berikutnya. Grid search dilakukan untuk window length {3, 6, 12} bulan dengan evaluasi pada validation set.
+Panjang sequence window merupakan hyperparameter krusial yang menentukan jumlah timestep historis yang digunakan model sebagai input untuk memprediksi periode berikutnya. Eksperimen grid search dilakukan dengan menguji tiga kandidat window length (3, 6, dan 12 bulan) menggunakan data validasi untuk mengevaluasi trade-off antara kompleksitas model dan akurasi prediksi. Hasil eksperimen grid search untuk pemilihan panjang sequence window dapat dilihat pada Tabel 4.2 berikut.
 
 **Tabel 4.2 Grid Search Hasil untuk Sequence Window Length**
 
@@ -1206,20 +1198,13 @@ Sequence window length adalah hyperparameter kritis yang menentukan berapa banya
 
 Hasil menunjukkan bahwa window 6 bulan memberikan trade-off terbaik antara akurasi dan efisiensi. Window 3 bulan terlalu pendek untuk menangkap seasonal patterns tahunan, sementara window 12 bulan mengalami overfitting dan memerlukan waktu training yang signifikan lebih lama tanpa improvement akurasi yang sebanding.
 
-4.2.4 Hyperparameter Tuning Strategy
+#### d. Hyperparameter Tuning Strategy
 
-Untuk menemukan konfigurasi optimal, dirancang strategi hyperparameter tuning bertahap:
+Untuk menemukan konfigurasi optimal, dirancang strategi hyperparameter tuning bertahap yang terdiri dari dua tahap utama.
 
-**Stage 1: Coarse Grid Search** - Eksplorasi luas pada parameter utama
-- LSTM units layer-1: {64, 128, 256}
-- LSTM units layer-2: {32, 64, 128}
-- Batch size: {16, 32, 64}
-- Dropout rate: {0.1, 0.2, 0.3}
+**Stage 1: Coarse Grid Search** merupakan tahap eksplorasi luas untuk mengidentifikasi neighborhood parameter yang menjanjikan. Pada tahap ini dilakukan pencarian kombinatorial terhadap empat hyperparameter utama: jumlah unit LSTM pada layer pertama diuji dengan nilai 64, 128, dan 256 unit; layer kedua dengan 32, 64, dan 128 unit; ukuran batch divariasikan antara 16, 32, dan 64 sampel; serta dropout rate dieksperimen pada level 0.1, 0.2, dan 0.3 untuk regularisasi. Total 81 kombinasi konfigurasi dievaluasi menggunakan validation set dengan metrik MAPE sebagai kriteria pemilihan.
 
-**Stage 2: Fine-tuning** - Refinement pada neighborhood konfigurasi terbaik Stage 1
-- Learning rate: {1e-4, 5e-4, 1e-3}
-- Huber delta: {1.0, 1.35, 1.5, 2.0}
-- Ensemble weights: optimized via Nelder-Mead constrained optimization
+**Stage 2: Fine-tuning** dilakukan setelah mengidentifikasi konfigurasi terbaik dari tahap pertama, dengan fokus pada penyempurnaan parameter yang lebih sensitif terhadap performa model. Learning rate dioptimasi melalui pencarian pada rentang 1×10⁻⁴, 5×10⁻⁴, dan 1×10⁻³ untuk mengontrol kecepatan konvergensi. Parameter Huber delta yang menentukan transisi antara squared loss dan absolute loss diuji pada nilai 1.0, 1.35, 1.5, dan 2.0 berdasarkan analisis distribusi residual error. Bobot ensemble antara LSTM dan HuberRegressor dioptimasi menggunakan algoritma Nelder-Mead dengan constraint bahwa jumlah bobot sama dengan 1 dan semua bobot non-negatif. Hasil lengkap dari proses tuning dapat dilihat pada Tabel 4.3 berikut.
 
 **Tabel 4.3 Hasil Hyperparameter Tuning (Top 5 Konfigurasi)**
 
@@ -1235,7 +1220,7 @@ Konfigurasi A terpilih sebagai model final karena mencapai validation MAPE teren
 
 Huber delta 1.35 dipilih berdasarkan karakteristik residual error: nilai ini memberikan transisi smooth antara squared loss (untuk error kecil) dan absolute loss (untuk outlier), sesuai dengan distribusi error yang memiliki some extreme values pada periode shock ekonomi.
 
-4.2.5 Cross-Validation Strategy
+#### e. Cross-Validation Strategy
 
 Mengingat sifat temporal data yang memiliki autokorelasi dan trend, standard k-fold cross-validation tidak appropriate karena akan mengakibatkan data leakage (training pada data masa depan, testing pada data masa lalu). Oleh karena itu, digunakan **Expanding Window Time Series Cross-Validation** dengan 5 folds:
 
@@ -1253,36 +1238,23 @@ Keuntungan expanding window dibanding sliding window adalah ukuran training set 
 
 Tahap Early Product Development menandai transisi dari perencanaan eksperimental ke implementasi sistem yang dapat dioperasikan. Pada fase ini, arsitektur model yang telah dirancang diterjemahkan menjadi kode production-ready, infrastruktur microservices dibangun untuk deployment, dan pipeline ML end-to-end dikonstruksi untuk memastikan reproducibility dan maintainability.
 
-4.3.1 Arsitektur Sistem dan Infrastruktur
+#### a. Arsitektur Sistem dan Infrastruktur
 
-Sistem SIKOLBIA dirancang dengan arsitektur microservices yang memisahkan komponen web application dan ML serving menjadi service independen. Pemisahan ini memberikan beberapa keuntungan: (1) **Scalability** - ML service dapat di-scale secara independen berdasarkan beban inferensi tanpa mempengaruhi web traffic, (2) **Technology flexibility** - web menggunakan PHP/Laravel sementara ML menggunakan Python stack, (3) **Maintainability** - update model dapat dilakukan tanpa restart web application, (4) **Fault isolation** - kegagalan pada satu service tidak menyebabkan total system failure.
+Sistem SIKOLBIA dirancang dengan arsitektur microservices yang memisahkan komponen web application dan ML serving menjadi service independen. Pemisahan ini memberikan beberapa keuntungan strategis dalam pengembangan dan operasional sistem.
 
-Arsitektur terdiri dari tiga komponen utama:
+Dari sisi **scalability**, ML service dapat dikembangkan secara independen berdasarkan beban inferensi tanpa mempengaruhi traffic aplikasi web. Hal ini memungkinkan resource allocation yang lebih efisien ketika terjadi lonjakan permintaan prediksi. **Technology flexibility** memberikan kebebasan dalam pemilihan stack teknologi, dimana komponen web menggunakan PHP/Laravel sementara ML service memanfaatkan Python ecosystem yang kaya akan library machine learning. Aspek **maintainability** terjaga karena pembaruan model dapat dilakukan tanpa perlu restart aplikasi web, meminimalkan downtime sistem. Terakhir, **fault isolation** memastikan bahwa kegagalan pada satu service tidak menyebabkan total system failure, meningkatkan reliability keseluruhan sistem.
 
-**Laravel Web Application** (Port 8000):
-- Menangani user authentication, authorization, dan session management
-- Menyediakan UI untuk input parameter prediksi dan visualisasi hasil
-- Mengelola database transactions untuk menyimpan historical predictions dan user data
-- Mengimplementasikan business logic untuk export reports (Excel, PDF, CSV)
-- Berfungsi sebagai API gateway untuk komunikasi dengan ML service
+Arsitektur terdiri dari tiga komponen utama yang saling berkomunikasi:
 
-**FastAPI ML Service** (Port 8082):
-- Memuat model trained (LSTM + HuberRegressor) ke memory saat startup
-- Menyediakan RESTful API endpoints untuk prediction requests
-- Melakukan preprocessing input data sesuai pipeline training
-- Menjalankan inference dan menghitung confidence intervals
-- Mengembalikan hasil prediksi dalam format JSON dengan metadata
+**Laravel Web Application** (Port 8000) berperan sebagai presentation layer yang menangani autentikasi dan otorisasi pengguna melalui session management, menyediakan antarmuka untuk input parameter prediksi dan visualisasi hasil dalam bentuk tabel serta grafik interaktif, mengelola transaksi database untuk menyimpan riwayat prediksi dan data pengguna, mengimplementasikan business logic untuk export laporan dalam format Excel, PDF, dan CSV, serta berfungsi sebagai API gateway yang mengatur komunikasi dengan ML service.
 
-**Redis Cache Layer** (Port 6379):
-- Caching hasil prediksi untuk request dengan input identik (TTL 6 jam)
-- Mengurangi beban computational pada ML service untuk repeated queries
-- Menyimpan session data dan rate limiting counters
+**FastAPI ML Service** (Port 8082) merupakan core machine learning engine yang memuat model trained (LSTM + HuberRegressor) ke memory saat startup untuk mempercepat inference, menyediakan RESTful API endpoints untuk menerima prediction requests dalam format JSON, melakukan preprocessing input data sesuai dengan pipeline yang digunakan saat training untuk memastikan konsistensi transformasi, menjalankan inference dengan model ensemble dan menghitung confidence intervals menggunakan margin ±15%, kemudian mengembalikan hasil prediksi beserta metadata seperti model version dan feature importance.
 
-Komunikasi antar service menggunakan HTTP REST API dengan JSON payload, dilindungi oleh internal network dalam Docker Compose environment untuk security. Laravel melakukan HTTP POST ke `http://fastapi-ml:8082/predict` dengan timeout 5 detik dan retry mechanism untuk handling transient failures.
+**Redis Cache Layer** (Port 6379) berfungsi sebagai high-performance caching system yang menyimpan hasil prediksi untuk request dengan input identik dengan Time-To-Live (TTL) 6 jam untuk menghindari komputasi redundan, mengurangi beban computational pada ML service untuk repeated queries yang sering terjadi pada analisis eksplorasi, serta menyimpan session data dan rate limiting counters untuk mengontrol beban sistem.
 
-Berikut adalah diagram arsitektur lengkap yang telah divisualisasikan pada Gambar 6 (BAB III), menunjukkan flow data dari user input hingga prediction response.
+Komunikasi antar service menggunakan HTTP REST API dengan JSON payload, dilindungi oleh internal network dalam Docker Compose environment untuk security. Laravel melakukan HTTP POST request ke FastAPI ML Service dengan timeout 5 detik dan retry mechanism untuk handling transient failures.
 
-4.3.2 Implementasi Pipeline ML
+#### b. Implementasi Pipeline ML
 
 Pipeline Machine Learning diimplementasikan sebagai modular components yang dapat di-reuse baik pada tahap training maupun inference. Kode diorganisir dalam direktori `ml_models/` dengan struktur sebagai berikut:
 
@@ -1642,13 +1614,13 @@ class NBMProductionModel:
 
 Implementasi ini memastikan bahwa model dapat di-save dan di-load dengan mudah untuk production deployment, dengan semua komponen (LSTM, Huber, weights) ter-persist secara konsisten.
 
-4.3.3 Software dan Hardware Requirements
+#### c. Software dan Hardware Requirements
 
 Sebelum deployment sistem SIKOLBIA, perlu dipahami requirement komprehensif baik dari sisi software maupun hardware untuk memastikan sistem dapat berjalan optimal. Requirements ini dibagi menjadi beberapa kategori berdasarkan environment dan role.
 
-**A. Development Environment Requirements**
+**- Development Environment Requirements**
 
-Untuk development dan training model, diperlukan:
+Untuk development dan training model, diperlukan software dan hardware dengan spesifikasi yang memadai. Kebutuhan software development dapat dilihat pada Tabel 4.A berikut.
 
 **Tabel 4.A Software Requirements untuk Development**
 
@@ -1678,7 +1650,7 @@ Untuk development dan training model, diperlukan:
 | Storage | 100 GB SSD | 500 GB NVMe SSD | 1 TB NVMe SSD | Fast I/O untuk data loading |
 | Network | 10 Mbps | 100 Mbps | 1 Gbps | Model download, deployment |
 
-**B. Production Environment Requirements**
+**- Production Environment Requirements**
 
 Untuk deployment production menggunakan Docker Compose:
 
@@ -1701,7 +1673,7 @@ Untuk deployment production menggunakan Docker Compose:
 - **Storage**: 100 GB SSD (data + logs + backups)
 - **Network**: 100 Mbps symmetric (1 Gbps untuk >100 users)
 
-**C. Client-Side Requirements**
+**- Client-Side Requirements**
 
 Untuk end-users yang mengakses sistem via web browser:
 
@@ -1717,7 +1689,7 @@ Untuk end-users yang mengakses sistem via web browser:
 | PDF Viewer | Browser built-in / Adobe Reader | Browser built-in | Report viewing |
 | Excel Software (Optional) | - | Microsoft Excel 2016+ / LibreOffice | Untuk editing exported reports |
 
-**D. Additional Tools untuk Administration**
+**- Additional Tools untuk Administration**
 
 **Tabel 4.E Administration Tools**
 
@@ -1730,7 +1702,7 @@ Untuk end-users yang mengakses sistem via web browser:
 | Grafana (Optional) | System monitoring | 10.0+ |
 | Prometheus (Optional) | Metrics collection | 2.45+ |
 
-**E. Software Dependencies (Python)**
+**- Software Dependencies (Python)**
 
 File `requirements.txt` untuk ML service:
 
@@ -1765,7 +1737,7 @@ pytest==7.4.3
 pytest-asyncio==0.21.1
 ```
 
-**F. Software Dependencies (PHP/Laravel)**
+**- Software Dependencies (PHP/Laravel)**
 
 File `composer.json` excerpt:
 
@@ -1784,7 +1756,7 @@ File `composer.json` excerpt:
 }
 ```
 
-**G. Network Requirements**
+**- Network Requirements**
 
 Untuk deployment production:
 - **Firewall Rules**: Allow inbound 80 (HTTP), 443 (HTTPS), block direct access ke port 3306, 6379, 8082
@@ -1792,7 +1764,7 @@ Untuk deployment production:
 - **Domain**: Minimal 1 domain/subdomain (e.g., sikolbia.pertanian.go.id)
 - **Backup Storage**: Network storage atau cloud storage untuk automated backups (min 500 GB)
 
-**H. Security Requirements**
+**- Security Requirements**
 
 - **Authentication**: Support untuk OAuth 2.0, SSO integration ready
 - **Encryption**: TLS 1.3 untuk data in transit, AES-256 untuk data at rest
@@ -1802,11 +1774,11 @@ Untuk deployment production:
 
 Requirements ini telah divalidasi melalui deployment testing dan dapat serve sebagai guideline untuk institutions yang ingin adopt sistem SIKOLBIA.
 
-4.3.4 User Requirements Analysis
+#### d. User Requirements Analysis
 
 Analisis user requirements dilakukan melalui series of stakeholder interviews, focus group discussions, dan task analysis untuk memahami kebutuhan actual end-users. User requirements dibagi menjadi functional requirements (apa yang sistem harus lakukan) dan non-functional requirements (bagaimana sistem harus berperforma).
 
-**A. Stakeholder Identification**
+**- Stakeholder Identification**
 
 Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 
@@ -1819,7 +1791,7 @@ Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 | Academic Researchers | 10 | Professor, Researcher | Research, publication, teaching | High | Varies (project-based) |
 | Public Users | 50+ | Student, Journalist, NGO | Information access, advocacy | Medium | Ad-hoc |
 
-**B. Functional Requirements dari User Perspective**
+**- Functional Requirements dari User Perspective**
 
 **Tabel 4.G Functional Requirements (High Priority)**
 
@@ -1851,7 +1823,7 @@ Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 | FR-19 | Regional/provincial disaggregation | Subnational planning | 🔄 Future work (data limitation) |
 | FR-20 | Historical accuracy tracking dashboard | Model performance monitoring | 🔄 Planned (admin panel) |
 
-**C. Non-Functional Requirements**
+**- Non-Functional Requirements**
 
 **Tabel 4.I Non-Functional Requirements**
 
@@ -1885,7 +1857,7 @@ Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 | | API documentation | Complete (Swagger) | Available | ✅ Met |
 | | User manual | Complete | 45 pages PDF | ✅ Met |
 
-**D. User Personas**
+**- User Personas**
 
 Untuk better understand user needs, dikembangkan 3 user personas representative:
 
@@ -1916,7 +1888,7 @@ Untuk better understand user needs, dikembangkan 3 user personas representative:
 - **Primary Features Used**: AI insights, PDF export dengan visualizations, high-level summary dashboards
 - **Quote**: "Saya tidak perlu tahu detil model, yang penting: prediksi reliable, explained dengan bahasa sederhana, dan bisa saya present ke Menteri."
 
-**E. Use Case Scenarios**
+**- Use Case Scenarios**
 
 Berikut 3 detailed use case scenarios representing typical user workflows:
 
@@ -2029,7 +2001,7 @@ Average Duration: 10 minutes
 
 User requirements analysis ini menjadi foundation untuk prioritize feature development dan ensure sistem truly meets needs dari diverse stakeholder groups.
 
-4.3.5 Prosedur Penggunaan Sistem SIKOLBIA
+#### e. Prosedur Penggunaan Sistem SIKOLBIA
 
 Section ini menjelaskan step-by-step procedure untuk menggunakan sistem SIKOLBIA, mulai dari akses pertama kali hingga advanced features. Prosedur disusun berdasarkan typical user journeys yang diobservasi selama UAT.
 
@@ -2504,7 +2476,7 @@ Untuk validation dan accuracy assessment.
 
 Prosedur penggunaan ini telah divalidasi melalui UAT dengan 15 users dan continuously updated berdasarkan user feedback. Video tutorials untuk setiap prosedur tersedia di menu "Help" → "Video Tutorials".
 
-4.3.6 FastAPI ML Service Implementation
+#### f. FastAPI ML Service Implementation
 
 FastAPI dipilih sebagai framework untuk ML serving karena performa tinggi (asynchronous ASGI), auto-generated API documentation (Swagger UI), dan type safety melalui Pydantic models. Service ini memuat model trained ke memory saat startup dan menyediakan endpoints untuk prediction requests.
 
@@ -2514,7 +2486,7 @@ Implementasi lengkap `fastapi/main.py` meliputi:
 
 Setelah implementasi awal model dan sistem berjalan, dilakukan validasi dengan para ahli domain untuk memastikan bahwa output sistem sesuai dengan kebutuhan operasional dan memiliki interpretability yang memadai bagi end-users. Proses validasi ini melibatkan iterasi feedback loop dengan stakeholders dari Badan Pangan Nasional, Kementerian Pertanian, dan akademisi dari perguruan tinggi yang memiliki expertise di bidang ketahanan pangan dan agricultural forecasting.
 
-4.4.1 Proses Validasi dengan Domain Experts
+#### a. Proses Validasi dengan Domain Experts
 
 Validasi dilakukan melalui serangkaian workshop dan konsultasi mendalam selama periode dua minggu pada bulan Agustus 2024. Peserta validasi terdiri dari lima expert yang dipilih berdasarkan track record mereka dalam kebijakan pangan nasional:
 
@@ -2526,7 +2498,7 @@ Validasi dilakukan melalui serangkaian workshop dan konsultasi mendalam selama p
 
 Pada sesi pertama, experts diberikan akses ke prototype sistem dan diminta untuk melakukan eksplorasi fungsionalitas secara mandiri. Mereka kemudian memberikan feedback tertulis melalui structured questionnaire yang mencakup aspek accuracy perception, usability, interpretability, dan actionability dari prediksi yang dihasilkan.
 
-4.4.2 Temuan dan Feedback Kritis
+#### b. Temuan dan Feedback Kritis
 
 Beberapa feedback penting yang muncul dari validasi expert:
 
@@ -2538,7 +2510,7 @@ Beberapa feedback penting yang muncul dari validasi expert:
 
 **Model Versioning**: Dr. Hendra menyarankan penambahan model versioning system karena pada operational environment, sering diperlukan comparison antara prediksi dari model versi berbeda untuk assessment. Implementasi meliputi penambahan flag `use_enhanced` di endpoint yang memungkinkan user memilih antara `nbm_production` (baseline) vs `nbm_production_enhanced` (version dengan augmented training data), serta logging yang mencatat model version yang digunakan untuk setiap prediction request.
 
-4.4.3 Iterasi Perbaikan
+#### c. Iterasi Perbaikan
 
 Berdasarkan feedback expert, dilakukan sprint perbaikan selama satu minggu yang mengimplementasikan:
 
@@ -2556,7 +2528,7 @@ Setelah implementasi perbaikan, dilakukan second round validation dengan 3 dari 
 
 Berdasarkan hasil expert validation dan preliminary testing, dilakukan comprehensive revision pada model architecture dan infrastructure untuk meningkatkan robustness dan operational reliability. Fase ini fokus pada fine-tuning technical aspects yang tidak teridentifikasi pada tahap design awal namun muncul sebagai pain points ketika sistem dioperasikan dalam kondisi mendekati production environment.
 
-4.5.1 Architectural Improvements pada Model
+#### a. Architectural Improvements pada Model
 
 Analisis learning curves dari training awal menunjukkan gap yang signifikan antara training loss dan validation loss pada epoch 60-80, mengindikasikan overfitting tendency. Gap ini terutama terlihat ketika model dilatih pada komoditas dengan data historis yang pendek atau memiliki structural breaks yang frequent. Untuk mengatasi ini, diimplementasikan dua strategi regularization:
 
@@ -2623,7 +2595,7 @@ def ensemble_with_gating(lstm_pred, huber_pred, horizon_step, trend_strength):
 
 Gating mechanism ini menurunkan MAPE pada horizon 5-6 bulan sebesar 1.2 poin (dari 10.8% menjadi 9.6%) tanpa mengorbankan akurasi pada horizon 1-3 bulan.
 
-4.5.2 Infrastructure Hardening
+#### b. Infrastructure Hardening
 
 Pada initial deployment testing, teridentifikasi beberapa failure scenarios yang perlu di-handle untuk operational reliability:
 
@@ -2703,7 +2675,7 @@ Dengan improvements ini, sistem revision siap untuk tahap early testing dengan r
 
 Tahap Early Test merupakan fase krusial dimana model yang telah dirancang dan diimplementasikan menjalani training comprehensive dan evaluasi rigorous menggunakan held-out test set. Fase ini bertujuan untuk memvalidasi bahwa arsitektur ensemble yang dipilih dapat mencapai target performa yang ditetapkan, serta mengidentifikasi karakteristik error dan limitation model sebelum deployment ke production.
 
-4.6.1 Setup Lingkungan Training
+#### a. Setup Lingkungan Training
 
 Pelatihan model dilakukan pada dedicated server dengan spesifikasi hardware yang memadai untuk deep learning workload:
 
@@ -2722,7 +2694,7 @@ Software stack yang digunakan:
 
 GPU acceleration memberikan speedup sekitar 3.5x dibanding CPU-only training untuk LSTM (training time berkurang dari ~110 menit menjadi ~32 menit per fold pada expanding window CV).
 
-4.6.2 Strategi Pembagian Data
+#### b. Strategi Pembagian Data
 
 Mengikuti best practices untuk time series forecasting, data dibagi secara kronologis dengan strict cutoff untuk menghindari data leakage:
 
@@ -2732,7 +2704,7 @@ Mengikuti best practices untuk time series forecasting, data dibagi secara krono
 
 Test set sengaja dipilih mencakup periode COVID-19 (2020-2021) untuk mengevaluasi robustness model terhadap extreme events. Validation set digunakan untuk hyperparameter tuning dan ensemble weight optimization, sementara test set benar-benar held-out dan tidak pernah digunakan dalam training loop.
 
-4.6.3 Proses Training dengan Cross-Validation
+#### c. Proses Training dengan Cross-Validation
 
 Training menggunakan expanding-window time series cross-validation dengan 5 folds untuk memastikan model robustness across different time periods:
 
@@ -2774,7 +2746,7 @@ print(f"\nCV Mean MAPE: {np.mean(fold_results):.2f}% ± {np.std(fold_results):.2
 
 Early stopping dengan patience 20 epochs digunakan untuk mencegah overfitting. Model terbaik (berdasarkan validation loss) di-restore pada akhir training. Learning rate scheduling dengan ReduceLROnPlateau (factor=0.5, patience=5) membantu model konvergen ke local minimum yang lebih optimal.
 
-4.6.4 Hasil Kuantitatif pada Test Set
+#### d. Hasil Kuantitatif pada Test Set
 
 Setelah hyperparameter optimal dan ensemble weights diperoleh dari validation set, model final di-retrain menggunakan gabungan training+validation set (1993-2019) dan dievaluasi pada held-out test set (2020-2024). Berikut adalah hasil komparasi tiga model:
 
@@ -2809,7 +2781,7 @@ Dari bar chart terlihat bahwa:
 - Ensemble mencapai balance optimal antara accuracy dan latency
 - Target MAPE 10% (garis putus-putus merah) terlampaui dengan signifikan
 
-4.6.5 Analisis Residual Error
+#### e. Analisis Residual Error
 
 Untuk memahami karakteristik prediction error, dilakukan comprehensive residual analysis. Residual didefinisikan sebagai selisih antara nilai aktual dan prediksi: `residual = y_actual - y_pred`.
 
@@ -2841,7 +2813,7 @@ Gambar 10 menunjukkan dua perspektif analisis residual:
 
 Annotation "Volatilitas meningkat periode COVID-19" pada panel kanan memperjelas bahwa increased prediction error pada 2020 adalah expected behavior mengingat unprecedented nature dari pandemic shock. Fakta bahwa model tetap dapat maintain MAPE 8.7% bahkan dengan inclusion periode ekstrem ini menunjukkan robustness yang baik.
 
-4.6.6 Feature Importance Analysis dengan SHAP
+#### f. Feature Importance Analysis dengan SHAP
 
 Untuk memahami faktor-faktor apa yang paling mempengaruhi prediksi model, dilakukan explainability analysis menggunakan SHAP (SHapley Additive exPlanations). SHAP values mengukur kontribusi setiap fitur terhadap prediction output berdasarkan game theory principles.
 
@@ -2867,7 +2839,7 @@ Gambar 11 menunjukkan ranking feature importance dari 7 fitur utama:
 - Volatility features bisa potentially di-drop untuk model simplification tanpa sacrificing much accuracy
 - Future work bisa explore adding external features (economic indicators, policy variables) yang might capture shocks lebih baik
 
-4.6.7 Error Analysis by Horizon
+#### g. Error Analysis by Horizon
 
 Untuk memahami bagaimana akurasi degradasi seiring bertambahnya horizon prediksi, dilakukan stratified evaluation:
 
@@ -2886,7 +2858,7 @@ Untuk memahami bagaimana akurasi degradasi seiring bertambahnya horizon prediksi
 
 Degradasi akurasi seiring horizon adalah expected behavior pada time series forecasting. Yang penting adalah bahwa degradasi bersifat gradual dan controlled, bukan sudden drop. Implementasi gating mechanism (Subbab 4.5.1) berhasil maintain H6 MAPE di bawah 10% dengan shift weight toward linear model untuk far-horizon predictions.
 
-4.6.8 Keterbatasan yang Teridentifikasi
+#### h. Keterbatasan yang Teridentifikasi
 
 Meskipun mencapai target performa, several limitations teridentifikasi dari early testing:
 
@@ -2904,7 +2876,7 @@ Despite limitations ini, early test results menunjukkan bahwa model ensemble rob
 
 Berdasarkan findings dari early test, dilakukan targeted revisions untuk address keterbatasan yang teridentifikasi, khususnya terkait handling komoditas dengan missing data dan improvement akurasi pada far-horizon predictions. Revisions ini bersifat data-centric (improving training data quality) dan algorithm-centric (enhancing ensemble mechanism).
 
-4.7.1 Data Augmentation untuk Komoditas dengan Missing Values
+#### a. Data Augmentation untuk Komoditas dengan Missing Values
 
 Analisis per-komoditi pada test results menunjukkan bahwa komoditas dengan historical completeness < 90% memiliki MAPE rata-rata 12.3%, jauh di atas aggregate MAPE 8.7%. Komoditas yang terpengaruh termasuk beberapa buah-buahan impor (apel, pir, anggur) dan sayuran minor (asparagus, brokoli) yang system pencatatannya baru konsisten setelah 2010.
 
@@ -3002,7 +2974,7 @@ Augmentation diterapkan pada 12 komoditas dengan missing rate > 10%. Retraining 
 
 Augmentation berhasil menurunkan MAPE untuk problematic commodities sebesar 3.5 poin rata-rata, dan menurunkan overall MAPE dari 8.7% menjadi 8.5%.
 
-4.7.2 Ensemble Gating Enhancement
+#### b. Ensemble Gating Enhancement
 
 Berdasarkan error analysis by horizon (Tabel 4.6), teridentifikasi bahwa degradasi akurasi pada H5-H6 partially disebabkan oleh LSTM over-extrapolation pada strong trends. Gating mechanism yang diimplementasikan pada fase 4.5.1 di-refine dengan:
 
@@ -3051,7 +3023,7 @@ def enhanced_ensemble_gating(lstm_pred, huber_pred, historical_data, horizon_ste
 
 Enhanced gating menurunkan H6 MAPE dari 10.2% menjadi 9.4%, bringing far-horizon predictions back under 10% target.
 
-4.7.3 Hasil Retesting
+#### c. Hasil Retesting
 
 Setelah implementation kedua revisions (data augmentation + enhanced gating), model di-retrain dan dievaluasi ulang pada test set:
 
@@ -3072,7 +3044,7 @@ Revisions berhasil improve akurasi tanpa sacrificing latency atau reliability. M
 
 Setelah model dan sistem lulus internal testing dengan performa yang memuaskan, dilakukan field test untuk mengevaluasi usability, utility, dan acceptance dari perspektif end-users. Field test menggunakan metodologi User Acceptance Testing (UAT) yang melibatkan representative users dari target stakeholders dalam controlled environment yang mensimulasikan operational use cases.
 
-4.8.1 Desain dan Metodologi UAT
+#### a. Desain dan Metodologi UAT
 
 UAT dirancang untuk mengevaluasi sistem SIKOLBIA dari tiga dimensi:
 
@@ -3099,7 +3071,7 @@ UAT dilakukan selama 2 hari (24-25 September 2024) dalam format workshop:
 - **Hari 1 Sore**: Guided hands-on exercises (3 jam)
 - **Hari 2**: Independent task completion dan questionnaire (4 jam)
 
-4.8.2 Skenario Testing dan Task Completion
+#### b. Skenario Testing dan Task Completion
 
 Participants diminta menyelesaikan 8 task scenarios yang cover end-to-end workflow:
 
@@ -3124,7 +3096,7 @@ Participants diminta menyelesaikan 8 task scenarios yang cover end-to-end workfl
 - **Task T7** (batch prediction) memiliki lowest completion rate (80%) dan highest difficulty rating (3.8). Failure analysis menunjukkan bahwa UI untuk batch input kurang intuitive - beberapa users bingung format CSV template. Rekomendasi: add inline example dan better error messages.
 - **Task T3** (interpretation) memiliki 93% completion namun avg time paling lama (8.5 min), indicating that users perlu waktu untuk understand confidence intervals. Beberapa users (terutama government staff tanpa statistical background) mengalami kesulitan memahami arti "92% coverage pada CI ±15%". Rekomendasi: simplify explanation dengan plain language dan visual aids.
 
-4.8.3 Satisfaction dan Usability Metrics
+#### c. Satisfaction dan Usability Metrics
 
 Post-testing questionnaire menggunakan Likert scale 1-5 (1=Very Dissatisfied, 5=Very Satisfied) untuk mengukur satisfaction across multiple dimensions:
 
@@ -3148,7 +3120,7 @@ Post-testing questionnaire menggunakan Likert scale 1-5 (1=Very Dissatisfied, 5=
 - **System Response Time (3.9)** mendapat score relatif rendah. Beberapa users (20%) mengeluh bahwa prediction untuk multiple commodities "agak lambat" (>5 detik). Investigation menunjukkan ini terjadi saat peak load (multiple users simultaneously). Rekomendasi: implement request queuing dan progress indicators.
 - **AI Insights Usefulness (3.8)** juga relatif rendah. Feedback kualitatif menunjukkan bahwa insights sometimes "too generic" atau "stating the obvious". Rekomendasi: enhance insight generation dengan more specific, actionable recommendations.
 
-4.8.4 Qualitative Feedback dan Feature Requests
+#### d. Qualitative Feedback dan Feature Requests
 
 Open-ended questions dalam questionnaire mengumpulkan rich qualitative feedback:
 
@@ -3174,7 +3146,7 @@ Open-ended questions dalam questionnaire mengumpulkan rich qualitative feedback:
 5. **Multi-user Collaboration** (3/15): "Sharing predictions antar team members dengan commenting"
 6. **API Access** (3/15): "API endpoint untuk integrate dengan existing internal systems"
 
-4.8.5 Error Tracking dan Issue Resolution
+#### e. Error Tracking dan Issue Resolution
 
 During UAT, system logs tracked 8 errors/issues:
 
@@ -3193,7 +3165,7 @@ During UAT, system logs tracked 8 errors/issues:
 
 Semua critical dan high severity issues resolved before UAT conclusion. Medium/low issues addressed dalam sprint berikutnya.
 
-4.8.6 Statistical Hypothesis Testing
+#### f. Statistical Hypothesis Testing
 
 Untuk validate bahwa system memenuhi acceptance criteria, dilakukan hypothesis testing:
 
@@ -3211,7 +3183,7 @@ Untuk validate bahwa system memenuhi acceptance criteria, dilakukan hypothesis t
 **Result**: 92% completion rate, 95% CI [87%, 96%]
 **Conclusion**: Reject H0. System meets usability acceptance criteria.
 
-4.8.7 Lessons Learned dan Iterasi
+#### g. Lessons Learned dan Iterasi
 
 UAT menghasilkan actionable insights untuk final revision:
 
@@ -3226,7 +3198,7 @@ Feedback loop dengan participants setelah fixes implementation menunjukkan appre
 
 Berdasarkan comprehensive feedback dari UAT dan issue tracking, dilakukan final product revision untuk address high-priority improvements sebelum production deployment. Revisions difokuskan pada user-requested features dan bug fixes yang teridentifikasi selama field testing.
 
-4.9.1 Implementation Fitur Berdasarkan User Feedback
+#### a. Implementation Fitur Berdasarkan User Feedback
 
 **CSV Export Functionality**
 
@@ -3362,7 +3334,7 @@ def generate_ai_insights(predictions: List[float],
 
 Revised insights mendapat positive feedback dengan usefulness rating meningkat dari 3.8 menjadi 4.3 pada follow-up survey.
 
-4.9.2 Security Hardening dan Performance Optimization
+#### b. Security Hardening dan Performance Optimization
 
 **Security Validation**
 
@@ -3461,7 +3433,7 @@ Performance improvements validated melalui load testing menggunakan Apache JMete
 
 Setelah sistem final validated dan deployed ke production environment, dilakukan dissemination activities untuk ensure knowledge transfer dan facilitate adoption.
 
-4.10.1 Documentation Deliverables
+#### a. Documentation Deliverables
 
 Comprehensive documentation package dibuat untuk support different stakeholder needs:
 
@@ -3489,7 +3461,7 @@ Comprehensive documentation package dibuat untuk support different stakeholder n
    - Technical report untuk internal distribution (Kementan, BPN)
    - Target audience: Academic community, policy makers
 
-4.10.2 Training dan Capacity Building
+#### b. Training dan Capacity Building
 
 Dilakukan training workshop untuk wider stakeholder group beyond UAT participants:
 
@@ -3499,7 +3471,7 @@ Dilakukan training workshop untuk wider stakeholder group beyond UAT participant
 
 Training materials dan recordings made available via learning management system untuk self-paced learning.
 
-4.10.3 Publication dan Repository Sharing
+#### c. Publication dan Repository Sharing
 
 Rencana dissemination mencakup:
 
@@ -3515,7 +3487,7 @@ Dissemination strategy aims untuk maximize impact dan facilitate adoption of sim
 
 Setelah menjalani complete RnD lifecycle dari research planning hingga dissemination, section ini menyediakan reflective discussion mengenai findings, implications, limitations, dan future directions.
 
-4.11.1 Interpretasi Hasil Penelitian
+#### a. Interpretasi Hasil Penelitian
 
 Hasil penelitian menunjukkan bahwa **LSTM enhanced ensemble approach berhasil achieve target performance** dengan MAPE 8.5% pada test set, melampaui target <10% dengan margin comfortable 1.5 poin. Capaian ini particularly impressive mengingat test set includes extreme events (COVID-19 pandemic) yang typically challenging untuk time series forecasting models.
 
@@ -3540,7 +3512,7 @@ Perbandingan dengan related work menunjukkan competitive performance:
 
 **Latency 0.82s** meets operational requirement (<3s) dengan large margin, memungkinkan real-time prediction pada production environment. Performance optimization efforts (caching, vectorization, query optimization) successfully balance accuracy dengan responsiveness.
 
-4.11.2 Implikasi untuk Kebijakan Ketahanan Pangan
+#### b. Implikasi untuk Kebijakan Ketahanan Pangan
 
 Sistem SIKOLBIA memiliki direct practical implications untuk food security policy di Indonesia:
 
@@ -3556,7 +3528,7 @@ Sistem SIKOLBIA memiliki direct practical implications untuk food security polic
 
 Interview dengan stakeholders post-deployment reveals appreciation untuk "data-driven approach" dan "mengurangi ketergantungan pada expert judgment yang subjective".
 
-4.11.3 Keterbatasan Penelitian
+#### c. Keterbatasan Penelitian
 
 Meskipun penelitian mencapai objectives yang ditetapkan, several limitations perlu diakui:
 
@@ -3578,7 +3550,7 @@ Meskipun penelitian mencapai objectives yang ditetapkan, several limitations per
 
 **6. Computational Resources**: Training full ensemble requires GPU acceleration untuk reasonable time. Deployment requirements (Docker, Redis, FastAPI service) may be challenging untuk institutions dengan limited IT infrastructure.
 
-4.11.4 Rekomendasi untuk Pengembangan Lanjutan
+#### d. Rekomendasi untuk Pengembangan Lanjutan
 
 Berdasarkan lessons learned dan identified limitations, berikut rekomendasi untuk future work:
 
@@ -3600,7 +3572,7 @@ Berdasarkan lessons learned dan identified limitations, berikut rekomendasi untu
 3. **Federated Learning**: Untuk enable collaborative model improvement across regions tanpa centralized data sharing (privacy-preserving).
 4. **Integration dengan Supply Chain Systems**: Connect prediction system dengan inventory management, logistics, dan procurement systems untuk end-to-end food security ecosystem.
 
-4.11.5 Kontribusi Penelitian terhadap Body of Knowledge
+#### e. Kontribusi Penelitian terhadap Body of Knowledge
 
 Penelitian ini memberikan kontribusi pada beberapa fronts:
 
@@ -3624,7 +3596,7 @@ Penelitian ini memberikan kontribusi pada beberapa fronts:
 - Comprehensive documentation dan open-source code facilitate learning dan replication
 - Training materials support capacity building untuk ML in agriculture domain
 
-4.11.6 Kesimpulan BAB IV
+#### f. Kesimpulan BAB IV
 
 Bab ini telah mendokumentasikan complete journey implementasi sistem SIKOLBIA dari research planning hingga dissemination, mengikuti metodologi RnD yang terintegrasi dengan CRISP-DM. Hasil menunjukkan bahwa **LSTM enhanced ensemble approach adalah effective solution untuk food consumption forecasting**, achieving MAPE 8.5% yang significantly better than conventional methods dan competitive dengan state-of-the-art research.
 

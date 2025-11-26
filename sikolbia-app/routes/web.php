@@ -18,6 +18,25 @@ Route::prefix('ketersediaan')->name('public.ketersediaan.')->group(function () {
     
     // API for public dashboard data
     Route::get('api/dashboard-data', [KetersediaanController::class, 'apiDashboardData'])->name('api.dashboard-data');
+    
+    // API endpoint untuk komoditi dropdown (digunakan di laporan-nbm)
+    Route::get('api/komoditi', function (\Illuminate\Http\Request $request) {
+        $kodeKelompok = $request->get('kode_kelompok');
+        if (!$kodeKelompok) {
+            return response()->json(['data' => []]);
+        }
+        // komoditi table uses kode_kelompok + kode_komoditi pattern (e.g. 01 -> 0101,0102...).
+        $kom = App\Models\Komoditi::where('kode_kelompok', $kodeKelompok)
+            ->orderBy('kode_komoditi')
+            ->get(['kode_komoditi', 'nama']);
+        $payload = $kom->map(function ($k) {
+            return [
+                'value' => $k->kode_komoditi,
+                'label' => $k->nama
+            ];
+        })->values();
+        return response()->json(['data' => $payload]);
+    })->name('api.komoditi');
 });
 
 // Public Registration Routes (for access upgrade)
@@ -137,27 +156,6 @@ Route::prefix('ketersediaan')->name('ketersediaan.')->group(function () {
     
     // AJAX endpoint for laporan NBM data
     Route::get('api/laporan-nbm', [App\Http\Controllers\Ketersediaan\LaporanNbmController::class, 'query'])->name('laporan-nbm.api');
-
-    // Return komoditi list for a given kelompok code (AJAX)
-    Route::get('api/komoditi', function (\Illuminate\Http\Request $request) {
-        $kodeKelompok = $request->get('kode_kelompok');
-        if (!$kodeKelompok) {
-            return response()->json(['data' => []]);
-        }
-        // komoditi table uses kode_kelompok + kode_komoditi pattern (e.g. 01 -> 0101,0102...).
-        // Do not filter by a non-existent `status_aktif` column here. Return komoditi for the kelompok.
-        $kom = App\Models\Komoditi::where('kode_kelompok', $kodeKelompok)
-            ->orderBy('kode_komoditi')
-            ->get(['kode_komoditi', 'nama']);
-        $payload = $kom->map(function ($k) {
-            return [
-                'value' => $k->kode_komoditi,
-                // Only return the komoditi name as label (user requested no kode prefix)
-                'label' => $k->nama
-            ];
-        })->values();
-        return response()->json(['data' => $payload]);
-    })->name('ketersediaan.api.komoditi');
     
     Route::get('dashboard-komoditas', function () {
         return view('ketersediaan.dashboard-komoditas');
