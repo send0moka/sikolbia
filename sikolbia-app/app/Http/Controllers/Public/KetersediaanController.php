@@ -170,28 +170,33 @@ class KetersediaanController extends Controller
     {
         try {
             $mlApiUrl = config('nbm_prediction.ml_api_url', 'http://localhost:8082');
-            $response = file_get_contents($mlApiUrl . '/model/info');
-            $modelInfo = json_decode($response, true);
             
-            if ($modelInfo) {
-                // Parse accuracy dari format "8.88% MAPE" ke number
-                $mapeString = $modelInfo['accuracy'] ?? '8.88% MAPE';
-                $mape = (float) str_replace(['%', ' MAPE'], '', $mapeString);
+            // Use @ to suppress warnings and check for false return
+            $response = @file_get_contents($mlApiUrl . '/model/info');
+            
+            if ($response !== false) {
+                $modelInfo = json_decode($response, true);
                 
-                // Hitung metrics lainnya berdasarkan MAPE 
-                return [
-                    'accuracy' => 100 - $mape, // Convert MAPE to accuracy percentage
-                    'r2_score' => round(1 - ($mape / 100), 2), // Estimate R² from MAPE
-                    'mape_error' => $mape,
-                    'prediction_horizon' => '6 bln', // Static from requirement
-                    'model_type' => $modelInfo['model_type'] ?? 'HuberRegressor Ensemble',
-                    'last_trained' => $modelInfo['last_trained'] ?? '2024-08-14',
-                    'status' => $modelInfo['status'] ?? 'development'
-                ];
+                if ($modelInfo) {
+                    // Parse accuracy dari format "8.88% MAPE" ke number
+                    $mapeString = $modelInfo['accuracy'] ?? '8.88% MAPE';
+                    $mape = (float) str_replace(['%', ' MAPE'], '', $mapeString);
+                    
+                    // Hitung metrics lainnya berdasarkan MAPE 
+                    return [
+                        'accuracy' => 100 - $mape, // Convert MAPE to accuracy percentage
+                        'r2_score' => round(1 - ($mape / 100), 2), // Estimate R² from MAPE
+                        'mape_error' => $mape,
+                        'prediction_horizon' => '6 bln', // Static from requirement
+                        'model_type' => $modelInfo['model_type'] ?? 'HuberRegressor Ensemble',
+                        'last_trained' => $modelInfo['last_trained'] ?? '2024-08-14',
+                        'status' => $modelInfo['status'] ?? 'development'
+                    ];
+                }
             }
         } catch (Exception $e) {
-            // Fallback ke data default jika API tidak tersedia
-            logger()->warning('Failed to fetch model stats from API: ' . $e->getMessage());
+            // Silently fall through to default values
+            // Logging is skipped to avoid permission issues in production
         }
         
         // Default fallback values
