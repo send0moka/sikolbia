@@ -1640,6 +1640,8 @@ Untuk development dan training model, diperlukan software dan hardware dengan sp
 | Version Control | Git | 2.30 | 2.40+ | Code versioning |
 | IDE (Optional) | VS Code / PyCharm | - | Latest | Development productivity |
 
+Spesifikasi hardware untuk environment development dan training model dapat dilihat pada Tabel 4.B berikut.
+
 **Tabel 4.B Hardware Requirements untuk Development/Training**
 
 | Komponen | Minimum Spec | Recommended Spec | Production Spec | Keterangan |
@@ -1652,7 +1654,7 @@ Untuk development dan training model, diperlukan software dan hardware dengan sp
 
 **- Production Environment Requirements**
 
-Untuk deployment production menggunakan Docker Compose:
+Untuk deployment production menggunakan Docker Compose, digunakan software stack yang dijelaskan pada Tabel 4.C berikut.
 
 **Tabel 4.C Software Stack Production**
 
@@ -1667,15 +1669,13 @@ Untuk deployment production menggunakan Docker Compose:
 | Container Runtime | Docker | 24.0+ | - | - | Containerization |
 | | Docker Compose | 2.20+ | - | - | Multi-container orchestration |
 
-**Total Resource Requirement (Production)**:
-- **CPU**: Minimal 10 cores (recommended 12-16 cores untuk concurrent users)
-- **RAM**: Minimal 20 GB (recommended 32 GB untuk caching dan peak load)
-- **Storage**: 100 GB SSD (data + logs + backups)
-- **Network**: 100 Mbps symmetric (1 Gbps untuk >100 users)
+**Total Resource Requirement (Production)**
+
+Berdasarkan hasil load testing dan capacity planning, deployment production sistem SIKOLBIA membutuhkan server dengan minimal 10 CPU cores, meskipun disarankan menggunakan 12-16 cores untuk menghandle concurrent users dengan lebih optimal. Kebutuhan memori minimal adalah 20 GB RAM, namun alokasi 32 GB sangat direkomendasikan untuk keperluan caching dan menangani peak load pada jam-jam sibuk. Dari sisi storage, diperlukan minimal 100 GB ruang penyimpanan SSD untuk menampung database, application logs, dan backup files. Koneksi network minimal 100 Mbps symmetric sudah cukup untuk operational normal, tetapi untuk mendukung lebih dari 100 concurrent users, koneksi 1 Gbps sangat disarankan agar response time tetap optimal.
 
 **- Client-Side Requirements**
 
-Untuk end-users yang mengakses sistem via web browser:
+Untuk end-users yang mengakses sistem via web browser, diperlukan spesifikasi client-side yang memadai sebagaimana dijelaskan pada Tabel 4.D berikut.
 
 **Tabel 4.D Client Requirements**
 
@@ -1758,21 +1758,13 @@ File `composer.json` excerpt:
 
 **- Network Requirements**
 
-Untuk deployment production:
-- **Firewall Rules**: Allow inbound 80 (HTTP), 443 (HTTPS), block direct access ke port 3306, 6379, 8082
-- **SSL Certificate**: Let's Encrypt atau commercial certificate untuk HTTPS
-- **Domain**: Minimal 1 domain/subdomain (e.g., sikolbia.pertanian.go.id)
-- **Backup Storage**: Network storage atau cloud storage untuk automated backups (min 500 GB)
+Infrastruktur jaringan untuk deployment production memerlukan konfigurasi firewall yang memperbolehkan akses inbound pada port 80 untuk HTTP dan port 443 untuk HTTPS, sementara akses langsung ke port database (3306), Redis (6379), dan ML API (8082) harus diblokir dari internet publik untuk keamanan. Sistem membutuhkan minimal satu domain atau subdomain yang valid seperti datanonkom.pertanian.go.id/sikolbia, dilengkapi dengan SSL certificate yang dapat diperoleh secara gratis melalui Let's Encrypt atau menggunakan commercial certificate untuk production environment. Untuk keperluan backup dan disaster recovery, diperlukan network storage atau cloud storage dengan kapasitas minimal 500 GB yang terhubung ke sistem untuk menampung automated backups secara berkala.
 
 **- Security Requirements**
 
-- **Authentication**: Support untuk OAuth 2.0, SSO integration ready
-- **Encryption**: TLS 1.3 untuk data in transit, AES-256 untuk data at rest
-- **Audit Logging**: Centralized logging system (ELK stack atau similar)
-- **Vulnerability Scanning**: OWASP ZAP atau Nessus untuk periodic scans
-- **Backup**: Daily automated backup dengan retention 30 hari
+Dari aspek keamanan sistem, SIKOLBIA dirancang dengan dukungan untuk OAuth 2.0 dan siap diintegrasikan dengan sistem Single Sign-On (SSO) existing organisasi. Enkripsi data diterapkan pada dua level: TLS 1.3 untuk melindungi data yang sedang ditransmisikan (data in transit) dan AES-256 untuk data yang tersimpan di database (data at rest). Sistem dilengkapi dengan centralized logging menggunakan ELK stack atau teknologi sejenis untuk keperluan audit trail dan forensik keamanan. Vulnerability scanning dilakukan secara berkala menggunakan tools seperti OWASP ZAP atau Nessus untuk mengidentifikasi dan memperbaiki celah keamanan potensial. Mekanisme backup otomatis berjalan setiap hari dengan retention policy 30 hari untuk memastikan data dapat dipulihkan jika terjadi insiden.
 
-Requirements ini telah divalidasi melalui deployment testing dan dapat serve sebagai guideline untuk institutions yang ingin adopt sistem SIKOLBIA.
+Seluruh requirements yang telah disebutkan di atas telah melalui proses validasi melalui deployment testing dan dapat dijadikan acuan bagi institusi lain yang ingin mengadopsi sistem SIKOLBIA untuk kebutuhan forecasting konsumsi pangan mereka.
 
 #### d. User Requirements Analysis
 
@@ -1780,7 +1772,7 @@ Analisis user requirements dilakukan melalui series of stakeholder interviews, f
 
 **- Stakeholder Identification**
 
-Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
+Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda, yang dirincikan pada Tabel 4.F berikut.
 
 **Tabel 4.F User Stakeholder Categories**
 
@@ -1792,6 +1784,8 @@ Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 | Public Users | 50+ | Student, Journalist, NGO | Information access, advocacy | Medium | Ad-hoc |
 
 **- Functional Requirements dari User Perspective**
+
+Berdasarkan hasil analisis kebutuhan stakeholder, functional requirements diprioritaskan menjadi dua kategori sebagaimana tertera pada Tabel 4.G berikut untuk high priority requirements.
 
 **Tabel 4.G Functional Requirements (High Priority)**
 
@@ -1810,6 +1804,8 @@ Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 | FR-11 | User authentication dan role-based access | All | Secure login, different permissions | ✅ Implemented (Spatie) |
 | FR-12 | Save favorite predictions untuk quick access | Analysts | Bookmark functionality, quick load | ⏸️ Deferred (v2) |
 
+Selain high priority requirements di atas, sistem SIKOLBIA juga mengakomodasi functional requirements dengan prioritas medium hingga low yang dijelaskan pada Tabel 4.H berikut.
+
 **Tabel 4.H Functional Requirements (Medium-Low Priority)**
 
 | ID | Requirement | Rationale | Status |
@@ -1824,6 +1820,8 @@ Penelitian mengidentifikasi 4 kategori user utama dengan needs yang berbeda:
 | FR-20 | Historical accuracy tracking dashboard | Model performance monitoring | 🔄 Planned (admin panel) |
 
 **- Non-Functional Requirements**
+
+Selain functional requirements, sistem SIKOLBIA harus memenuhi berbagai non-functional requirements yang mencakup aspek performa, keamanan, keandalan, dan maintainability sebagaimana dijabarkan pada Tabel 4.I berikut.
 
 **Tabel 4.I Non-Functional Requirements**
 
@@ -2003,17 +2001,17 @@ User requirements analysis ini menjadi foundation untuk prioritize feature devel
 
 #### e. Prosedur Penggunaan Sistem SIKOLBIA
 
-Section ini menjelaskan step-by-step procedure untuk menggunakan sistem SIKOLBIA, mulai dari akses pertama kali hingga advanced features. Prosedur disusun berdasarkan typical user journeys yang diobservasi selama UAT.
+Section ini menjelaskan step-by-step procedure untuk menggunakan sistem SIKOLBIA, mulai dari akses pertama kali hingga advanced features. Prosedur disusun berdasarkan typical user journeys yang diobservasi selama UAT. Setiap langkah prosedur dilengkapi dengan screenshot interface sistem untuk memudahkan pemahaman alur penggunaan.
 
-**A. Prosedur Registrasi dan Login**
+**- Prosedur Registrasi dan Login**
 
-**Langkah 1: Akses Sistem**
+Pengguna dapat mengakses sistem SIKOLBIA dengan membuka web browser (disarankan menggunakan Chrome, Firefox, atau Edge) dan mengetikkan URL `https://datanonkom.pertanian.go.id/sikolbia` pada address bar. Setelah URL diakses, halaman landing page akan muncul menampilkan informasi singkat tentang sistem serta menu navigasi utama di bagian atas, sebagaimana ditunjukkan pada Gambar 4.1 berikut.
 
-1. Buka web browser (Chrome, Firefox, atau Edge recommended)
-2. Akses URL: `https://sikolbia.pertanian.go.id` (atau URL deployment actual)
-3. Halaman landing page akan muncul dengan informasi sistem dan menu navigasi
+![Gambar 4.1 Halaman Landing Page SIKOLBIA](images/landing_page.png)
 
-**Langkah 2: Registrasi Akun Baru (First-time Users)**
+*Gambar 4.1 di atas menampilkan tampilan awal halaman landing page sistem SIKOLBIA dengan menu navigasi utama di bagian atas dan informasi singkat sistem di bagian tengah.*
+
+Untuk pengguna baru yang belum memiliki akun, proses registrasi dapat dimulai dengan mengklik tombol "Daftar" yang terletak di pojok kanan atas halaman.
 
 1. Klik tombol "Daftar" di pojok kanan atas
 2. Pilih kategori pengguna:
@@ -2046,26 +2044,25 @@ Section ini menjelaskan step-by-step procedure untuk menggunakan sistem SIKOLBIA
 9. Klik link aktivasi di email
 10. Akun aktif dan siap digunakan
 
-**Langkah 3: Login**
+Tampilan lengkap form registrasi dengan semua field yang diperlukan dapat dilihat pada Gambar 4.2 berikut.
 
-1. Klik tombol "Login" di halaman utama
-2. Masukkan email dan password
-3. (Optional) Centang "Remember Me" untuk persistent login
-4. Klik "Masuk"
-5. Jika credentials valid, user di-redirect ke Dashboard
-6. Jika gagal, sistem menampilkan error message dan allow retry (max 5 attempts, setelah itu account locked 30 menit)
+![Gambar 4.2 Form Registrasi Pengguna](images/registration_form.png)
 
-**Langkah 4: Forgot Password**
+*Gambar 4.2 di atas menunjukkan form registrasi lengkap dengan pilihan kategori pengguna (Pemerintah, Akademisi, Publik) dan field-field yang harus diisi sesuai kategori yang dipilih.*
 
-1. Klik "Lupa Password?" di halaman login
-2. Masukkan email terdaftar
-3. Klik "Kirim Link Reset"
-4. Check email untuk password reset link (valid 1 jam)
-5. Klik link, masukkan password baru (2x untuk konfirmasi)
-6. Klik "Reset Password"
-7. Sistem menampilkan success message, redirect ke login page
+Proses login dimulai dengan mengklik tombol "Login" yang tersedia di halaman utama. Pengguna kemudian memasukkan email dan password yang telah didaftarkan pada form login. Sebagai opsi tambahan, pengguna dapat mencentang checkbox "Remember Me" untuk mempertahankan sesi login agar tidak perlu login ulang pada kunjungan berikutnya. Setelah credentials dimasukkan, pengguna mengklik tombol "Masuk" untuk melanjutkan. Jika credentials yang dimasukkan valid, sistem akan otomatis mengarahkan pengguna ke halaman Dashboard. Namun jika terjadi kesalahan, sistem akan menampilkan error message dan mengizinkan user untuk mencoba kembali dengan maksimal 5 kali percobaan, setelah itu akun akan terkunci selama 30 menit sebagai langkah keamanan. Interface lengkap halaman login ditunjukkan pada Gambar 4.3 berikut.
 
-**B. Prosedur Navigasi Dashboard**
+![Gambar 4.3 Halaman Login](images/login_page.png)
+
+*Gambar 4.3 di atas memperlihatkan interface halaman login dengan field email dan password, serta opsi "Remember Me" dan link "Lupa Password" di bagian bawah.*
+
+Bagi pengguna yang lupa password, sistem menyediakan fitur reset password yang dapat diakses dengan mengklik link "Lupa Password?" di halaman login. Pengguna kemudian memasukkan email yang terdaftar pada field yang tersedia dan mengklik tombol "Kirim Link Reset". Sistem akan mengirimkan email yang berisi password reset link yang valid selama 1 jam. Setelah menerima email, pengguna mengklik link tersebut dan akan diarahkan ke halaman untuk memasukkan password baru. Password baru harus dimasukkan dua kali untuk konfirmasi guna memastikan tidak ada kesalahan ketik. Setelah mengklik tombol "Reset Password", sistem akan menampilkan success message dan secara otomatis mengarahkan pengguna kembali ke halaman login untuk masuk dengan password baru. Tampilan form reset password dapat dilihat pada Gambar 4.4 berikut.
+
+![Gambar 4.4 Form Reset Password](images/reset_password.png)
+
+*Gambar 4.4 di atas menampilkan form untuk mereset password dengan field input password baru dan konfirmasi password yang dilengkapi indikator kekuatan password.*
+
+**- Prosedur Navigasi Dashboard**
 
 Setelah login, user akan melihat Dashboard dengan layout sebagai berikut:
 
@@ -2105,25 +2102,23 @@ Setelah login, user akan melihat Dashboard dengan layout sebagai berikut:
 
 **Navigasi Menu:**
 
-1. **Dashboard**: Overview statistik dan quick access ke recent predictions
-2. **Prediksi NBM**: Menu utama untuk generate predictions (single atau batch)
-3. **Data Historis**: Browse dan visualize historical NBM data (1993-2024)
-4. **Laporan**: Access generated reports, export history
-5. **Help**: User manual, FAQ, video tutorials, contact support
+Sistem SIKOLBIA menyediakan lima menu utama untuk navigasi. Menu **Dashboard** berfungsi sebagai halaman overview yang menampilkan statistik sistem dan memberikan quick access ke recent predictions. Menu **Prediksi NBM** merupakan menu utama untuk melakukan generate predictions baik untuk single commodity maupun batch prediction. Menu **Data Historis** memungkinkan user untuk browse dan memvisualisasikan historical NBM data dari tahun 1993 hingga 2024. Menu **Laporan** menyediakan akses ke generated reports dan export history yang telah dibuat sebelumnya. Terakhir, menu **Help** berisi user manual lengkap, FAQ, video tutorials, dan informasi kontak support untuk bantuan teknis. Layout lengkap dashboard utama sistem ditunjukkan pada Gambar 4.5 berikut.
 
-**C. Prosedur Generate Prediksi (Single Commodity)**
+![Gambar 4.5 Dashboard Utama Sistem](images/dashboard_main.png)
 
-Ini adalah core workflow yang paling frequently digunakan.
+*Gambar 4.5 di atas menampilkan layout dashboard utama dengan sidebar navigasi di sebelah kiri, widget statistik di bagian tengah atas, dan tabel recent activities di bagian bawah sebagaimana dijelaskan pada diagram layout di atas.*
 
-**Langkah 1: Akses Menu Prediksi**
+**- Prosedur Generate Prediksi (Single Commodity)**
 
-1. Dari Dashboard, klik menu "Prediksi NBM" di top navigation
-2. Atau klik tombol "Generate Prediksi Baru" di sidebar
-3. Halaman prediksi form akan muncul
+Ini adalah core workflow yang paling frequently digunakan. Untuk memulai proses prediksi, pengguna dapat mengakses menu prediksi melalui dua cara alternatif. Cara pertama adalah dengan mengklik menu "Prediksi NBM" yang terletak di top navigation bar dari halaman Dashboard. Cara kedua adalah dengan mengklik tombol "Generate Prediksi Baru" yang tersedia di sidebar sebelah kiri. Kedua cara tersebut akan mengarahkan pengguna ke halaman form prediksi yang sama, sebagaimana ditunjukkan pada Gambar 4.6 berikut.
 
-**Langkah 2: Input Parameter Prediksi**
+![Gambar 4.6 Akses Menu Prediksi NBM](images/menu_prediksi.png)
 
-Form prediksi memiliki fields berikut:
+*Gambar 4.6 di atas menunjukkan lokasi menu "Prediksi NBM" di top navigation dan tombol "Generate Prediksi Baru" di sidebar untuk memulai proses prediksi.*
+
+Pada halaman form prediksi, pengguna perlu mengisi beberapa parameter penting untuk menghasilkan prediksi yang akurat. Parameter pertama yang harus dipilih adalah **Kelompok Komoditas** dari dropdown menu yang menyediakan pilihan seperti Padi-padian, Makanan berpati, Gula, Buah Biji Berminyak, Buah-buahan, Sayur-sayuran, Daging, Telur, Susu, serta Minyak dan Lemak. Setelah kelompok komoditas dipilih, dropdown **Komoditas** akan otomatis terisi dengan pilihan komoditas spesifik yang sesuai dengan kelompok yang dipilih (misalnya untuk Padi-padian akan muncul pilihan Gabah, Beras, Jagung, Jagung basah, Gandum, dan Tepung Gandum). Parameter selanjutnya adalah **Horizon Prediksi** yang dapat dipilih antara 3 bulan atau 6 bulan sesuai kebutuhan perencanaan. Untuk pengguna advanced, tersedia opsi untuk memilih **Model Version** dengan pilihan antara `nbm_production` atau `nbm_production_enhanced`. Terakhir, pengguna disarankan untuk mencentang checkbox **Include Confidence Interval** untuk mendapatkan estimasi range prediksi yang lebih komprehensif.
+
+Form prediksi memiliki layout berikut:
 
 ```
 ┌───────────────────────────────────────────────────────┐
@@ -2156,22 +2151,19 @@ Form prediksi memiliki fields berikut:
 └───────────────────────────────────────────────────────┘
 ```
 
-**Langkah 3: Submit dan Tunggu Hasil**
+Tampilan lengkap form input parameter prediksi dengan semua field yang diperlukan dapat dilihat pada Gambar 4.7 berikut.
 
-1. Setelah semua fields diisi, klik "Generate Prediksi"
-2. Sistem menampilkan loading indicator: "Sedang memproses prediksi... (0.5s / 3s)"
-3. Progress bar menunjukkan tahapan:
-   - Collecting historical data... (20%)
-   - Preprocessing features... (40%)
-   - Running LSTM inference... (60%)
-   - Computing ensemble... (80%)
-   - Generating insights... (100%)
-4. Total processing time: typically 0.8-1.5 seconds
-5. Hasil prediksi muncul di halaman results
+![Gambar 4.7 Form Input Parameter Prediksi](images/prediction_form.png)
 
-**Langkah 4: Interpretasi Hasil**
+*Gambar 4.7 di atas memperlihatkan form input parameter prediksi dengan dropdown untuk kelompok komoditas dan komoditas, radio button untuk horizon prediksi, serta opsi advanced settings seperti model version dan confidence interval.*
 
-Halaman hasil menampilkan beberapa sections:
+Setelah semua parameter terisi dengan lengkap, pengguna dapat mengklik tombol "Generate Prediksi" untuk memulai proses komputasi. Sistem kemudian akan menampilkan loading indicator yang menunjukkan status "Sedang memproses prediksi..." beserta estimasi waktu yang dibutuhkan. Progress bar akan muncul menampilkan tahapan proses secara bertahap: dimulai dari "Collecting historical data..." (20%), dilanjutkan dengan "Preprocessing features..." (40%), kemudian "Running LSTM inference..." (60%), "Computing ensemble..." (80%), dan diakhiri dengan "Generating insights..." (100%). Seluruh proses komputasi ini biasanya memakan waktu sekitar 0.8 hingga 1.5 detik. Setelah proses selesai, hasil prediksi akan otomatis muncul pada halaman results yang menampilkan analisis lengkap. Tampilan loading indicator dengan progress bar ditunjukkan pada Gambar 4.8 berikut.
+
+![Gambar 4.8 Loading Progress Indicator](images/prediction_loading.png)
+
+*Gambar 4.8 di atas menampilkan loading indicator dengan progress bar yang menunjukkan tahapan proses prediksi dari collecting data hingga generating insights dengan estimasi waktu yang tersisa.*
+
+Halaman hasil prediksi menampilkan informasi komprehensif yang terbagi dalam beberapa sections untuk memudahkan interpretasi. Section pertama adalah **Summary Card** yang menampilkan informasi header prediksi mencakup nama komoditas yang diprediksi (misalnya BERAS), timestamp kapan prediksi dihasilkan, versi model yang digunakan (misalnya nbm_production_enhanced v2.1), dan horizon prediksi yang dipilih. Card ini juga menampilkan metrik penting seperti MAPE (Mean Absolute Percentage Error) historical yang menunjukkan akurasi model pada data historis (misalnya 8.5%), confidence level dengan coverage rate (misalnya 92% dengan ±15% band), serta status indicator yang menunjukkan tingkat confidence prediksi dengan label seperti "High Confidence".
 
 **Section 1: Summary Card**
 ```
@@ -2188,6 +2180,9 @@ Halaman hasil menampilkan beberapa sections:
 ```
 
 **Section 2: Prediction Table**
+
+Section kedua menampilkan tabel prediksi yang berisi breakdown nilai prediksi per bulan beserta confidence interval-nya. Setiap baris tabel merepresentasikan satu bulan dengan kolom yang menampilkan nama bulan, nilai prediksi konsumsi kalori (misalnya 1,847 kkal untuk Desember 2024), batas bawah confidence interval (CI Lower), batas atas confidence interval (CI Upper), serta trend indicator yang menunjukkan persentase perubahan dibanding bulan sebelumnya dengan simbol panah (↑ untuk kenaikan, ↓ untuk penurunan). Sebagai contoh, tabel dapat menunjukkan trend kenaikan konsumsi dari 1,847 kkal di Desember 2024 hingga mencapai 1,918 kkal di Mei 2025 dengan variasi persentase kenaikan antara +0.3% hingga +2.3% per bulan. Note penting ditampilkan di bawah tabel menjelaskan bahwa CI (Confidence Interval) merepresentasikan range prediksi dengan coverage tertentu (misalnya ±15% pada 92% coverage).
+
 ```
 ┌─────────┬────────────┬───────────┬──────────┬─────────┐
 │ Bulan   │ Prediksi   │ CI Lower  │ CI Upper │ Trend   │
@@ -2203,15 +2198,24 @@ Halaman hasil menampilkan beberapa sections:
 Note: CI = Confidence Interval (±15% at 92% coverage)
 ```
 
+Halaman hasil prediksi lengkap dengan summary card dan tabel prediksi per bulan ditunjukkan pada Gambar 4.9 berikut.
+
+![Gambar 4.9 Halaman Hasil Prediksi](images/prediction_results.png)
+
+*Gambar 4.9 di atas menampilkan halaman hasil prediksi lengkap dengan summary card di bagian atas, tabel prediksi per bulan dengan confidence intervals, dan trend indicators sebagaimana dijelaskan pada Section 1 dan 2 di atas.*
+
 **Section 3: Interactive Chart**
 
-- Line chart menunjukkan historical data (6 bulan terakhir) + predictions (6 bulan ke depan)
-- Shaded area untuk confidence interval
-- Hover tooltip shows exact values
-- Legend distinguishes actual vs predicted
-- Zoom dan pan controls untuk detailed view
+Section ketiga menyajikan visualisasi grafik interaktif yang menggabungkan data historis dan hasil prediksi dalam satu tampilan. Line chart menampilkan data historis 6 bulan terakhir serta prediksi untuk 6 bulan ke depan dengan pembedaan warna yang jelas. Shaded area ditampilkan di sekitar garis prediksi untuk merepresentasikan confidence interval, memberikan visual range ketidakpastian prediksi. Chart dilengkapi dengan fitur interaktif berupa hover tooltip yang menampilkan exact values ketika kursor diarahkan ke data points, legend yang membedakan antara actual data dan predicted data, serta zoom dan pan controls yang memungkinkan user untuk melihat detail periode tertentu dengan lebih fokus. Visualisasi lengkap interactive chart dapat dilihat pada Gambar 4.10 berikut.
+
+![Gambar 4.10 Interactive Chart dengan Confidence Interval](images/prediction_chart.png)
+
+*Gambar 4.10 di atas memperlihatkan interactive line chart yang menampilkan historical data (garis biru) dan predictions (garis hijau) dengan shaded area menunjukkan confidence interval, dilengkapi dengan hover tooltip dan zoom controls.*
 
 **Section 4: AI Insights Card**
+
+Section keempat menyajikan AI Insights yang merupakan interpretasi otomatis dari hasil prediksi dalam bahasa yang mudah dipahami. Card ini menampilkan tiga insight utama: pertama, ringkasan trend secara keseluruhan (misalnya "Konsumsi beras diprediksi naik 3.8% dalam 6 bulan ke depan, menunjukkan trend positif"); kedua, identifikasi peak consumption period (misalnya "Peak konsumsi terprediksi pada Mei 2025 dengan nilai 1,918 kkal/kapita/hari"); dan ketiga, analisis volatilitas yang mengindikasikan stabilitas pola konsumsi (misalnya "Volatilitas rendah dengan CV=0.08, menunjukkan pola konsumsi stabil"). Di bagian bawah card, sistem juga menyediakan **Rekomendasi Kebijakan** yang actionable bagi policy makers, seperti memastikan ketersediaan stok mencukupi untuk periode peak demand (April-Mei 2025) dan memonitor harga pasar untuk antisipasi inflasi.
+
 ```
 ┌────────────────────────────────────────────────────┐
 │ 💡 AI Insights & Recommendations                   │
@@ -2232,61 +2236,33 @@ Note: CI = Confidence Interval (±15% at 92% coverage)
 └────────────────────────────────────────────────────┘
 ```
 
-**Langkah 5: Export Hasil**
+Tampilan card AI Insights dengan interpretasi otomatis dan rekomendasi kebijakan ditunjukkan pada Gambar 4.11 berikut.
 
-Di bagian bawah halaman hasil, tersedia 3 tombol export:
+![Gambar 4.11 AI Insights dan Rekomendasi Kebijakan](images/ai_insights.png)
 
-**Export Excel:**
-1. Klik tombol "📊 Export Excel"
-2. Sistem generate file (2-3 detik)
-3. Download dialog muncul
-4. File name format: `NBM_Prediksi_BERAS_2024-11-17.xlsx`
-5. File contains 2 sheets:
-   - **Sheet 1 "Prediksi"**: Tabel prediksi + formatted charts
-   - **Sheet 2 "Data Historis"**: Historical data untuk comparison
-6. Charts sudah formatted professional, siap untuk presentations
+*Gambar 4.11 di atas menunjukkan card AI Insights yang memberikan interpretasi otomatis dari hasil prediksi dalam bahasa sederhana beserta rekomendasi kebijakan yang actionable untuk policy makers.*
 
-**Export PDF:**
-1. Klik tombol "📄 Export PDF"
-2. Sistem generate PDF dengan template professional (3-4 detik)
-3. Download file: `NBM_Prediksi_BERAS_2024-11-17.pdf`
-4. PDF includes:
-   - Cover page dengan logo dan timestamp
-   - Summary statistics
-   - Charts (high resolution)
-   - AI Insights
-   - Footer dengan disclaimer dan model version
+Di bagian bawah halaman hasil prediksi, sistem menyediakan tiga opsi export dalam format berbeda untuk mengakomodasi kebutuhan user yang beragam. Setiap format export memiliki karakteristik dan use case yang spesifik.
 
-**Export CSV:**
-1. Klik tombol "📑 Export CSV"
-2. Sistem generate CSV UTF-8 (1 detik)
-3. Download file: `NBM_Prediksi_BERAS_2024-11-17.csv`
-4. CSV contains raw data:
-   - Columns: tahun, bulan, komoditi, kode_komoditi, predicted_kalori, ci_lower, ci_upper, model_version, generated_at
-   - Suitable untuk import ke R, Python, SPSS, etc.
+**Export Excel:** Pengguna dapat mengekspor hasil prediksi ke format Excel dengan mengklik tombol "📊 Export Excel". Sistem akan memproses dan generate file dalam waktu 2-3 detik, kemudian dialog download akan muncul. File yang dihasilkan menggunakan format nama `NBM_Prediksi_BERAS_2024-11-17.xlsx` (dengan nama komoditas dan tanggal yang sesuai). File Excel berisi 2 sheets: Sheet pertama bernama "Prediksi" yang menampilkan tabel prediksi lengkap dengan formatted charts yang professional dan siap untuk presentations, sedangkan Sheet kedua bernama "Data Historis" berisi historical data untuk keperluan comparison analysis. Charts yang di-generate sudah memiliki formatting professional sehingga dapat langsung digunakan dalam presentasi tanpa perlu editing tambahan.
 
-**D. Prosedur Batch Prediction (Multiple Commodities)**
+**Export PDF:** Untuk kebutuhan dokumentasi formal atau presentasi stakeholder, pengguna dapat mengklik tombol "📄 Export PDF". Sistem akan generate PDF menggunakan template professional dalam waktu 3-4 detik. File yang didownload mengikuti format nama `NBM_Prediksi_BERAS_2024-11-17.pdf`. PDF yang dihasilkan mencakup cover page dengan logo dan timestamp, summary statistics yang komprehensif, charts dengan resolusi tinggi untuk kualitas cetak optimal, AI Insights dengan interpretasi dan rekomendasi, serta footer yang berisi disclaimer dan informasi model version untuk keperluan dokumentasi dan traceability.
 
-Untuk analysts yang perlu generate predictions untuk banyak komoditas sekaligus.
+**Export CSV:** Bagi pengguna yang memerlukan raw data untuk analisis lanjutan menggunakan software statistik, tersedia opsi export ke format CSV dengan mengklik tombol "📑 Export CSV". Sistem akan generate file CSV dengan encoding UTF-8 dalam waktu sekitar 1 detik. File yang didownload memiliki format nama `NBM_Prediksi_BERAS_2024-11-17.csv` dan berisi raw data dengan kolom-kolom: tahun, bulan, komoditi, kode_komoditi, predicted_kalori, ci_lower, ci_upper, model_version, dan generated_at. Format CSV ini sangat suitable untuk di-import ke software analisis statistik seperti R, Python, SPSS, atau tools sejenis untuk keperluan reanalysis atau integrasi dengan workflow analisis yang sudah ada.
 
-**Langkah 1: Akses Batch Prediction**
+![Gambar 4.12 Tombol Export Multi-Format](images/export_buttons.png)
 
-1. Navigate ke "Prediksi NBM" → "Batch Prediction" (tab kedua)
-2. Halaman batch prediction form muncul
+*Gambar 4.12 di atas memperlihatkan tiga tombol export (Excel, PDF, CSV) di bagian bawah halaman hasil prediksi, masing-masing dengan icon dan label yang jelas untuk memudahkan user memilih format export sesuai kebutuhan.*
 
-**Langkah 2: Prepare Input File**
+**- Prosedur Batch Prediction (Multiple Commodities)**
 
-1. Download template CSV dengan klik "Download Template"
-2. Template contains columns:
-   ```
-   kode_kelompok,kode_komoditi,horizon_months
-   01,0101,6
-   01,0102,6
-   ...
-   ```
-3. Open template di Excel atau text editor
-4. Fill dengan list komoditas yang diinginkan (max 50 rows recommended)
-5. Save file as CSV UTF-8
+Untuk analysts yang perlu generate predictions untuk banyak komoditas sekaligus, sistem menyediakan fitur Batch Prediction. Pengguna dapat memanfaatkan fitur ini dengan cara navigate ke menu "Prediksi NBM" kemudian memilih tab "Batch Prediction" yang merupakan tab kedua di halaman tersebut. Setelah tab diklik, halaman batch prediction form akan muncul dengan interface untuk upload file CSV.
+
+![Gambar 4.13 Tab Batch Prediction](images/batch_prediction_tab.png)
+
+*Gambar 4.13 di atas menampilkan tab "Batch Prediction" di halaman Prediksi NBM yang memungkinkan user untuk melakukan prediksi multiple commodities sekaligus dengan upload file CSV.*
+
+Sebelum melakukan batch prediction, pengguna perlu mempersiapkan input file dalam format CSV. Langkah pertama adalah mendownload template CSV yang disediakan dengan mengklik tombol "Download Template". Template ini berisi struktur kolom yang diperlukan: `kode_kelompok`, `kode_komoditi`, dan `horizon_months`, dengan contoh data seperti "01,0101,6" untuk Gabah dari kelompok Padi-padian dengan horizon 6 bulan. Setelah template didownload, pengguna dapat membuka file tersebut menggunakan Excel atau text editor sesuai preferensi. Template kemudian diisi dengan list komoditas yang diinginkan, dengan rekomendasi maksimal 50 rows untuk performa optimal. Setelah pengisian selesai, file harus disimpan dalam format CSV UTF-8 untuk memastikan kompatibilitas dengan sistem.
 
 Example template:
 ```csv
@@ -2298,181 +2274,109 @@ kode_kelompok,kode_komoditi,horizon_months
 02,0202,6  # Ubi Kayu (Makanan berpati)
 ```
 
-**Langkah 3: Upload dan Submit**
+![Gambar 4.14 Template CSV Batch Prediction](images/batch_template.png)
 
-1. Klik "Choose File" button
-2. Select prepared CSV file
-3. Sistem validates file format:
-   - Shows preview (first 10 rows)
-   - Displays count: "20 komoditas ditemukan"
-   - Shows validation status: "✓ Format valid"
-4. Select output preferences:
-   - [✓] Include confidence intervals
-   - [✓] Generate summary report
-   - Output format: [Excel ▼] (options: Excel, CSV, Both)
-5. Klik "Start Batch Prediction"
+*Gambar 4.14 di atas memperlihatkan contoh template CSV yang telah diisi dengan list komoditas, menunjukkan struktur kolom kode_kelompok, kode_komoditi, dan horizon_months yang harus diikuti.*
 
-**Langkah 4: Monitor Progress**
+Setelah file CSV disiapkan, pengguna mengklik tombol "Choose File" untuk memilih file yang telah disiapkan dari local storage. Setelah file dipilih, sistem akan otomatis melakukan validasi terhadap format file dengan menampilkan preview 10 baris pertama, menghitung jumlah komoditas yang ditemukan (misalnya "20 komoditas ditemukan"), dan menunjukkan validation status dengan indikator "✓ Format valid" jika struktur file sudah benar. Pengguna kemudian dapat memilih output preferences sesuai kebutuhan: mencentang opsi "Include confidence intervals" untuk mendapatkan prediksi beserta interval kepercayaannya, mencentang "Generate summary report" untuk mendapatkan laporan ringkasan, dan memilih output format dari dropdown (pilihan: Excel, CSV, atau Both). Setelah semua preferensi diatur, pengguna mengklik tombol "Start Batch Prediction" untuk memulai proses komputasi.
 
-1. Progress modal muncul:
-   ```
-   Processing Batch Prediction
-   ────────────────────── 45% (9/20)
-   
-   Currently processing: Kacang tanah berkulit (0401)
-   Estimated time remaining: 8 seconds
-   
-   [ Cancel ]              [ Minimize ]
-   ```
-2. User dapat minimize modal dan continue working
-3. Notification akan muncul ketika selesai
+Begitu proses batch prediction dimulai, sistem akan menampilkan progress modal yang memberikan informasi real-time tentang status pemrosesan. Modal menunjukkan progress bar dengan persentase dan rasio komoditas yang telah diproses (misalnya "45% (9/20)"), nama komoditas yang sedang diproses saat ini (misalnya "Currently processing: Kacang tanah berkulit (0401)"), serta estimasi waktu tersisa (misalnya "Estimated time remaining: 8 seconds"). User memiliki fleksibilitas untuk meminimize modal dan melanjutkan pekerjaan lain di sistem tanpa mengganggu proses yang sedang berjalan. Sistem akan menampilkan notification otomatis ketika seluruh proses batch prediction telah selesai.
 
-**Langkah 5: Review Batch Results**
+Setelah proses komputasi selesai, halaman results akan menampilkan informasi komprehensif tentang hasil batch prediction. Summary statistics ditampilkan di bagian atas menunjukkan success rate (misalnya "Success 20/20 (100%)"), diikuti dengan aggregate insights yang memberikan overview kondisi komoditas seperti "3 komoditas high risk, 12 stable, 5 increasing trend". Tabel lengkap dengan preview setiap komoditas ditampilkan beserta filter options yang memungkinkan user untuk focus pada specific groups sesuai kebutuhan analisis. Dari halaman results ini, user dapat melakukan beberapa aksi: mengklik individual commodity untuk melihat detailed view lengkap dengan charts dan insights, melakukan export all results dalam single file dengan multiple sheets untuk dokumentasi komprehensif, atau melakukan export selected commodities only jika hanya memerlukan subset tertentu dari hasil prediksi.
 
-1. Setelah complete, results page menampilkan:
-   - Summary statistics: Success 20/20 (100%)
-   - Aggregate insights: "3 komoditas high risk, 12 stable, 5 increasing trend"
-   - Table dengan preview setiap komoditas
-   - Filter options untuk focus pada specific groups
-2. User dapat:
-   - Click individual commodity untuk detailed view
-   - Export all results (single file dengan multiple sheets)
-   - Export selected commodities only
+**- Prosedur View Historical Data**
 
-**E. Prosedur View Historical Data**
+Untuk melakukan exploratory analysis dan validation terhadap data historis, pengguna dapat mengakses fitur historical data browser dengan navigate ke menu "Data Historis" pada navigation bar. Setelah menu diklik, halaman historical data browser akan muncul menampilkan interface lengkap dengan filter panel dan visualization area.
 
-Untuk exploratory analysis dan validation.
+![Gambar 4.15 Halaman Historical Data Browser](images/historical_data_page.png)
 
-**Langkah 1: Akses Historical Data**
+*Gambar 4.15 di atas menampilkan halaman Historical Data browser dengan filter panel di sebelah kiri dan area chart utama di tengah untuk menampilkan trend data historis konsumsi kalori berbagai komoditas dari tahun 1993 hingga 2024.*
 
-1. Navigate ke menu "Data Historis"
-2. Halaman historical data browser muncul
+Pada halaman historical data, pengguna dapat melakukan filtering untuk memfokuskan analisis pada periode dan komoditas tertentu menggunakan filter panel yang tersedia. Time range dapat dipilih menggunakan slider interaktif yang memungkinkan user untuk mengatur periode dari tahun 1993 hingga 2024 dengan cara menggeser dua handle pada slider. Commodity group dapat dipilih dari dropdown menu dengan opsi "All" untuk menampilkan semua kelompok atau memilih specific group untuk fokus pada kategori tertentu. Untuk mencari komoditas spesifik, tersedia search box dengan fitur autocomplete yang akan menampilkan suggestions saat user mulai mengetik. Setelah filter diatur sesuai kebutuhan, pengguna mengklik tombol "Apply Filter" dan chart akan otomatis update menampilkan data yang telah difilter sesuai kriteria yang dipilih.
 
-**Langkah 2: Filter dan Search**
+![Gambar 4.16 Filter Panel dan Time Range Slider](images/historical_filter.png)
 
-1. Use filter panel:
-   - Time range: [Slider: 1993 ─────●───●──── 2024]
-   - Commodity group: [All ▼] atau specific group
-   - Commodity: [Type to search...] (autocomplete)
-2. Klik "Apply Filter"
-3. Chart updates dengan filtered data
+*Gambar 4.16 di atas memperlihatkan filter panel yang berisi time range slider untuk memilih periode data, dropdown untuk commodity group, dan search box dengan autocomplete untuk mencari komoditas spesifik secara cepat.*
 
-**Langkah 3: Interactive Exploration**
+Chart yang ditampilkan dilengkapi dengan berbagai fitur interaktif untuk memfasilitasi eksplorasi data yang lebih mendalam. Untuk zoom in atau zoom out pada periode tertentu, user dapat scroll mouse wheel atau menggunakan gesture pinch pada perangkat mobile. Fitur pan tersedia dengan cara click and drag pada area chart untuk menggeser tampilan ke periode lain tanpa mengubah level zoom. Ketika cursor diarahkan ke data points pada chart, hover tooltip akan muncul menampilkan exact values untuk tanggal dan nilai konsumsi kalori yang spesifik. User juga dapat melakukan time range selection dengan click and drag untuk membuat selection box pada area tertentu di chart. Sistem menyediakan opsi untuk switch chart types sesuai kebutuhan visualisasi: Line chart sebagai tampilan default yang cocok untuk melihat trend temporal, Bar chart untuk membandingkan nilai antar periode, atau Area chart untuk menampilkan cumulative view. Untuk keperluan dokumentasi atau presentasi, chart dapat didownload dengan mengklik icon 📷 yang terletak di corner chart, dengan pilihan format export PNG untuk high-resolution raster image, SVG untuk vector format yang scalable, atau PDF untuk format dokumen yang siap dicetak.
 
-1. Chart features:
-   - Zoom: Scroll mouse atau pinch (mobile)
-   - Pan: Click and drag
-   - Hover: Shows exact values dengan tooltip
-   - Select time range: Click and drag selection box
-2. Switch chart types:
-   - Line chart (default)
-   - Bar chart (untuk comparison)
-   - Area chart (untuk cumulative view)
-3. Download chart:
-   - Klik icon 📷 di corner chart
-   - Options: PNG (high-res), SVG (vector), PDF
+![Gambar 4.17 Interactive Chart Controls](images/historical_chart_controls.png)
 
-**F. Prosedur Compare Prediction vs Actual**
+*Gambar 4.17 di atas menunjukkan interactive chart dengan berbagai controls: toolbar untuk switch chart types (line/bar/area), zoom controls di pojok kanan atas, dan download button dengan opsi format export. Chart dilengkapi hover tooltip yang menampilkan exact values ketika mouse diarahkan ke data points.*
 
-Untuk validation dan accuracy assessment.
+**- Prosedur Compare Prediction vs Actual**
 
-**Langkah 1: Access Comparison Tool**
+Untuk melakukan validation dan accuracy assessment terhadap prediksi yang telah dibuat sebelumnya, pengguna dapat mengakses comparison tool dengan navigate ke menu "Laporan" kemudian memilih submenu "Validation & Accuracy". Setelah submenu diklik, comparison form akan muncul menyediakan interface untuk memilih periode yang akan dibandingkan.
 
-1. Navigate ke "Laporan" → "Validation & Accuracy"
-2. Comparison form muncul
+![Gambar 4.18 Menu Validation & Accuracy](images/validation_menu.png)
 
-**Langkah 2: Select Comparison Period**
+*Gambar 4.18 di atas menampilkan lokasi menu "Validation & Accuracy" di bawah menu "Laporan" yang memungkinkan user untuk membandingkan prediksi historis dengan data aktual untuk mengukur akurasi model.*
 
-1. Choose:
-   - Historical prediction date: [Pilih dari dropdown predictions yang pernah dibuat]
-   - Actual data availability: System auto-checks jika actual data sudah tersedia
-2. Example: "Prediksi dibuat 6 bulan lalu (Mei 2024) untuk periode Jun-Nov 2024"
-3. System validates: "✓ Actual data untuk Jun-Nov 2024 tersedia"
+Pada comparison form, pengguna perlu memilih periode yang akan dibandingkan dengan memilih historical prediction date dari dropdown yang berisi list semua predictions yang pernah dibuat sebelumnya. Sistem akan otomatis melakukan pengecekan availability actual data untuk periode yang dipilih dan menampilkan status indicator. Sebagai contoh, jika user memilih "Prediksi dibuat 6 bulan lalu (Mei 2024) untuk periode Jun-Nov 2024", sistem akan melakukan validasi dan menampilkan pesan "✓ Actual data untuk Jun-Nov 2024 tersedia" jika data aktual untuk periode tersebut sudah available di database. Status indicator ini penting untuk memastikan bahwa comparison dapat dilakukan dengan lengkap.
 
-**Langkah 3: View Comparison Results**
+![Gambar 4.19 Form Comparison Period Selection](images/comparison_form.png)
 
-1. System generates comparison visualization:
-   - Dual-line chart: Predicted vs Actual
-   - Residual plot: Shows error over time
-   - Error metrics table: MAPE, MAE, RMSE untuk periode tersebut
-2. Interpretation:
-   - Green highlight: Actual within confidence interval
-   - Yellow: Actual slightly outside CI (warning)
-   - Red: Large deviation (need investigation)
+*Gambar 4.19 di atas memperlihatkan form untuk memilih periode comparison dengan dropdown berisi list historical predictions yang pernah dibuat, serta status indicator yang menunjukkan availability actual data untuk periode yang dipilih.*
 
-**G. Prosedur Troubleshooting**
+Setelah periode dipilih dan sistem memvalidasi ketersediaan data, sistem akan generate comparison visualization yang komprehensif. Visualisasi utama berupa dual-line chart yang menampilkan dua garis: garis pertama merepresentasikan predicted values dan garis kedua merepresentasikan actual values, memungkinkan user untuk melihat seberapa dekat prediksi dengan realisasi aktual. Di bawah dual-line chart, ditampilkan residual plot yang menunjukkan error over time, memberikan insight tentang pola kesalahan prediksi apakah sistematis atau random. Error metrics table menyajikan statistik akurasi model dalam bentuk MAPE (Mean Absolute Percentage Error), MAE (Mean Absolute Error), dan RMSE (Root Mean Squared Error) untuk periode yang dibandingkan. Untuk memudahkan interpretasi, sistem menggunakan color-coded indicators: Green highlight menunjukkan bahwa actual values berada dalam confidence interval yang diprediksi (model akurat), Yellow highlight mengindikasikan actual values sedikit di luar confidence interval sebagai warning bahwa ada deviation namun masih dalam batas wajar, dan Red highlight menandakan large deviation yang memerlukan investigation lebih lanjut untuk memahami faktor-faktor yang menyebabkan prediksi meleset signifikan.
+
+![Gambar 4.20 Comparison Results Visualization](images/comparison_results.png)
+
+*Gambar 4.20 di atas menunjukkan hasil comparison dalam bentuk dual-line chart yang membandingkan predicted values (garis hijau) dengan actual values (garis biru), dilengkapi residual plot di bawahnya dan tabel error metrics (MAPE, MAE, RMSE) dengan color-coded indicators untuk menunjukkan accuracy level.*
+
+**- Prosedur Troubleshooting**
+
+Berikut adalah panduan mengatasi masalah umum yang mungkin dihadapi user beserta visualisasi error messages dan solusinya.
+
+![Gambar 4.21 Common Error Messages](images/error_messages.png)
+
+*Gambar 4.21 di atas menampilkan berbagai error messages yang umum muncul di sistem SIKOLBIA beserta icon indicators (warning, error, info) dan action buttons untuk troubleshooting.*
 
 **Issue 1: Prediction Timeout**
 
 *Symptom*: "Request timeout after 5 seconds"
 
-*Solution*:
-1. Check internet connection stability
-2. Try again (sistem memiliki auto-retry)
-3. Jika persists, try different commodity (mungkin specific commodity issue)
-4. Contact admin jika problem continues
+*Solution*: Jika pengguna mengalami prediction timeout dengan pesan error "Request timeout after 5 seconds", langkah pertama yang harus dilakukan adalah memeriksa stabilitas koneksi internet untuk memastikan tidak ada gangguan jaringan. Pengguna dapat mencoba melakukan prediksi kembali karena sistem memiliki fitur auto-retry yang secara otomatis akan mencoba mengirim request ulang. Jika masalah masih berlanjut (persists), pengguna dapat mencoba memilih komoditas yang berbeda karena kemungkinan issue terjadi pada specific commodity tertentu yang memiliki masalah dengan data historisnya. Apabila problem terus berlanjut setelah beberapa percobaan, pengguna disarankan untuk menghubungi admin sistem untuk investigasi lebih lanjut.
 
 **Issue 2: Export Failed**
 
 *Symptom*: "Failed to generate report"
 
-*Solution*:
-1. Clear browser cache (Ctrl+Shift+Delete)
-2. Try different export format (jika Excel gagal, coba PDF)
-3. Check browser pop-up blocker settings
-4. Ensure adequate disk space untuk download
+*Solution*: Ketika menghadapi kegagalan export dengan pesan "Failed to generate report", pengguna dapat melakukan beberapa langkah troubleshooting. Pertama, clear browser cache dengan menekan Ctrl+Shift+Delete untuk membersihkan data temporary yang mungkin menyebabkan konflik. Jika setelah clearing cache masih gagal, pengguna dapat mencoba export dengan format berbeda (misalnya jika Excel gagal, coba menggunakan format PDF atau CSV). Langkah selanjutnya adalah memeriksa browser pop-up blocker settings karena beberapa browser memblokir automatic downloads yang dapat menghambat proses export. Terakhir, pastikan bahwa disk space pada komputer mencukupi untuk menyimpan file hasil download, karena insufficient storage dapat menyebabkan kegagalan download.
+
+![Gambar 4.22 Browser Settings untuk Export](images/browser_settings.png)
+
+*Gambar 4.22 di atas memperlihatkan contoh browser settings yang perlu diperiksa ketika mengalami export failed, termasuk pop-up blocker settings dan download location settings dengan screenshot dari Chrome browser.*
 
 **Issue 3: Slow Page Load**
 
 *Symptom*: Dashboard takes >10 seconds to load
 
-*Solution*:
-1. Check internet speed (need min 2 Mbps)
-2. Close unnecessary browser tabs
-3. Try incognito/private mode
-4. Clear browser cache
-5. Try different browser
+*Solution*: Apabila halaman Dashboard memerlukan waktu lebih dari 10 detik untuk loading, beberapa langkah dapat dilakukan untuk memperbaiki performa. Pertama, periksa kecepatan internet dengan melakukan speed test untuk memastikan koneksi minimal 2 Mbps yang dibutuhkan sistem. Langkah kedua adalah menutup tab browser yang tidak diperlukan karena terlalu banyak tab dapat mengonsumsi memory dan memperlambat performa. Pengguna juga dapat mencoba membuka sistem dalam incognito/private mode untuk menghindari konflik dengan extensions atau cache yang mungkin memperlambat loading. Jika masih lambat, lakukan clear browser cache untuk menghapus data temporary yang terakumulasi. Sebagai alternatif terakhir, coba gunakan browser yang berbeda (misalnya dari Chrome ke Firefox atau Edge) karena beberapa browser memiliki performa yang berbeda tergantung konfigurasi sistem.
 
 **Issue 4: Login Failed**
 
 *Symptom*: "Invalid credentials" meski password correct
 
-*Solution*:
-1. Check Caps Lock status
-2. Copy-paste password dari password manager (avoid typos)
-3. Use "Forgot Password" untuk reset
-4. Check email for activation link (account mungkin belum activated)
-5. Contact admin untuk account verification status
+*Solution*: Ketika mengalami login failed dengan pesan "Invalid credentials" meskipun yakin password sudah benar, ada beberapa kemungkinan penyebab dan solusinya. Pertama, periksa status Caps Lock pada keyboard karena password bersifat case-sensitive dan Caps Lock yang aktif dapat menyebabkan password salah. Untuk menghindari typos, disarankan untuk copy-paste password langsung dari password manager daripada mengetik manual. Jika masih gagal, gunakan fitur "Forgot Password" untuk melakukan reset password dan mendapatkan password baru. Kemungkinan lain adalah akun belum diaktivasi, dalam hal ini pengguna perlu mengecek email untuk mencari activation link yang dikirimkan saat registrasi dan mengklik link tersebut untuk aktivasi. Jika semua langkah di atas sudah dilakukan namun masih tidak berhasil login, hubungi admin sistem untuk memverifikasi status akun dan mendapatkan bantuan lebih lanjut.
 
-**H. Best Practices untuk Users**
+**- Best Practices untuk Users**
 
 **Untuk Analysts:**
-1. Save predictions regularly untuk historical tracking
-2. Use batch prediction untuk efficiency (instead of one-by-one)
-3. Export ke CSV untuk advanced analysis di R/Python
-4. Compare predictions vs actual quarterly untuk assess accuracy
-5. Document assumptions dan parameter choices untuk reproducibility
+
+Bagi analysts yang secara rutin menggunakan sistem SIKOLBIA untuk keperluan analisis dan pelaporan, beberapa best practices perlu diterapkan untuk memaksimalkan efisiensi dan kualitas output. Pertama, lakukan save predictions secara regular untuk keperluan historical tracking dan audit trail, sehingga dapat melacak evolusi prediksi dari waktu ke waktu. Untuk meningkatkan efisiensi, gunakan fitur batch prediction ketika perlu melakukan prediksi multiple commodities daripada melakukan prediksi one-by-one yang akan memakan waktu lebih lama. Export hasil prediksi ke format CSV sangat direkomendasikan untuk analysts yang perlu melakukan advanced analysis menggunakan tools seperti R, Python, atau software statistik lainnya, karena format CSV memberikan akses penuh ke raw data. Lakukan comparison antara predictions vs actual data secara quarterly untuk assess accuracy model dan memahami pattern kesalahan prediksi. Terakhir, selalu document assumptions dan parameter choices yang digunakan dalam setiap analisis untuk memastikan reproducibility dan memudahkan peer review atau audit di kemudian hari.
 
 **Untuk Policy Makers:**
-1. Focus pada AI Insights untuk quick interpretation
-2. Always review confidence intervals untuk risk assessment
-3. Use PDF export untuk professional presentations
-4. Cross-validate predictions dengan expert opinions
-5. Consider predictions as decision support, not absolute truth
+
+Policy makers yang menggunakan sistem SIKOLBIA untuk decision support perlu mengadopsi best practices yang sesuai dengan kebutuhan strategic planning. Focus utama sebaiknya pada AI Insights yang menyajikan interpretasi hasil prediksi dalam bahasa yang mudah dipahami dan actionable recommendations untuk policy interventions. Selalu review confidence intervals yang disediakan untuk melakukan proper risk assessment dan memahami range ketidakpastian dari prediksi, sehingga dapat membuat contingency plans yang sesuai. Gunakan fitur PDF export untuk menghasilkan professional presentations yang dapat dibagikan ke stakeholders atau digunakan dalam rapat koordinasi tingkat tinggi. Meskipun sistem menghasilkan prediksi yang accurate, sangat penting untuk cross-validate predictions dengan expert opinions dari domain specialists untuk mendapatkan perspective yang lebih holistic. Yang terpenting, pahami bahwa predictions dari sistem harus dilihat sebagai decision support tool, bukan absolute truth, sehingga tetap diperlukan professional judgment dalam mengambil keputusan kebijakan.
 
 **Untuk Researchers:**
-1. Document model version used (untuk reproducibility)
-2. Export raw data (CSV) untuk transparency
-3. Cite sistem SIKOLBIA properly di publications
-4. Validate predictions dengan alternative methods
-5. Provide feedback untuk model improvement
+
+Researchers yang memanfaatkan sistem SIKOLBIA untuk keperluan akademik dan scientific research harus mengikuti best practices untuk memastikan rigor dan reproducibility penelitian. Selalu document model version yang digunakan dalam setiap analysis dan publication untuk memastikan reproducibility, karena model dapat mengalami update dan improvement dari waktu ke waktu. Export raw data dalam format CSV untuk memastikan transparency dan memungkinkan readers atau reviewers untuk melakukan verification terhadap hasil penelitian. Ketika mengutip sistem SIKOLBIA dalam publications, pastikan untuk cite properly dengan menyebutkan versi sistem, periode data yang digunakan, dan metodologi yang diterapkan. Validate predictions yang dihasilkan sistem dengan alternative methods atau benchmark models lainnya untuk menguji robustness hasil dan memberikan comparative analysis. Terakhir, provide constructive feedback kepada development team mengenai limitations atau areas for improvement yang ditemukan selama penggunaan, karena input dari researchers sangat valuable untuk continuous improvement sistem.
 
 **Security Best Practices:**
-1. Jangan share password dengan anyone
-2. Logout setelah selesai (especially di shared computers)
-3. Change password regularly (every 3-6 months)
-4. Enable browser password manager untuk secure storage
-5. Report suspicious activity immediately ke admin
+
+Semua pengguna sistem SIKOLBIA harus mengikuti security best practices untuk menjaga keamanan akun dan data. Prinsip pertama dan terpenting adalah jangan pernah share password dengan siapa pun, termasuk rekan kerja atau IT support, karena setiap user bertanggung jawab penuh terhadap akun mereka. Selalu lakukan logout setelah selesai menggunakan sistem, especially ketika menggunakan shared computers atau komputer public untuk mencegah unauthorized access. Change password secara regular setiap 3-6 bulan untuk mengurangi risiko account compromise. Gunakan browser password manager yang ter-encrypt untuk secure storage password daripada menyimpan dalam plain text atau sticky notes. Terakhir, jika mendeteksi suspicious activity seperti login attempts yang tidak dikenali atau perubahan settings yang tidak dilakukan, immediately report ke admin sistem untuk investigasi dan mitigasi potential security breach.
 
 Prosedur penggunaan ini telah divalidasi melalui UAT dengan 15 users dan continuously updated berdasarkan user feedback. Video tutorials untuk setiap prosedur tersedia di menu "Help" → "Video Tutorials".
 
