@@ -56,10 +56,48 @@ check_app_path() {
     echo -e "${GREEN}✓${NC} Found Laravel at: $APP_PATH"
 }
 
+# Fix session configuration
+fix_session_config() {
+    echo ""
+    echo "Step 1: Fixing session configuration for subdirectory..."
+    
+    cd "$APP_PATH"
+    
+    # Backup .env
+    BACKUP_SUFFIX=$(date +%Y%m%d_%H%M%S)
+    cp .env .env.backup.$BACKUP_SUFFIX
+    
+    # Function to update or add env variable
+    update_env() {
+        local key=$1
+        local value=$2
+        
+        if grep -q "^${key}=" .env; then
+            sed -i "s|^${key}=.*|${key}=${value}|" .env
+        else
+            echo "${key}=${value}" >> .env
+        fi
+    }
+    
+    # Update session settings for subdirectory deployment
+    update_env "SESSION_PATH" "/sikolbia"
+    update_env "SESSION_DOMAIN" "datanonkom.pertanian.go.id"
+    update_env "SESSION_SECURE_COOKIE" "true"
+    update_env "SESSION_HTTP_ONLY" "true"
+    update_env "SESSION_SAME_SITE" "lax"
+    update_env "APP_URL" "https://datanonkom.pertanian.go.id/sikolbia"
+    update_env "APP_ENV" "production"
+    
+    echo -e "${GREEN}✓${NC} Session configuration updated"
+    echo "  SESSION_PATH=/sikolbia"
+    echo "  SESSION_DOMAIN=datanonkom.pertanian.go.id"
+    echo "  Backup: .env.backup.$BACKUP_SUFFIX"
+}
+
 # Fix storage permissions
 fix_storage_permissions() {
     echo ""
-    echo "Step 1: Fixing storage permissions..."
+    echo "Step 2: Fixing storage permissions..."
     
     cd "$APP_PATH"
     
@@ -86,7 +124,7 @@ fix_storage_permissions() {
 # Clear Laravel caches
 clear_caches() {
     echo ""
-    echo "Step 2: Clearing Laravel caches..."
+    echo "Step 3: Clearing Laravel caches..."
     
     cd "$APP_PATH"
     
@@ -102,7 +140,7 @@ clear_caches() {
 # Rebuild caches
 rebuild_caches() {
     echo ""
-    echo "Step 3: Rebuilding caches..."
+    echo "Step 4: Rebuilding caches..."
     
     cd "$APP_PATH"
     
@@ -117,7 +155,7 @@ rebuild_caches() {
 # Check ML API
 check_ml_api() {
     echo ""
-    echo "Step 4: Checking ML API..."
+    echo "Step 5: Checking ML API..."
     
     if docker ps | grep -q "fastapi"; then
         echo -e "${GREEN}✓${NC} FastAPI container is running"
@@ -140,7 +178,7 @@ check_ml_api() {
 # Restart services
 restart_services() {
     echo ""
-    echo "Step 5: Restarting services..."
+    echo "Step 6: Restarting services..."
     
     # Detect and restart PHP-FPM
     if systemctl is-active --quiet php8.3-fpm; then
@@ -172,7 +210,7 @@ restart_services() {
 # Test the fix
 test_fix() {
     echo ""
-    echo "Step 6: Testing fix..."
+    echo "Step 7: Testing fix..."
     
     # Test if logs are writable
     cd "$APP_PATH"
@@ -181,6 +219,14 @@ test_fix() {
     else
         echo -e "${RED}✗${NC} Storage logs still not writable!"
         return 1
+    fi
+    
+    # Test session configuration
+    SESSION_PATH=$(php artisan tinker --execute="echo config('session.path');" 2>/dev/null | tail -1)
+    if [ "$SESSION_PATH" = "/sikolbia" ]; then
+        echo -e "${GREEN}✓${NC} Session path correctly set to /sikolbia"
+    else
+        echo -e "${YELLOW}⚠${NC} Session path: $SESSION_PATH (expected: /sikolbia)"
     fi
     
     # Test Laravel
@@ -209,6 +255,7 @@ display_summary() {
     echo "==================================="
     echo ""
     echo "Completed actions:"
+    echo "  ✓ Fixed session configuration for /sikolbia subdirectory"
     echo "  ✓ Fixed storage permissions (775)"
     echo "  ✓ Set ownership to $WEB_USER"
     echo "  ✓ Cleared Laravel caches"
@@ -216,10 +263,13 @@ display_summary() {
     echo "  ✓ Checked ML API status"
     echo "  ✓ Restarted web services"
     echo ""
+    echo "⚠️  IMPORTANT: Users must clear browser cookies!"
+    echo ""
     echo "Next steps:"
-    echo "  1. Test the application: https://datanonkom.pertanian.go.id/sikolbia"
-    echo "  2. Check logs: tail -f $APP_PATH/storage/logs/laravel.log"
-    echo "  3. Monitor ML API: docker-compose logs -f fastapi-ml"
+    echo "  1. Clear browser cookies for datanonkom.pertanian.go.id"
+    echo "  2. Test login: https://datanonkom.pertanian.go.id/sikolbia/login"
+    echo "  3. Check logs: tail -f $APP_PATH/storage/logs/laravel.log"
+    echo "  4. Monitor ML API: docker-compose logs -f fastapi-ml"
     echo ""
     echo -e "${GREEN}Done!${NC}"
 }
@@ -229,6 +279,7 @@ main() {
     check_root
     detect_web_user
     check_app_path
+    fix_session_config
     fix_storage_permissions
     clear_caches
     rebuild_caches
