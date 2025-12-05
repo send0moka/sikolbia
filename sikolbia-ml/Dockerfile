@@ -47,13 +47,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy app source
+# Copy app source and essential files
 COPY app/ ./app/
-COPY models/ ./models/
 COPY requirements.txt .
 
-# Create directories
-RUN mkdir -p logs ml_models/models
+# Create necessary directories
+RUN mkdir -p logs ml_models/models ml_models/data ml_models/results models
+
+# Note: Pre-trained models are NOT copied during build (too large for git/docker)
+# To use models in production:
+#   Option 1: Mount as volume:
+#     docker run -v ./ml_models/models:/app/ml_models/models ...
+#   Option 2: Copy into running container:
+#     docker cp ./ml_models/models/nbm_production <container>:/app/ml_models/models/
+#   Option 3: Download from model registry/S3 in entrypoint script
+# The API will work in fallback mode without models (statistical predictions)
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \

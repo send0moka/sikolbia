@@ -15,15 +15,38 @@ docker network create sikolbia-network
 ```
 
 ### Build & Run
+
+**Basic Build (No Models)**
 ```bash
-# Build image
+# Build image - completes successfully without models
 docker-compose build
 
-# Start service
+# Start service (fallback mode - statistical predictions)
 docker-compose up -d
 
 # Check logs
 docker logs sikolbia-ml-api -f
+```
+
+**With Models (Full ML Mode)**
+```bash
+# Option 1: Use provided script
+bash fix-docker-build.sh
+
+# Option 2: Manual with volume mount
+docker-compose build
+docker-compose up -d
+# Models automatically mounted if docker-compose.yml has volumes configured
+
+# Verify ML mode is active
+curl http://localhost:8082/health | jq .model_loaded
+# Should return true
+```
+
+**Quick Test Script**
+```bash
+# Tests build, run, and health check
+bash fix-docker-build.sh
 ```
 
 ### Access
@@ -93,14 +116,44 @@ environment:
   - WORKERS=2
 ```
 
-### Model Path
-The production model is expected at:
+### Model Path & Volume Mounting
+
+**IMPORTANT:** Models are NOT included in the Docker image (too large for git/builds). They must be mounted as volumes at runtime.
+
+**Option 1: Volume Mount (Recommended)**
+```bash
+docker run -d \
+  -v $(pwd)/ml_models/models:/app/ml_models/models:ro \
+  -p 8082:8082 \
+  sikolbia-ml
+```
+
+**Option 2: Docker Compose Volume**
+```yaml
+services:
+  ml-api:
+    volumes:
+      - ./ml_models/models:/app/ml_models/models:ro
+```
+
+**Option 3: Copy to Running Container**
+```bash
+# Build and start container first
+docker-compose up -d
+
+# Copy models into running container
+docker cp ml_models/models/nbm_production sikolbia-ml-api:/app/ml_models/models/
+```
+
+The production model structure:
 ```
 /app/ml_models/models/nbm_production/
 ├── nbm_production_model.pkl
 ├── scaler.pkl
 └── metadata.json
 ```
+
+**Fallback Mode:** Container runs without models (statistical predictions only). Check `/health` endpoint for model status.
 
 ## Development
 
@@ -129,7 +182,28 @@ docker-compose up -d
 docker logs sikolbia-ml-api --tail 100 -f
 ```
 
-## Known Issues
+## Known Issues & Solutions
+
+### Docker Build: "models/ not found" Error
+
+**Issue:** `COPY models/ ./models/` fails during Docker build
+
+**Root Cause:** ML model files (100-500MB) are not included in git repository
+
+**Solution:** Models are now created as empty directories during build and mounted at runtime:
+```bash
+# Build succeeds without models
+docker build -t sikolbia-ml .
+
+# Run with models mounted
+docker run -v ./ml_models/models:/app/ml_models/models:ro -p 8082:8082 sikolbia-ml
+```
+
+**Details:** See `FIX_DOCKER_BUILD_MODELS.md` for comprehensive guide including:
+- 4 deployment strategies
+- Testing procedures
+- Production best practices
+- Model versioning strategies
 
 ### Model Loading Error
 **Issue:** `AttributeError: Can't get attribute 'NBMProductionModel'`
@@ -150,8 +224,26 @@ docker logs sikolbia-ml-api --tail 100 -f
 # Check logs for error details
 docker logs sikolbia-ml-api --tail 50
 
-# Check if model files exist
+# Check if model files exist (if expecting ML mode)
 docker exec sikolbia-ml-api ls -la /app/ml_models/models/nbm_production/
+
+# Verify health endpoint
+curl http://localhost:8082/health
+```
+
+### Models Not Loading
+```bash
+# 1. Check volume mount
+docker inspect sikolbia-ml-api | grep -A 10 Mounts
+
+# 2. Verify files in host directory
+ls -la ml_models/models/nbm_production/
+
+# 3. Check container can access
+docker exec sikolbia-ml-api ls /app/ml_models/models/nbm_production/
+
+# 4. Review model loading logs
+docker logs sikolbia-ml-api 2>&1 | grep -i "model"
 ```
 
 ### Port Conflict
@@ -166,6 +258,20 @@ For large models, increase Docker memory limit:
 services:
   ml-api:
     mem_limit: 8g
+```
+
+### Build Fails
+```bash
+# 1. Use test script to diagnose
+bash fix-docker-build.sh
+
+# 2. Clean rebuild
+docker-compose down --volumes
+docker-compose build --no-cache
+docker-compose up -d
+
+# 3. Check Docker disk space
+docker system df
 ```
 
 ## Model Training
