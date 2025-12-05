@@ -4,38 +4,18 @@ export default function pertanianReportForm(config) {
                 allData: config.initialData || { topiks: [], variabels: [], klasifikasis: [], tahuns: [], bulans: [], wilayahs: [] },
 
                 init() {
-                    this.$watch('wilayahLevel', () => {
-                        this.selectedProvinsiId = null;
-                        this.$nextTick(() => this.syncHeights());
-                    });
-                    this.$watch('selectedProvinsiId', () => {
-                        this.selection.kabupaten_ids = [];
-                        this.$nextTick(() => this.syncHeights());
-                    });
+                    // Use layout helpers wired via factory for watcher side-effects
+                    this.$watch('wilayahLevel', () => { try { this.onWilayahLevelChanged && this.onWilayahLevelChanged(); } catch {} });
+                    this.$watch('selectedProvinsiId', () => { try { this.onSelectedProvinsiChanged && this.onSelectedProvinsiChanged(); } catch {} });
 
                     // Auto-scroll chat on open and when messages change
                     this.$watch('chatOpen', (open) => {
-                        if (open) {
-                            // Onboarding: show guided wizard only once when the chat is first opened
-                            if (!this.didOnboardingGuided) {
-                                this.switchChatMode('guided', { silent: true });
-                                this.resetGuidedChat();
-                                this.didOnboardingGuided = true;
-                            }
-                            this.$nextTick(() => this.scrollChatToBottom());
-                        }
+                        if (open) { try { this.onChatOpen && this.onChatOpen(); } catch {} }
                     });
                     this.$watch('conversation', () => { this.$nextTick(() => this.scrollChatToBottom()); });
 
                     // Warn user before reload/close if there are stored results
-                    window.addEventListener('beforeunload', (e) => {
-                        try {
-                            if (!this.skipUnloadPrompt && this.storedResults && this.storedResults.length > 0) {
-                                e.preventDefault();
-                                e.returnValue = '';
-                            }
-                        } catch (_) { /* noop */ }
-                    });
+                    try { this.setupBeforeUnloadGuard && this.setupBeforeUnloadGuard(); } catch {}
 
                     // Equalize Wilayah container height with layout container
                     this.$nextTick(() => this.setupHeightSync());
@@ -75,6 +55,8 @@ export default function pertanianReportForm(config) {
                 chatOpen: false,
                 // Chat mode routing: 'natural' | 'structured' | 'guided'
                 chatMode: 'natural',
+                // Lock typing when guided flow is active
+                guidedLock: false,
                 // One-time onboarding: show guided wizard only once when chat is opened
                 didOnboardingGuided: false,
                 // Prevent repeated guided fallback on unknown intent
@@ -144,6 +126,7 @@ export default function pertanianReportForm(config) {
             openResetConfirm() { /* overridden by factory (chatbot/conversation.openResetConfirm) */ },
             cancelResetConfirm() { /* overridden by factory (chatbot/conversation.cancelResetConfirm) */ },
             async confirmReset() { /* overridden by factory (chatbot/conversation.confirmReset) */ },
+            endGuidedFlow() { /* overridden by factory (chatbot/conversation.endGuidedFlow) */ },
             // Start guided flow inline (overridden by factory)
             startGuidedInline() { /* overridden by factory (chatbot/conversation.startGuidedInline) */ },
             // Go back one guided step and re-render the prompt
@@ -240,23 +223,8 @@ export default function pertanianReportForm(config) {
                     return currentResult?.results?.headers || [];
                 },
                 get dynamicRows() {
-                    const currentResult = this.selectedResultIndex !== null ? this.storedResults[this.selectedResultIndex] : null;
-                    const rows = currentResult?.results?.rows || [];
-                    // Keep sorter behavior if provided
-                    const sorted = [...rows];
-                    sorted.sort((a, b) => {
-                        const aHas = a.wilayah_sorter !== undefined && a.wilayah_sorter !== null;
-                        const bHas = b.wilayah_sorter !== undefined && b.wilayah_sorter !== null;
-                        if (aHas && bHas) {
-                            if (a.wilayah_sorter !== b.wilayah_sorter) return a.wilayah_sorter - b.wilayah_sorter;
-                            return String(a.wilayah).localeCompare(String(b.wilayah));
-                        }
-                        if (aHas && !bHas) return -1; // rows with sorter come first
-                        if (!aHas && bHas) return 1;
-                        // both missing sorter: sort by name
-                        return String(a.wilayah).localeCompare(String(b.wilayah));
-                    });
-                    return sorted;
+                    // Delegate to centralized sorter in ui/results
+                    try { return this.computeDynamicRows ? this.computeDynamicRows() : []; } catch { return []; }
                 },
 
                 renderChart() { /* overridden by factory (ui/chart.renderChart) */ },

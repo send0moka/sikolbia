@@ -693,17 +693,31 @@
                 </header>
                 
                 <main class="flex-1 p-4 overflow-y-auto space-y-4 min-h-0" x-ref="chatScroll">
+                    <!-- Guided lock banner -->
+                    <div x-show="guidedLock" class="text-xs bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded flex items-center justify-between">
+                        <span>Anda sedang berada di Guided Flow.</span>
+                        <button type="button" class="underline hover:no-underline" @click="endGuidedFlow()">Akhiri guided flow</button>
+                    </div>
                     <template x-for="(chat, index) in conversation" :key="index">
                         <div class="flex" :class="chat.sender === 'user' ? 'justify-end' : 'justify-start'">
                             <!-- Text bubble -->
                             <template x-if="!chat.type || chat.type === 'text'">
                                 <p class="max-w-[80%] inline-block p-3 rounded-lg text-sm"
-                                   :class="chat.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-neutral-200 text-neutral-800'"
-                                   x-html="chat.text"></p>
+                                   :class="chat.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-neutral-200 text-neutral-800'">
+                                   <!-- Typewriter effect for bot natural replies -->
+                                   <template x-if="chat.effect === 'typewriter' && chat.sender !== 'user'">
+                                       <span x-data="{ out: '', full: chat.text, i: 0 }"
+                                             x-init="const s = setInterval(() => { out = full.slice(0, ++i); if (i >= full.length) clearInterval(s); }, 12)"
+                                             x-text="out"></span>
+                                   </template>
+                                   <template x-if="!chat.effect || chat.sender === 'user'">
+                                       <span x-html="chat.text"></span>
+                                   </template>
+                                </p>
                             </template>
 
                             <!-- Options bubble (single select) -->
-                            <template x-if="chat.type === 'options'">
+                            <template x-if="chat.type === 'options' && chat.variant !== 'onboarding'">
                                 <div class="max-w-[90%] bg-neutral-200 text-neutral-800 p-3 rounded-lg">
                                     <p class="text-sm font-medium mb-2" x-text="chat.title || 'Pilih salah satu:'"></p>
                                     <div class="flex flex-wrap gap-2">
@@ -716,6 +730,19 @@
                                     </div>
                                     <div class="mt-3">
                                         <button type="button" class="text-sm text-neutral-700 underline" @click="stepBack()">Kembali satu langkah</button>
+                                    </div>
+                                </div>
+                            </template>
+                            <!-- Onboarding minimal chips (no container) -->
+                            <template x-if="chat.type === 'options' && chat.variant === 'onboarding'">
+                                <div class="max-w-[95%]">
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="opt in chat.options" :key="opt.value">
+                                            <button type="button" class="px-2.5 py-1 rounded-full text-xs border border-neutral-300 bg-white hover:bg-blue-50"
+                                                    @click="handleOption(index, opt)">
+                                                <span x-text="opt.label"></span>
+                                            </button>
+                                        </template>
                                     </div>
                                 </div>
                             </template>
@@ -790,7 +817,7 @@
                                 </div>
                             </template>
 
-                            <!-- Summary preview bubble -->
+                                <!-- Summary preview bubble -->
                             <template x-if="chat.type === 'summary'">
                                 <div class="max-w-[95%] bg-white text-neutral-800 p-3 rounded-lg border">
                                     <p class="text-sm font-medium mb-2">Ringkasan Hasil</p>
@@ -805,6 +832,42 @@
                                             <li x-text="line"></li>
                                         </template>
                                     </ul>
+                                    <!-- Tiny insights toggle -->
+                                    <div x-show="Array.isArray(chat.insights?.columns) && chat.insights.columns.length" class="mt-2">
+                                        <button type="button" class="text-xs text-blue-700 underline hover:no-underline"
+                                                @click="chat.showInsights = !chat.showInsights"
+                                                x-text="chat.showInsights ? 'Sembunyikan insight' : 'Lihat lebih banyak insight'"></button>
+                                        <div x-show="chat.showInsights" class="mt-2 border-t pt-2 space-y-1">
+                                            <template x-for="(col, idx) in (chat.insights.columns || []).slice(0,3)" :key="'ins-'+idx">
+                                                <div class="text-xs text-neutral-700">
+                                                    <span class="font-medium" x-text="col.name"></span>:
+                                                    <span x-show="col.max !== null">tertinggi <span class="font-medium" x-text="col.max_wilayah || '-' "></span> (<span x-text="(Number(col.max)||0).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>)</span>
+                                                    <span x-show="col.min !== null && col.min_wilayah && col.min_wilayah !== col.max_wilayah">, terendah <span class="font-medium" x-text="col.min_wilayah"></span> (<span x-text="(Number(col.min)||0).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>)</span>
+                                                    <span x-show="col.avg !== null">, rata-rata <span x-text="(Number(col.avg)||0).toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span></span>
+                                                </div>
+                                            </template>
+
+                                            <!-- Summary compare bubble -->
+                                            <template x-if="chat.type === 'summary-compare'">
+                                                <div class="max-w-[95%] bg-white text-neutral-800 p-3 rounded-lg border">
+                                                    <p class="text-sm font-medium mb-2">Ringkasan Perbandingan</p>
+                                                    <template x-if="chat.paragraph">
+                                                        <p class="text-sm text-neutral-700 leading-relaxed" x-text="chat.paragraph"></p>
+                                                    </template>
+                                                    <template x-if="!chat.paragraph">
+                                                        <ul class="list-disc pl-5 text-sm text-neutral-700 space-y-1">
+                                                            <template x-for="(line, i) in (chat.summaryLines || [])" :key="'cmp-'+i">
+                                                                <li x-text="line"></li>
+                                                            </template>
+                                                        </ul>
+                                                    </template>
+                                                    <div class="flex justify-end gap-2 mt-3">
+                                                        <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700" @click="showAsTable(chat)">Tampilkan Tabel</button>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
                                     <div class="flex justify-end gap-2 mt-3">
                                         <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-blue-600 text-white hover:bg-blue-700" @click="showAsTable(chat)">Tampilkan Tabel</button>
                                         <button type="button" class="px-3 py-1.5 rounded-md text-sm bg-green-600 text-white hover:bg-green-700" @click="saveWizardResult(chat)">Simpan ke Panel</button>
@@ -813,10 +876,15 @@
                             </template>
                         </div>
                     </template>
+                    <!-- Typing indicator: three bouncing dots (larger, subtle) -->
                     <div x-show="isLoading" class="flex justify-start">
-                        <p class="max-w-[80%] inline-block p-3 rounded-lg text-sm bg-neutral-200 text-neutral-800">
-                            <span class="animate-pulse">...</span>
-                        </p>
+                        <div class="max-w-[80%] inline-block p-3 rounded-lg bg-neutral-200 text-neutral-800">
+                            <div class="flex items-center gap-1.5" aria-live="polite" aria-label="Bot is typing">
+                                <span class="w-2.5 h-2.5 bg-neutral-500 rounded-full animate-bounce" style="animation-delay:-0.2s"></span>
+                                <span class="w-2.5 h-2.5 bg-neutral-500 rounded-full animate-bounce" style="animation-delay:0s"></span>
+                                <span class="w-2.5 h-2.5 bg-neutral-500 rounded-full animate-bounce" style="animation-delay:0.2s"></span>
+                            </div>
+                        </div>
                     </div>
                     
                 </main>
@@ -840,13 +908,13 @@
                 <footer class="p-4 border-t flex-shrink-0">
                     <div class="flex flex-col gap-2">
                         <form @submit.prevent="sendMessage" class="flex gap-2">
-                            <input type="text" x-model="userMessage" :disabled="isLoading" class="w-full border rounded-md p-2 text-sm" placeholder="Ketik pertanyaan Anda...">
-                            <button type="submit" :disabled="isLoading" class="bg-blue-600 text-white rounded-md px-4 disabled:bg-blue-300">Kirim</button>
+                            <input type="text" x-model="userMessage" :disabled="isLoading || guidedLock" class="w-full border rounded-md p-2 text-sm" placeholder="Ketik pertanyaan Anda...">
+                            <button type="submit" :disabled="isLoading || guidedLock" class="bg-blue-600 text-white rounded-md px-4 disabled:bg-blue-300">Kirim</button>
                         </form>
                         <div class="flex justify-between items-center">
                             <button type="button" @click="openResetConfirm()"
                             class="text-sm text-neutral-600 hover:text-neutral-900 underline">Mulai Ulang</button>
-                            <div class="text-xs text-neutral-500">Atau gunakan alur pandu di atas.</div>
+                            <div class="text-xs text-neutral-500" x-text="guidedLock ? 'Gunakan pilihan yang tersedia atau akhiri guided flow untuk mengetik.' : 'Atau gunakan alur pandu di atas.'"></div>
                         </div>
                     </div>
                 </footer>

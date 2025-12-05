@@ -33,7 +33,8 @@ Dokumentasi chatbot untuk modul pertanian (Benih & Pupuk, Lahan, Iklim & OPT DPI
 - Services
   - `app/Services/ChatOrchestrationService.php` — intent detection & routing
   - `app/Services/RAGSummarizer.php` — ringkas-jawab natural (OpenAI jika tersedia; offline fallback)
-  - `app/Services/ReportService.php` — structured retrieval dan metadata (wilayah, tahun, dll.)
+  - `app/Services/ChatReportService.php` — jembatan structured-first untuk chatbot (dipisah dari `ReportService`)
+  - `app/Services/ReportService.php` — layanan laporan unified (metadata, query/pivot, header/rows)
   - `app/Services/KnowledgeBaseService.php`, `SmallTalkService.php` — definisi domain & small talk
   - `app/Services/GuidedService.php` — alur pandu backend-driven
 - Konfigurasi
@@ -43,6 +44,18 @@ Dokumentasi chatbot untuk modul pertanian (Benih & Pupuk, Lahan, Iklim & OPT DPI
   - Metadata: `/api/{module}/topiks`, `/api/{module}/variabels/{topikId}`, `/api/{module}/klasifikasis`, `/api/{module}/years`, `/api/{module}/bulans`
   - Wilayah: `/pertanian/wilayahs`
   - Filter/pratinjau: `/pertanian/{module}/filter`
+
+### Catatan Refactor Backend (terbaru)
+
+- Chatbot kini menggunakan `ChatReportService` untuk ekstraksi terstruktur dan phrasing natural.
+- `ChatbotController` dan `ChatOrchestrationService` telah diarahkan ke `ChatReportService`.
+- Metode chatbot di `ReportService` telah DIHAPUS agar layanan laporan tetap fokus pada unified reports.
+- `retrieveFactualData` dipindahkan ke `ChatReportService` (menggunakan mapping lokal ringan seperti di `StructuredSearchService`).
+
+Migrasi singkat:
+- Ganti `new ReportService()->buildStructuredFirstResponse($q)` menjadi `new ChatReportService()->buildStructuredFirstResponse($q)`.
+- Ganti `new ReportService()->handleChatIntent($q)` menjadi `new ChatReportService()->handleChatIntent($q)`.
+- Ganti `new ReportService()->retrieveFactualData($q)` menjadi `new ChatReportService()->retrieveFactualData($q)`.
 
 ## 🔌 API & Kontrak Respons
 

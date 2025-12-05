@@ -41,4 +41,34 @@ export function syncHeights(ctx) {
   } catch {}
 }
 
-export default { setupHeightSync, syncHeights };
+// Watcher handlers and unload guard
+export function onWilayahLevelChanged(ctx) {
+  ctx.selectedProvinsiId = null;
+  try { ctx.$nextTick(() => syncHeights(ctx)); } catch {}
+}
+
+export function onSelectedProvinsiChanged(ctx) {
+  ctx.selection.kabupaten_ids = [];
+  try { ctx.$nextTick(() => syncHeights(ctx)); } catch {}
+}
+
+export function setupBeforeUnloadGuard(ctx) {
+  if (ctx.__beforeUnloadBound) return;
+  ctx.__beforeUnloadBound = true;
+  window.addEventListener('beforeunload', (e) => {
+    try {
+      if (!ctx.skipUnloadPrompt && ctx.storedResults && ctx.storedResults.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    } catch (_) { /* noop */ }
+  });
+}
+
+export async function withSkipUnload(ctx, fn) {
+  const prev = ctx.skipUnloadPrompt;
+  ctx.skipUnloadPrompt = true;
+  try { return await fn(); } finally { ctx.skipUnloadPrompt = prev; }
+}
+
+export default { setupHeightSync, syncHeights, onWilayahLevelChanged, onSelectedProvinsiChanged, setupBeforeUnloadGuard, withSkipUnload };

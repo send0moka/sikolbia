@@ -11,7 +11,13 @@ export function resetConversation() {
   return post('/api/chatbot/reset', {});
 }
 
+export function summarizePreview(tablePayload) {
+  // tablePayload: { headers: [...], rows: [...], meta?: {...} }
+  return post('/api/chatbot/summary', tablePayload);
+}
+
 export default {
   sendMessage,
   resetConversation,
+  summarizePreview,
 };

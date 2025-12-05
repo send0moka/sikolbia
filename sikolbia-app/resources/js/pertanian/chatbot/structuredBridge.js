@@ -1,5 +1,6 @@
 // Bridge between structured suggestion and report preview
 import api from '../api/pertanianApi.js';
+import chatbotApi from '../api/chatbotApi.js';
 
 function detectExplicitModule(txt) {
   const t = String(txt || '').toLowerCase();
@@ -132,7 +133,7 @@ export async function finishPreview(ctx) {
     const klasList = (ctx.wizardData.klasifikasisByVariabel[String(ctx.wizard.variabelId)] || [])
       .filter((k) => (ctx.wizard.klasifikasiIds || []).map(String).includes(String(k.id)))
       .map((k) => k.nama);
-    const tablePayload = { headers: data.headers || [], rows: data.rows || [] };
+  const tablePayload = { headers: data.headers || [], rows: data.rows || [] };
     const meta = {
       module: ctx.wizard.moduleType?.replace('benih-pupuk', 'Benih & Pupuk')?.replace('iklim-opt-dpi', 'Iklim & OPT DPI')?.replace('lahan', 'Lahan'),
       topik: topikObj?.nama || null,
@@ -140,8 +141,16 @@ export async function finishPreview(ctx) {
       klasifikasi: klasList.length ? klasList.join(', ') : null,
     };
     ctx.wizard._pendingPreview = { results: tablePayload, meta, selections, config, moduleType: ctx.wizard.moduleType };
-    const lines = ctx.buildSummaryLines ? ctx.buildSummaryLines(tablePayload) : [];
-    ctx.conversation.push({ sender: 'bot', type: 'summary', title: 'Ringkasan', summaryLines: lines, meta, payload: ctx.wizard._pendingPreview });
+    let lines = [];
+    let insights = null;
+    try {
+      const sr = await chatbotApi.summarizePreview({ ...tablePayload, meta });
+      lines = Array.isArray(sr?.summaryLines) ? sr.summaryLines : [];
+      insights = sr?.insights || null;
+    } catch (e) {
+      lines = ctx.buildSummaryLines ? ctx.buildSummaryLines(tablePayload) : [];
+    }
+    ctx.conversation.push({ sender: 'bot', type: 'summary', title: 'Ringkasan', summaryLines: lines, meta, insights, payload: ctx.wizard._pendingPreview });
     ctx.wizard.step = 'preview';
     const modSlug = ctx.wizard.moduleType;
     const labelMod = meta.module || modSlug;

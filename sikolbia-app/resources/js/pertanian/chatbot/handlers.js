@@ -73,6 +73,44 @@ export async function stepBack(ctx) {
  * @param {any} opt - option payload with { value, label, ... }
  */
 export async function handleOption(ctx, index, opt) {
+  // Compare chips
+  if (opt && (opt.value === 'cmp_years' || opt.value === 'cmp_wilayahs' || opt.value === 'cmp_bulan')) {
+    ctx.conversation.push({ sender: 'user', type: 'text', text: opt.label || 'Perbandingan' });
+    try {
+      const mod = await import('./compare.js');
+      mod.executeComparison(ctx, opt.value, ctx.structuredSuggestion);
+    } catch (_) {
+      ctx.conversation.push({ sender: 'bot', type: 'text', text: 'Gagal mengeksekusi perbandingan.' });
+    }
+    try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch (_) {}
+    return;
+  }
+  if (opt && opt.value === 'guidance_compare') {
+    ctx.conversation.push({ sender: 'user', type: 'text', text: opt.label });
+    ctx.renderBotText('Tambahkan tahun kedua (contoh: 2023 dan 2024) atau wilayah kedua (contoh: Jawa Barat vs Banten) agar perbandingan bisa dijalankan.');
+    try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch (_) {}
+    return;
+  }
+  // Minimal onboarding choices
+  if (opt && opt.value === 'start_guided') {
+    ctx.conversation.push({ sender: 'user', type: 'text', text: opt.label || 'Perlu bantuan?' });
+    ctx.switchChatMode('guided', { silent: true });
+    ctx.resetGuidedChat();
+    try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch (_) {}
+    return;
+  }
+  if (opt && opt.value === 'show_examples') {
+    ctx.conversation.push({ sender: 'user', type: 'text', text: opt.label || 'Lihat contoh' });
+    const examples = [
+      { label: 'Tampilkan pupuk urea 2024 di Jawa Tengah', value: 'Tampilkan pupuk urea 2024 di Jawa Tengah', scope: 'example' },
+      { label: 'Data lahan 2023 untuk Sumatera Barat', value: 'Data lahan 2023 untuk Sumatera Barat', scope: 'example' },
+      { label: 'Curah hujan 2024 nasional', value: 'Curah hujan 2024 nasional', scope: 'example' },
+    ];
+    ctx.conversation.push({ sender: 'bot', type: 'options', title: 'Contoh pertanyaan', options: examples });
+    try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch (_) {}
+    return;
+  }
+
   // Quick Start templates are handled regardless of step
   if (opt && opt.scope === 'quickstart' && opt.quickStart) {
     ctx.conversation.push({ sender: 'user', type: 'text', text: opt.label });
@@ -80,6 +118,17 @@ export async function handleOption(ctx, index, opt) {
       await ctx.runQuickStart(opt.templateId);
     }
     try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch (_) {}
+    return;
+  }
+
+  // Example natural queries
+  if (opt && opt.scope === 'example') {
+    const txt = String(opt.value || opt.label || '').trim();
+    if (txt) {
+      ctx.conversation.push({ sender: 'user', type: 'text', text: txt });
+      try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch (_) {}
+      await ctx.handleNaturalMessage(txt);
+    }
     return;
   }
 

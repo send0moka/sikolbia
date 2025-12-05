@@ -19,16 +19,18 @@ Structure:
 - data/
   - loaders.js — `ensureModuleData`, `ensureVariabels`, `ensureKlasifikasis`, `ensureWilayahs`.
 - ui/
-  - layout.js — layout height sync helpers.
-  - results.js — data fetching, stored results management.
+  - layout.js — layout height sync helpers and watcher/unload utilities: `setupHeightSync`, `syncHeights`, `onWilayahLevelChanged`, `onSelectedProvinsiChanged`, `setupBeforeUnloadGuard`, `withSkipUnload`.
+  - results.js — data fetching, stored results management, and helpers: `saveWizardResult`, `computeDynamicRows`.
   - chart.js — chart rendering, legend and province scroll helpers.
   - export.js — Excel export trigger wiring.
+  - form.js — form selection flow (selectTopik/Variabel, validation, add/remove selections, resets).
+  - wilayah.js — wilayah selection helpers (toggle/select/clear kabupaten, toggleWilayah).
 - chatbot/
-  - conversation.js — render bubbles, switch modes, reset flow.
+  - conversation.js — render bubbles, switch modes, reset flow, `onChatOpen` onboarding helper.
   - guidedWizard.js — topik/variabel/klasifikasi/year/month/wilayah prompts.
   - wizardUi.js — month checklist and checklist interactions.
   - handlers.js — guided option handler and stepBack.
-  - router.js — message routing: natural/structured/guided and rePromptCurrentStep.
+  - router.js — message routing: natural/structured/guided, `rePromptCurrentStep`, and unified `sendMessage`.
   - structuredBridge.js — apply structured suggestion and finish preview.
   - preview.js — present preview (summary/table) and helpers.
   - utils.js — summary/tutor text builders.
@@ -51,3 +53,12 @@ Legacy component status (`resources/js/components/pertanianReportForm.js`):
   - Checklist interactions moved to `chatbot/wizardUi.js`.
   - Conversation basics (`renderBotText`, `switchChatMode`, reset) come from `chatbot/conversation.js`.
   - Data loaders, results, charts, and export come from their respective modules.
+
+Latest refinements (delegations tightened):
+- Init watchers now call layout/chat helpers instead of inline logic:
+  - `wilayahLevel` → `onWilayahLevelChanged()` (resets province and resyncs heights)
+  - `selectedProvinsiId` → `onSelectedProvinsiChanged()` (clears kabupaten and resyncs heights)
+  - `chatOpen` → `onChatOpen()` (one-time guided onboarding + scroll to bottom)
+  - Before-unload guard uses `setupBeforeUnloadGuard()` (prompts only when there are stored results and not skipping)
+- Getter `dynamicRows` now delegates to `results.computeDynamicRows(ctx)` to centralize row sorting behavior.
+- Factory (`index.js`) exposes the above helpers on the Alpine ctx.

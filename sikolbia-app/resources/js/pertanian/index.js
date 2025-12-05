@@ -38,6 +38,9 @@ export default function pertanianReportForm(config) {
   // Layout syncing
   ctx.setupHeightSync = function() { return layout.setupHeightSync(this); };
   ctx.syncHeights = function() { return layout.syncHeights(this); };
+  ctx.onWilayahLevelChanged = function() { return layout.onWilayahLevelChanged(this); };
+  ctx.onSelectedProvinsiChanged = function() { return layout.onSelectedProvinsiChanged(this); };
+  ctx.setupBeforeUnloadGuard = function() { return layout.setupBeforeUnloadGuard(this); };
 
   // Data loaders
   ctx.ensureModuleData = function(module) { return loaders.ensureModuleData(this, module); };
@@ -69,6 +72,8 @@ export default function pertanianReportForm(config) {
   ctx.openResetConfirm = function() { return convo.openResetConfirm(this); };
   ctx.cancelResetConfirm = function() { return convo.cancelResetConfirm(this); };
   ctx.confirmReset = function() { return convo.confirmReset(this); };
+  ctx.onChatOpen = function() { return convo.onChatOpen(this); };
+  ctx.endGuidedFlow = function() { return convo.endGuidedFlow(this); };
 
   // Guided wizard prompt renderers
   ctx.loadWizardTopiks = function() { return wizard.loadWizardTopiks(this); };

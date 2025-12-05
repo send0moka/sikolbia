@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 /**
  * ChatOrchestrationService (scaffold)
  * - Central router for intents: smalltalk | definition | data | unknown
- * - Keeps current data pipeline intact by delegating to ReportService for data.
+ * - Keeps current data pipeline intact by delegating to ChatReportService for data.
  * - No side effects on controller until explicitly wired via feature flag.
  */
 class ChatOrchestrationService
@@ -41,6 +41,19 @@ class ChatOrchestrationService
             if (preg_match('/\b(lahan|benih|pupuk|iklim|opt|dpi)\b/u', $lower)) {
                 return ['intent' => 'definition', 'confidence' => 0.8, 'slots' => $slots];
             }
+        }
+
+        // Compare intent: look for verbs + multiple temporal or regional targets
+        $compareVerbHit = preg_match('/\b(bandingkan|perbandingan|compare|vs)\b/u', $lower);
+        $yearMatches = [];
+        preg_match_all('/\b(19\d{2}|20\d{2})\b/', $lower, $yearMatches);
+        $distinctYears = array_values(array_unique($yearMatches[1] ?? []));
+        $wilayahPhraseCount = is_array($slots['wilayah_phrases']) ? count($slots['wilayah_phrases']) : 0;
+        if ($compareVerbHit && ((count($distinctYears) >= 2) || $wilayahPhraseCount >= 2)) {
+            return ['intent' => 'compare', 'confidence' => 0.85, 'slots' => array_merge($slots, [
+                'compare_years' => $distinctYears,
+                'compare_wilayahs' => $slots['wilayah_phrases'] ?? [],
+            ])];
         }
 
         // Data intent: modules or time or wilayah hints
@@ -88,9 +101,26 @@ class ChatOrchestrationService
                 $out = [ 'reply' => $reply, 'mode' => 'natural', 'intent' => 'definition' ];
                 $this->logMetrics('definition', $elapsed, []);
                 return $out;
+            case 'compare':
+                // For compare, still use structured-first to extract dimensions, but tag intent
+                $svcC = new \App\Services\ChatReportService();
+                $resC = $svcC->buildStructuredFirstResponse($query);
+                $outC = [
+                    'reply' => (string)($resC['message'] ?? 'Saya mendeteksi keinginan membandingkan data.'),
+                    'structured' => $resC['structured_result'] ?? [],
+                    'mode' => 'structured',
+                    'intent' => 'compare',
+                    'compare' => [
+                        'years' => $intentInfo['slots']['compare_years'] ?? [],
+                        'wilayahs' => $intentInfo['slots']['compare_wilayahs'] ?? [],
+                    ],
+                ];
+                $elapsedC = round((microtime(true)-$t0)*1000, 2);
+                $this->logMetrics('compare', $elapsedC, ['has_structured'=>!empty($outC['structured'])]);
+                return $outC;
             case 'data':
-                // Delegate to existing structured-first pipeline to preserve behavior
-                $svc = new \App\Services\ReportService();
+                // Delegate to structured-first pipeline via chat service to preserve behavior
+                $svc = new \App\Services\ChatReportService();
                 $res = $svc->buildStructuredFirstResponse($query);
                 $out = [
                     'reply' => (string)($res['message'] ?? 'Saya menemukan beberapa petunjuk dari pertanyaan Anda.'),
@@ -103,7 +133,7 @@ class ChatOrchestrationService
                 return $out;
             default:
                 // Unknown: attempt light structured extraction to build context, then summarize
-                $svc = new \App\Services\ReportService();
+                $svc = new \App\Services\ChatReportService();
                 $res = $svc->buildStructuredFirstResponse($query);
                 $structured = (array)($res['structured_result'] ?? []);
                 $ctx = $this->buildContextFromStructured($structured);

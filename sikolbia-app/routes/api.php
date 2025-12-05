@@ -7,4 +7,5 @@ use App\Http\Controllers\Api\StructuredSearchController;
 
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
 Route::post('/chatbot/reset', [ChatbotController::class, 'reset']);
+Route::post('/chatbot/summary', [ChatbotController::class, 'summary']);
 Route::get('/structured/search', [StructuredSearchController::class, 'search']);

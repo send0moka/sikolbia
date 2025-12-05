@@ -1,4 +1,59 @@
-## SIKOLBIA — AI assistant quick brief
+## SIKOLBIA — AI coding agent guide
+
+Laravel 12 + Livewire 3 web app with a separate FastAPI ML service. Five modules: konsumsi (NBM), lahan, iklim OptDPI, benih & pupuk, dan daftar alamat. Keep route groups, Livewire wiring, export flows, permissions, and the ML API contract intact.
+
+### Architecture map (what lives where)
+- Backend: `app/` (Controllers, Livewire in `app/Livewire`, Models in `app/Models`, Services in `app/Services`)
+- Routes: `routes/` grouped under `admin/...`, `api/...`, `pertanian/...` (+ `routes/nbm_api.php` for ML)
+- Frontend: `resources/` built by Vite/Tailwind; unified reports UI in `resources/js/pertanian/*`
+- ML training: `ml_models/` (e.g., `production_model.py`, `data_loader.py`, `train_model.py`)
+- ML serving: `fastapi/main.py` loads `ml_models/models/nbm_production`
+- Docker services: `docker-compose.yml` → app/nginx(8000), mysql(3306), phpmyadmin(8081), redis(6379), fastapi-ml(8082)
+
+### Critical workflows
+- Full stack (Docker): compose up, then inside `app`: run migrations fresh + seed and `php artisan key:generate` (see root `README.md` for exact commands)
+- Local dev: Laravel serve, Vite `npm run dev`/`npm run build`, ML API via `./start_api.sh` or the `fastapi-ml` container
+- One-shot dev stack: `composer run dev` (serves Laravel, queue listener, and Vite together)
+- Tests (Pest): `composer run pest` (clears caches, migrates fresh, seeds `RolePermissionSeeder`)
+
+### Project conventions and patterns
+- Excel export flow (Livewire + Maatwebsite Excel): component sets session → redirect to download route under `admin/.../export/*`; implement in `app/Exports/*` and preserve the session handoff
+- Display labels: reference tables use `deskripsi`; UIs select/order by `deskripsi`
+- Komoditi code: `kode_kelompok + kode_komoditi` (e.g., `01` → `0101`); public AJAX relies on this in `routes/web.php` → `ketersediaan/api/komoditi`
+- Permissions: `spatie/laravel-permission`; keep exact `permission:` strings in middleware unchanged
+
+### Integration contracts (stable — do not break)
+- NBM ML API
+  - Routes: wired via `routes/nbm_api.php` and mounted under `admin/konsumsi-pangan/prediksi-nbm` in `routes/web.php`
+  - FastAPI endpoints: `/health`, `/predict`, `/predict/multi-step`, `/predict/batch`, `/model/stats`
+  - Predict payload: exactly 6 sequential points of `{ tahun, bulan, kelompok, komoditi, kalori_hari }`
+  - Predict response: `{ success, prediction, confidence_interval, model_info, input_summary }`
+  - Ports: container 8082; manual `uvicorn` entry uses 8081; CORS already open to Laravel/NGINX
+- Chatbot (LLM-as-Orchestrator)
+  - Endpoint: `POST /api/chatbot` → `{ reply, mode: natural|structured|guided }`
+  - Services: `ChatOrchestrationService`, `RAGSummarizer`, `ChatReportService` (chat-specific), `GuidedService`
+  - Note: Chatbot methods were removed from `ReportService`; use `ChatReportService` APIs instead
+  - UI: `resources/views/components/pertanian-report-page.blade.php`, legacy bridge `resources/js/components/pertanianReportForm.js`, modular logic in `resources/js/pertanian/*`
+- Unified Pertanian reports
+  - Web routes under `prefix('pertanian')` with `moduleType` `lahan|benih-pupuk|iklim-opt-dpi`
+  - Compatibility APIs: `api/benih-pupuk`, `api/lahan`, `api/iklim-opt-dpi` (`topiks`, `variabels/{topik}`, `years`, `bulans`, `filter`, `sample-data`)
+- Public NBM availability
+  - `ketersediaan/api/laporan-nbm` and `ketersediaan/api/komoditi` implement the komoditi join/ordering used by the UI
+
+### Config and wiring
+- ML URLs: `config/app.php` (`ML_API_URL`), plus `config/services.php`/`config/nbm_prediction.php` (`NBM_API_URL`)
+- Model path/layout: `ml_models/models/nbm_production` (and optional `..._enhanced`); sequence length is 6 → preserve feature order or update loader accordingly
+
+### When editing (checklist)
+- Touch both routes and Livewire: update `routes/web.php` (and `routes/nbm_api.php` if ML-related) and any referencing Livewire components
+- Exports: adjust `app/Exports/*`; downloads must stream `xlsx` via `Excel::download` and keep the session → redirect pattern
+- ML contract: re-verify `/health`, `/model/stats`, and `/predict` with a 6-point payload; if multi-step changed, also recheck `/predict/multi-step`
+
+### Pointers (good starting places)
+- Routes & permissions: `routes/web.php`, `routes/nbm_api.php`
+- ML API and model: `fastapi/main.py`, `ml_models/README.md`
+- Livewire + export: `app/Livewire/Admin/IklimoptdpiReports.php`, `app/Http/Controllers/*Export*`
+- End-to-end refs: root `README.md`, `FASTAPI_INTEGRATION_SUCCESS.md`, `docs/chatbot/README.md`## SIKOLBIA — AI assistant quick brief
 
 Laravel 12 + Livewire 3 app with a separate FastAPI ML service. Five modules: konsumsi (NBM), lahan, iklim OptDPI, benih & pupuk, dan daftar alamat. Keep route groups, Livewire wiring, export flows, and the ML API contract intact.
 

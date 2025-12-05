@@ -2,6 +2,7 @@
 // Keeps legacy public API stable by operating on the provided ctx (Alpine component instance)
 
 import chatbotApi from '../api/chatbotApi.js';
+import { injectCompareChips } from './compare.js';
 
 export async function rePromptCurrentStep(ctx) {
   try {
@@ -84,18 +85,22 @@ export async function handleNaturalMessage(ctx, messageToSend) {
 
   const raw = String(messageToSend || '');
   const txtLower = raw.trim().toLowerCase();
-  if (ctx.pendingStructured && /\b(tampilkan|ya tampilkan|ok tampilkan|silakan tampilkan|tolong tampilkan)\b/i.test(txtLower)) {
-    ctx.pendingStructured = false;
-    ctx.renderBotText('Baik, sedang saya ambilkan datanya...');
-    try { await ctx.applyStructuredSuggestion(null); } catch(_) {}
-    try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
-    return;
+  // If compare flow is available, intercept "ya tampilkan" to run comparison by default
+  if (ctx._compareAvailable && /\b(tampilkan|ya tampilkan|ok tampilkan|silakan tampilkan|tolong tampilkan)\b/i.test(txtLower)) {
+    const cm = ctx.compareMeta || {};
+    const kind = (Array.isArray(cm.years) && cm.years.length >= 2) ? 'cmp_years' : ((Array.isArray(cm.wilayahs) && cm.wilayahs.length >= 2) ? 'cmp_wilayahs' : null);
+    if (kind) {
+      ctx.renderBotText('Baik, menyiapkan perbandingan...');
+      try { const mod = await import('./compare.js'); await mod.executeComparison(ctx, kind, ctx.structuredSuggestion); } catch(_) {}
+      try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
+      return;
+    }
   }
 
   ctx.isLoading = true;
   try {
     const data = await chatbotApi.sendMessage(messageToSend, 'natural');
-    const baseReply = data.reply || data.error || 'Maaf, terjadi kesalahan.';
+  const baseReply = data.reply || data.error || 'Maaf, terjadi kesalahan.';
     let reply = baseReply;
     const intent = data && typeof data === 'object' ? (data.intent || null) : null;
     let hasSignals = false;
@@ -106,14 +111,25 @@ export async function handleNaturalMessage(ctx, messageToSend) {
       hasSignals = (Array.isArray(s.modules) && s.modules.length) || (Array.isArray(s.wilayah_hits) && s.wilayah_hits.length) || (Array.isArray(s.years) && s.years.length);
       if (hasSignals) {
         ctx.pendingStructured = true;
-        if (ctx.compactChat) {
-          reply = `${baseReply} — Ketik "ya tampilkan" untuk menampilkan, atau lanjutkan chat bebas.`;
-        } else {
-          ctx.renderBotText(baseReply);
-          ctx.renderBotText('Ketik "ya tampilkan" bila ingin saya ambilkan hasilnya sekarang, atau lanjutkan chat bebas.');
-          try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
-          return;
-        }
+      }
+    }
+
+    // Compare chips injection and message tweak
+    if (intent === 'compare' && data.compare) {
+      ctx._compareAvailable = true;
+      ctx.compareMeta = data.compare;
+      try { injectCompareChips(ctx, { years: data.compare.years, wilayahs: data.compare.wilayahs }); } catch {}
+      ctx.pendingStructured = false; // prefer compare chips over plain show
+      reply = `${baseReply} — Pilih jenis perbandingan di bawah.`;
+    } else if (hasSignals) {
+      // Only suggest "ya tampilkan" when not in compare intent
+      if (ctx.compactChat) {
+        reply = `${baseReply} — Ketik "ya tampilkan" untuk menampilkan, atau lanjutkan chat bebas.`;
+      } else {
+        ctx.renderBotText(baseReply);
+        ctx.renderBotText('Ketik "ya tampilkan" bila ingin saya ambilkan hasilnya sekarang, atau lanjutkan chat bebas.');
+        try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
+        return;
       }
     }
 
@@ -125,10 +141,10 @@ export async function handleNaturalMessage(ctx, messageToSend) {
       return;
     }
 
-    ctx.renderBotText(reply);
+    ctx.renderBotText(reply, { typewriter: true });
   } catch (error) {
     const msg = (error && error.message) ? String(error.message) : 'Maaf, terjadi kesalahan.';
-    ctx.renderBotText(msg);
+    ctx.renderBotText(msg, { typewriter: true });
   } finally {
     ctx.isLoading = false;
     try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
@@ -136,6 +152,19 @@ export async function handleNaturalMessage(ctx, messageToSend) {
 }
 
 export async function handleStructuredMessage(ctx, messageToSend) {
+  // Intercept default show when compare is available
+  const raw0 = String(messageToSend || '');
+  const l0 = raw0.trim().toLowerCase();
+  if (ctx._compareAvailable && /\b(tampilkan|ya tampilkan|ok tampilkan|silakan tampilkan|tolong tampilkan)\b/i.test(l0)) {
+    const cm = ctx.compareMeta || {};
+    const kind = (Array.isArray(cm.years) && cm.years.length >= 2) ? 'cmp_years' : ((Array.isArray(cm.wilayahs) && cm.wilayahs.length >= 2) ? 'cmp_wilayahs' : null);
+    if (kind) {
+      ctx.renderBotText('Baik, menyiapkan perbandingan...');
+      try { const mod = await import('./compare.js'); await mod.executeComparison(ctx, kind, ctx.structuredSuggestion); } catch(_) {}
+      try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
+      return;
+    }
+  }
   if (ctx.pendingPrompt && ctx.pendingPrompt.type === 'klasifikasi') {
     const raw = String(messageToSend||'');
     const lower = raw.toLowerCase();
@@ -192,10 +221,14 @@ export async function handleStructuredMessage(ctx, messageToSend) {
         reply = `${reply} — Ketik "" untuk menampilkan.`;
       }
     }
-    ctx.renderBotText(reply);
+      // Compare chips injection when intent is compare
+      if (data.intent === 'compare' && data.compare) {
+        injectCompareChips(ctx, { years: data.compare.years, wilayahs: data.compare.wilayahs });
+      }
+    ctx.renderBotText(reply, { typewriter: true });
   } catch (error) {
     const msg = (error && error.message) ? String(error.message) : 'Saya belum dapat semua detail. Mau mulai dari modulnya?';
-    ctx.renderBotText(msg);
+    ctx.renderBotText(msg, { typewriter: true });
   } finally {
     ctx.isLoading = false;
     try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}

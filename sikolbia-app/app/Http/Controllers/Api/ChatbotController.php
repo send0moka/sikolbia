@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Services\ReportService;
 use App\Services\ChatOrchestrationService;
 use App\Services\GuidedService;
+use App\Services\ChatReportService;
 
 class ChatbotController extends Controller
 {
@@ -52,10 +52,13 @@ class ChatbotController extends Controller
                     // Optional hint; frontend can ignore safely
                     $payload['intent'] = (string)$res['intent'];
                 }
+                if (array_key_exists('compare', $res)) {
+                    $payload['compare'] = $res['compare'];
+                }
                 return response()->json($payload);
             }
 
-            $service = new ReportService();
+            $service = new \App\Services\ChatReportService();
             $result = $service->handleChatIntent($message);
             $hasStructured = array_key_exists('structured_result', $result ?? []);
             $structured = $hasStructured ? (array)($result['structured_result'] ?? []) : [];
@@ -65,8 +68,20 @@ class ChatbotController extends Controller
             $hasStrongEntity = (!empty($yrs) || !empty($wils));
             $hasModule = !empty($mods);
 
+            // Lightweight compare detection when orchestrator is OFF
+            $compareMeta = $this->detectCompareMeta($message, $structured);
+            if ($compareMeta) {
+                // Return natural with compare intent and metadata, keep structured for chips
+                return response()->json([
+                    'reply' => (string)($result['message'] ?? 'Saya mendeteksi permintaan perbandingan.'),
+                    'mode' => 'natural',
+                    'intent' => 'compare',
+                    'structured' => $structured,
+                    'compare' => $compareMeta,
+                ]);
+            }
+
             if ($hasStructured && $hasModule && $hasStrongEntity) {
-                // escalate to structured only when we have a module plus a strong entity (years or wilayah)
                 return $this->handleStructured($message);
             }
 
@@ -96,12 +111,17 @@ class ChatbotController extends Controller
     public function handleStructured(string $message)
     {
         try {
-            $service = new ReportService();
+            $service = new \App\Services\ChatReportService();
             $result = $service->buildStructuredFirstResponse($message);
             return response()->json([
                 'reply' => (string)($result['message'] ?? 'Saya menemukan beberapa petunjuk dari pertanyaan Anda.'),
                 'structured' => $result['structured_result'] ?? [],
                 'mode' => 'structured',
+                // Add compare intent if pattern matches
+                ...($this->detectCompareMeta($message, $result['structured_result'] ?? []) ? [
+                    'intent' => 'compare',
+                    'compare' => $this->detectCompareMeta($message, $result['structured_result'] ?? []),
+                ] : []),
             ]);
         } catch (\Throwable $e) {
             try { Log::warning('handleStructured failed', ['err' => $e->getMessage()]); } catch (\Throwable $ee) {}
@@ -110,6 +130,38 @@ class ChatbotController extends Controller
                 'mode' => 'structured',
             ], 200);
         }
+    }
+
+    /**
+     * Detect compare metadata (years, wilayah phrases) from raw message and structured extraction fallback.
+     * Returns ['years'=>[...], 'wilayahs'=>[...]] or null.
+     */
+    private function detectCompareMeta(string $message, array $structured): ?array
+    {
+        $lower = mb_strtolower($message, 'UTF-8');
+        if (!preg_match('/\b(bandingkan|perbandingan|compare|vs)\b/u', $lower)) {
+            return null;
+        }
+        // Years from message or structured
+        preg_match_all('/\b(19\d{2}|20\d{2})\b/', $message, $mYears);
+        $years = array_values(array_unique($mYears[1] ?? []));
+        if (empty($years) && !empty($structured['years'])) {
+            $years = array_values(array_unique(array_map('strval', $structured['years'])));
+        }
+        // Wilayah phrases from structured hits
+        $wilHits = [];
+        if (!empty($structured['wilayah_hits']) && is_array($structured['wilayah_hits'])) {
+            foreach ($structured['wilayah_hits'] as $w) {
+                $nm = (string)($w['nama'] ?? '');
+                if ($nm) $wilHits[] = $nm;
+            }
+        }
+        $wilHits = array_values(array_unique($wilHits));
+        // Ensure at least two items for a meaningful comparison
+        if (count($years) < 2 && count($wilHits) < 2) {
+            return ['years' => $years, 'wilayahs' => $wilHits]; // still return for guidance chips
+        }
+        return ['years' => $years, 'wilayahs' => $wilHits];
     }
 
     // Guided mode placeholder: returns a friendly prompt. Future: delegate to a GuidedService.
@@ -138,5 +190,29 @@ class ChatbotController extends Controller
     public function reset(Request $request)
     {
         return response()->json(['success' => true]);
+    }
+
+    // Rich summary endpoint: accepts table payload and returns concise summary lines + insights
+    public function summary(Request $request)
+    {
+        $data = $request->validate([
+            'headers' => 'required|array',
+            'rows' => 'required|array',
+            'meta' => 'sometimes|array',
+        ]);
+        try {
+            $svc = new ChatReportService();
+            $res = $svc->buildRichSummary($data);
+            return response()->json([
+                'summaryLines' => $res['lines'] ?? [],
+                'insights' => $res['insights'] ?? [],
+            ]);
+        } catch (\Throwable $e) {
+            try { Log::warning('chatbot.summary failed', ['err' => $e->getMessage()]); } catch (\Throwable $ee) {}
+            return response()->json([
+                'summaryLines' => ['Tidak dapat membangun ringkasan saat ini.'],
+                'insights' => [],
+            ], 200);
+        }
     }
 }
