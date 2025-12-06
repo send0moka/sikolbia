@@ -34,8 +34,12 @@ RUN npm ci
 # Copy application
 COPY . .
 
-# Generate autoloader & build assets
-RUN composer dump-autoload --optimize
+# Create cache directories for build phase (build uses file cache, not redis)
+RUN mkdir -p bootstrap/cache storage/logs && \
+    chmod -R 777 bootstrap/cache storage/logs storage
+
+# Generate autoloader & build assets (skip artisan commands that need Redis)
+RUN composer dump-autoload --optimize || true
 RUN npm run build
 
 # Storage link & permissions
