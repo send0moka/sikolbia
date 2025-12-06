@@ -8,6 +8,29 @@ import { parseJsonOrText } from '../utils/http.js';
 
 const _cache = new Map(); // key -> { expiry: number, value: any }
 
+const APP_BASE_URL = (() => {
+  try {
+    const meta = typeof document !== 'undefined'
+      ? document.querySelector('meta[name="app-url"]')
+      : null;
+    const metaUrl = meta?.getAttribute('content');
+    const windowUrl = typeof window !== 'undefined' ? window.APP_URL : '';
+    const raw = metaUrl || windowUrl || '';
+    return raw ? String(raw).replace(/\/+$/, '') : '';
+  } catch (err) {
+    console.warn('Unable to resolve APP_URL', err);
+    return '';
+  }
+})();
+
+function toAbsoluteUrl(url) {
+  if (!url) return url;
+  const isAbsolute = /^([a-z][a-z0-9+.-]*:)?\/\//i.test(url);
+  if (isAbsolute || !APP_BASE_URL) return url;
+  const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+  return `${APP_BASE_URL}${normalizedPath}`;
+}
+
 function _makeKey(method, url, body) {
   const b = body ? (typeof body === 'string' ? body : JSON.stringify(body)) : '';
   return `${method.toUpperCase()} ${url} ${b}`;
@@ -27,7 +50,8 @@ export async function request(url, options = {}) {
 
   const upper = method.toUpperCase();
   const isCacheable = upper === 'GET' && cacheTtlMs > 0;
-  const cacheKey = isCacheable ? _makeKey(upper, url, null) : null;
+  const resolvedUrl = toAbsoluteUrl(url);
+  const cacheKey = isCacheable ? _makeKey(upper, resolvedUrl, null) : null;
 
   if (isCacheable && _cache.has(cacheKey)) {
     const entry = _cache.get(cacheKey);
@@ -62,7 +86,7 @@ export async function request(url, options = {}) {
       : body;
   }
 
-  const res = await fetch(url, init);
+  const res = await fetch(resolvedUrl, init);
   const parsed = await parseJsonOrText(res);
 
   if (!res.ok) {
