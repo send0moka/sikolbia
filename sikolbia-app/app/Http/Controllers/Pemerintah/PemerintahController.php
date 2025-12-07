@@ -268,7 +268,12 @@ class PemerintahController extends Controller
     public function prediksiNbm()
     {
         $kelompokOptions = Kelompok::aktif()->orderBy('kode')->get(['kode', 'nama']);
-        return view('pemerintah.prediksi-nbm', compact('kelompokOptions'));
+        
+        // Detect if accessed from admin or pemerintah route
+        $isAdminRoute = request()->is('admin/*');
+        $viewName = $isAdminRoute ? 'admin.prediksi-nbm' : 'pemerintah.prediksi-nbm';
+        
+        return view($viewName, compact('kelompokOptions'));
     }
 
     public function runPrediksi(Request $request)

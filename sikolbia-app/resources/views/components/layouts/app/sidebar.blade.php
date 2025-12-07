@@ -54,6 +54,10 @@
                         <span class="nav-link-text transition-colors {{ request()->routeIs('admin.transaksi-nbm') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Kelola Transaksi NBM') }}</span>
                     </flux:navlist.item>
                     @endcan
+                    
+                    <flux:navlist.item icon="sparkles" :href="route('admin.prediksi-nbm')" :current="request()->routeIs('admin.prediksi-nbm*')" class="group active-icon">
+                        <span class="nav-link-text transition-colors {{ request()->routeIs('admin.prediksi-nbm*') ? 'text-neutral-900 dark:!text-white' : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200' }}">{{ __('Prediksi NBM') }}</span>
+                    </flux:navlist.item>
                 </flux:navlist.group>
 
                 <!-- Admin menu for data management -->

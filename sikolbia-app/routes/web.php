@@ -79,7 +79,7 @@ Route::middleware(['auth', 'verified', 'admin.only'])->group(function () {
 
 // PEMERINTAH ROUTES - PUBLIC USER ACCESS (READ-ONLY)
 // ===================================================
-Route::middleware(['auth', 'verified', 'role:pemerintah'])->prefix('pemerintah')->name('pemerintah.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:pemerintah|superadmin'])->prefix('pemerintah')->name('pemerintah.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Pemerintah\PemerintahDashboardController::class, 'index'])->name('dashboard');
     
     // Konsumsi Pangan & NBM
@@ -357,9 +357,22 @@ Route::middleware(['auth', 'role:admin|superadmin', 'permission:view kelompokbps
 
 // NBM Prediction Routes - HANYA UNTUK ADMIN/SUPERADMIN
 Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
-    Route::get('prediksi-nbm', function () {
-        return view('prediksi.index');
-    })->name('prediksi-nbm');
+    Route::get('prediksi-nbm', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'prediksiNbm'])->name('prediksi-nbm');
+    Route::post('prediksi-nbm/run', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'runPrediksi'])->name('prediksi-nbm.run');
+    Route::get('prediksi-nbm/export-excel', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPrediksiExcel'])->name('prediksi-nbm.export-excel');
+    Route::get('prediksi-nbm/export-pdf', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPrediksiPdf'])->name('prediksi-nbm.export-pdf');
+    
+    // Prediction History & AI Insights
+    Route::post('prediksi-nbm/save', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'savePrediction'])->name('prediksi-nbm.save');
+    Route::post('prediksi-nbm/insights', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'getInsights'])->name('prediksi-nbm.insights');
+    Route::get('prediksi-nbm/history', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'viewHistory'])->name('prediksi-nbm.history');
+    Route::post('prediksi-nbm/bookmark/{id}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'toggleBookmark'])->name('prediksi-nbm.bookmark');
+    Route::delete('prediksi-nbm/{id}', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'deletePrediction'])->name('prediksi-nbm.delete');
+    
+    // NBM Prediction API Routes
+    Route::get('prediksi-nbm/api/health', [App\Http\Controllers\NBMPredictionController::class, 'health'])->name('prediksi-nbm.api.health');
+    Route::post('prediksi-nbm/api/predict', [App\Http\Controllers\NBMPredictionController::class, 'predict'])->name('prediksi-nbm.api.predict');
+    Route::get('prediksi-nbm/api/stats', [App\Http\Controllers\NBMPredictionController::class, 'modelStats'])->name('prediksi-nbm.api.stats');
     
     // Registrasi Akses Management
     Route::view('registrasi-akses', 'admin.registrasi-akses')->name('registrasi-akses');
@@ -372,10 +385,6 @@ Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/konsumsi-pan
     Route::middleware(['permission:view dashboard'])->get('ml-dashboard', function () {
         return view('admin.ml-dashboard');
     })->name('ml-dashboard');
-    
-    Route::get('prediksi-nbm/api/health', [App\Http\Controllers\NBMPredictionController::class, 'health'])->name('prediksi-nbm.api.health');
-    Route::post('prediksi-nbm/api/predict', [App\Http\Controllers\NBMPredictionController::class, 'predict'])->name('prediksi-nbm.api.predict');
-    Route::get('prediksi-nbm/api/stats', [App\Http\Controllers\NBMPredictionController::class, 'modelStats'])->name('prediksi-nbm.api.stats');
     
     // Concept pages
     Route::get('konsep-transaksi-nbm', function () {
