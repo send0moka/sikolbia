@@ -163,7 +163,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $kelompokbps->total() }}</span>
                 kelompok BPS
             </div>
-            {{ $kelompokbps->links('vendor.pagination.tailwind') }}
+            {{ $kelompokbps->links() }}
         </div>
     </div>
 

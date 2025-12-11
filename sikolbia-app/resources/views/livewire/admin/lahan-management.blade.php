@@ -345,9 +345,9 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $lahans->lastItem() }}</span>
                 dari
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $lahans->total() }}</span>
-                data lahan
+                lahan
             </div>
-            {{ $lahans->links('vendor.pagination.tailwind') }}
+            {{ $lahans->links() }}
         </div>
     </div>
 

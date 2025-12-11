@@ -394,7 +394,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $iklimoptdpis->total() }}</span>
                 data iklimoptdpi
             </div>
-            {{ $iklimoptdpis->links('vendor.pagination.tailwind') }}
+            {{ $iklimoptdpis->links() }}
         </div>
     </div>
 

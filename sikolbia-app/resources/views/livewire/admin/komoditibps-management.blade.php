@@ -173,7 +173,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $komoditibps->total() }}</span>
                 komoditi BPS
             </div>
-            {{ $komoditibps->links('vendor.pagination.tailwind') }}
+            {{ $komoditibps->links() }}
         </div>
     </div>
 
