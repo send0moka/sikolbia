@@ -399,7 +399,7 @@
                     const hasCIArray = ciArray.length > 0;
                     const ci = data.confidence_interval;
                     
-                    html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-neutral-50 dark:bg-neutral-900"><tr>';
+                    html += '<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-white bg-neutral-50 dark:bg-neutral-900"><tr>';
                     html += '<th class="px-4 py-2 text-left">Periode</th>';
                     html += '<th class="px-4 py-2 text-right">Prediksi Kalori/Hari</th>';
                     if (hasCIArray || (ci && ci.lower_bound !== undefined)) {
@@ -420,7 +420,7 @@
                         }
                         
                         html += '<tr class="border-b border-neutral-200 dark:border-neutral-700">';
-                        html += `<td class="px-4 py-2">${periodLabel}</td>`;
+                        html += `<td class="px-4 py-2 text-white/80">${periodLabel}</td>`;
                         html += `<td class="px-4 py-2 text-right font-semibold text-blue-600">${pred.toFixed(2)}</td>`;
                         
                         // Use per-prediction CI if available, otherwise calculate it
