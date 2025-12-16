@@ -155,7 +155,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $topiks->total() }}</span>
                 topik iklim opt dpi
             </div>
-            {{ $topiks->links('vendor.pagination.tailwind') }}
+            {{ $topiks->links() }}
         </div>
     </div>
 

@@ -295,7 +295,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $komoditis->total() }}</span>
                 komoditi
             </div>
-            {{ $komoditis->links('vendor.pagination.tailwind') }}
+            {{ $komoditis->links() }}
         </div>
     </div>
 

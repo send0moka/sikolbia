@@ -197,7 +197,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $klasifikasis->total() }}</span>
                 klasifikasi iklim opt dpi
             </div>
-            {{ $klasifikasis->links('vendor.pagination.tailwind') }}
+            {{ $klasifikasis->links() }}
         </div>
     </div>
 

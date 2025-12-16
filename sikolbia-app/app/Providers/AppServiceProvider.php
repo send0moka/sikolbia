@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Set default pagination view to Tailwind
+        Paginator::defaultView('pagination::tailwind');
+        Paginator::defaultSimpleView('pagination::simple-tailwind');
+
         // Force HTTPS in production
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

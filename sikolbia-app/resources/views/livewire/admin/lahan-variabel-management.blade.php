@@ -121,7 +121,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $variabels->total() }}</span>
                 variabel lahan
             </div>
-            {{ $variabels->links('vendor.pagination.tailwind') }}
+            {{ $variabels->links() }}
         </div>
     </div>
 

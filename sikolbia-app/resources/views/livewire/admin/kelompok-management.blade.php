@@ -161,7 +161,7 @@
                 <span class="font-medium text-neutral-800 dark:text-neutral-200">{{ $kelompoks->total() }}</span>
                 kelompok
             </div>
-            {{ $kelompoks->links('vendor.pagination.tailwind') }}
+            {{ $kelompoks->links() }}
         </div>
     </div>
 
