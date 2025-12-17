@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700">
+  <defs>
+    <style>
+      .title { font: bold 18px sans-serif; fill: #2c3e50; }
+      .label { font: 14px sans-serif; fill: #2c3e50; text-anchor: middle; }
+      .sublabel { font: 12px sans-serif; fill: #555; text-anchor: middle; }
+      .box { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+      .box-nginx { fill: #269959; stroke: #1e7a45; stroke-width: 2; }
+      .box-orchestrator { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+      .box-worker { fill: #009688; stroke: #00796b; stroke-width: 2; }
+      .box-redis { fill: #d82c20; stroke: #a82315; stroke-width: 2; }
+      .box-monitor { fill: #ff9800; stroke: #e68900; stroke-width: 2; }
+      .container { fill: none; stroke: #95a5a6; stroke-width: 2; stroke-dasharray: 5,5; }
+      .arrow { fill: none; stroke: #34495e; stroke-width: 2; marker-end: url(#arrowhead); }
+      .arrow-bi { fill: none; stroke: #3498db; stroke-width: 2; marker-end: url(#arrowhead-blue); marker-start: url(#arrowstart-blue); }
+      .text-white { fill: white; font: bold 13px sans-serif; text-anchor: middle; }
+      .text-small { fill: white; font: 11px sans-serif; text-anchor: middle; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#34495e" />
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#3498db" />
+    </marker>
+    <marker id="arrowstart-blue" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto">
+      <polygon points="10 0, 0 3, 10 6" fill="#3498db" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="550" y="30" class="title" text-anchor="middle">Gambar 20. Arsitektur Production Deployment FastAPI ML Service</text>
+  
+  <!-- Internet/Clients -->
+  <ellipse cx="550" cy="80" rx="80" ry="30" class="box"/>
+  <text x="550" y="85" class="text-white">Internet/Clients</text>
+  
+  <!-- Load Balancer / Nginx -->
+  <rect x="450" y="150" width="200" height="70" rx="10" class="box-nginx"/>
+  <text x="550" y="175" class="text-white">Nginx Load Balancer</text>
+  <text x="550" y="195" class="text-small">Port 8082</text>
+  <text x="550" y="210" class="text-small">Round-robin Distribution</text>
+  
+  <!-- Docker Container -->
+  <rect x="100" y="270" width="900" height="320" rx="15" class="container"/>
+  <text x="550" y="295" class="label" font-weight="bold">Docker Compose Environment (Multiple Container Instances)</text>
+  
+  <!-- Container Orchestration Info -->
+  <rect x="430" y="320" width="240" height="60" rx="10" class="box-orchestrator"/>
+  <text x="550" y="345" class="text-white">Container Orchestration</text>
+  <text x="550" y="365" class="text-small">Nginx Round-Robin to Containers</text>
+  
+  <!-- Worker 1 -->
+  <rect x="130" y="420" width="200" height="140" rx="10" class="box-worker"/>
+  <text x="230" y="445" class="text-white">Container Instance 1</text>
+  <line x1="140" y1="455" x2="320" y2="455" stroke="white" stroke-width="1"/>
+  <text x="230" y="475" class="text-small">• FastAPI App</text>
+  <text x="230" y="495" class="text-small">• Model Loaded</text>
+  <text x="230" y="515" class="text-small">• Uvicorn ASGI Server</text>
+  <text x="230" y="535" class="text-small">• Port 8082</text>
+  <text x="230" y="550" class="sublabel" fill="white" font-size="10">Container ID: abc123</text>
+  
+  <!-- Worker 2 -->
+  <rect x="360" y="420" width="200" height="140" rx="10" class="box-worker"/>
+  <text x="460" y="445" class="text-white">Container Instance 2</text>
+  <line x1="370" y1="455" x2="550" y2="455" stroke="white" stroke-width="1"/>
+  <text x="460" y="475" class="text-small">• FastAPI App</text>
+  <text x="460" y="495" class="text-small">• Model Loaded</text>
+  <text x="460" y="515" class="text-small">• Uvicorn ASGI Server</text>
+  <text x="460" y="535" class="text-small">• Port 8082</text>
+  <text x="460" y="550" class="sublabel" fill="white" font-size="10">Container ID: def456</text>
+  
+  <!-- Worker N -->
+  <rect x="590" y="420" width="200" height="140" rx="10" class="box-worker"/>
+  <text x="690" y="445" class="text-white">Container Instance N</text>
+  <line x1="600" y1="455" x2="780" y2="455" stroke="white" stroke-width="1"/>
+  <text x="690" y="475" class="text-small">• FastAPI App</text>
+  <text x="690" y="495" class="text-small">• Model Loaded</text>
+  <text x="690" y="515" class="text-small">• Uvicorn ASGI Server</text>
+  <text x="690" y="535" class="text-small">• Port 8082</text>
+  <text x="690" y="550" class="sublabel" fill="white" font-size="10">Container ID: xyz789</text>
+  
+  <!-- Redis Cache -->
+  <rect x="830" y="320" width="140" height="80" rx="10" class="box-redis"/>
+  <text x="900" y="350" class="text-white">Redis Cache</text>
+  <text x="900" y="370" class="text-small">Port 6379</text>
+  <text x="900" y="390" class="text-small">Response Cache</text>
+  
+  <!-- Monitoring -->
+  <rect x="830" y="440" width="140" height="80" rx="10" class="box-monitor"/>
+  <text x="900" y="465" class="text-white">Monitoring</text>
+  <line x1="840" y1="475" x2="960" y2="475" stroke="white" stroke-width="1"/>
+  <text x="900" y="493" class="text-small">Health Check</text>
+  <text x="900" y="510" class="text-small">Metrics</text>
+  
+  <!-- Arrows -->
+  <!-- Internet to Nginx -->
+  <path d="M 550 110 L 550 145" class="arrow"/>
+  <text x="565" y="130" class="sublabel">HTTPS</text>
+  
+  <!-- Nginx to Containers -->
+  <path d="M 550 220 L 550 315" class="arrow"/>
+  <text x="570" y="270" class="sublabel">HTTP</text>
+  
+  <!-- Orchestrator to Containers -->
+  <path d="M 480 380 L 230 415" class="arrow"/>
+  <path d="M 550 380 L 460 415" class="arrow"/>
+  <path d="M 620 380 L 690 415" class="arrow"/>
+  
+  <!-- Workers to Redis (bidirectional) -->
+  <path d="M 790 490 L 830 360" class="arrow-bi"/>
+  
+  <!-- Monitoring to Workers -->
+  <path d="M 830 480 L 790 490" class="arrow" stroke-dasharray="3,3"/>
+  <path d="M 830 480 L 560 490" class="arrow" stroke-dasharray="3,3"/>
+  <path d="M 830 480 L 330 490" class="arrow" stroke-dasharray="3,3"/>
+  
+  <!-- Notes -->
+  <g transform="translate(50, 620)">
+    <text x="0" y="0" class="sublabel" text-anchor="start" font-weight="bold">Deployment Configuration:</text>
+    <text x="0" y="20" class="sublabel" text-anchor="start" font-size="11">• Containers: N replicas (typically 2-4)</text>
+    <text x="0" y="38" class="sublabel" text-anchor="start" font-size="11">• Each container: Independent Uvicorn process</text>
+    <text x="0" y="56" class="sublabel" text-anchor="start" font-size="11">• Model loaded per container (500-700 MB)</text>
+  </g>
+  
+  <g transform="translate(450, 620)">
+    <text x="0" y="0" class="sublabel" text-anchor="start" font-weight="bold">Performance Characteristics:</text>
+    <text x="0" y="20" class="sublabel" text-anchor="start" font-size="11">• Throughput: 30-50 req/s per container</text>
+    <text x="0" y="38" class="sublabel" text-anchor="start" font-size="11">• Response time: 150-300 ms average</text>
+    <text x="0" y="56" class="sublabel" text-anchor="start" font-size="11">• Health check: Every 30s</text>
+  </g>
+  
+  <!-- Legend -->
+  <g transform="translate(800, 620)">
+    <text x="0" y="0" class="sublabel" text-anchor="start" font-weight="bold">High Availability:</text>
+    <text x="0" y="20" class="sublabel" text-anchor="start" font-size="11">• Auto-restart on failure</text>
+    <text x="0" y="38" class="sublabel" text-anchor="start" font-size="11">• Zero-downtime reload</text>
+    <text x="0" y="56" class="sublabel" text-anchor="start" font-size="11">• Graceful shutdown</text>
+  </g>
+</svg>

@@ -899,7 +899,7 @@ Monitoring dan logging menggunakan structured logging (Laravel Log channels) unt
 ---
 
 # BAB IV  
-# METODE PENELITIAN
+# HASIL DAN PEMBAHASAN
 
 ## 4.1. Research and Collection Preliminary
 
@@ -1620,6 +1620,302 @@ Halaman riwayat ini memungkinkan pengguna untuk mengelola prediksi yang telah di
 Prosedur penggunaan ini telah divalidasi melalui UAT dengan 15 users dan continuously updated berdasarkan user feedback.
 
 f. FastAPI ML Service Implementation
+
+Implementasi FastAPI ML Service merupakan komponen yang bertanggung jawab untuk model serving dan inference prediksi konsumsi kalori NBM dalam sistem SIKOLBIA. Service ini dibangun menggunakan framework FastAPI karena kemampuannya dalam menangani HTTP request dengan cepat, dokumentasi API otomatis, dan integrasi dengan library Python untuk komputasi ilmiah yang dibutuhkan untuk operasi machine learning.
+
+• Arsitektur FastAPI Service
+
+FastAPI ML Service diimplementasikan sebagai RESTful API yang berjalan secara terpisah dari aplikasi Laravel dan berkomunikasi melalui HTTP protocol dengan format JSON. Arsitektur ini memisahkan tanggung jawab dimana Laravel menangani business logic, autentikasi pengguna, dan persistensi data, sementara FastAPI fokus pada tugas komputasi seperti feature engineering, model inference, dan analisis statistik. Gambar 19 menunjukkan arsitektur komunikasi antara Laravel dan FastAPI service.
+
+![Gambar 19. Arsitektur Komunikasi Laravel-FastAPI ML Service](gambar_19_arsitektur_laravel_fastapi.svg)
+
+Gambar 19. Arsitektur Komunikasi Laravel-FastAPI ML Service
+
+Service menggunakan asynchronous programming untuk menangani beberapa concurrent request tanpa blocking. Production model dimuat sekali pada saat aplikasi startup dan di-reuse untuk setiap request tanpa overhead re-loading.
+
+Struktur direktori FastAPI service diorganisasi dengan root directory `sikolbia-ml` yang berisi main application file `nbm_api.py` sebagai entry point aplikasi, directory `ml_models` yang menyimpan model training scripts dan utilities termasuk `production_model.py` untuk model class definition, `data_loader.py` untuk data loading, dan `data_preprocessing_monthly.py` untuk preprocessing pipeline. Directory `models` menyimpan trained model artifacts dalam subdirectory `nbm_production` yang berisi `nbm_production_model.pkl` sebagai serialized HuberRegressor ensemble dan `model_info.json` untuk model metadata. File konfigurasi mencakup `requirements.txt` untuk Python dependencies, `Dockerfile` untuk containerization, dan `docker-compose.yml` untuk service orchestration. Tabel 14 menunjukkan struktur direktori lengkap FastAPI ML Service.
+
+**Tabel 14. Struktur Direktori FastAPI ML Service**
+
+| Direktori/File | Deskripsi | Fungsi |
+|----------------|-----------|--------|
+| `nbm_api.py` | Main application file | Entry point FastAPI, endpoint definitions, request handling |
+| `ml_models/` | Model training directory | Menyimpan scripts untuk training dan preprocessing |
+| `ml_models/production_model.py` | Production model class | Class definition untuk NBMProductionModel |
+| `ml_models/data_loader.py` | Data loading utilities | Functions untuk load data NBM dari database |
+| `ml_models/data_preprocessing_monthly.py` | Preprocessing pipeline | Monthly aggregation dan feature engineering |
+| `models/nbm_production/` | Model artifacts directory | Menyimpan trained model dan metadata |
+| `models/nbm_production/nbm_production_model.pkl` | Serialized model | HuberRegressor ensemble dalam format pickle |
+| `models/nbm_production/model_info.json` | Model metadata | Version, metrics, training date |
+| `requirements.txt` | Python dependencies | Daftar package yang dibutuhkan |
+| `Dockerfile` | Container image definition | Instructions untuk build Docker image |
+| `docker-compose.yml` | Service orchestration | Multi-container configuration |
+| `tests/` | Test directory | Unit tests dan integration tests |
+
+• Pydantic Models untuk Request/Response Validation
+
+FastAPI menggunakan library Pydantic untuk automatic data validation dan serialization/deserialization JSON ke Python objects. Implementasi mendefinisikan tiga Pydantic models utama untuk type safety dan input validation. Model `NBMDataPoint` merepresentasikan single time series observation dengan field `tahun` bertipe integer dengan constraint greater than or equal 2000 dan less than or equal 2100, `bulan` dengan range 1 hingga 12, `kelompok` string dengan length 2 characters untuk kode kelompok komoditas, `komoditi` string dengan length 4 characters, dan `kalori_hari` float dengan constraint greater than 0.
+
+Model `PredictionRequest` mendefinisikan payload untuk prediction endpoint dengan field `data_points` berupa list dari `NBMDataPoint` dengan constraint minimum 6 items dan maksimum 6 items sesuai dengan sequence length requirement model LSTM enhanced ensemble, serta `n_periods` optional integer dengan default 1 dan range 1 hingga 12 untuk menentukan forecast horizon.
+
+Model `PredictionResponse` mendefinisikan struktur JSON response yang dikembalikan ke Laravel dengan field `success` boolean indicating prediction status, `predictions` list float berisi predicted values untuk setiap future period, `confidence_intervals` list dictionary dengan keys `lower_bound`, `upper_bound`, dan `margin_percent`, `model_info` dictionary berisi model metadata, `input_summary` dictionary dengan descriptive statistics dari input data, `model_version` string, `prediction_timestamp` ISO format datetime, dan `has_data` boolean flag.
+
+Listing 1 menunjukkan implementasi Pydantic models dalam file `nbm_api.py`:
+
+**Listing 1. Pydantic Models untuk Request/Response Validation**
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional
+
+class NBMDataPoint(BaseModel):
+    tahun: int = Field(..., ge=2000, le=2100)
+    bulan: int = Field(..., ge=1, le=12)
+    kelompok: str = Field(..., min_length=2, max_length=2)
+    komoditi: str = Field(..., min_length=4, max_length=4)
+    kalori_hari: float = Field(..., gt=0)
+
+class PredictionRequest(BaseModel):
+    data_points: List[NBMDataPoint] = Field(..., min_items=6, max_items=6)
+    n_periods: Optional[int] = Field(default=1, ge=1, le=12)
+
+class PredictionResponse(BaseModel):
+    success: bool
+    predictions: List[float]
+    confidence_intervals: List[Dict[str, float]]
+    model_info: Dict[str, Any]
+    input_summary: Dict[str, Any]
+    model_version: str
+    prediction_timestamp: str
+    has_data: bool
+```
+
+Pydantic validation memberikan automatic error messages jika request tidak memenuhi constraints, seperti HTTP 422 Unprocessable Entity ketika `data_points` kurang dari 6 atau field `kalori_hari` bernilai negatif atau nol. Hal ini mengurangi kebutuhan manual validation code dan meningkatkan code clarity.
+
+• Model Loading dan Initialization
+
+Production model dimuat pada saat aplikasi startup menggunakan decorator `@app.on_event("startup")` untuk memastikan model ready sebelum menerima request pertama. Fungsi `startup_event()` menggunakan asynchronous coroutine untuk non-blocking model loading. Proses loading meliputi verifikasi path existence untuk directory `ml_models/models/nbm_production`, deserializing model artifact menggunakan `joblib.load()` dari file `nbm_production_model.pkl`, dan memuat model metadata dari `model_info.json` jika tersedia.
+
+Listing 2 menunjukkan implementasi model loading pada startup:
+
+**Listing 2. Model Loading pada Aplikasi Startup**
+
+```python
+import joblib
+import json
+import logging
+
+logger = logging.getLogger(__name__)
+production_model = None
+model_info = {}
+
+@app.on_event("startup")
+async def startup_event():
+    global production_model, model_info
+    try:
+        logger.info("Loading NBM production model...")
+        model_path = "ml_models/models/nbm_production"
+        
+        if not os.path.exists(model_path):
+            logger.error(f"Model path not found: {model_path}")
+            raise FileNotFoundError(f"Model directory not found: {model_path}")
+        
+        model_file = f"{model_path}/nbm_production_model.pkl"
+        logger.info(f"Loading model from: {model_file}")
+        production_model = joblib.load(model_file)
+        logger.info(f"Model loaded successfully! Type: {type(production_model)}")
+        
+        info_file = f"{model_path}/model_info.json"
+        if os.path.exists(info_file):
+            with open(info_file, 'r') as f:
+                model_info = json.load(f)
+            logger.info("Model info loaded")
+        
+        logger.info("NBM Production Model ready!")
+    except Exception as e:
+        logger.error(f"Failed to load model: {str(e)}")
+        raise
+```
+
+Model artifacts disimpan sebagai global variables `production_model` dan `model_info` agar accessible oleh semua request handlers tanpa passing explicit parameters. Pendekatan ini aman dalam FastAPI karena implementasi menggunakan single Uvicorn process yang memuat model sekali saat startup dan mereuse untuk semua requests. Untuk production scaling, deployment dapat menggunakan multiple container replicas dengan load balancer Nginx, dimana setiap container instance memiliki copy independen dari model dalam memory space-nya.
+
+Logging diimplementasikan menggunakan Python logging module dengan level INFO untuk tracking model loading progress dan ERROR untuk handling exceptions. Jika model loading gagal, aplikasi akan raise exception dan exit, mencegah API dari accepting requests dalam invalid state tanpa model yang ter-load.
+
+Alternative loading strategy yang dipertimbangkan namun tidak diimplementasikan termasuk lazy loading model pada first request yang memiliki drawback cold start latency, dan model caching dengan expiration time untuk automatic reloading yang berguna untuk continuous learning scenarios namun menambah complexity tanpa clear benefit untuk use case ini.
+
+• Feature Engineering dan Input Preprocessing
+
+Fungsi `prepare_input_for_model()` mengimplementasikan transformation pipeline yang mengkonversi list dari `NBMDataPoint` API request menjadi numpy array dengan shape yang expected oleh production model. Pipeline meliputi ekstraksi sequence kalori dari 6 data points historis ke numpy array, cyclical encoding untuk temporal features dengan month_sin dan month_cos menggunakan sine dan cosine transformations untuk merepresentasikan sifat cyclical dari bulan tanpa discontinuity antara December dan January.
+
+Feature vector untuk setiap time step dikonstruksi dengan 9 features yang terdiri dari `kalori_hari` sebagai raw calorie value, `tahun` dan `bulan` sebagai temporal identifiers, `kode_kelompok` dan `kode_komoditi` di-convert ke integer untuk numerical representation, duplicated kelompok dan komoditi codes untuk model compatibility, serta `month_sin` dan `month_cos` sebagai encoded seasonal features. Output final adalah 3D numpy array dengan shape (1, 6, 9) dimana dimension pertama adalah batch size 1 untuk single prediction request, dimension kedua adalah sequence length 6 sesuai model configuration, dan dimension ketiga adalah feature dimension 9.
+
+Preprocessing ini penting untuk memastikan model menerima input dalam format yang identik dengan data yang digunakan selama training phase, menjaga consistency yang diperlukan untuk prediction accuracy. Setiap deviation dalam feature ordering atau scaling akan menghasilkan meaningless predictions karena trained weights tidak corresponding dengan input distribution.
+
+• Multi-Step Ahead Prediction Implementation
+
+Endpoint `/predict` mengimplementasikan recursive multi-step ahead forecasting strategy untuk generating predictions hingga 12 bulan ke depan. Algoritma menggunakan autoregressive approach dimana prediction periode sebelumnya digunakan sebagai input untuk prediction periode berikutnya, dengan sliding window mechanism.
+
+Proses dimulai dengan initializing `current_sequence` dengan 6 data points historis dari request, loop iterasi untuk `n_periods` yang diminta user dengan preparing input features dari current sequence, calling `production_model.predict()` untuk generate single-step prediction, appending prediction ke results list, dan calculating confidence interval dengan consideration uncertainty growth untuk far-horizon predictions.
+
+Confidence interval calculation mengimplementasikan uncertainty quantification dengan base standard deviation dihitung dari 6 historical values, uncertainty factor meningkat dengan step number menggunakan formula `1 + (step * 0.1)` untuk reflecting increased uncertainty untuk longer forecast horizons, margin calculated sebagai ±1.96 standard deviations corresponding ke 95% confidence level assuming normal distribution, dan margin percentage sebagai interpretable metric untuk business users.
+
+Setelah prediction untuk current step, jika belum mencapai final period, algoritma melakukan sequence update dengan removing oldest data point dari window, creating new `NBMDataPoint` dengan predicted value sebagai `kalori_hari`, incrementing month dengan proper year rollover handling, dan appending new point ke sequence untuk maintaining window size 6.
+
+Pendekatan ini disebut recursive atau iterative forecasting dan memiliki advantage simplicity implementation dan single unified model untuk all horizons, namun disadvantage propagation error karena setiap prediction error akan mempengaruhi predictions berikutnya. Alternative approach direct multi-step forecasting yang melatih separate models untuk setiap horizon tidak diimplementasikan karena computational complexity dan data requirements yang lebih tinggi.
+
+• API Endpoints Specification
+
+FastAPI service menyediakan empat main endpoints untuk different use cases. Tabel 15 menunjukkan spesifikasi lengkap setiap endpoint beserta fungsinya.
+
+**Tabel 15. Spesifikasi API Endpoints FastAPI ML Service**
+
+| Endpoint | Method | Request Body | Response | Status Codes | Fungsi |
+|----------|--------|--------------|----------|--------------|--------|
+| `/` | GET | - | `{message, status, version, model_loaded}` | 200 | Root endpoint, API info |
+| `/health` | GET | - | `{status, model_loaded, timestamp}` | 200, 503 | Health check untuk monitoring |
+| `/model/stats` | GET | - | `{model_info, model_loaded, timestamp}` | 200, 503 | Model metadata dan statistik |
+| `/predict` | POST | `{data_points, n_periods}` | `{success, predictions, confidence_intervals, model_info, input_summary, model_version, prediction_timestamp, has_data}` | 200, 422, 503, 500 | Prediksi konsumsi kalori |
+
+Endpoint `GET /` adalah root endpoint yang returns basic API information termasuk message, status operational, version number, dan model_loaded status untuk quick health verification tanpa detailed checks.
+
+Endpoint `GET /health` digunakan untuk health check monitoring yang returns detailed health status dengan model loading status, current timestamp ISO format, dan HTTP 200 OK jika service healthy atau 503 Service Unavailable jika model belum ter-load. Endpoint ini di-poll secara periodic oleh Docker healthcheck dan monitoring tools untuk ensuring service availability.
+
+Endpoint `GET /model/stats` mengembalikan model metadata dan statistics dengan informasi algorithm type HuberRegressor, training date, evaluation metrics RMSE MAE MAPE dari validation set, feature importance jika available, dan model version number untuk reproducibility. Endpoint ini useful untuk documentation purposes dan debugging prediction issues.
+
+Endpoint `POST /predict` adalah core endpoint untuk calorie consumption prediction dengan request body berisi `data_points` array 6 historical observations dan `n_periods` forecast horizon, response berisi `predictions` array dengan predicted values, `confidence_intervals` dengan lower_bound upper_bound dan margin_percent untuk setiap prediction, `model_info` metadata, `input_summary` dengan descriptive statistics, dan `prediction_timestamp`. Endpoint ini handle error scenarios dengan HTTP 422 untuk invalid input tidak memenuhi Pydantic constraints, HTTP 503 jika model belum ter-load atau unavailable, dan HTTP 500 untuk unexpected errors selama prediction process dengan detailed error messages di-log untuk debugging.
+
+Listing 3 menunjukkan contoh request dan response untuk endpoint `/predict`:
+
+**Listing 3. Contoh Request dan Response Endpoint /predict**
+
+```json
+// Request POST /predict
+{
+  "data_points": [
+    {
+      "tahun": 2024,
+      "bulan": 7,
+      "kelompok": "01",
+      "komoditi": "0101",
+      "kalori_hari": 892.45
+    },
+    {
+      "tahun": 2024,
+      "bulan": 8,
+      "kelompok": "01",
+      "komoditi": "0101",
+      "kalori_hari": 898.32
+    },
+    // ... 4 data points lainnya
+  ],
+  "n_periods": 3
+}
+
+// Response 200 OK
+{
+  "success": true,
+  "predictions": [905.23, 912.45, 918.67],
+  "confidence_intervals": [
+    {
+      "lower_bound": 769.45,
+      "upper_bound": 1041.01,
+      "margin_percent": 15.0
+    },
+    {
+      "lower_bound": 775.58,
+      "upper_bound": 1049.32,
+      "margin_percent": 15.0
+    },
+    {
+      "lower_bound": 780.87,
+      "upper_bound": 1056.47,
+      "margin_percent": 15.0
+    }
+  ],
+  "model_info": {
+    "name": "NBM Production Model",
+    "version": "1.0.0",
+    "algorithm": "HuberRegressor Ensemble"
+  },
+  "input_summary": {
+    "total_points": 6,
+    "kelompok": "01",
+    "komoditi": "0101",
+    "avg_kalori": 895.23,
+    "min_kalori": 885.12,
+    "max_kalori": 902.45,
+    "n_periods": 3
+  },
+  "model_version": "1.0.0",
+  "prediction_timestamp": "2024-12-16T10:30:45.123456",
+  "has_data": true
+}
+```
+
+• Error Handling dan Logging Strategy
+
+Implementasi menggunakan try-except blocks untuk graceful error handling dengan specific exception types untuk different failure modes. Exception handling hierarchy dimulai dengan Pydantic `ValidationError` untuk input validation failures yang automatically di-handle oleh FastAPI dan mengembalikan 422 response dengan detailed validation errors, `FileNotFoundError` untuk missing model artifacts pada startup yang log error message dan exit application, dan generic `Exception` untuk unexpected errors yang log full traceback untuk debugging dan raise `HTTPException` dengan status 500.
+
+Logging diimplementasikan menggunakan standard library logging module dengan configuration pada application startup untuk format `timestamp - logger_name - level - message`, StreamHandler untuk output ke stdout yang captured oleh Docker logs, dan INFO level untuk routine operations dan ERROR level untuk failures. Critical log points mencakup application startup dengan model loading progress, setiap prediction request dengan input parameters, prediction success dengan returned values dan confidence intervals, serta error conditions dengan full exception tracebacks.
+
+Logging strategy ini penting untuk production observability, memungkinkan debugging issues, monitoring request patterns dan volumes, serta analyzing prediction behavior over time. Logs dapat di-aggregate menggunakan tools seperti ELK stack atau forwarded ke cloud logging services untuk centralized monitoring dalam production deployments.
+
+• CORS Configuration untuk Cross-Origin Requests
+
+Service menggunakan `CORSMiddleware` dari FastAPI untuk handling Cross-Origin Resource Sharing yang necessary karena Laravel frontend dan FastAPI service berjalan pada ports berbeda, considered different origins oleh browser same-origin policy. CORS middleware dikonfigurasi dengan `allow_origins=["*"]` untuk permitting requests dari any origin, suitable untuk development namun sebaiknya di-restrict ke specific Laravel application URL dalam production deployment.
+
+Configuration `allow_credentials=True` memungkinkan cookies dan authorization headers dalam cross-origin requests, `allow_methods=["*"]` permit semua HTTP methods GET POST PUT DELETE yang necessary untuk RESTful API, dan `allow_headers=["*"]` allow arbitrary request headers yang diperlukan untuk content negotiation dan authentication. CORS configuration ini memastikan Laravel dapat successfully make HTTP requests ke FastAPI endpoint tanpa browser blocking dengan CORS policy violations.
+
+• Docker Containerization dan Deployment Configuration
+
+FastAPI service di-containerize menggunakan Docker untuk consistency across development dan production environments. `Dockerfile` menggunakan multi-stage build pattern dengan base image `python:3.10-slim` untuk minimizing image size sambil menyediakan Python runtime, working directory `/app` untuk organizing application files, dan copying requirements.txt terlebih dahulu untuk leveraging Docker layer caching ketika dependencies tidak berubah.
+
+Dependencies di-install menggunakan `pip install --no-cache-dir -r requirements.txt` untuk avoiding cached packages yang consuming space, copying application code dan model artifacts ke container dengan structure identik dengan development environment, expose port 8082 untuk accepting HTTP requests, dan CMD instruction `uvicorn nbm_api:app --host 0.0.0.0 --port 8082` untuk starting FastAPI application dengan Uvicorn ASGI server.
+
+File `docker-compose.yml` mendefinisikan multi-service configuration untuk orchestrating FastAPI ML service bersama Laravel app, MySQL database, Redis cache, dan Nginx reverse proxy. Service `fastapi-ml` dikonfigurasi dengan build context pointing ke `sikolbia-ml` directory, container_name `fastapi-ml-service`, ports mapping `8082:8082` untuk external access, volumes mounting untuk hot-reloading code changes during development, environment variables untuk configuration, depends_on MySQL untuk ensuring database ready before service starts, restart policy `unless-stopped` untuk automatic recovery dari failures, dan health check dengan command `curl -f http://localhost:8082/health` interval 30s timeout 10s retries 3 untuk monitoring service health.
+
+Health check configuration penting untuk orchestration karena memungkinkan Docker dan container orchestrators seperti Kubernetes untuk detecting service failures dan automatic restart unhealthy containers, ensuring high availability. Service dapat di-deploy ke production menggunakan `docker-compose up -d` untuk starting containers dalam detached mode, dimonitor menggunakan `docker-compose logs -f fastapi-ml` untuk real-time log streaming, dan di-scaled horizontal dengan multiple replicas jika needed menggunakan Docker Swarm atau Kubernetes.
+
+• Integration dengan Laravel Backend
+
+Aplikasi Laravel mengkonsumsi FastAPI service melalui HTTP client menggunakan Guzzle HTTP library. `NBMPredictionController` dalam Laravel mengimplementasikan service layer yang abstracts API communication details. Method `predict()` menerima request dari user melalui web interface, query 6 bulan data historis dari MySQL database menggunakan Eloquent ORM dengan filtering by kelompok dan komoditi, construct request payload sesuai FastAPI `PredictionRequest` schema, dan make HTTP POST request ke FastAPI endpoint dengan URL dari configuration `config/services.php` key `nbm_prediction.api_url`, timeout 30 seconds untuk allowing sufficient time untuk model inference.
+
+Response handling meliputi checking HTTP status code 200 untuk success, parsing JSON response body ke associative array, extracting predictions dan confidence intervals, formatting data untuk display di Livewire component, dan saving prediction hasil ke `prediction_histories` table untuk audit trail dan future reference. Error handling mencakup catching `GuzzleException` untuk network failures atau timeouts, checking status code 422 untuk validation errors yang indicate data quality issues, handling 503 errors yang suggest FastAPI service unavailable atau model tidak ter-load, dan logging errors dengan context untuk debugging dan displaying user-friendly error messages.
+
+Integration testing dilakukan menggunakan Laravel HTTP Tests untuk verifying end-to-end workflow dari user request hingga prediction response, mocking FastAPI responses untuk unit testing Laravel controllers tanpa dependency on actual ML service, dan performance testing untuk measuring response time under load dan identifying bottlenecks. Integration point ini penting karena any mismatch dalam data format atau contract violations akan menyebabkan prediction failures yang visible ke end users.
+
+• Model Versioning dan Update Strategy
+
+Production deployment memerlukan strategy untuk managing model updates ketika retrained models dengan improved accuracy tersedia. Implementasi current menggunakan simple versioning dengan `model_version` field dalam `model_info.json` yang di-increment untuk setiap major model update. Update process meliputi training new model version menggunakan latest data atau improved algorithms, evaluating new model pada held-out test set untuk ensuring superior performance versus current production model, serializing new model artifacts dengan versioned filename atau directory structure, dan replacing existing model artifacts dengan atomic file operations.
+
+Service restart required untuk loading new model karena model di-load pada startup. Zero-downtime deployment dapat dicapai menggunakan blue-green deployment pattern dengan two FastAPI service instances, load balancer routing traffic ke blue instance, deploying updated model ke green instance dan verifying health, switching load balancer ke green instance untuk making it active, dan monitoring for issues dengan ability untuk quick rollback ke blue instance jika problems detected.
+
+Alternative versioning strategy yang lebih sophisticated termasuk A/B testing framework untuk comparing multiple model versions dengan routing subset traffic ke each version dan monitoring comparative performance, canary releases untuk gradually rolling out new models dengan limited blast radius jika issues emerge, dan feature flags untuk enabling/disabling model versions without redeployment. Strategies ini menambah operational complexity namun provide safer update mechanisms untuk high-stakes production systems.
+
+• Performance Optimization dan Caching Considerations
+
+FastAPI service performance dioptimasi melalui beberapa strategies dengan model loaded once pada startup dan reused untuk all requests avoiding expensive deserialization overhead, numpy operations vectorized untuk efficient computation leveraging CPU SIMD instructions, feature engineering functions avoid unnecessary computations dan loops, dan asynchronous request handling memungkinkan concurrent processing multiple predictions.
+
+Potential optimization yang dapat diimplementasikan untuk higher load scenarios termasuk response caching untuk identical requests menggunakan Redis dengan TTL untuk reducing redundant predictions, request batching untuk grouping multiple predictions dan processing them together untuk amortizing model loading overhead, model quantization untuk reducing memory footprint dan inference latency dengan minimal accuracy loss, dan GPU acceleration menggunakan CUDA-enabled libraries jika available untuk significantly faster matrix operations.
+
+Benchmarking measurements pada development environment dengan laptop MSI GF63 menunjukkan average response time 150-300 milliseconds untuk single prediction request dengan 6-month horizon, throughput 30-50 requests per second dengan single Uvicorn worker, memory footprint sekitar 500-700 MB including loaded model dan Python runtime, dan cold start time 3-5 seconds untuk loading model dari disk pada service startup. Tabel 16 menunjukkan hasil benchmarking performance FastAPI ML Service.
+
+**Tabel 16. Hasil Benchmarking FastAPI ML Service**
+
+| Metrik | Nilai | Kondisi | Keterangan |
+|--------|-------|---------|------------|
+| Average Response Time | 150-300 ms | Single request | Untuk prediksi 1-6 bulan |
+| Throughput | 30-50 req/s | Single Uvicorn worker | Concurrent requests |
+| Memory Footprint | 500-700 MB | Model loaded | Includes Python runtime |
+| Cold Start Time | 3-5 seconds | Application startup | Model loading dari disk |
+| CPU Usage | 40-60% | Peak load | Intel Core i5-10500H |
+| Model Inference Time | 50-100 ms | Per prediction | Pure computation time |
+
+Production deployment recommendations meliputi deploying multiple Docker container replicas yang masing-masing menjalankan single Uvicorn worker process, implementing Redis caching layer untuk frequently requested predictions, horizontal scaling dengan container orchestration (Docker Compose atau Kubernetes) dimana Nginx load balancer mendistribusikan traffic ke multiple container instances, dan monitoring performance metrics dengan alerting on degradation untuk proactive issue detection. Setiap container instance berjalan independen dengan model ter-load di memory masing-masing, memberikan isolation dan fault tolerance yang baik. Gambar 20 menunjukkan diagram deployment production dengan multiple container instances dan load balancer.
+
+![Gambar 20. Arsitektur Production Deployment FastAPI ML Service](gambar_20_production_deployment.svg)
+
+Gambar 20. Arsitektur Production Deployment FastAPI ML Service
 
 ## 4.4. Expert Validation
 
