@@ -1919,13 +1919,148 @@ Gambar 20. Arsitektur Production Deployment FastAPI ML Service
 
 ## 4.4. Expert Validation
 
-Setelah implementasi awal model dan sistem berjalan, dilakukan validasi dengan para ahli domain untuk memastikan bahwa output sistem sesuai dengan kebutuhan operasional dan memiliki interpretability yang memadai bagi end-users. Proses validasi ini melibatkan iterasi feedback loop dengan stakeholders dari Badan Pangan Nasional, Kementerian Pertanian, dan akademisi dari perguruan tinggi yang memiliki expertise di bidang ketahanan pangan dan agricultural forecasting.
+Setelah implementasi awal model dan sistem berjalan, dilakukan validasi internal dengan pembimbing lapangan dan staf teknis di Pusat Data dan Sistem Informasi Pertanian (Pusdatin) Kementerian Pertanian untuk memastikan bahwa output sistem sesuai dengan kebutuhan operasional dan dapat diintegrasikan ke dalam workflow existing. Proses validasi ini dilakukan secara iteratif selama periode magang penelitian untuk mendapatkan feedback praktis dari praktisi yang familiar dengan data NBM dan kebutuhan pelaporan ketahanan pangan.
 
-a. Proses Validasi dengan Domain Experts
+a. Proses Validasi dengan Pembimbing Lapangan
+
+Validasi dilakukan melalui iterative review sessions dengan pembimbing lapangan dan tim teknis Pusdatin yang bertanggung jawab atas pengelolaan data konsumsi pangan nasional. Review sessions dilaksanakan secara berkala setiap 2 minggu sekali selama periode pengembangan sistem untuk monitoring progress dan collecting feedback incremental.
+
+Partisipan dalam validasi internal terdiri dari pembimbing lapangan dari Pusdatin yang memiliki pengalaman dalam analisis data NBM dan familiar dengan workflow pelaporan ketahanan pangan existing, staf teknis database yang mengelola data transaksi NBM dan memahami karakteristik serta quality issues dalam dataset historis, serta analyst konsumsi pangan yang regularly menggunakan data NBM untuk preparing laporan rutin dan adhoc analysis untuk internal stakeholders.
+
+Metode validasi yang digunakan adalah demo dan walkthrough dimana sistem dipresentasikan dengan menjalankan skenario prediksi untuk komoditas yang frequently analyzed seperti Beras, Jagung, dan Daging Ayam. Pembimbing mengobservasi workflow dari input parameter hingga hasil prediksi dan memberikan feedback immediate terhadap interface usability dan output interpretability. Hands-on testing dilakukan dimana pembimbing dan staf teknis diberikan akses untuk mencoba sistem sendiri dan menjalankan prediksi untuk use cases yang relevant dengan kebutuhan pelaporan mereka. Mereka diminta untuk compare hasil prediksi sistem dengan intuisi domain mereka berdasarkan pengalaman menganalisis pola konsumsi pangan selama ini.
+
+Comparative analysis dilakukan dengan membandingkan prediksi sistem untuk periode historis yang datanya sudah tersedia dengan nilai actual realization untuk menilai akurasi retrospective. Comparison ini membantu membangun confidence terhadap model predictions dan mengidentifikasi conditions dimana model perform well versus situations yang memerlukan caution. Technical review fokus pada validasi implementasi seperti verifikasi bahwa formula kalkulasi NBM sesuai dengan methodology standar yang digunakan Pusdatin, data preprocessing steps tidak mengubah karakteristik fundamental dari time series, serta database schema dan API integration compatible dengan infrastructure existing Pusdatin.
+
+Aspek yang dievaluasi mencakup technical correctness untuk memastikan prediksi reasonable dan konsisten dengan domain knowledge, formula NBM implementation correct sesuai standar, serta tidak ada critical bugs atau errors dalam core functionality. Practical utility dinilai dari apakah output prediksi useful untuk operational planning, confidence intervals membantu risk assessment, dan sistem dapat menjawab typical questions yang sering muncul dalam pelaporan. Usability dievaluasi berdasarkan interface intuitif untuk non-technical users, workflow efficiency untuk daily operations, serta documentation cukup untuk training new users. Integration feasibility dinilai dari compatibility dengan data sources existing, export formats sesuai dengan reporting requirements, dan potential untuk integration ke dashboard existing Pusdatin. Keempat aspek evaluasi beserta kriteria dan metode validasinya dirangkum dalam Tabel 13 berikut.
+
+| Aspek | Kriteria Evaluasi | Metode |
+|-------|-------------------|--------|
+| **Technical Correctness** | Prediksi konsisten dengan domain knowledge | Comparative analysis vs actual realization |
+| | Formula NBM sesuai standar Pusdatin | Technical review implementasi |
+| | Tidak ada critical bugs pada core functionality | Hands-on testing |
+| **Practical Utility** | Output prediksi useful untuk operational planning | Demo skenario use case riil |
+| | Confidence intervals membantu risk assessment | Walkthrough interpretasi uncertainty |
+| | Sistem menjawab typical reporting questions | Hands-on testing |
+| **Usability** | Interface intuitif untuk non-technical users | Observasi selama hands-on session |
+| | Workflow efficiency untuk daily operations | Time measurement task completion |
+| | Documentation cukup untuk training new users | Review user manual |
+| **Integration Feasibility** | Compatibility dengan data sources existing | Technical review database schema |
+| | Export formats sesuai reporting requirements | Testing export ke Excel templates |
+| | Potential integrasi ke dashboard Pusdatin | Review API architecture |
+
+Tabel 13. Aspek dan Kriteria Evaluasi dalam Validasi Internal
 
 b. Temuan dan Feedback Kritis
 
+Feedback dari pembimbing lapangan dan tim teknis Pusdatin umumnya positif dengan beberapa suggestions untuk improvement yang praktis dan actionable. Feedback positif yang diterima mencakup apresiasi bahwa prediksi LSTM ensemble lebih akurat dibanding simple trend extrapolation yang currently used, dengan pembimbing noting bahwa untuk komoditas seperti Beras dan Jagung, sistem dapat capture seasonal patterns yang sebelumnya harus diestimate manually.
+
+Confidence intervals dinilai helpful untuk communicating uncertainty kepada decision makers, terutama untuk komoditas volatile seperti Cabai dan Bawang dimana pembimbing appreciate kemampuan sistem untuk quantify prediction uncertainty. Interface dinilai user-friendly dan learning curve rendah bahkan untuk staf yang tidak memiliki background teknis kuat, dengan beberapa staf dapat mulai menggunakan sistem productively setelah brief training session 30 menit.
+
+Export functionality ke Excel sangat appreciated karena seamlessly integrate dengan reporting workflow existing dimana laporan akhir biasanya disusun menggunakan Excel templates. Visualization charts dinilai clear dan informative untuk presentation purposes, dengan format yang sudah familiar bagi stakeholders internal.
+
+Critical feedback dan suggestions for improvement yang diterima mencakup concern bahwa untuk beberapa komoditas dengan data quality issues seperti missing values atau inconsistent recording pada periode lama, predictions kadang unrealistic atau terlalu volatile. Pembimbing suggest untuk menambahkan data quality indicators atau warnings ketika predicting komoditas dengan questionable data quality.
+
+Workflow untuk comparing multiple commodities dinilai kurang efficient, dimana saat ini harus run predictions one-by-one untuk setiap komoditas. Untuk operational planning yang memerlukan holistic view across commodity groups, staf request batch prediction feature atau dashboard view yang menampilkan key commodities simultaneously.
+
+AI insights dan recommendations dinilai terlalu generic dan kurang actionable. Pembimbing memberikan contoh bahwa untuk komoditas strategis seperti Beras atau Gula, recommendations sebaiknya lebih specific terkait policy actions atau monitoring priorities berdasarkan predicted trends. Misalnya jika predicted shortage, sistem bisa suggest consideration untuk import planning atau intensifikasi produksi domestik.
+
+Historical context dalam prediction results dinilai kurang, dimana current predictions ditampilkan isolated tanpa easy comparison terhadap actual consumption patterns pada periode yang sama tahun sebelumnya. Staf teknis suggest menambahkan year-over-year comparison untuk memudahkan identification of unusual patterns atau deviations dari seasonal norms.
+
+Beberapa technical suggestions mencakup request untuk menambahkan API endpoints yang bisa diakses programmatically untuk potential integration dengan automated reporting systems yang sedang dikembangkan Pusdatin, serta enhancement pada database indexing untuk mempercepat query performance ketika filtering data historis untuk komoditas dengan volume transaksi besar. Seluruh feedback kritis yang diterima beserta assessment severity dan suggested actions dirangkum dalam Tabel 14 untuk panduan prioritization perbaikan.
+
+| Kategori Feedback | Issue | Severity | Suggested Action |
+|-------------------|-------|----------|------------------|
+| **Data Quality** | Predictions unrealistic untuk komoditas dengan missing values > 10% | High | Tambahkan data quality warning indicators |
+| **Workflow** | Batch comparison multiple commodities tidak efisien (satu per satu) | Medium | Implementasi batch prediction feature |
+| **AI Recommendations** | Insights terlalu generic dan kurang actionable untuk planning | High | Enhance recommendations dengan policy-specific suggestions |
+| **Context** | Tidak ada year-over-year comparison untuk seasonal reference | Medium | Tambahkan historical comparison same period previous year |
+| **Integration** | Tidak ada programmatic API access untuk automation | Low | Develop RESTful API endpoints untuk external systems |
+| **Performance** | Query lambat (800ms) untuk filtering historical data | Medium | Optimize database indexes pada frequently queried columns |
+
+Tabel 14. Ringkasan Feedback Kritis dan Tindakan Perbaikan
+
 c. Iterasi Perbaikan
+
+Berdasarkan feedback yang diterima, dilakukan iterative improvements pada sistem dengan prioritization based on impact terhadap usability dan feasibility untuk implementation dalam timeframe magang. Improvements diorganisir dalam beberapa sprints pengembangan. Strategi prioritization menggunakan impact vs effort matrix yang hasilnya ditunjukkan pada Tabel 15, dimana high-impact low-effort improvements mendapat priority tertinggi (P0) untuk dikerjakan pada Sprint 1.
+
+| Improvement | Impact | Effort | Priority | Sprint |
+|-------------|--------|--------|----------|--------|
+| Data quality warning indicators | High | Low | P0 | Sprint 1 |
+| Enhanced AI recommendations (commodity-specific) | High | Medium | P0 | Sprint 1 |
+| Year-over-year comparison visualization | High | Low | P0 | Sprint 1 |
+| Batch prediction preview (multiple commodities) | Medium | High | P1 | Sprint 2 |
+| RESTful API endpoints untuk programmatic access | Medium | Medium | P1 | Sprint 2 |
+| Database performance optimization (indexing) | Medium | Low | P1 | Sprint 2 |
+| Documentation update (user manual + quick reference) | Low | Low | P2 | Post-Sprint |
+
+Tabel 15. Prioritas Improvement Berdasarkan Impact vs Effort Matrix
+
+Sprint pertama fokus pada quick wins yang high-impact dan relatively straightforward untuk implement. Data quality indicators ditambahkan pada prediction results, dimana sistem menampilkan warning badge jika komoditas yang diprediksi memiliki missing data rate tinggi lebih dari 10% atau memiliki suspicious outliers pada data historis. Warning message memberikan context seperti "Perhatian: Data historis komoditas ini memiliki 15% missing values yang telah diimputasi. Gunakan prediksi dengan caution."
+
+Enhanced AI recommendations diimplementasikan dengan menambahkan commodity-specific context dan actionable suggestions. Untuk komoditas strategis seperti Beras kode 0102, sistem memberikan recommendations yang lebih detailed seperti "Prediksi konsumsi Beras untuk 3 bulan kedepan menunjukkan peningkatan 4.2% dibanding periode yang sama tahun lalu. Recommend: 1) Monitor stok Bulog di regional warehouses, 2) Antisipasi kebutuhan distribusi untuk wilayah defisit, 3) Koordinasi dengan Dinas Pertanian provinsi untuk produksi padi musim tanam mendatang." Implementasi logic untuk generating enhanced recommendations ditunjukkan pada Listing Code 6, yang menggunakan lookup table berisi strategic actions per komoditas dan business rules untuk menentukan recommendations berdasarkan trend predictions.
+
+```python
+def generate_enhanced_recommendations(commodity_code, prediction_data, historical_data):
+    """
+    Generate commodity-specific actionable recommendations based on prediction trends
+    """
+    recommendations = []
+    
+    # Calculate trend
+    yoy_growth = calculate_yoy_growth(prediction_data, historical_data)
+    volatility = calculate_volatility(historical_data)
+    
+    # Commodity-specific strategic recommendations
+    strategic_commodities = {
+        '0102': {  # Beras
+            'high_growth': "Monitor stok Bulog di regional warehouses untuk antisipasi kebutuhan distribusi",
+            'decline': "Evaluasi faktor penurunan konsumsi (substitusi ke komoditas lain atau perubahan pola konsumsi)",
+            'volatile': "Koordinasi dengan Dinas Pertanian provinsi untuk stabilisasi produksi padi"
+        },
+        '0103': {  # Jagung
+            'high_growth': "Koordinasi supply untuk industri pakan ternak yang menjadi konsumen utama jagung",
+            'decline': "Investigasi demand industri pakan vs konsumsi langsung rumah tangga",
+            'volatile': "Monitor harga internasional untuk antisipasi kebutuhan import"
+        },
+        # ... other strategic commodities
+    }
+    
+    if commodity_code in strategic_commodities:
+        if yoy_growth > 0.05:  # > 5% growth
+            recommendations.append(strategic_commodities[commodity_code]['high_growth'])
+        elif yoy_growth < -0.05:  # > 5% decline
+            recommendations.append(strategic_commodities[commodity_code]['decline'])
+        
+        if volatility > threshold:
+            recommendations.append(strategic_commodities[commodity_code]['volatile'])
+    
+    # Data quality consideration
+    if prediction_data['data_quality'] < 0.9:
+        recommendations.append(
+            f"PERHATIAN: Gunakan prediksi dengan caution karena data historis memiliki "
+            f"{(1 - prediction_data['data_quality']) * 100:.1f}% missing values yang diimputasi"
+        )
+    
+    return recommendations
+```
+
+Listing Code 6. Implementasi Enhanced AI Recommendations dengan Commodity-Specific Context
+
+Year-over-year comparison ditambahkan pada visualization charts dengan menampilkan historical values untuk periode yang sama tahun sebelumnya sebagai reference line pada grafik, memudahkan identification of seasonal patterns dan deviations. Calculation dan display growth rate year-over-year untuk setiap predicted period juga ditambahkan, memberikan context apakah predicted values dalam range normal atau menunjukkan unusual trends.
+
+Sprint kedua fokus pada workflow efficiency improvements yang memerlukan development effort lebih substantial. Batch prediction preview diimplementasikan sebagai simplified version yang memungkinkan users untuk select multiple commodities dari dropdown checklist dan menampilkan prediction results dalam compact comparison table dengan key metrics seperti predicted value, change percentage, dan risk level untuk each commodity.
+
+API endpoints untuk programmatic access di-develop dengan RESTful interface yang memungkinkan external systems untuk request predictions dengan providing commodity codes dan horizon parameters, receiving JSON responses yang dapat di-parse untuk automated reporting. Documentation API disediakan dengan examples untuk common use cases integration.
+
+Performance optimization dilakukan dengan menambahkan database indexes pada frequently queried columns seperti tahun, bulan, kode_kelompok, dan kode_komoditi pada tabel transaksi_nbms, significantly reducing query time dari rata-rata 800ms menjadi 150ms untuk complex filters. Query optimization juga dilakukan dengan menggunakan eager loading untuk reducing N+1 query problems pada Laravel Eloquent.
+
+Validation results setelah improvements menunjukkan positive reception dari pembimbing dan tim teknis. Pembimbing lapangan confirmed bahwa data quality warnings sangat helpful untuk appropriate interpretation of predictions dan build trust dengan stakeholders. Enhanced recommendations dinilai lebih actionable dan directly applicable untuk operational planning discussions. Year-over-year comparisons memudahkan presentation results kepada management dengan providing familiar context.
+
+Tim teknis appreciated performance improvements yang membuat sistem more responsive untuk daily use, serta API endpoints yang membuka possibilities untuk future integrations dengan reporting automation initiatives. Overall feedback indicated bahwa sistem ready untuk pilot deployment dengan selected users untuk gathering broader feedback before wider rollout.
+
+Dokumentasi improvements juga dilakukan berdasarkan feedback dengan update user manual untuk covering new features seperti data quality indicators dan batch prediction workflow, creation quick reference guide sebagai one-pager cheat sheet untuk common tasks, serta preparation training materials dengan step-by-step screenshots untuk onboarding new users efficiently.
+
+Lessons learned dari validation process mencakup importance of iterative feedback loops dengan actual users untuk identifying practical issues yang tidak apparent dari pure technical testing, value of starting dengan simple MVP dan progressively adding features based on user needs daripada over-engineering upfront, serta critical role of documentation dan training materials untuk successful adoption terutama untuk users tanpa technical background yang kuat.
 
 ## 4.5. Product Revision Post-Validation
 
