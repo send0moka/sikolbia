@@ -152,8 +152,12 @@ class TransaksiNbm extends Model
 
     public function getGramHariAttribute()
     {
-        // Convert kg per year to gram per day
-        return round($this->kg_tahun * 1000 / 365, 4);
+        // APP3 data: bahan_makanan in '000 tons (ribu ton)
+        // Convert to gram per capita per day: (ribu_ton * 1000 * 1000000 gram) / (populasi * 365)
+        if ($this->bahan_makanan && $this->populasi_indonesia) {
+            return round(($this->bahan_makanan * 1000 * 1000000) / ($this->populasi_indonesia * 365), 2);
+        }
+        return 0;
     }
 
     public function getKaloriHariAttribute()
@@ -163,7 +167,7 @@ class TransaksiNbm extends Model
         }
         
         // Calculate calories per day: (gram per day / 100) * calories per 100g
-        return round(($this->gram_hari / 100) * $this->komoditi->kalori_per_100g, 4);
+        return round(($this->gram_hari / 100) * $this->komoditi->kalori_per_100g, 2);
     }
 
     public function getProteinHariAttribute()
@@ -173,7 +177,7 @@ class TransaksiNbm extends Model
         }
         
         // Calculate protein per day: (gram per day / 100) * protein per 100g
-        return round(($this->gram_hari / 100) * $this->komoditi->protein_per_100g, 4);
+        return round(($this->gram_hari / 100) * $this->komoditi->protein_per_100g, 2);
     }
 
     public function getLemakHariAttribute()
@@ -183,7 +187,7 @@ class TransaksiNbm extends Model
         }
         
         // Calculate fat per day: (gram per day / 100) * fat per 100g
-        return round(($this->gram_hari / 100) * $this->komoditi->lemak_per_100g, 6);
+        return round(($this->gram_hari / 100) * $this->komoditi->lemak_per_100g, 4);
     }
 
     // Static methods

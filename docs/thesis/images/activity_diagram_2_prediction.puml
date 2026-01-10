@@ -1,0 +1,37 @@
+@startuml Activity_Diagram_2_NBM_Prediction
+title Activity Diagram 2 - Proses Inti Prediksi Konsumsi Kalori NBM
+
+|User|
+start
+:Akses Menu Prediksi NBM;
+:Input Parameter:
+- Kelompok
+- Komoditi
+- Jumlah Bulan;
+:Submit Form;
+
+|Laravel|
+:Validasi Input;
+:Query Data Historis
+(6 bulan terakhir);
+:Format ke JSON;
+:Kirim ke FastAPI;
+
+|FastAPI|
+:Preprocessing Data;
+:Inferensi LSTM Model;
+:Ensemble Prediction
+(LSTM + HuberRegressor);
+:Hitung Confidence Interval;
+:Return Hasil;
+
+|Laravel|
+:Simpan ke Database;
+:Render UI dengan Chart;
+
+|User|
+:Review Hasil Prediksi;
+
+stop
+
+@enduml

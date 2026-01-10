@@ -70,5 +70,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
 # Expose ports
 EXPOSE 8000 5000 8888
 
-# Default: FastAPI with main_simple (has model loading)
+# Default: FastAPI with main_simple (lighter version, supports APP3 TAHUNAN data)
 CMD ["uvicorn", "app.main_simple:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -63,7 +63,7 @@ class NBMPredictionController extends Controller
             'data.*.bulan' => 'required|integer|between:1,12',
             'data.*.kelompok' => 'required|string|max:255',
             'data.*.komoditi' => 'required|string|max:255',
-            'data.*.kalori_hari' => 'required|numeric|min:0.01|max:1000'
+            'data.*.kalori_hari' => 'required|numeric|min:0.01|max:10000' // Increased for annual data
         ]);
         
         if ($validator->fails()) {
@@ -165,7 +165,7 @@ class NBMPredictionController extends Controller
             'requests.*.data.*.bulan' => 'required|integer|between:1,12',
             'requests.*.data.*.kelompok' => 'required|string|max:255',
             'requests.*.data.*.komoditi' => 'required|string|max:255',
-            'requests.*.data.*.kalori_hari' => 'required|numeric|min:0.01|max:1000'
+            'requests.*.data.*.kalori_hari' => 'required|numeric|min:0.01|max:10000' // Increased for annual data
         ]);
         
         if ($validator->fails()) {

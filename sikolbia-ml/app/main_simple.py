@@ -52,7 +52,7 @@ model_info = None
 class NBMDataPoint(BaseModel):
     """Single NBM data point"""
     tahun: int = Field(..., ge=1990, le=2030, description="Year")
-    bulan: int = Field(..., ge=1, le=12, description="Month (1-12)")
+    bulan: int = Field(..., ge=0, le=12, description="Month (0=annual, 1-12=monthly)")
     kelompok: str = Field(..., description="Food group name")
     komoditi: str = Field(..., description="Commodity name")
     kalori_hari: float = Field(..., ge=0, description="Calories per day (can be 0 for missing data)")

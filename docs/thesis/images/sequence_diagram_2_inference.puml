@@ -1,0 +1,31 @@
+@startuml Sequence_Diagram_2_ML_Inference
+title Sequence Diagram 2 - ML Inference dan Ensemble
+
+participant Laravel
+participant FastAPI
+participant LSTM
+participant Huber
+
+Laravel -> FastAPI: POST /predict\n{data: [...]}
+activate FastAPI
+
+FastAPI -> FastAPI: Validasi & Preprocessing
+
+FastAPI -> LSTM: Inferensi LSTM
+activate LSTM
+LSTM --> FastAPI: Hasil LSTM
+deactivate LSTM
+
+FastAPI -> Huber: Inferensi Huber
+activate Huber
+Huber --> FastAPI: Hasil Huber
+deactivate Huber
+
+FastAPI -> FastAPI: Ensemble:\n0.7 × LSTM + 0.3 × Huber
+
+FastAPI -> FastAPI: Hitung Confidence Interval
+
+FastAPI --> Laravel: Return prediction\n+ confidence interval
+deactivate FastAPI
+
+@enduml

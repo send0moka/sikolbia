@@ -15,9 +15,163 @@ class TransaksiNbmSeeder extends Seeder
      */
     public function run(): void
     {
-        // Truncate the table
-        DB::table('transaksi_nbms')->truncate();
-        echo "Seeding TransaksiNbm data (full historical dataset)...\n";
+        echo "Updating TransaksiNbm data with APP3 Pusdatin official data...\n";
+        
+        // List of files to process (komoditi => [kode_kelompok, kode_komoditi, filename])
+        $komoditiFiles = [
+            'Beras' => ['01', '0102', 'transaksi_nbms_beras_app3.sql'],
+            'Gabah' => ['01', '0101', 'transaksi_nbms_gabah_app3.sql'],
+            'Jagung' => ['01', '0103', 'transaksi_nbms_jagung_app3.sql'],
+            'Jagung Basah' => ['01', '0104', 'transaksi_nbms_jagungbasah_app3.sql'],
+            'Gandum' => ['01', '0105', 'transaksi_nbms_gandum_app3.sql'],
+            'Tepung Gandum' => ['01', '0106', 'transaksi_nbms_tepunggandum_app3.sql'],
+            'Ubi Jalar' => ['02', '0201', 'transaksi_nbms_ubijalar_app3.sql'],
+            'Ubi Kayu' => ['02', '0202', 'transaksi_nbms_ubikayu_app3.sql'],
+            'Gaplek' => ['02', '0203', 'transaksi_nbms_gaplek_app3.sql'],
+            'Tapioka' => ['02', '0204', 'transaksi_nbms_tapioka_app3.sql'],
+            'Tepung Sagu' => ['02', '0205', 'transaksi_nbms_tepungsagu_app3.sql'],
+            'Gula Pasir' => ['03', '0301', 'transaksi_nbms_gulapasir_app3.sql'],
+            'Gula Mangkok' => ['03', '0302', 'transaksi_nbms_gulamangkok_app3.sql'],
+            'Kacang Tanah Berkulit' => ['04', '0401', 'transaksi_nbms_kacangtanahberkulit_app3.sql'],
+            'Kacang Tanah Lepas Kulit' => ['04', '0402', 'transaksi_nbms_kacangtanahlepaskulit_app3.sql'],
+            'Kedelai' => ['04', '0403', 'transaksi_nbms_kedelai_app3.sql'],
+            'Kacang Hijau' => ['04', '0404', 'transaksi_nbms_kacanghijau_app3.sql'],
+            'Kelapa Daging' => ['04', '0405', 'transaksi_nbms_kelapadaging_app3.sql'],
+            'Kopra' => ['04', '0406', 'transaksi_nbms_kopra_app3.sql'],
+            'Alpokat' => ['05', '0501', 'transaksi_nbms_alpokat_app3.sql'],
+            'Jeruk' => ['05', '0502', 'transaksi_nbms_jeruk_app3.sql'],
+            'Duku' => ['05', '0503', 'transaksi_nbms_duku_app3.sql'],
+            'Durian' => ['05', '0504', 'transaksi_nbms_durian_app3.sql'],
+            'Jambu' => ['05', '0505', 'transaksi_nbms_jambu_app3.sql'],
+            'Mangga' => ['05', '0506', 'transaksi_nbms_mangga_app3.sql'],
+            'Nanas' => ['05', '0507', 'transaksi_nbms_nanas_app3.sql'],
+            'Pepaya' => ['05', '0508', 'transaksi_nbms_pepaya_app3.sql'],
+            'Pisang' => ['05', '0509', 'transaksi_nbms_pisang_app3.sql'],
+            'Rambutan' => ['05', '0510', 'transaksi_nbms_rambutan_app3.sql'],
+            'Salak' => ['05', '0511', 'transaksi_nbms_salak_app3.sql'],
+            'Sawo' => ['05', '0512', 'transaksi_nbms_sawo_app3.sql'],
+            'Anggur' => ['05', '0513', 'transaksi_nbms_anggur_app3.sql'],
+            'Semangka' => ['05', '0514', 'transaksi_nbms_semangka_app3.sql'],
+            'Belimbing' => ['05', '0515', 'transaksi_nbms_belimbing_app3.sql'],
+            'Manggis' => ['05', '0516', 'transaksi_nbms_manggis_app3.sql'],
+            'Nangka' => ['05', '0517', 'transaksi_nbms_nangka_app3.sql'],
+            'Markisa' => ['05', '0518', 'transaksi_nbms_markisa_app3.sql'],
+            'Sirsak' => ['05', '0519', 'transaksi_nbms_sirsak_app3.sql'],
+            'Sukun' => ['05', '0520', 'transaksi_nbms_sukun_app3.sql'],
+            'Buah Lainnya' => ['05', '0521', 'transaksi_nbms_buahlainnya_app3.sql'],
+            'Apel' => ['05', '0522', 'transaksi_nbms_apel_app3.sql'],
+            'Jambu Air' => ['05', '0523', 'transaksi_nbms_jambuair_app3.sql'],
+            'Melon' => ['05', '0524', 'transaksi_nbms_melon_app3.sql'],
+            'Stroberi' => ['05', '0525', 'transaksi_nbms_stroberi_app3.sql'],
+            'Blewah' => ['05', '0526', 'transaksi_nbms_blewah_app3.sql'],
+            'Lemon' => ['05', '0527', 'transaksi_nbms_lemon_app3.sql'],
+            'Jeruk Besar' => ['05', '0528', 'transaksi_nbms_jerukbesar_app3.sql'],
+            'Kurma' => ['05', '0529', 'transaksi_nbms_kurma_app3.sql'],
+            'Tin' => ['05', '0530', 'transaksi_nbms_tin_app3.sql'],
+            'Pir' => ['05', '0531', 'transaksi_nbms_pir_app3.sql'],
+            'Aprikot' => ['05', '0532', 'transaksi_nbms_aprikot_app3.sql'],
+            'Rasberi' => ['05', '0533', 'transaksi_nbms_rasberi_app3.sql'],
+            'Kiwi' => ['05', '0534', 'transaksi_nbms_kiwi_app3.sql'],
+            'Kesemek' => ['05', '0535', 'transaksi_nbms_kesemek_app3.sql'],
+            'Lengkeng' => ['05', '0536', 'transaksi_nbms_lengkeng_app3.sql'],
+            'Leci' => ['05', '0537', 'transaksi_nbms_leci_app3.sql'],
+            'Buah Naga' => ['05', '0538', 'transaksi_nbms_buahnaga_app3.sql'],
+            'Bawang Merah' => ['06', '0601', 'transaksi_nbms_bawangmerah_app3.sql'],
+            'Timun' => ['06', '0602', 'transaksi_nbms_timun_app3.sql'],
+            'Kacang Merah' => ['06', '0603', 'transaksi_nbms_kacangmerah_app3.sql'],
+            'Kacang Panjang' => ['06', '0604', 'transaksi_nbms_kacangpanjang_app3.sql'],
+            'Kentang' => ['06', '0605', 'transaksi_nbms_kentang_app3.sql'],
+            'Kubis' => ['06', '0606', 'transaksi_nbms_kubis_app3.sql'],
+            'Tomat' => ['06', '0607', 'transaksi_nbms_tomat_app3.sql'],
+            'Wortel' => ['06', '0608', 'transaksi_nbms_wortel_app3.sql'],
+            'Cabai' => ['06', '0609', 'transaksi_nbms_cabai_app3.sql'],
+            'Terong' => ['06', '0610', 'transaksi_nbms_terong_app3.sql'],
+            'Sawi' => ['06', '0611', 'transaksi_nbms_sawi_app3.sql'],
+            'Daun Bawang' => ['06', '0612', 'transaksi_nbms_daunbawang_app3.sql'],
+            'Kangkung' => ['06', '0613', 'transaksi_nbms_kangkung_app3.sql'],
+            'Lobak' => ['06', '0614', 'transaksi_nbms_lobak_app3.sql'],
+            'Labu Siam' => ['06', '0615', 'transaksi_nbms_labusiam_app3.sql'],
+            'Buncis' => ['06', '0616', 'transaksi_nbms_buncis_app3.sql'],
+            'Bayam' => ['06', '0617', 'transaksi_nbms_bayam_app3.sql'],
+            'Bawang Putih' => ['06', '0618', 'transaksi_nbms_bawangputih_app3.sql'],
+            'Kembang Kol' => ['06', '0619', 'transaksi_nbms_kembangkol_app3.sql'],
+            'Jamur' => ['06', '0620', 'transaksi_nbms_jamur_app3.sql'],
+            'Melinjo' => ['06', '0621', 'transaksi_nbms_melinjo_app3.sql'],
+            'Petai' => ['06', '0622', 'transaksi_nbms_petai_app3.sql'],
+            'Sayur Lainnya' => ['06', '0623', 'transaksi_nbms_sayuranlainnya_app3.sql'],
+            'Jengkol' => ['06', '0624', 'transaksi_nbms_jengkol_app3.sql'],
+            // 'Bawang Bombay' => ['06', '0625', 'transaksi_nbms_bawangbombay_app3.sql'],
+            // 'Seledri' => ['06', '0626', 'transaksi_nbms_seledri_app3.sql'],
+            // 'Asparagus' => ['06', '0627', 'transaksi_nbms_asparagus_app3.sql'],
+            // 'Selada' => ['06', '0628', 'transaksi_nbms_selada_app3.sql'],
+            // 'Kacang Kapri' => ['06', '0629', 'transaksi_nbms_kacangkapri_app3.sql'],
+            // 'Paprika' => ['06', '0630', 'transaksi_nbms_paprika_app3.sql'],
+            // 'Jamur Lainnya' => ['06', '0631', 'transaksi_nbms_jamurlainnya_app3.sql'],
+            // 'Jamur Merang' => ['06', '0632', 'transaksi_nbms_jamurmerang_app3.sql'],
+            // 'Jamur Tiram' => ['06', '0633', 'transaksi_nbms_jamurtiram_app3.sql'],
+            // 'Cabai Rawit' => ['06', '0634', 'transaksi_nbms_cabairawit_app3.sql'],
+            // 'Cabai Besar' => ['06', '0635', 'transaksi_nbms_cabaibesar_app3.sql'],
+            'Daging Sapi' => ['07', '0701', 'transaksi_nbms_dagingsapi_app3.sql'],
+            'Daging Kerbau' => ['07', '0702', 'transaksi_nbms_dagingkerbau_app3.sql'],
+            'Daging Kambing' => ['07', '0703', 'transaksi_nbms_dagingkambing_app3.sql'],
+            'Daging Domba' => ['07', '0704', 'transaksi_nbms_dagingdomba_app3.sql'],
+            'Daging Kuda' => ['07', '0705', 'transaksi_nbms_dagingkuda_app3.sql'],
+            'Daging Babi' => ['07', '0706', 'transaksi_nbms_dagingbabi_app3.sql'],
+            'Daging Ayam Buras' => ['07', '0707', 'transaksi_nbms_dagingayamburas_app3.sql'],
+            'Daging Ayam Ras' => ['07', '0708', 'transaksi_nbms_dagingayamras_app3.sql'],
+            'Daging Bebek' => ['07', '0709', 'transaksi_nbms_dagingbebek_app3.sql'],
+            'Jeroan' => ['07', '0710', 'transaksi_nbms_jeroan_app3.sql'],
+            'Daging Puyuh' => ['07', '0711', 'transaksi_nbms_dagingpuyuh_app3.sql'],
+            'Telur Ayam Buras' => ['08', '0801', 'transaksi_nbms_telurayamburas_app3.sql'],
+            'Telur Ayam Ras' => ['08', '0802', 'transaksi_nbms_telurayamras_app3.sql'],
+            'Telur Bebek' => ['08', '0803', 'transaksi_nbms_telurbebek_app3.sql'],
+            'Susu Sapi' => ['09', '0901', 'transaksi_nbms_sususapi_app3.sql'],
+            'Susu Impor' => ['09', '0902', 'transaksi_nbms_susuimpor_app3.sql'],
+            'Minyak Kacang Tanah' => ['10', '1001', 'transaksi_nbms_minyakkacangtanah_app3.sql'],
+            'Minyak Goreng Kelapa' => ['10', '1002', 'transaksi_nbms_minyakgorengkelapa_app3.sql'],
+            'Minyak Sawit' => ['10', '1003', 'transaksi_nbms_minyaksawit_app3.sql'],
+            'Minyak Goreng Sawit' => ['10', '1004', 'transaksi_nbms_minyakgorengsawit_app3.sql'],
+            'Lemak Sapi' => ['10', '1005', 'transaksi_nbms_lemaksapi_app3.sql'],
+            'Lemak Kerbau' => ['10', '1006', 'transaksi_nbms_lemakkerbau_app3.sql'],
+            'Lemak Kambing' => ['10', '1007', 'transaksi_nbms_lemakkambing_app3.sql'],
+            'Lemak Domba' => ['10', '1008', 'transaksi_nbms_lemakdomba_app3.sql'],
+            'Lemak Babi' => ['10', '1009', 'transaksi_nbms_lemakbabi_app3.sql'],
+        ];
+        
+        foreach ($komoditiFiles as $namaKomoditi => $config) {
+            list($kodeKelompok, $kodeKomoditi, $filename) = $config;
+            
+            echo "\n=== Processing $namaKomoditi ($kodeKelompok-$kodeKomoditi) ===\n";
+            
+            // Delete existing records
+            $deletedCount = DB::table('transaksi_nbms')
+                ->where('kode_kelompok', $kodeKelompok)
+                ->where('kode_komoditi', $kodeKomoditi)
+                ->delete();
+            echo "Deleted $deletedCount old $namaKomoditi records\n";
+            
+            $this->processFile($filename, $kodeKelompok, $kodeKomoditi, $namaKomoditi);
+        }
+        
+        echo "\n=== ALL DONE ===\n";
+        echo "Data source: APP3 (Aplikasi Neraca Bahan Makanan) - Pusdatin Kementerian Pertanian\n";
+    }
+    
+    private function processFile($filename, $kodeKelompok, $kodeKomoditi, $namaKomoditi)
+    {
+        // Open the APP3 SQL file
+        $filePath = base_path('database/seeders/' . $filename);
+        if (!file_exists($filePath)) {
+            echo "Warning: File not found: $filePath\n";
+            echo "Run: php database/seeders/generate_nbm_from_app3.php to generate\n";
+            return;
+        }
+        
+        $file = fopen($filePath, 'r');
+        if ($file === false) {
+            echo "Error: Could not open file {$filePath}\n";
+            return;
+        }
 
         // Define columns
         $columns = [
@@ -63,14 +217,6 @@ class TransaksiNbmSeeder extends Seeder
             'stok_bulog' => [12, 4], 'confidence_score' => [3, 2]
         ];
 
-        // Open the SQL file
-        $filePath = base_path('database/seeders/transaksi_nbms.sql');
-        $file = fopen($filePath, 'r');
-        if ($file === false) {
-            echo "Error: Could not open file {$filePath}\n";
-            return;
-        }
-
         $totalRecords = 0;
         $skippedRows = 0;
         $chunk = [];
@@ -86,7 +232,7 @@ class TransaksiNbmSeeder extends Seeder
 
             // Validate row format
             if (count($values) !== count($columns)) {
-                echo "Warning: Expected " . count($columns) . " values, got " . count($values) . " at line {$lineNumber}: " . json_encode($values) . "\n";
+                echo "Warning: Expected " . count($columns) . " values, got " . count($values) . " at line {$lineNumber}\n";
                 $skippedRows++;
                 continue;
             }
@@ -128,9 +274,7 @@ class TransaksiNbmSeeder extends Seeder
                             $row[$col] = $floatValue;
                         }
                     } else {
-                        echo "Warning: Invalid numeric value '$value' for $col at line {$lineNumber}, setting to 0\n";
-                        $row[$col] = 0.0;
-                        $isValidRow = false;
+                        $row[$col] = null;
                     }
                 }
             }
@@ -147,14 +291,10 @@ class TransaksiNbmSeeder extends Seeder
             if (count($chunk) >= $chunkSize) {
                 try {
                     DB::table('transaksi_nbms')->insertOrIgnore($chunk);
-                    $insertedCount = DB::table('transaksi_nbms')->count();
-                    echo "Inserted {$totalRecords} records so far (actual DB count: {$insertedCount})...\n";
+                    echo "Inserted $totalRecords records so far...\n";
                 } catch (QueryException $e) {
                     echo "Error inserting chunk at line {$lineNumber}: " . $e->getMessage() . "\n";
-                    echo "Problematic row: " . json_encode($row) . "\n";
                     $skippedRows += count($chunk);
-                    $chunk = [];
-                    continue;
                 }
                 $chunk = [];
             }
@@ -163,18 +303,19 @@ class TransaksiNbmSeeder extends Seeder
         if (!empty($chunk)) {
             try {
                 DB::table('transaksi_nbms')->insertOrIgnore($chunk);
-                $insertedCount = DB::table('transaksi_nbms')->count();
-                echo "Inserted {$totalRecords} records so far (actual DB count: {$insertedCount})...\n";
             } catch (QueryException $e) {
-                echo "Error inserting final chunk at line {$lineNumber}: " . $e->getMessage() . "\n";
-                echo "Problematic row: " . json_encode($chunk[0]) . "\n";
+                echo "Error inserting final chunk: " . $e->getMessage() . "\n";
                 $skippedRows += count($chunk);
             }
         }
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         fclose($file);
-        $finalCount = DB::table('transaksi_nbms')->count();
-        echo "Successfully seeded {$totalRecords} NBM transaction records (actual DB count: {$finalCount}, skipped: {$skippedRows})\n";
+        
+        $finalCount = DB::table('transaksi_nbms')
+            ->where('kode_kelompok', $kodeKelompok)
+            ->where('kode_komoditi', $kodeKomoditi)
+            ->count();
+        echo "✓ Updated $totalRecords $namaKomoditi records (DB count: $finalCount, skipped: $skippedRows)\n";
     }
 }

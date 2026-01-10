@@ -224,7 +224,7 @@
                     <tr>
                         <x-sortable-header field="kode_kelompok" :sort-field="$sortField" :sort-direction="$sortDirection" title="Identifikasi" class="px-4 py-3 w-48" />
                         <x-sortable-header field="masukan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Produksi" class="px-4 py-3 w-40" />
-                        <x-sortable-header field="gram_hari" :sort-field="$sortField" :sort-direction="$sortDirection" title="Konsumsi & Nutrisi" class="px-4 py-3 w-44" />
+                        <x-sortable-header field="bahan_makanan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Konsumsi & Nutrisi" class="px-4 py-3 w-44" />
                         <x-sortable-header field="harga_konsumen" :sort-field="$sortField" :sort-direction="$sortDirection" title="Ekonomi" class="px-4 py-3 w-36" />
                         <x-sortable-header field="suhu_rata_celsius" :sort-field="$sortField" :sort-direction="$sortDirection" title="Lingkungan" class="px-4 py-3 w-32" />
                         <x-sortable-header field="validation_status" :sort-field="$sortField" :sort-direction="$sortDirection" title="Status" class="px-4 py-3 w-32" />
@@ -271,9 +271,6 @@
                             <td class="px-4 py-4 text-sm">
                                 <div class="space-y-1">
                                     <div class="font-semibold text-orange-600 dark:text-orange-400">
-                                        {{ number_format($transaksi->gram_hari ?? 0, 1) }} g/hari
-                                    </div>
-                                    <div class="text-neutral-700 dark:text-neutral-300">
                                         {{ number_format($transaksi->kalori_hari ?? 0, 0) }} kal/hari
                                     </div>
                                     <div class="text-xs text-neutral-600 dark:text-neutral-400">

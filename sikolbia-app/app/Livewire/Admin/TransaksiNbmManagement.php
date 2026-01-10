@@ -634,8 +634,10 @@ class TransaksiNbmManagement extends Component
         if (!empty($this->sortField)) {
             $query->orderBy($this->sortField, $this->sortDirection);
         } else {
-            // Default ordering when no sort is applied (by ID for consistency)
-            $query->orderBy('id', 'asc');
+            // Default ordering: kelompok, komoditi, then latest year first
+            $query->orderBy('kode_kelompok', 'asc')
+                  ->orderBy('kode_komoditi', 'asc')
+                  ->orderBy('tahun', 'desc');
         }
 
         $transaksiNbms = $query->paginate($perPage);

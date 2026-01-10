@@ -24,7 +24,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Padi-padian terdiri atas: gabah (gabah kering giling) beserta produksi turunannya beras, jagung (pipilan), dan jagung basah gandum beserta produksi turunannya tepung gandum (tepung terigu)',
                 'ake_ketersediaan' => 1354,
                 'skor_pph' => 25.00,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-cookie-bite',
+                'color_class' => 'amber'
             ],
             [
                 'kode' => '02', 
@@ -32,7 +34,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Makanan berpati adalah bahan makanan yang mengandung pati yang berasal dari akar/umbi dan lain-lain bagian tanaman yang merupakan bahan makanan pokok lainnya. Kelompok ini terdiri atas; ubi jalar, ubi kayu dengan produksi turunannya yaitu gaplek dan tapioka, tepung sagu yang merupakan produksi turunan dari sagu.',
                 'ake_ketersediaan' => 219,
                 'skor_pph' => 2.50,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-bread-slice',
+                'color_class' => 'orange'
             ],
             [
                 'kode' => '03', 
@@ -40,7 +44,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Kelompok ini terdiri atas gula pasir dan gula merah (gula mangkok, gula aren, gula semut, gula siwalan, dan lain-lain), baik yang merupakan hasil olahan pabrik maupun rumah tangga.',
                 'ake_ketersediaan' => 121,
                 'skor_pph' => 2.50,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-candy-cane',
+                'color_class' => 'pink'
             ],
             [
                 'kode' => '04', 
@@ -48,7 +54,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Buah/biji berminyak adalah kelompok bahan makanan yang mengandung minyak yang berasal dari buah dan biji-bijian. Bahan makanan dalam kelompok ini adalah; kacang tanah berkulit beserta produksi turunannya kacang tanah lepas kulit, kedelai, kacang hijau, kelapa daging (produksi turunan dari kelapa berkulit), dan kopra (turunan dari kelapa daging)',
                 'ake_ketersediaan' => 71,
                 'skor_pph' => 1.00,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-seedling',
+                'color_class' => 'brown'
             ],
             [
                 'kode' => '05', 
@@ -56,7 +64,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Kelompok ini terdiri atas; alpukat, jeruk, duku, durian, jambu, mangga, nanas, pepaya, pisang, rambutan, salak, sawo, dan lainnya',
                 'ake_ketersediaan' => 155,
                 'skor_pph' => 30.00,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-apple-whole',
+                'color_class' => 'red'
             ],
             [
                 'kode' => '06', 
@@ -64,7 +74,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Kelompok ini terdiri atas; bawang merah, ketimun, kacang merah, kacang panjang, kentang, kubis, tomat, wortel, cabe, terong, petsai/sawi, bawang daun, kangkung, lobak, labu siam, buncis, bayam, bawang putih, dan lainnya.',
                 'ake_ketersediaan' => 155,
                 'skor_pph' => 30.00,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-leaf',
+                'color_class' => 'green'
             ],
             [
                 'kode' => '07', 
@@ -72,7 +84,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Kelompok ini terdiri atas; daging sapi, daging kerbau, daging kambing, daging domba, daging kuda/lainnya, daging babi, daging ayam buras, daging ayam ras, daging itik, dan jeroan semua jenis.',
                 'ake_ketersediaan' => 229,
                 'skor_pph' => 19.06,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-drumstick-bite',
+                'color_class' => 'rose'
             ],
             [
                 'kode' => '08', 
@@ -80,7 +94,9 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Mencakup telur ayam buras, telur ayam ras, telur itik, dan telur unggas lainnya.',
                 'ake_ketersediaan' => 229,
                 'skor_pph' => 19.06,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-egg',
+                'color_class' => 'yellow'
             ],
             [
                 'kode' => '09', 
@@ -88,23 +104,19 @@ class KelompokFactory extends Factory
                 'deskripsi' => 'Terdiri atas susu sapi termasuk susu olahan impor yang disetarakan susu segar.',
                 'ake_ketersediaan' => 229,
                 'skor_pph' => 19.06,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-mug-hot',
+                'color_class' => 'sky'
             ],
             [
                 'kode' => '10', 
-                'nama' => 'Ikan',
-                'deskripsi' => 'Ikan yang dimaksud adalah komoditas yang berupa binatang air dan biota perairan lainnya yang meliputi jenis ikan darat dan ikan laut, baik budidaya maupun tangkap serta rumput laut.',
-                'ake_ketersediaan' => 229,
-                'skor_pph' => 19.06,
-                'status_aktif' => true
-            ],
-            [
-                'kode' => '11', 
                 'nama' => 'Minyak dan Lemak',
                 'deskripsi' => 'Minyak nabati: minyak kacang tanah, minyak goreng kelapa, minyak goreng sawit. Lemak hewani: lemak sapi, lemak kerbau, lemak kambing, lemak domba, lemak babi.',
                 'ake_ketersediaan' => 562,
                 'skor_pph' => 5.00,
-                'status_aktif' => true
+                'status_aktif' => true,
+                'icon_class' => 'fas fa-oil-can',
+                'color_class' => 'lime'
             ],
         ];
         

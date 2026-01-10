@@ -1,0 +1,46 @@
+{
+  "data_points": [
+    {
+      "tahun": 2019,
+      "bulan": 0,
+      "kelompok": "01",
+      "komoditi": "0102",
+      "kalori_hari": 903.0
+    },
+    {
+      "tahun": 2020,
+      "bulan": 0,
+      "kelompok": "01",
+      "komoditi": "0102",
+      "kalori_hari": 890.0
+    },
+    {
+      "tahun": 2021,
+      "bulan": 0,
+      "kelompok": "01",
+      "komoditi": "0102",
+      "kalori_hari": 895.0
+    },
+    {
+      "tahun": 2022,
+      "bulan": 0,
+      "kelompok": "01",
+      "komoditi": "0102",
+      "kalori_hari": 900.0
+    },
+    {
+      "tahun": 2023,
+      "bulan": 0,
+      "kelompok": "01",
+      "komoditi": "0102",
+      "kalori_hari": 885.0
+    },
+    {
+      "tahun": 2024,
+      "bulan": 0,
+      "kelompok": "01",
+      "komoditi": "0102",
+      "kalori_hari": 880.0
+    }
+  ]
+}
