@@ -1,0 +1,23 @@
+{
+  "analysis_date": "2026-01-11 01:33:02",
+  "models_compared": [
+    "XGBoost",
+    "LSTM"
+  ],
+  "best_model": "XGBoost",
+  "xgboost_metrics": {
+    "dataset": "Test",
+    "mae": 1.663222573524535,
+    "rmse": 12.654497855148469,
+    "r2": 0.7820435062311671,
+    "mape": 5.6205188660712135
+  },
+  "lstm_metrics": {
+    "dataset": "Test",
+    "mae": 2.107436940222564,
+    "rmse": 13.24721288973684,
+    "r2": 0.7611479290193256,
+    "mape": 414.44020925362855
+  },
+  "recommendation": "XGBoost recommended for thesis (better balance of performance, speed, interpretability)"
+}

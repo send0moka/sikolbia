@@ -1,0 +1,18 @@
+{
+  "Training Summary": {
+    "Total Epochs": 47,
+    "Final Training Loss": 9.992169380187988,
+    "Final Validation Loss": 32.807861328125,
+    "Best Epoch": 27
+  },
+  "Performance Summary": {
+    "Test MAPE (Target < 10%)": "243.83%",
+    "Test R\u00b2 Score": "0.7862",
+    "Test MAE": "1.89 kkal/kapita/hari",
+    "Test RMSE": "12.33 kkal/kapita/hari"
+  },
+  "Improvement Analysis": {
+    "vs LSTM Only": "+23.90%",
+    "vs Huber Only": "-254.76%"
+  }
+}

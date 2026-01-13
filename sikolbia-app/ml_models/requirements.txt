@@ -1,0 +1,52 @@
+# NBM Calorie Prediction - ML Requirements
+# ==========================================
+
+# Core Data Science
+pandas==2.1.4
+numpy==1.26.2
+scipy==1.11.4
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.18.0
+
+# Machine Learning
+scikit-learn==1.3.2
+xgboost==2.0.3
+lightgbm==4.1.0
+
+# Deep Learning (Time Series)
+tensorflow==2.15.0
+keras==2.15.0
+# Alternative: pytorch
+# torch==2.1.2
+
+# Time Series Specific
+statsmodels==0.14.1
+prophet==1.1.5
+pmdarima==2.0.4  # Auto ARIMA
+
+# Database
+mysql-connector-python==8.2.0
+pymysql==1.1.0
+sqlalchemy==2.0.23
+
+# Utilities
+python-dotenv==1.0.0
+joblib==1.3.2
+tqdm==4.66.1
+
+# Jupyter (optional, for interactive analysis)
+jupyter==1.0.0
+ipykernel==6.27.1
+notebook==7.0.6
+
+# Model Evaluation
+shap==0.44.0  # SHAP values for interpretability
+
+# Hyperparameter Tuning
+optuna==3.5.0
+
+# Model Persistence
+pickle-mixin==1.0.2

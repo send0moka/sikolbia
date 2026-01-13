@@ -154,8 +154,10 @@ class TransaksiNbm extends Model
     {
         // APP3 data: bahan_makanan in '000 tons (ribu ton)
         // Convert to gram per capita per day: (ribu_ton * 1000 * 1000000 gram) / (populasi * 365)
+        // Use abs() because negative values indicate deficit (consumption > production)
+        // but per-capita consumption display should always be positive
         if ($this->bahan_makanan && $this->populasi_indonesia) {
-            return round(($this->bahan_makanan * 1000 * 1000000) / ($this->populasi_indonesia * 365), 2);
+            return round((abs($this->bahan_makanan) * 1000 * 1000000) / ($this->populasi_indonesia * 365), 2);
         }
         return 0;
     }

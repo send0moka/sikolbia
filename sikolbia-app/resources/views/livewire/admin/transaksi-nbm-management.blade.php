@@ -223,7 +223,7 @@
                 <thead class="bg-neutral-50 dark:bg-neutral-800/50">
                     <tr>
                         <x-sortable-header field="kode_kelompok" :sort-field="$sortField" :sort-direction="$sortDirection" title="Identifikasi" class="px-4 py-3 w-48" />
-                        <x-sortable-header field="masukan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Produksi" class="px-4 py-3 w-40" />
+                        <x-sortable-header field="keluaran" :sort-field="$sortField" :sort-direction="$sortDirection" title="Produksi" class="px-4 py-3 w-40" />
                         <x-sortable-header field="bahan_makanan" :sort-field="$sortField" :sort-direction="$sortDirection" title="Konsumsi & Nutrisi" class="px-4 py-3 w-44" />
                         <x-sortable-header field="harga_konsumen" :sort-field="$sortField" :sort-direction="$sortDirection" title="Ekonomi" class="px-4 py-3 w-36" />
                         <x-sortable-header field="suhu_rata_celsius" :sort-field="$sortField" :sort-direction="$sortDirection" title="Lingkungan" class="px-4 py-3 w-32" />
@@ -253,10 +253,10 @@
                             <td class="px-4 py-4 text-sm">
                                 <div class="space-y-1">
                                     <div class="font-semibold text-green-600 dark:text-green-400">
-                                        {{ number_format($transaksi->masukan ?? 0, 1) }} ton
+                                        {{ number_format($transaksi->keluaran ?? 0, 1) }} ton
                                     </div>
                                     <div class="text-xs text-neutral-600 dark:text-neutral-400">
-                                        Masukan
+                                        Produksi
                                     </div>
                                     <div class="text-xs text-neutral-700 dark:text-neutral-300">
                                         Impor: {{ number_format($transaksi->impor ?? 0, 0) }}
@@ -1638,7 +1638,7 @@
             if (allData && Array.isArray(allData)) {
                 allData.forEach((transaksi, index) => {
                     const identifikasi = `${transaksi.kode_kelompok || ''}-${transaksi.kode_komoditi || ''} ${transaksi.tahun || ''}-${String(transaksi.bulan || '').padStart(2, '0')} ${transaksi.data_source || ''}`;
-                    const produksi = `${Number(transaksi.masukan || 0).toFixed(1)} ton Masukan Impor: ${Number(transaksi.impor || 0).toFixed(0)} Ekspor: ${Number(transaksi.ekspor || 0).toFixed(0)}`;
+                    const produksi = `${Number(transaksi.keluaran || 0).toFixed(1)} ton Produksi Impor: ${Number(transaksi.impor || 0).toFixed(0)} Ekspor: ${Number(transaksi.ekspor || 0).toFixed(0)}`;
                     const konsumsi = `${Number(transaksi.gram_hari || 0).toFixed(1)} g/hari ${Number(transaksi.kalori_hari || 0).toFixed(0)} kal/hari Protein: ${Number(transaksi.protein_hari || 0).toFixed(1)}g`;
                     const ekonomi = `Rp ${Number(transaksi.harga_konsumen || 0).toLocaleString('id-ID')} Harga Konsumen Inflasi: ${(Number(transaksi.inflasi_komoditi || 0) * 100).toFixed(2)}%`;
                     const lingkungan = `${Number(transaksi.suhu_rata_celsius || 0).toFixed(1)}°C ${Number(transaksi.curah_hujan_mm || 0).toFixed(0)}mm Curah Hujan`;

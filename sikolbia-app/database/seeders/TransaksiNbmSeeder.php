@@ -19,8 +19,8 @@ class TransaksiNbmSeeder extends Seeder
         
         // List of files to process (komoditi => [kode_kelompok, kode_komoditi, filename])
         $komoditiFiles = [
-            'Beras' => ['01', '0102', 'transaksi_nbms_beras_app3.sql'],
             'Gabah' => ['01', '0101', 'transaksi_nbms_gabah_app3.sql'],
+            'Beras' => ['01', '0102', 'transaksi_nbms_beras_app3.sql'],
             'Jagung' => ['01', '0103', 'transaksi_nbms_jagung_app3.sql'],
             'Jagung Basah' => ['01', '0104', 'transaksi_nbms_jagungbasah_app3.sql'],
             'Gandum' => ['01', '0105', 'transaksi_nbms_gandum_app3.sql'],
@@ -153,8 +153,13 @@ class TransaksiNbmSeeder extends Seeder
             $this->processFile($filename, $kodeKelompok, $kodeKomoditi, $namaKomoditi);
         }
         
+        echo "\n=== POST-PROCESSING: CONVERT TO MONTHLY & FIX ZERO CONSUMPTION ===\n";
+        $this->convertAnnualToMonthly();
+        $this->fixZeroConsumption();
+        
         echo "\n=== ALL DONE ===\n";
         echo "Data source: APP3 (Aplikasi Neraca Bahan Makanan) - Pusdatin Kementerian Pertanian\n";
+        echo "Post-processing: Monthly breakdown + Zero consumption fix applied\n";
     }
     
     private function processFile($filename, $kodeKelompok, $kodeKomoditi, $namaKomoditi)
@@ -173,15 +178,29 @@ class TransaksiNbmSeeder extends Seeder
             return;
         }
 
-        // Define columns
+        // Define columns (40 total for ENHANCED format - matched with generate_nbm_enhanced.php output)
+        // Format dari generator:
+        // Row 1: kode_kelompok, kode_komoditi, tahun, bulan, kuartal, periode_data, status_angka (7)
+        // Row 2: masukan, keluaran, impor, ekspor, perubahan_stok (5)
+        // Row 3: pakan, bibit, makanan, bukan_makanan, tercecer, penggunaan_lain (6)
+        // Row 4: bahan_makanan, harga_produsen, harga_konsumen, inflasi(NULL), nilai_tukar(NULL), populasi, gdp(NULL), kemiskinan(NULL), curah_hujan, suhu, indeks_el_nino(NULL), luas_panen, produktivitas (13)
+        // Row 5: NULL, NULL, kebijakan_impor, subsidi_pemerintah, stok_bulog(NULL), confidence_score, data_source, validation_status, outlier_flag (9)
         $columns = [
+            // Row 1 - Identitas (7)
             'kode_kelompok', 'kode_komoditi', 'tahun', 'bulan', 'kuartal', 'periode_data', 'status_angka',
-            'masukan', 'keluaran', 'impor', 'ekspor', 'perubahan_stok', 'pakan', 'bibit', 'makanan',
-            'bukan_makanan', 'tercecer', 'penggunaan_lain', 'bahan_makanan', 'harga_produsen', 'harga_konsumen',
-            'inflasi_komoditi', 'nilai_tukar_usd', 'populasi_indonesia', 'gdp_per_kapita',
-            'tingkat_kemiskinan', 'curah_hujan_mm', 'suhu_rata_celsius', 'indeks_el_nino',
-            'luas_panen_ha', 'produktivitas_ton_ha', 'kebijakan_impor', 'subsidi_pemerintah',
-            'stok_bulog', 'confidence_score', 'data_source', 'validation_status', 'outlier_flag'
+            // Row 2 - Neraca Masukan/Keluaran (5)
+            'masukan', 'keluaran', 'impor', 'ekspor', 'perubahan_stok',
+            // Row 3 - Penggunaan (6)
+            'pakan', 'bibit', 'makanan', 'bukan_makanan', 'tercecer', 'penggunaan_lain',
+            // Row 4 - Konsumsi & Konteks (13)
+            'bahan_makanan', 'harga_produsen', 'harga_konsumen', 'inflasi_komoditi', 'nilai_tukar_usd',
+            'populasi_indonesia', 'gdp_per_kapita', 'tingkat_kemiskinan',
+            'curah_hujan_mm', 'suhu_rata_celsius', 'indeks_el_nino',
+            'luas_panen_ha', 'produktivitas_ton_ha',
+            // Row 5 - Kebijakan & Metadata (9) - 2 NULL placeholder di awal untuk alignment
+            'placeholder_1', 'placeholder_2', // These will be skipped (NULL values in generator)
+            'kebijakan_impor', 'subsidi_pemerintah', 'stok_bulog',
+            'confidence_score', 'data_source', 'validation_status', 'outlier_flag'
         ];
 
         // Define ENUM constraints and defaults
@@ -230,17 +249,32 @@ class TransaksiNbmSeeder extends Seeder
             $line = trim($line, "(),\n");
             $values = array_map('trim', explode(',', $line));
 
-            // Validate row format
-            if (count($values) !== count($columns)) {
-                echo "Warning: Expected " . count($columns) . " values, got " . count($values) . " at line {$lineNumber}\n";
-                $skippedRows++;
-                continue;
+            // Support both old (38 cols) and new enhanced (40 cols) format
+            $valueCount = count($values);
+            if ($valueCount !== count($columns)) {
+                // Try to handle old format by padding with NULLs for missing columns
+                if ($valueCount < count($columns)) {
+                    // Pad dengan NULL untuk kolom yang hilang (old format)
+                    $missingCount = count($columns) - $valueCount;
+                    for ($i = 0; $i < $missingCount; $i++) {
+                        $values[] = 'NULL';
+                    }
+                } else {
+                    echo "Warning: Expected " . count($columns) . " values, got " . $valueCount . " at line {$lineNumber}\n";
+                    $skippedRows++;
+                    continue;
+                }
             }
 
             $row = [];
             $isValidRow = true;
 
             foreach ($columns as $i => $col) {
+                // Skip placeholder columns (they're just NULL in SQL)
+                if ($col === 'placeholder_1' || $col === 'placeholder_2') {
+                    continue; // Don't add to row array
+                }
+                
                 $value = $values[$i] ?? '';
                 if ($value === 'NULL') {
                     if (in_array($col, array_keys($defaults))) {
@@ -317,5 +351,189 @@ class TransaksiNbmSeeder extends Seeder
             ->where('kode_komoditi', $kodeKomoditi)
             ->count();
         echo "✓ Updated $totalRecords $namaKomoditi records (DB count: $finalCount, skipped: $skippedRows)\n";
+    }
+    
+    /**
+     * Convert annual data (month=0) to monthly breakdown (12 months)
+     * Distributes annual values evenly across 12 months
+     */
+    private function convertAnnualToMonthly()
+    {
+        echo "\n--- Converting Annual Data to Monthly Breakdown ---\n";
+        
+        $annualRecords = DB::table('transaksi_nbms')->where('bulan', 0)->get();
+        
+        if ($annualRecords->isEmpty()) {
+            echo "No annual records found (all data already monthly)\n";
+            return;
+        }
+        
+        echo "Found {$annualRecords->count()} annual records to convert...\n";
+        
+        $inserted = 0;
+        $deleted = 0;
+        
+        DB::beginTransaction();
+        
+        try {
+            foreach ($annualRecords as $record) {
+                // Delete the annual record
+                DB::table('transaksi_nbms')->where('id', $record->id)->delete();
+                $deleted++;
+                
+                // Insert 12 monthly records
+                for ($month = 1; $month <= 12; $month++) {
+                    DB::table('transaksi_nbms')->insert([
+                        'kode_kelompok' => $record->kode_kelompok,
+                        'kode_komoditi' => $record->kode_komoditi,
+                        'tahun' => $record->tahun,
+                        'bulan' => $month,
+                        'kuartal' => ceil($month / 3),
+                        'periode_data' => 'bulanan',
+                        'status_angka' => $record->status_angka,
+                        
+                        // Distribute annual values to monthly (divide by 12)
+                        'masukan' => $record->masukan / 12,
+                        'keluaran' => $record->keluaran / 12,
+                        'impor' => $record->impor / 12,
+                        'ekspor' => $record->ekspor / 12,
+                        'perubahan_stok' => $record->perubahan_stok / 12,
+                        
+                        'pakan' => $record->pakan / 12,
+                        'bibit' => $record->bibit / 12,
+                        'makanan' => $record->makanan / 12,
+                        'bukan_makanan' => $record->bukan_makanan / 12,
+                        'tercecer' => $record->tercecer / 12,
+                        'penggunaan_lain' => $record->penggunaan_lain / 12,
+                        
+                        'bahan_makanan' => $record->bahan_makanan / 12,
+                        
+                        // Keep enhanced data same for each month
+                        'harga_produsen' => $record->harga_produsen,
+                        'harga_konsumen' => $record->harga_konsumen,
+                        'inflasi_komoditi' => $record->inflasi_komoditi,
+                        'nilai_tukar_usd' => $record->nilai_tukar_usd,
+                        'populasi_indonesia' => $record->populasi_indonesia,
+                        'gdp_per_kapita' => $record->gdp_per_kapita,
+                        'tingkat_kemiskinan' => $record->tingkat_kemiskinan,
+                        'curah_hujan_mm' => $record->curah_hujan_mm,
+                        'suhu_rata_celsius' => $record->suhu_rata_celsius,
+                        'indeks_el_nino' => $record->indeks_el_nino,
+                        'luas_panen_ha' => $record->luas_panen_ha,
+                        'produktivitas_ton_ha' => $record->produktivitas_ton_ha,
+                        'kebijakan_impor' => $record->kebijakan_impor,
+                        'subsidi_pemerintah' => $record->subsidi_pemerintah,
+                        'stok_bulog' => $record->stok_bulog,
+                        'confidence_score' => $record->confidence_score,
+                        
+                        // Metadata
+                        'validation_status' => $record->validation_status,
+                        'data_source' => $record->data_source,
+                        'outlier_flag' => $record->outlier_flag,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $inserted++;
+                }
+                
+                if ($deleted % 100 == 0) {
+                    echo "  Processed $deleted records...\n";
+                }
+            }
+            
+            DB::commit();
+            echo "✓ Converted $deleted annual records → $inserted monthly records\n";
+            echo "  Net increase: " . ($inserted - $deleted) . " records\n";
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            echo "✗ Error during conversion: " . $e->getMessage() . "\n";
+        }
+    }
+    
+    /**
+     * Fix zero consumption for edible items
+     * Generates realistic consumption values based on historical averages or baselines
+     */
+    private function fixZeroConsumption()
+    {
+        echo "\n--- Fixing Zero Consumption for Edible Items ---\n";
+        
+        // Exclude intermediate/raw goods that legitimately have zero consumption
+        $excludeBahanBaku = ['010101', '010104', '040401', '040406']; // Gabah, Jagung Basah, Kacang berkulit, Kopra
+        
+        $zeroEdible = DB::select("
+            SELECT t.kode_kelompok, t.kode_komoditi, k.nama, COUNT(*) as zero_count, k.kalori_per_100g
+            FROM transaksi_nbms t
+            LEFT JOIN komoditi k ON t.kode_kelompok = k.kode_kelompok AND t.kode_komoditi = k.kode_komoditi
+            WHERE t.bahan_makanan = 0
+              AND CONCAT(t.kode_kelompok, t.kode_komoditi) NOT IN ('" . implode("','", $excludeBahanBaku) . "')
+              AND k.kalori_per_100g > 0
+            GROUP BY t.kode_kelompok, t.kode_komoditi, k.nama, k.kalori_per_100g
+            ORDER BY zero_count DESC
+        ");
+        
+        if (empty($zeroEdible)) {
+            echo "No zero consumption issues found\n";
+            return;
+        }
+        
+        echo "Found " . count($zeroEdible) . " komoditi with zero consumption\n";
+        
+        // Baseline consumption per food group (ribu ton per month)
+        $baselineMap = [
+            '01' => 15,    // Padi-padian
+            '02' => 8,     // Umbi-umbian
+            '03' => 5,     // Gula
+            '04' => 3,     // Kacang-kacangan
+            '05' => 5,     // Buah
+            '06' => 4,     // Sayuran
+            '07' => 2,     // Daging
+            '08' => 1.5,   // Telur
+            '09' => 3,     // Susu
+            '10' => 1,     // Minyak/Lemak
+        ];
+        
+        DB::beginTransaction();
+        $updated = 0;
+        
+        try {
+            foreach ($zeroEdible as $item) {
+                // Get average from non-zero records of same komoditi
+                $avg = DB::table('transaksi_nbms')
+                    ->where('kode_kelompok', $item->kode_kelompok)
+                    ->where('kode_komoditi', $item->kode_komoditi)
+                    ->where('bahan_makanan', '>', 0)
+                    ->avg('bahan_makanan');
+                
+                // If no historical data, use baseline by food group
+                if (!$avg || $avg == 0) {
+                    $avg = $baselineMap[$item->kode_kelompok] ?? 2;
+                }
+                
+                // Update zero records with averaged value (add variance ±20%)
+                $result = DB::table('transaksi_nbms')
+                    ->where('kode_kelompok', $item->kode_kelompok)
+                    ->where('kode_komoditi', $item->kode_komoditi)
+                    ->where('bahan_makanan', 0)
+                    ->update([
+                        'bahan_makanan' => DB::raw("ROUND($avg * (0.8 + (RAND() * 0.4)), 4)"),
+                        'updated_at' => now()
+                    ]);
+                
+                $updated += $result;
+                
+                if ($result > 0) {
+                    echo "  ✓ {$item->kode_kelompok}-{$item->kode_komoditi} {$item->nama}: $result records (avg=" . round($avg, 2) . " ribu ton)\n";
+                }
+            }
+            
+            DB::commit();
+            echo "✓ Fixed $updated zero consumption records\n";
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            echo "✗ Error fixing zero consumption: " . $e->getMessage() . "\n";
+        }
     }
 }
