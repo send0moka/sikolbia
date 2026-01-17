@@ -355,7 +355,8 @@ class TransaksiNbmSeeder extends Seeder
     
     /**
      * Convert annual data (month=0) to monthly breakdown (12 months)
-     * Distributes annual values evenly across 12 months
+     * Distributes annual values with variation across months while keeping total intact
+     * Strategy: 11 months get random variation (90-110%), month 7 (Juli) gets remainder to ensure exact total
      */
     private function convertAnnualToMonthly()
     {
@@ -373,6 +374,13 @@ class TransaksiNbmSeeder extends Seeder
         $inserted = 0;
         $deleted = 0;
         
+        // Columns that will be distributed across 12 months (should sum to annual total)
+        $distributedColumns = [
+            'masukan', 'keluaran', 'impor', 'ekspor', 'perubahan_stok',
+            'pakan', 'bibit', 'makanan', 'bukan_makanan', 'tercecer', 'penggunaan_lain',
+            'bahan_makanan'
+        ];
+        
         DB::beginTransaction();
         
         try {
@@ -381,9 +389,23 @@ class TransaksiNbmSeeder extends Seeder
                 DB::table('transaksi_nbms')->where('id', $record->id)->delete();
                 $deleted++;
                 
-                // Insert 12 monthly records
+                // Prepare monthly data with variation
+                $monthlyData = [];
+                $sums = []; // Track sum for each distributed column
+                
+                // Initialize sums
+                foreach ($distributedColumns as $col) {
+                    $sums[$col] = 0;
+                }
+                
+                // Generate data for all months except July (month 7)
                 for ($month = 1; $month <= 12; $month++) {
-                    DB::table('transaksi_nbms')->insert([
+                    if ($month == 7) {
+                        // Skip July for now, will be calculated as remainder
+                        continue;
+                    }
+                    
+                    $monthData = [
                         'kode_kelompok' => $record->kode_kelompok,
                         'kode_komoditi' => $record->kode_komoditi,
                         'tahun' => $record->tahun,
@@ -391,22 +413,6 @@ class TransaksiNbmSeeder extends Seeder
                         'kuartal' => ceil($month / 3),
                         'periode_data' => 'bulanan',
                         'status_angka' => $record->status_angka,
-                        
-                        // Distribute annual values to monthly (divide by 12)
-                        'masukan' => $record->masukan / 12,
-                        'keluaran' => $record->keluaran / 12,
-                        'impor' => $record->impor / 12,
-                        'ekspor' => $record->ekspor / 12,
-                        'perubahan_stok' => $record->perubahan_stok / 12,
-                        
-                        'pakan' => $record->pakan / 12,
-                        'bibit' => $record->bibit / 12,
-                        'makanan' => $record->makanan / 12,
-                        'bukan_makanan' => $record->bukan_makanan / 12,
-                        'tercecer' => $record->tercecer / 12,
-                        'penggunaan_lain' => $record->penggunaan_lain / 12,
-                        
-                        'bahan_makanan' => $record->bahan_makanan / 12,
                         
                         // Keep enhanced data same for each month
                         'harga_produsen' => $record->harga_produsen,
@@ -425,16 +431,80 @@ class TransaksiNbmSeeder extends Seeder
                         'subsidi_pemerintah' => $record->subsidi_pemerintah,
                         'stok_bulog' => $record->stok_bulog,
                         'confidence_score' => $record->confidence_score,
-                        
-                        // Metadata
                         'validation_status' => $record->validation_status,
                         'data_source' => $record->data_source,
                         'outlier_flag' => $record->outlier_flag,
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ]);
-                    $inserted++;
+                    ];
+                    
+                    // Distribute values with random variation (90%-110% of average)
+                    foreach ($distributedColumns as $col) {
+                        $annualValue = $record->$col ?? 0;
+                        $baseMonthly = $annualValue / 12;
+                        
+                        // Random factor between 0.90 and 1.10 (±10% variation)
+                        $randomFactor = 0.90 + (mt_rand(0, 200) / 1000); // 0.90 to 1.10
+                        $monthlyValue = round($baseMonthly * $randomFactor, 4);
+                        
+                        $monthData[$col] = $monthlyValue;
+                        $sums[$col] += $monthlyValue;
+                    }
+                    
+                    $monthlyData[] = $monthData;
                 }
+                
+                // Month 7 (Juli): Use remainder to ensure exact total
+                $month7Data = [
+                    'kode_kelompok' => $record->kode_kelompok,
+                    'kode_komoditi' => $record->kode_komoditi,
+                    'tahun' => $record->tahun,
+                    'bulan' => 7,
+                    'kuartal' => 3,
+                    'periode_data' => 'bulanan',
+                    'status_angka' => $record->status_angka,
+                    
+                    // Keep enhanced data same
+                    'harga_produsen' => $record->harga_produsen,
+                    'harga_konsumen' => $record->harga_konsumen,
+                    'inflasi_komoditi' => $record->inflasi_komoditi,
+                    'nilai_tukar_usd' => $record->nilai_tukar_usd,
+                    'populasi_indonesia' => $record->populasi_indonesia,
+                    'gdp_per_kapita' => $record->gdp_per_kapita,
+                    'tingkat_kemiskinan' => $record->tingkat_kemiskinan,
+                    'curah_hujan_mm' => $record->curah_hujan_mm,
+                    'suhu_rata_celsius' => $record->suhu_rata_celsius,
+                    'indeks_el_nino' => $record->indeks_el_nino,
+                    'luas_panen_ha' => $record->luas_panen_ha,
+                    'produktivitas_ton_ha' => $record->produktivitas_ton_ha,
+                    'kebijakan_impor' => $record->kebijakan_impor,
+                    'subsidi_pemerintah' => $record->subsidi_pemerintah,
+                    'stok_bulog' => $record->stok_bulog,
+                    'confidence_score' => $record->confidence_score,
+                    'validation_status' => $record->validation_status,
+                    'data_source' => $record->data_source,
+                    'outlier_flag' => $record->outlier_flag,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+                
+                // Calculate remainder for July (month 7) to ensure exact total
+                foreach ($distributedColumns as $col) {
+                    $annualValue = $record->$col ?? 0;
+                    $remainder = round($annualValue - $sums[$col], 4);
+                    
+                    // Ensure non-negative (in case of rounding issues)
+                    $remainder = max(0, $remainder);
+                    
+                    $month7Data[$col] = $remainder;
+                }
+                
+                // Insert July data at correct position (index 6)
+                array_splice($monthlyData, 6, 0, [$month7Data]);
+                
+                // Bulk insert all 12 monthly records
+                DB::table('transaksi_nbms')->insert($monthlyData);
+                $inserted += 12;
                 
                 if ($deleted % 100 == 0) {
                     echo "  Processed $deleted records...\n";
@@ -444,6 +514,7 @@ class TransaksiNbmSeeder extends Seeder
             DB::commit();
             echo "✓ Converted $deleted annual records → $inserted monthly records\n";
             echo "  Net increase: " . ($inserted - $deleted) . " records\n";
+            echo "  Strategy: 11 months with ±10% variation, month 7 (Juli) = exact remainder\n";
             
         } catch (\Exception $e) {
             DB::rollback();

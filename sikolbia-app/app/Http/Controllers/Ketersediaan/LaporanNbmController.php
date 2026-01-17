@@ -31,11 +31,11 @@ class LaporanNbmController extends Controller
             ->with('komoditi')
             ->selectRaw('
                 tahun,
-                ROUND(AVG(masukan)) as masukan,
-                ROUND(AVG(keluaran)) as keluaran,
-                ROUND(AVG(impor), 2) as impor,
+                ROUND(SUM(masukan)) as masukan,
+                ROUND(SUM(keluaran)) as keluaran,
+                ROUND(SUM(impor), 2) as impor,
                 ROUND(AVG(ekspor), 2) as ekspor,
-                ROUND(AVG(perubahan_stok), 3) as perubahanStok,
+                ROUND(SUM(perubahan_stok), 3) as perubahanStok,
                 ROUND(SUM(pakan)) as pakan,
                 ROUND(SUM(bibit), 2) as bibit,
                 ROUND(SUM(makanan)) as diolahMakanan,
