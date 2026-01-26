@@ -1,74 +1,35 @@
-FROM python:3.10-slim-bookworm AS builder
+# File: fastapi/Dockerfile
 
+FROM python:3.10-slim
+
+# Set working directory
 WORKDIR /app
 
-# Install build deps for NumPy/SciPy/TensorFlow
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
-    git \
-    curl \
-    libopenblas-dev \
-    liblapack-dev \
-    libatlas-base-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create venv
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Install prod requirements
-COPY requirements.txt .
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    # prune unneeded files
-    && find /opt/venv -type d -name "tests" -exec rm -rf {} + \
-    && find /opt/venv -type d -name "__pycache__" -exec rm -rf {} + \
-    && rm -rf /root/.cache/pip
-
-
-# =============================
-# Stage 2: Runtime image
-# =============================
-FROM python:3.10-slim-bookworm
-
-WORKDIR /app
-
-# Runtime libs only (no compilers)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libopenblas0 \
-    liblapack3 \
-    libatlas3-base \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy venv
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Copy app source and essential files
-COPY app/ ./app/
+# Copy requirements
 COPY requirements.txt .
 
-# Create necessary directories
-RUN mkdir -p logs ml_models/models ml_models/data ml_models/results models
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Note: Pre-trained models are NOT copied during build (too large for git/docker)
-# To use models in production:
-#   Option 1: Mount as volume:
-#     docker run -v ./ml_models/models:/app/ml_models/models ...
-#   Option 2: Copy into running container:
-#     docker cp ./ml_models/models/nbm_production <container>:/app/ml_models/models/
-#   Option 3: Download from model registry/S3 in entrypoint script
-# The API will work in fallback mode without models (statistical predictions)
+# Copy application code
+COPY . .
+
+# Create models directory (akan di-mount dari host)
+RUN mkdir -p /app/models/ensemble
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
 
-# Expose ports
-EXPOSE 8000 5000 8888
+# Expose port
+EXPOSE 8001
 
-# Default: FastAPI with main_simple (lighter version, supports APP3 TAHUNAN data)
-CMD ["uvicorn", "app.main_simple:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run FastAPI
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]

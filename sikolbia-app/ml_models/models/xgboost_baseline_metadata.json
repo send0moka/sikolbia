@@ -1,0 +1,130 @@
+{
+  "model_type": "XGBoost",
+  "training_date": "2026-01-11 00:58:00",
+  "features": [
+    "tahun",
+    "bulan",
+    "bahan_makanan",
+    "produksi",
+    "impor",
+    "ekspor",
+    "perubahan_stok",
+    "harga_konsumen",
+    "harga_produsen",
+    "populasi_indonesia",
+    "curah_hujan_mm",
+    "suhu_rata_celsius",
+    "luas_panen_ha",
+    "produktivitas_ton_ha",
+    "kalori_per_100g",
+    "protein_per_100g",
+    "lemak_per_100g",
+    "protein_per_capita_per_day",
+    "quarter",
+    "semester",
+    "is_harvest_season",
+    "is_rainy_season",
+    "month_sin",
+    "month_cos",
+    "kalori_lag_1",
+    "bahan_makanan_lag_1",
+    "kalori_lag_3",
+    "bahan_makanan_lag_3",
+    "kalori_lag_6",
+    "bahan_makanan_lag_6",
+    "kalori_lag_12",
+    "bahan_makanan_lag_12",
+    "kalori_ma_3",
+    "kalori_ma_6",
+    "kalori_ma_12",
+    "kalori_growth_yoy",
+    "price_margin",
+    "production_per_capita",
+    "import_ratio",
+    "export_ratio",
+    "is_crisis_1998",
+    "is_crisis_2008",
+    "is_el_nino_2015",
+    "is_pandemic"
+  ],
+  "target": "kalori_per_capita_per_day",
+  "hyperparameters": {
+    "n_estimators": 200,
+    "max_depth": 8,
+    "learning_rate": 0.1,
+    "min_child_weight": 3,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "gamma": 0.1,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "random_state": 42,
+    "n_jobs": -1,
+    "tree_method": "auto"
+  },
+  "metrics": {
+    "train": {
+      "dataset": "Train",
+      "mae": 0.02169004337172971,
+      "rmse": 0.06400674861430196,
+      "r2": 0.9999824795489892,
+      "mape": 4.324583355238378
+    },
+    "validation": {
+      "dataset": "Validation",
+      "mae": 0.5802388993222914,
+      "rmse": 3.5620049192427734,
+      "r2": 0.9368957718725381,
+      "mape": 71.2274209836505
+    },
+    "test": {
+      "dataset": "Test",
+      "mae": 1.663222573524535,
+      "rmse": 12.654497855148469,
+      "r2": 0.7820435062311671,
+      "mape": 5.6205188660712135
+    }
+  },
+  "feature_importance_top10": [
+    {
+      "feature": "kalori_ma_3",
+      "importance": 0.6588044166564941
+    },
+    {
+      "feature": "kalori_ma_6",
+      "importance": 0.3030027747154236
+    },
+    {
+      "feature": "kalori_ma_12",
+      "importance": 0.014389635063707829
+    },
+    {
+      "feature": "protein_per_capita_per_day",
+      "importance": 0.0067778779193758965
+    },
+    {
+      "feature": "kalori_lag_1",
+      "importance": 0.005629919935017824
+    },
+    {
+      "feature": "kalori_lag_3",
+      "importance": 0.0038210730999708176
+    },
+    {
+      "feature": "bahan_makanan",
+      "importance": 0.0012031329097226262
+    },
+    {
+      "feature": "tahun",
+      "importance": 0.000650731788482517
+    },
+    {
+      "feature": "kalori_lag_12",
+      "importance": 0.0004549463337752968
+    },
+    {
+      "feature": "kalori_growth_yoy",
+      "importance": 0.0004214431392028928
+    }
+  ]
+}

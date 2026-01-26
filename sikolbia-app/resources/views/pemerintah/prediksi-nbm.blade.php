@@ -315,7 +315,7 @@
                 prediksiBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...';
                 prediksiBtn.disabled = true;
 
-                // Call prediction API
+                // Preview historical data first to detect missing calorie values
                 fetch('{{ route("pemerintah.prediksi-nbm.run") }}', {
                     method: 'POST',
                     headers: {
@@ -325,20 +325,107 @@
                     body: JSON.stringify({
                         kelompok: kelompok,
                         komoditi: komoditi,
-                        bulan: parseInt(bulan)
+                        bulan: parseInt(bulan),
+                        preview: true
                     })
                 })
                 .then(response => response.json())
+                .then(preview => {
+                    if (!preview.success) {
+                        alert('Error saat preview: ' + (preview.message || 'Gagal memuat data historis'));
+                        return Promise.reject(new Error('Preview failed'));
+                    }
+
+                    const invalid = preview.invalid_months || [];
+                    if (invalid.length > 0) {
+                        // Create or reuse a persistent preview warning element
+                        let warning = document.getElementById('previewWarning');
+                        if (!warning) {
+                            warning = document.createElement('div');
+                            warning.id = 'previewWarning';
+                            warning.style = 'position:fixed;left:20px;right:20px;bottom:20px;background:#fff3cd;border:1px solid #ffeeba;padding:16px;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:9999;';
+                            warning.innerHTML = `
+                                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                                    <div style="flex:1">
+                                        <strong>Perhatian — Bulan bermasalah</strong>
+                                        <div id="invalidMonthsList" style="margin-top:8px;color:#92400e"></div>
+                                    </div>
+                                    <div style="flex-shrink:0;display:flex;gap:8px;align-items:center">
+                                        <button id="continuePredictionBtn" class="btn btn-primary" style="background:#059669;color:#fff;border:none;padding:8px 12px;border-radius:4px;">Lanjutkan Prediksi</button>
+                                        <button id="cancelPredictionBtn" class="btn btn-secondary" style="background:#e5e7eb;color:#111;border:none;padding:8px 12px;border-radius:4px;">Batal</button>
+                                    </div>
+                                </div>`;
+                            document.body.appendChild(warning);
+                        }
+
+                        const monthsListEl = document.getElementById('invalidMonthsList');
+                        monthsListEl.textContent = invalid.join(', ');
+                        warning.style.display = 'block';
+
+                        // Return a promise that resolves to the fetch when user confirms
+                        return new Promise((resolve, reject) => {
+                            const cont = document.getElementById('continuePredictionBtn');
+                            const canc = document.getElementById('cancelPredictionBtn');
+
+                            function cleanup() {
+                                cont.removeEventListener('click', onContinue);
+                                canc.removeEventListener('click', onCancel);
+                                warning.style.display = 'none';
+                            }
+
+                            function onContinue() {
+                                cleanup();
+                                resolve(fetch('{{ route("pemerintah.prediksi-nbm.run") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({
+                                        kelompok: kelompok,
+                                        komoditi: komoditi,
+                                        bulan: parseInt(bulan)
+                                    })
+                                }));
+                            }
+
+                            function onCancel() {
+                                cleanup();
+                                reject(new Error('User cancelled due to missing months'));
+                            }
+
+                            cont.addEventListener('click', onContinue);
+                            canc.addEventListener('click', onCancel);
+                        });
+                    }
+
+                    // No invalid months — proceed immediately
+                    return fetch('{{ route("pemerintah.prediksi-nbm.run") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            kelompok: kelompok,
+                            komoditi: komoditi,
+                            bulan: parseInt(bulan)
+                        })
+                    });
+                })
+                .then(response => response ? response.json() : Promise.reject())
                 .then(data => {
-                    if (data.success) {
+                    if (data && data.success) {
                         displayResults(data.data);
-                    } else {
+                    } else if (data) {
                         alert('Error: ' + (data.message || 'Terjadi kesalahan saat prediksi'));
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan: ' + error.message);
+                    if (error && error.message && error.message !== 'User cancelled due to missing months') {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan: ' + (error.message || error));
+                    }
                 })
                 .finally(() => {
                     prediksiBtn.innerHTML = originalText;
@@ -483,7 +570,14 @@
                         data.historical.forEach((item, index) => {
                             const row = document.createElement('tr');
                             row.className = 'border-b border-neutral-200 dark:border-neutral-700';
-                            
+
+                            // Highlight rows with missing/zero calories
+                            const isInvalid = !item.kalori_hari || parseFloat(item.kalori_hari) <= 0;
+                            if (isInvalid) {
+                                row.classList.add('bg-red-50');
+                                row.classList.add('dark:bg-red-900/20');
+                            }
+
                             // Calculate trend (compare with previous month)
                             let trendHtml = '-';
                             if (index === 0) {
@@ -493,7 +587,7 @@
                                 const previousValue = data.historical[index - 1].kalori_hari;
                                 const diff = currentValue - previousValue;
                                 const percentChange = previousValue !== 0 ? ((diff / previousValue) * 100) : 0;
-                                
+
                                 if (Math.abs(percentChange) < 1) {
                                     // Stable (< 1% change)
                                     trendHtml = '<span class="text-gray-400">→ Stabil</span>';
@@ -505,14 +599,18 @@
                                     trendHtml = `<span class="text-red-600">↘ ${percentChange.toFixed(1)}%</span>`;
                                 }
                             }
-                            
+
+                            // Display kalori or a badge when invalid
+                            const kaloriDisplay = isInvalid ? `<span class="text-red-700 font-semibold">Tidak tersedia</span>` : item.kalori_hari.toFixed(2);
+
                             row.innerHTML = `
                                 <td class="px-6 py-3">${item.tahun}</td>
                                 <td class="px-6 py-3">${item.bulan}</td>
                                 <td class="px-6 py-3">${data.komoditi_name}</td>
-                                <td class="px-6 py-3 font-semibold">${item.kalori_hari.toFixed(2)}</td>
+                                <td class="px-6 py-3 font-semibold">${kaloriDisplay}</td>
                                 <td class="px-6 py-3">${trendHtml}</td>
                             `;
+
                             tbody.appendChild(row);
                         });
                     } else {

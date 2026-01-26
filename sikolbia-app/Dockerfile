@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     zip unzip libzip-dev \
     && docker-php-ext-configure opcache --enable-opcache \
     && docker-php-ext-install zip pdo_mysql mbstring exif pcntl bcmath gd opcache \
-    && pecl install redis && docker-php-ext-enable redis \
+    && pecl install redis || true && docker-php-ext-enable redis || true \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20

@@ -1,99 +1,133 @@
-version: '3.8'
+# File: sikolbia-app/docker-compose.yml
+# HAPUS baris version, tambahkan external: true
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: sikolbia-app:latest
-    container_name: sikolbia-app
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html:delegated
-      - vendor_data:/var/www/html/vendor
-      - node_modules_data:/var/www/html/node_modules
-    networks:
-      - sikolbia-network
-    depends_on:
-      - mysql
-      - redis
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: sikolbia-app:latest
+        container_name: sikolbia-app
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html:delegated
+            - vendor_data:/var/www/html/vendor
+            - node_modules_data:/var/www/html/node_modules
+        networks:
+            - sikolbia-network
+        environment:
+            - NBM_API_URL=http://sikolbia-ml-api:8000
+        depends_on:
+            - mysql
+            - redis
 
-  nginx:
-    image: nginx:alpine
-    container_name: sikolbia-nginx
-    ports:
-      - "8000:80"
-    volumes:
-      - .:/var/www/html:delegated
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - sikolbia-network
-    depends_on:
-      - app
+    nginx:
+        image: nginx:alpine
+        container_name: sikolbia-nginx
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www/html:delegated
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+        networks:
+            - sikolbia-network
+        depends_on:
+            - app
 
-  queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: sikolbia-queue
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html:delegated
-      - vendor_data:/var/www/html/vendor
-      - node_modules_data:/var/www/html/node_modules
-    networks:
-      - sikolbia-network
-    depends_on:
-      - mysql
-      - redis
-    command: php artisan queue:work --tries=3 --timeout=90
+    queue:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: sikolbia-queue
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html:delegated
+            - vendor_data:/var/www/html/vendor
+            - node_modules_data:/var/www/html/node_modules
+        networks:
+            - sikolbia-network
+        depends_on:
+            - mysql
+            - redis
+        command: php artisan queue:work --tries=3 --timeout=90
 
-  mysql:
-    image: mysql:8.0
-    container_name: sikolbia-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: sikolbia_db
-      MYSQL_USER: sikolbia_user
-      MYSQL_PASSWORD: sikolbia_pass
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - sikolbia-network
+    mysql:
+        image: mysql:8.0
+        container_name: sikolbia-mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: sikolbia_db
+            MYSQL_USER: sikolbia_user
+            MYSQL_PASSWORD: sikolbia_pass
+        ports:
+            - "3306:3306"
+        volumes:
+            - db_data:/var/lib/mysql
+        networks:
+            - sikolbia-network
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: sikolbia-phpmyadmin
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "8081:80"
-    networks:
-      - sikolbia-network
-    depends_on:
-      - mysql
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: sikolbia-phpmyadmin
+        environment:
+            PMA_HOST: mysql
+            PMA_PORT: 3306
+            MYSQL_ROOT_PASSWORD: root
+        ports:
+            - "8081:80"
+        networks:
+            - sikolbia-network
+        depends_on:
+            - mysql
 
-  redis:
-    image: redis:7-alpine
-    container_name: sikolbia-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - sikolbia-network
-    command: redis-server --appendonly yes
+    redis:
+        image: redis:7-alpine
+        container_name: sikolbia-redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        networks:
+            - sikolbia-network
+        command: redis-server --appendonly yes
+
+    sikolbia-ml-api:
+        build:
+            context: ../sikolbia-ml/app
+            dockerfile: Dockerfile
+        image: sikolbia-ml-api:latest
+        container_name: sikolbia-ml-api
+        working_dir: /app
+        volumes:
+            - ../sikolbia-ml/app:/app
+            - ../sikolbia-ml/app/ml_models:/app/ml_models:ro
+            - ../sikolbia-ml/ml_models/models:/app/models:ro
+            - ../ml_models/data:/app/data:ro
+            - ../sikolbia-ml/ml_models/ensemble:/app/ensemble:ro
+            - ../sikolbia-ml/logs:/app/logs
+        ports:
+            - "8082:8000"
+        environment:
+            - PYTHONUNBUFFERED=1
+        networks:
+            - sikolbia-network
+        depends_on:
+            - mysql
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+        restart: unless-stopped
 
 volumes:
-  db_data:
-  vendor_data:
-  node_modules_data:
-  redis_data:
+    db_data:
+    vendor_data:
+    node_modules_data:
+    redis_data:
 
 networks:
-  sikolbia-network:
-    external: true
+    sikolbia-network:
+        external: true # ⚠️ TAMBAHKAN INI
+        name: sikolbia-network

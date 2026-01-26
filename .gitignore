@@ -32,8 +32,6 @@
 **/public/hot
 
 # Large model files and data
-**/models/
-**/ml_models/data/
 **/ml_models/lstm_env/
 
 # IDE

@@ -1,0 +1,29 @@
+{
+  "model_type": "LSTM_Detrended",
+  "training_date": "2025-11-12T16:09:01.598202",
+  "sequence_length": 6,
+  "feature_columns": [
+    "month_sin",
+    "month_cos",
+    "kalori_ma3",
+    "kalori_std3",
+    "kalori_ma6",
+    "kalori_std6",
+    "kalori_ma12",
+    "kalori_std12",
+    "kalori_lag1",
+    "kalori_lag2",
+    "kalori_lag3",
+    "kalori_lag6",
+    "kalori_lag12"
+  ],
+  "trend_degree": 3,
+  "test_metrics": {
+    "MAE": 232751.54455823568,
+    "RMSE": 248912.2106702654,
+    "MAPE": 35.31138665275167,
+    "R2": -0.05797193380097365,
+    "Directional_Accuracy": 60.37735849056604
+  },
+  "approach": "Polynomial detrending + LSTM residual prediction"
+}

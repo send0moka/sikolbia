@@ -10,3 +10,7 @@ bootstrap/cache/*
 tests/
 *.log
 .DS_Store
+
+# Exclude public storage symlink artifacts that reference host paths (Windows)
+public/storage
+public/D*

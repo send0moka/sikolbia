@@ -11,9 +11,9 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 import warnings
 warnings.filterwarnings('ignore')
 
-from data_loader import DataLoader
-from data_preprocessing_monthly import DataPreprocessorMonthly
-from data_preprocessing_fixed import calculate_metrics_fixed
+from .data_loader import DataLoader
+from .data_preprocessing_monthly import DataPreprocessorMonthly
+from .data_preprocessing_fixed import calculate_metrics_fixed
 
 class NBMProductionModel:
     """Production-ready NBM calorie prediction model"""

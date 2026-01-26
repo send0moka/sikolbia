@@ -75,6 +75,16 @@ Route::middleware(['auth', 'verified', 'admin.only'])->group(function () {
     Route::get('/admin', function () {
         return view('admin.panel-selection');
     })->name('admin.panel-selection');
+    
+});
+
+// Route untuk Admin
+Route::middleware(['auth', 'role:admin|superadmin'])
+    ->prefix('admin/konsumsi-pangan')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('prediksi-kalori', App\Livewire\PrediksiKalori::class)
+            ->name('prediksi-kalori');
 });
 
 // PEMERINTAH ROUTES - PUBLIC USER ACCESS (READ-ONLY)
@@ -122,6 +132,15 @@ Route::middleware(['auth', 'verified', 'role:pemerintah|superadmin'])->prefix('p
     Route::get('/settings', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'settings'])->name('settings');
     Route::get('/panduan', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'panduan'])->name('panduan');
 });
+
+// Route untuk Pemerintah (jika mereka juga perlu akses)
+Route::middleware(['auth', 'verified', 'role:pemerintah|superadmin'])
+    ->prefix('pemerintah')
+    ->name('pemerintah.')
+    ->group(function () {
+        Route::get('prediksi-kalori', App\Livewire\PrediksiKalori::class)
+            ->name('prediksi-kalori');
+    });
 
 // AKADEMISI ROUTES - PUBLIC USER ACCESS (READ-ONLY)
 // ==================================================

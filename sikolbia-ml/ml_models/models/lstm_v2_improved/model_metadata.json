@@ -1,0 +1,42 @@
+{
+  "version": "V2_Improved",
+  "training_date": "2025-11-12T15:48:22.053780",
+  "sequence_length": 12,
+  "feature_columns": [
+    "month_sin",
+    "month_cos",
+    "kalori_ma3",
+    "kalori_std3",
+    "kalori_ma6",
+    "kalori_std6",
+    "kalori_ma12",
+    "kalori_std12",
+    "kalori_lag1",
+    "kalori_lag2",
+    "kalori_lag3",
+    "kalori_lag6",
+    "kalori_lag12"
+  ],
+  "ensemble_weights": [
+    0.45,
+    0.1,
+    0.05,
+    0.4000000000000001
+  ],
+  "test_metrics": {
+    "MAE": 258138.99110177768,
+    "RMSE": 284878.3924176344,
+    "MAPE": 44.027618362441274,
+    "R2": -0.9226460337040308,
+    "Directional_Accuracy": 51.06382978723404
+  },
+  "improvements": [
+    "Longer sequence (12 months)",
+    "Deeper LSTM (3 layers: 128-64-32)",
+    "BatchNormalization",
+    "Huber loss",
+    "Gradient clipping",
+    "Lower learning rate (0.0005)",
+    "Optimized ensemble weights"
+  ]
+}

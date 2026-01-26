@@ -1,685 +1,364 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
-from typing import List, Dict, Any, Optional
+"""
+FastAPI Prediction Endpoint for LSTM Enhanced Ensemble
+File: app/main.py atau routes/predict.py
+"""
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import joblib
 import numpy as np
 import pandas as pd
-import joblib
-import logging
-from datetime import datetime, date
-import traceback
+from datetime import datetime
+import mysql.connector
+from pathlib import Path
 import os
-import sys
 
-# Add ml_models to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'ml_models'))
+app = FastAPI(title="SIKOLBIA Prediction API")
 
-# Import both original and enhanced models
-try:
-    from ml_models.enhanced_model_adapter import NBMProductionModelEnhanced
-    from ml_models.production_model import NBMProductionModel
-    ENHANCED_MODEL_AVAILABLE = True
-except ImportError:
-    from ml_models.production_model import NBMProductionModel
-    ENHANCED_MODEL_AVAILABLE = False
-    print("⚠️  Enhanced model not available, using original model")
-from ml_models.data_loader import DataLoader
-from ml_models.data_preprocessing_monthly import DataPreprocessorMonthly
-
-# Import enhanced monitoring
-try:
-    from monitoring_endpoints import monitoring_router, startup_monitoring_init
-    from shap_endpoints import shap_router, startup_shap_init
-    ENHANCED_MONITORING_AVAILABLE = True
-except ImportError:
-    ENHANCED_MONITORING_AVAILABLE = False
-    print("⚠️  Enhanced monitoring not available")
-
-# Configure logging - disabled for production
-logging.basicConfig(
-    level=logging.ERROR,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        # logging.FileHandler('api_logs.log'),  # Disabled file logging
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
-
-# Initialize FastAPI app
-app = FastAPI(
-    title="Enhanced NBM Calorie Prediction API",
-    description="Advanced ML API with confidence intervals and multi-step prediction for Indonesian food calorie consumption",
-    version="2.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
-
-# CORS middleware for Laravel integration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8000", 
-        "http://127.0.0.1:8000", 
-        "http://nginx:80",
-        "http://app:9000",
-        "*"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Include monitoring router if available
-if ENHANCED_MONITORING_AVAILABLE:
-    app.include_router(monitoring_router)
-    app.include_router(shap_router)# Global model instances
-production_model = None
-enhanced_model = None
-enhanced_monitor = None
-semantic_index = None
-model_info = None
-
-# Pydantic models for request/response
-class NBMDataPoint(BaseModel):
-    """Single NBM data point"""
-    tahun: int = Field(..., ge=1990, le=2030, description="Year")
-    bulan: int = Field(..., ge=0, le=12, description="Month (0=annual, 1-12=monthly)")
-    kelompok: str = Field(..., description="Food group name")
-    komoditi: str = Field(..., description="Commodity name")
-    kalori_hari: float = Field(..., gt=0, description="Calories per day")
-    
-    @validator('kalori_hari')
-    def validate_calories(cls, v):
-        if v <= 0 or v > 10000:  # Reasonable calorie range (increased for annual data)
-            raise ValueError('Calories must be between 0 and 10000')
-        return v
-
-class PredictionRequest(BaseModel):
-    """Request model for prediction"""
-    data: List[NBMDataPoint] = Field(
-        ..., 
-        min_items=6, 
-        description="6 months of NBM data for prediction (chronological order)"
-    )
-    confidence_level: float = Field(
-        0.95, 
-        ge=0.8, 
-        le=0.99, 
-        description="Confidence level for intervals (0.8-0.99)"
-    )
-    
-    @validator('data')
-    def validate_sequence_length(cls, v):
-        if len(v) != 6:
-            raise ValueError('Exactly 6 months of data required for prediction')
-        return v
-
-class MultiStepRequest(BaseModel):
-    """Request model for multi-step prediction"""
-    data: List[NBMDataPoint] = Field(
-        ..., 
-        min_items=6, 
-        description="6 months of NBM data for prediction"
-    )
-    n_steps: int = Field(
-        3, 
-        ge=1, 
-        le=12, 
-        description="Number of months to predict ahead (1-12)"
-    )
-    confidence_level: float = Field(
-        0.95, 
-        ge=0.8, 
-        le=0.99, 
-        description="Confidence level for intervals"
+# ============================================================================
+# DATABASE CONNECTION
+# ============================================================================
+def get_db_connection():
+    """Connect to MySQL database"""
+    return mysql.connector.connect(
+        host=os.getenv('DB_HOST', 'mysql'),
+        port=int(os.getenv('DB_PORT', 3306)),
+        user=os.getenv('DB_USERNAME', 'sikolbia_user'),
+        password=os.getenv('DB_PASSWORD', 'sikolbia_pass'),
+        database=os.getenv('DB_DATABASE', 'sikolbia_db')
     )
 
-class MultiStepResponse(BaseModel):
-    """Response model for multi-step prediction"""
-    success: bool = Field(..., description="Prediction success status")
-    predictions: List[float] = Field(..., description="Multi-step predictions")
-    confidence_intervals: List[Dict[str, float]] = Field(..., description="Confidence intervals for each step")
-    forecast_months: List[str] = Field(..., description="Forecast period labels")
-    model_info: Dict[str, Any] = Field(..., description="Model metadata")
-    input_summary: Dict[str, Any] = Field(..., description="Input data summary")
-    timestamp: datetime = Field(default_factory=datetime.now)
+# ============================================================================
+# LOAD MODEL (saat startup)
+# ============================================================================
+MODEL_PATH = Path("models/ensemble")
+model = None
+scaler_X = None
+scaler_y_lstm = None
 
-class EnhancedPredictionResponse(BaseModel):
-    """Enhanced response model for prediction with confidence intervals"""
-    success: bool = Field(..., description="Prediction success status")
-    prediction: Optional[float] = Field(None, description="Point prediction (kcal/day)")
-    confidence_interval: Optional[Dict[str, float]] = Field(None, description="Statistical confidence interval")
-    uncertainty_metrics: Optional[Dict[str, float]] = Field(None, description="Uncertainty quantification")
-    model_info: Dict[str, Any] = Field(..., description="Enhanced model metadata")
-    input_summary: Dict[str, Any] = Field(..., description="Input data summary")
-    timestamp: datetime = Field(default_factory=datetime.now)
-
-class PredictionResponse(BaseModel):
-    """Response model for prediction"""
-    success: bool = Field(..., description="Prediction success status")
-    prediction: Optional[float] = Field(None, description="Predicted calories per day")
-    confidence_interval: Optional[Dict[str, float]] = Field(None, description="95% confidence interval")
-    model_info: Dict[str, Any] = Field(..., description="Model metadata")
-    input_summary: Dict[str, Any] = Field(..., description="Input data summary")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Prediction timestamp")
-
-class HealthResponse(BaseModel):
-    """Enhanced health check response"""
-    status: str = Field(..., description="Service status")
-    model_loaded: bool = Field(..., description="Model loading status")
-    enhanced_features: bool = Field(..., description="Enhanced features availability")
-    model_version: str = Field(..., description="Model version")
-    api_version: str = Field(..., description="API version")
-    capabilities: Dict[str, bool] = Field(..., description="Available capabilities")
-    timestamp: datetime = Field(default_factory=datetime.now)
-    status: str
-    model_loaded: bool
-    api_version: str
-    timestamp: datetime
-
-class ModelStatsResponse(BaseModel):
-    """Model statistics response"""
-    model_performance: Dict[str, float]
-    model_architecture: Dict[str, Any]
-    training_data_info: Dict[str, Any]
-    feature_importance: List[Dict[str, Any]]
-
-# Startup event to load model
 @app.on_event("startup")
-async def startup_event():
-    """Load the production model and initialize enhanced features"""
-    global production_model, enhanced_model, enhanced_monitor, model_info
+async def load_model():
+    """Load model saat aplikasi start"""
+    global model, scaler_X, scaler_y_lstm
     
     try:
-        logger.info("Starting FastAPI ML service...")
-        
-        # Load production model
-        logger.info("Loading NBM production model...")
-        
-        model_path = "ml_models/models/nbm_production"
-        if not os.path.exists(model_path):
-            logger.error(f"Model path not found: {model_path}")
-            raise FileNotFoundError(f"Model directory not found: {model_path}")
-        
-        # Load production model
-        production_model = NBMProductionModel.load_production_model(model_path)
-        
-        # Try to load enhanced model if available
-        if ENHANCED_MODEL_AVAILABLE:
-            try:
-                enhanced_model_path = "ml_models/models/nbm_production_enhanced"
-                if os.path.exists(enhanced_model_path):
-                    enhanced_model = NBMProductionModelEnhanced.load_enhanced_model(enhanced_model_path)
-                    logger.info("✅ Enhanced model loaded successfully!")
-                else:
-                    logger.info("Enhanced model path not found, using original model")
-            except Exception as e:
-                logger.warning(f"Failed to load enhanced model: {e}")
-        
-        # Load model info
-        model_info_path = os.path.join(model_path, "model_info.pkl")
-        if os.path.exists(model_info_path):
-            model_info = joblib.load(model_info_path)
-        else:
-            model_info = {
-                "mape_achieved": "8.34%",
-                "target_achieved": True,
-                "description": "Production NBM calorie prediction model"
-            }
-        
-        logger.info("✅ NBM production model loaded successfully!")
-        logger.info(f"Model performance: {model_info.get('mape_achieved', 'N/A')}")
-        
-        # Initialize enhanced monitoring if available
-        if ENHANCED_MONITORING_AVAILABLE:
-            try:
-                await startup_monitoring_init()
-                await startup_shap_init()
-                logger.info("✅ Enhanced monitoring initialized")
-            except Exception as e:
-                logger.warning(f"Enhanced monitoring initialization failed: {e}")
-        
-        logger.info("FastAPI ML service started successfully")
-        
+        model = joblib.load(MODEL_PATH / "lstm_enhanced_ensemble.joblib")
+        scaler_X = joblib.load(MODEL_PATH / "scaler_X.joblib")
+        scaler_y_lstm = joblib.load(MODEL_PATH / "scaler_y_lstm.joblib")
+        print("✅ Model loaded successfully!")
     except Exception as e:
-        logger.error(f"Failed to load model: {str(e)}")
-        logger.error(traceback.format_exc())
+        print(f"❌ Failed to load model: {e}")
         raise
 
-def create_sequence_from_data(data: List[NBMDataPoint]) -> np.ndarray:
-    """Convert NBM data points to model input sequence"""
-    
-    # Convert to DataFrame
-    df_data = []
-    for point in data:
-        df_data.append({
-            'tahun': point.tahun,
-            'bulan': point.bulan,
-            'kelompok': point.kelompok,
-            'komoditi': point.komoditi,
-            'kalori_hari': point.kalori_hari
-        })
-    
-    df = pd.DataFrame(df_data)
-    
-    # Sort by date to ensure chronological order
-    df['date'] = pd.to_datetime(df[['tahun', 'bulan']].rename(columns={'tahun': 'year', 'bulan': 'month'}).assign(day=1))
-    df = df.sort_values('date')
-    
-    # Aggregate by month (sum all food groups/commodities)
-    monthly_data = df.groupby(['tahun', 'bulan'])['kalori_hari'].sum().reset_index()
-    
-    if len(monthly_data) != 6:
-        raise ValueError(f"Expected 6 months of data, got {len(monthly_data)}")
-    
-    # Create sequence similar to training data format
-    # This is a simplified version - in production you might want to use the full preprocessing pipeline
-    
-    sequence = []
-    for _, row in monthly_data.iterrows():
-        # Create basic features (simplified version of production features)
-        month_val = row['bulan']
-        kalori_val = row['kalori_hari']
-        
-        # Basic feature vector (matching production model expectations)
-        features = [
-            kalori_val,  # kalori_hari_normalized (will be scaled)
-            kalori_val,  # kalori_lag_1 (simplified)
-            kalori_val,  # kalori_lag_3 (simplified)
-            kalori_val,  # kalori_lag_6 (simplified)
-            kalori_val,  # kalori_ma_3 (simplified)
-            kalori_val,  # kalori_ma_6 (simplified)
-            kalori_val,  # kalori_ma_12 (simplified)
-            np.sin(2 * np.pi * month_val / 12),  # month_sin
-            np.cos(2 * np.pi * month_val / 12),  # month_cos
-            1.0  # trend (simplified)
-        ]
-        
-        sequence.append(features)
-    
-    # Convert to numpy array with shape (1, 6, 10) for single prediction
-    return np.array([sequence])
+# ============================================================================
+# REQUEST/RESPONSE MODELS
+# ============================================================================
+class PredictionRequest(BaseModel):
+    """Request body untuk prediksi"""
+    target_month: int = Field(..., ge=1, le=12, description="Bulan target (1-12)")
+    target_year: int = Field(..., ge=2025, description="Tahun target (>= 2025)")
+    months_ahead: int = Field(1, ge=1, le=12, description="Jumlah bulan prediksi (1-12)")
 
-def calculate_confidence_interval(prediction: float, model_uncertainty: float = 0.15) -> Dict[str, float]:
-    """Calculate approximate confidence interval"""
-    margin = prediction * model_uncertainty  # ~15% uncertainty based on model performance
+class PredictionResult(BaseModel):
+    """Single prediction result"""
+    month: int
+    year: int
+    month_name: str
+    predicted_kalori: float
+    
+class PredictionResponse(BaseModel):
+    """Response body untuk prediksi"""
+    success: bool
+    message: str
+    request: PredictionRequest
+    predictions: List[PredictionResult]
+    computation_time: float
+
+# ============================================================================
+# FEATURE ENGINEERING FUNCTIONS
+# ============================================================================
+def calculate_features(conn, target_year: int, target_month: int):
+    """
+    Calculate 31 features untuk prediksi
+    Mengambil data historis dari database dan hitung lag features
+    """
+    
+    # Query untuk ambil 12 bulan terakhir sebelum target
+    query = """
+    SELECT 
+        t.tahun, t.bulan, t.kode_kelompok, t.kode_komoditi,
+        t.masukan, t.keluaran, t.impor, t.ekspor, t.perubahan_stok,
+        t.bahan_makanan, t.harga_produsen, t.harga_konsumen,
+        t.populasi_indonesia,
+        k.kalori_per_100g, k.protein_per_100g, k.lemak_per_100g, k.karbohidrat_per_100g
+    FROM transaksi_nbms t
+    LEFT JOIN komoditi k ON t.kode_kelompok = k.kode_kelompok 
+        AND t.kode_komoditi = k.kode_komoditi
+    WHERE t.periode_data = 'bulanan'
+        AND (
+            (t.tahun = %s AND t.bulan < %s) OR
+            (t.tahun = %s)
+        )
+    ORDER BY t.tahun DESC, t.bulan DESC
+    LIMIT 500
+    """
+    
+    df = pd.read_sql(
+        query, 
+        conn, 
+        params=(target_year, target_month, target_year - 1)
+    )
+    
+    if len(df) == 0:
+        raise ValueError("Tidak ada data historis untuk menghitung features")
+    
+    # Calculate kalori per capita per day untuk setiap komoditi
+    df['kalori_per_capita_per_day'] = (
+        df['bahan_makanan'] * 1e9 *  # ribu ton → grams
+        df['kalori_per_100g'] / 100 / 
+        df['populasi_indonesia'] / 365
+    ).fillna(0)
+    
+    # Sort by date
+    df = df.sort_values(['tahun', 'bulan']).reset_index(drop=True)
+    
+    # Aggregate per bulan (sum semua komoditi)
+    monthly_agg = df.groupby(['tahun', 'bulan']).agg({
+        'bahan_makanan': 'sum',
+        'masukan': 'sum',
+        'keluaran': 'sum',
+        'impor': 'sum',
+        'ekspor': 'sum',
+        'perubahan_stok': 'sum',
+        'kalori_per_capita_per_day': 'sum',
+        'kalori_per_100g': 'mean',
+        'protein_per_100g': 'mean',
+        'lemak_per_100g': 'mean',
+        'karbohidrat_per_100g': 'mean',
+        'populasi_indonesia': 'first'
+    }).reset_index()
+    
+    monthly_agg = monthly_agg.sort_values(['tahun', 'bulan']).reset_index(drop=True)
+    
+    # Ambil data terakhir (bulan sebelum target)
+    latest = monthly_agg.iloc[-1]
+    
+    # ========================================================================
+    # CALCULATE 31 FEATURES
+    # ========================================================================
+    features = {}
+    
+    # 1-4: Kalori Lag Features
+    features['kalori_lag_1'] = monthly_agg.iloc[-1]['kalori_per_capita_per_day'] if len(monthly_agg) >= 1 else 0
+    features['kalori_lag_3'] = monthly_agg.iloc[-3]['kalori_per_capita_per_day'] if len(monthly_agg) >= 3 else 0
+    features['kalori_lag_6'] = monthly_agg.iloc[-6]['kalori_per_capita_per_day'] if len(monthly_agg) >= 6 else 0
+    features['kalori_lag_12'] = monthly_agg.iloc[-12]['kalori_per_capita_per_day'] if len(monthly_agg) >= 12 else 0
+    
+    # 5-6: Bahan Makanan Lag Features
+    features['bahan_makanan_lag_1'] = monthly_agg.iloc[-1]['bahan_makanan'] if len(monthly_agg) >= 1 else 0
+    features['bahan_makanan_lag_3'] = monthly_agg.iloc[-3]['bahan_makanan'] if len(monthly_agg) >= 3 else 0
+    
+    # 7-9: Moving Averages
+    features['kalori_ma_3'] = monthly_agg.tail(3)['kalori_per_capita_per_day'].mean()
+    features['kalori_ma_6'] = monthly_agg.tail(6)['kalori_per_capita_per_day'].mean()
+    features['kalori_ma_12'] = monthly_agg.tail(12)['kalori_per_capita_per_day'].mean()
+    
+    # 10: YoY Growth
+    if len(monthly_agg) >= 12:
+        kalori_now = monthly_agg.iloc[-1]['kalori_per_capita_per_day']
+        kalori_12m_ago = monthly_agg.iloc[-12]['kalori_per_capita_per_day']
+        features['kalori_growth_yoy'] = ((kalori_now - kalori_12m_ago) / kalori_12m_ago * 100) if kalori_12m_ago > 0 else 0
+    else:
+        features['kalori_growth_yoy'] = 0
+    
+    # 11-14: Seasonal Encoding
+    features['month_sin'] = np.sin(2 * np.pi * target_month / 12)
+    features['month_cos'] = np.cos(2 * np.pi * target_month / 12)
+    quarter = (target_month - 1) // 3 + 1
+    features['quarter_sin'] = np.sin(2 * np.pi * quarter / 4)
+    features['quarter_cos'] = np.cos(2 * np.pi * quarter / 4)
+    
+    # 15-20: NBMS Variables
+    features['bahan_makanan'] = latest['bahan_makanan']
+    features['masukan'] = latest['masukan']
+    features['keluaran'] = latest['keluaran']
+    features['impor'] = latest['impor']
+    features['ekspor'] = latest['ekspor']
+    features['perubahan_stok'] = latest['perubahan_stok']
+    
+    # 21-23: Ratios
+    total_supply = features['masukan'] + features['impor']
+    features['import_ratio'] = (features['impor'] / total_supply * 100) if total_supply > 0 else 0
+    features['export_ratio'] = (features['ekspor'] / total_supply * 100) if total_supply > 0 else 0
+    features['price_margin'] = 0  # Placeholder (bisa dihitung dari harga_produsen/konsumen)
+    
+    # 24-27: Nutrition per 100g
+    features['kalori_per_100g'] = latest['kalori_per_100g']
+    features['protein_per_100g'] = latest['protein_per_100g']
+    features['lemak_per_100g'] = latest['lemak_per_100g']
+    features['karbohidrat_per_100g'] = latest['karbohidrat_per_100g']
+    
+    # 28-31: Crisis Flags
+    features['is_crisis_1998'] = 1 if target_year == 1998 else 0
+    features['is_crisis_2008'] = 1 if target_year == 2008 else 0
+    features['is_el_nino_2015'] = 1 if target_year == 2015 else 0
+    features['is_pandemic'] = 1 if target_year in [2020, 2021, 2022] else 0
+    
+    return features
+
+def get_month_name(month: int) -> str:
+    """Convert month number to Indonesian name"""
+    months = {
+        1: "Januari", 2: "Februari", 3: "Maret", 4: "April",
+        5: "Mei", 6: "Juni", 7: "Juli", 8: "Agustus",
+        9: "September", 10: "Oktober", 11: "November", 12: "Desember"
+    }
+    return months[month]
+
+# ============================================================================
+# PREDICTION ENDPOINT
+# ============================================================================
+@app.post("/api/predict", response_model=PredictionResponse)
+async def predict_kalori(request: PredictionRequest):
+    """
+    Prediksi konsumsi kalori per kapita per hari
+    
+    Input:
+    - target_month: Bulan target (1-12)
+    - target_year: Tahun target (>= 2025)
+    - months_ahead: Jumlah bulan yang ingin diprediksi (1-12)
+    
+    Output:
+    - predictions: List prediksi per bulan
+    """
+    
+    start_time = datetime.now()
+    
+    try:
+        # Validate model loaded
+        if model is None:
+            raise HTTPException(status_code=500, detail="Model not loaded")
+        
+        # Connect to database
+        conn = get_db_connection()
+        
+        predictions = []
+        current_year = request.target_year
+        current_month = request.target_month
+        
+        # Loop untuk prediksi multi-month
+        for i in range(request.months_ahead):
+            # Calculate features
+            features_dict = calculate_features(conn, current_year, current_month)
+            
+            # Convert to array (sesuai urutan 31 features)
+            feature_order = [
+                'kalori_lag_1', 'kalori_lag_3', 'kalori_lag_6', 'kalori_lag_12',
+                'bahan_makanan_lag_1', 'bahan_makanan_lag_3',
+                'kalori_ma_3', 'kalori_ma_6', 'kalori_ma_12',
+                'kalori_growth_yoy',
+                'month_sin', 'month_cos', 'quarter_sin', 'quarter_cos',
+                'bahan_makanan', 'masukan', 'keluaran', 'impor', 'ekspor', 'perubahan_stok',
+                'import_ratio', 'export_ratio', 'price_margin',
+                'kalori_per_100g', 'protein_per_100g', 'lemak_per_100g', 'karbohidrat_per_100g',
+                'is_crisis_1998', 'is_crisis_2008', 'is_el_nino_2015', 'is_pandemic'
+            ]
+            
+            X = np.array([[features_dict[f] for f in feature_order]])
+            
+            # Predict
+            prediction = model.predict(X)[0]
+            prediction = max(0, prediction)  # Clip negative values
+            
+            predictions.append(PredictionResult(
+                month=current_month,
+                year=current_year,
+                month_name=get_month_name(current_month),
+                predicted_kalori=round(prediction, 2)
+            ))
+            
+            # Move to next month
+            current_month += 1
+            if current_month > 12:
+                current_month = 1
+                current_year += 1
+        
+        conn.close()
+        
+        # Calculate computation time
+        computation_time = (datetime.now() - start_time).total_seconds()
+        
+        return PredictionResponse(
+            success=True,
+            message=f"Berhasil memprediksi {len(predictions)} bulan",
+            request=request,
+            predictions=predictions,
+            computation_time=round(computation_time, 3)
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# HEALTH CHECK
+# ============================================================================
+@app.get("/health")
+async def health_check():
+    """Check if API is running and model is loaded"""
     return {
-        "lower_bound": max(0, prediction - margin),
-        "upper_bound": prediction + margin,
-        "margin_percent": model_uncertainty * 100
+        "status": "healthy",
+        "model_loaded": model is not None,
+        "timestamp": datetime.now().isoformat()
     }
 
-# API Endpoints
-
-@app.get("/", response_model=Dict[str, str])
+@app.get("/")
 async def root():
-    """Root endpoint with API information"""
+    """API Info"""
     return {
-        "message": "NBM Calorie Prediction API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health",
+        "name": "SIKOLBIA Prediction API",
+        "version": "1.0",
+        "model": "LSTM Enhanced Ensemble",
+        "endpoints": {
+            "predict": "/api/predict",
+            "health": "/health"
+        }
+    }
+
+"""
+Update file: sikolbia-ml/app/main.py
+Tambahkan import prediction router di bagian bawah file existing
+"""
+
+# ... (kode existing Anda tetap ada) ...
+
+# ============================================================================
+# TAMBAHKAN DI BAGIAN BAWAH FILE (setelah semua router existing)
+# ============================================================================
+
+# Import prediction router (file is routers/predictions.py)
+from routers.predictions import router as prediction_router
+
+# Register prediction router
+app.include_router(prediction_router)
+
+# Info endpoint
+@app.get("/")
+async def root():
+    """API Info"""
+    return {
+        "name": "SIKOLBIA ML API",
+        "version": "2.0",
+        "services": {
+            "nbm_prediction": "/api/prediction/predict",
+            "health": "/api/prediction/health",
+            "docs": "/docs"
+        },
         "status": "running"
     }
 
-@app.get("/health", response_model=HealthResponse)
-async def health_check():
-    """Enhanced health check endpoint"""
-    
-    model_loaded = (enhanced_model is not None) or (production_model is not None)
-    enhanced_features = enhanced_model is not None
-    
-    capabilities = {
-        "confidence_intervals": enhanced_features,
-        "multi_step_prediction": enhanced_features,
-        "uncertainty_quantification": enhanced_features,
-        "semantic_search": semantic_index is not None,
-        "batch_prediction": True,
-        "model_statistics": True
-    }
-    
-    return HealthResponse(
-        status="healthy" if model_loaded else "unhealthy",
-        model_loaded=model_loaded,
-        enhanced_features=enhanced_features,
-        model_version=model_info.get('version', 'unknown') if model_info else 'unknown',
-        api_version="2.0.0",
-        capabilities=capabilities,
-        timestamp=datetime.now()
-    )
-
-
-
-@app.get("/model/stats", response_model=ModelStatsResponse)
-async def get_model_stats():
-    """Get model statistics and information"""
-    if production_model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded")
-    
-    return ModelStatsResponse(
-        model_performance={
-            "mape": 8.34,
-            "mae": 3.24,
-            "rmse": 5.84,
-            "r2": 0.826
-        },
-        model_architecture={
-            "type": "HuberRegressor Ensemble",
-            "n_models": 3,
-            "sequence_length": 6,
-            "features": 9,
-            "weights": [0.0939, 0.9061, 0.0000]
-        },
-        training_data_info={
-            "records": 3390,
-            "date_range": "1993-2024",
-            "food_groups": 11,
-            "years_covered": 31
-        },
-        feature_importance=[
-            {"feature": "latest_value", "importance": 0.25},
-            {"feature": "recent_trend", "importance": 0.20},
-            {"feature": "short_term_avg", "importance": 0.15},
-            {"feature": "medium_term_avg", "importance": 0.12},
-            {"feature": "stability", "importance": 0.10},
-            {"feature": "linear_trend", "importance": 0.08},
-            {"feature": "seasonal_sin", "importance": 0.05},
-            {"feature": "seasonal_cos", "importance": 0.03},
-            {"feature": "momentum", "importance": 0.02}
-        ]
-    )
-
-@app.post("/predict", response_model=EnhancedPredictionResponse)
-async def predict_calories(request: PredictionRequest, background_tasks: BackgroundTasks):
-    """
-    Enhanced prediction with statistical confidence intervals
-    
-    Features:
-    - Statistical confidence intervals via enhanced model
-    - Uncertainty quantification
-    - Improved error handling
-    """
-    
-    active_model = enhanced_model if enhanced_model else production_model
-    if active_model is None:
-        raise HTTPException(status_code=503, detail="No model loaded")
-    
-    try:
-        logger.info(f"Enhanced prediction request: {len(request.data)} points")
-        
-        # Validate and sort data chronologically
-        sorted_data = sorted(request.data, key=lambda x: (x.tahun, x.bulan))
-        
-        # Create input sequence
-        X_sequence = create_sequence_from_data(sorted_data)
-        
-        # Make prediction with confidence intervals
-        if enhanced_model:
-            # Use enhanced model with proper confidence intervals
-            result = enhanced_model.predict_original_scale_with_confidence(X_sequence, confidence_level=0.95)
-            
-            prediction = result['prediction'][0]
-            confidence_interval = {
-                "lower_bound": round(result['lower_bound'][0], 2),
-                "upper_bound": round(result['upper_bound'][0], 2),
-                "margin_percent": round((result['interval_width'][0] / prediction * 100), 2),
-                "interval_width": round(result['interval_width'][0], 2)
-            }
-            
-            uncertainty_metrics = {
-                "interval_width": float(result['interval_width'][0]),
-                "relative_uncertainty": float(result['interval_width'][0] / prediction * 100),
-                "confidence_level": 0.95,
-                "method": "statistical_approximation"
-            }
-            
-        else:
-            # Fallback to original model with simple confidence
-            prediction = production_model.predict_original_scale(X_sequence)[0]
-            
-            # Simple confidence interval (15% margin)
-            margin = prediction * 0.15
-            confidence_interval = {
-                "lower_bound": round(max(0, prediction - margin), 2),
-                "upper_bound": round(prediction + margin, 2),
-                "margin_percent": 15.0,
-                "interval_width": round(margin * 2, 2)
-            }
-            
-            uncertainty_metrics = {
-                "interval_width": margin * 2,
-                "relative_uncertainty": 15.0,
-                "confidence_level": 0.95,
-                "method": "simple_margin"
-            }
-        
-        # Create input summary
-        input_summary = {
-            "date_range": f"{sorted_data[0].tahun}-{sorted_data[0].bulan:02d} to {sorted_data[-1].tahun}-{sorted_data[-1].bulan:02d}",
-            "total_data_points": len(request.data),
-            "avg_calories": round(np.mean([d.kalori_hari for d in request.data]), 2),
-            "unique_groups": len(set(d.kelompok for d in request.data)),
-            "unique_commodities": len(set(d.komoditi for d in request.data)),
-            "sequence_length": 6
-        }
-        
-        # Log prediction for monitoring
-        background_tasks.add_task(
-            log_prediction, 
-            prediction=prediction, 
-            input_data=request.data,
-            confidence_interval=confidence_interval.dict()
-        )
-        
-        # Enhanced monitoring integration
-        if enhanced_monitor:
-            try:
-                # Update monitoring buffers
-                enhanced_monitor.update_buffers(
-                    prediction=prediction,
-                    features=input_summary,
-                    response_time=100.0  # Would be actual response time
-                )
-            except Exception as e:
-                logger.warning(f"Enhanced monitoring update failed: {e}")
-        
-        logger.info(f"Enhanced prediction successful: {prediction:.2f} ± {uncertainty_metrics['interval_width']/2:.2f}")
-        
-        return EnhancedPredictionResponse(
-            success=True,
-            prediction=round(prediction, 2),
-            confidence_interval=confidence_interval,
-            uncertainty_metrics=uncertainty_metrics,
-            model_info={
-                "model_type": "Enhanced HuberRegressor Ensemble" if enhanced_model else "HuberRegressor Ensemble",
-                "version": model_info.get('version', '2.0.0') if model_info else '2.0.0',
-                "mape": model_info.get('mape_achieved', '8.88%') if model_info else '8.88%',
-                "features": "confidence_intervals,uncertainty_quantification" if enhanced_model else "basic_prediction",
-                "confidence_method": uncertainty_metrics['method']
-            },
-            input_summary=input_summary,
-            timestamp=datetime.now()
-        )
-        
-    except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-    
-    except Exception as e:
-        logger.error(f"Prediction error: {str(e)}")
-        logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Internal server error during enhanced prediction")
-
-@app.post("/predict/multi-step", response_model=MultiStepResponse)
-async def predict_multi_step(request: MultiStepRequest, background_tasks: BackgroundTasks):
-    """
-    Multi-step ahead prediction with confidence intervals
-    
-    Features:
-    - Recursive forecasting for 1-12 months ahead
-    - Confidence intervals for each step
-    - Forecast period labeling
-    """
-    
-    if enhanced_model is None:
-        raise HTTPException(
-            status_code=503, 
-            detail="Enhanced model required for multi-step prediction"
-        )
-    
-    try:
-        logger.info(f"Multi-step prediction: {request.n_steps} steps, confidence={request.confidence_level}")
-        
-        # Validate and sort data
-        sorted_data = sorted(request.data, key=lambda x: (x.tahun, x.bulan))
-        
-        # Create input sequence
-        X_sequence = create_sequence_from_data(sorted_data)
-        
-        # Multi-step prediction
-        result = enhanced_model.predict_multi_step(X_sequence, n_steps=request.n_steps)
-        
-        # Create confidence interval objects
-        confidence_intervals = []
-        for ci in result['confidence_intervals']:
-            interval = {
-                "lower_bound": round(ci['lower'], 2),
-                "upper_bound": round(ci['upper'], 2),
-                "margin_percent": round(((ci['upper'] - ci['lower']) / ((ci['upper'] + ci['lower'])/2) * 100), 2),
-                "interval_width": round(ci['upper'] - ci['lower'], 2)
-            }
-            confidence_intervals.append(interval)
-        
-        # Generate forecast month labels
-        last_date = max(sorted_data, key=lambda x: (x.tahun, x.bulan))
-        forecast_months = []
-        for i in range(request.n_steps):
-            month = ((last_date.bulan + i) % 12) + 1
-            year = last_date.tahun + ((last_date.bulan + i) // 12)
-            forecast_months.append(f"{year}-{month:02d}")
-        
-        # Input summary
-        input_summary = {
-            "date_range": f"{sorted_data[0].tahun}-{sorted_data[0].bulan:02d} to {sorted_data[-1].tahun}-{sorted_data[-1].bulan:02d}",
-            "forecast_horizon": request.n_steps,
-            "forecast_period": f"{forecast_months[0]} to {forecast_months[-1]}",
-            "total_data_points": len(request.data),
-            "avg_calories": round(np.mean([d.kalori_hari for d in request.data]), 2)
-        }
-        
-        # Background logging
-        background_tasks.add_task(
-            log_prediction,
-            prediction=np.mean(result['predictions']),
-            input_data=request.data,
-            confidence_interval={"multi_step": True, "n_steps": request.n_steps}
-        )
-        
-        logger.info(f"Multi-step prediction successful: {request.n_steps} steps")
-        
-        return MultiStepResponse(
-            success=True,
-            predictions=[round(p, 2) for p in result['predictions']],
-            confidence_intervals=confidence_intervals,
-            forecast_months=forecast_months,
-            model_info={
-                "model_type": "Enhanced Multi-Step Ensemble",
-                "version": model_info.get('version', '2.0.0') if model_info else '2.0.0',
-                "forecast_method": "recursive",
-                "uncertainty_propagation": "step_wise",
-                "max_horizon": 12
-            },
-            input_summary=input_summary,
-            timestamp=datetime.now()
-        )
-        
-    except ValueError as e:
-        logger.error(f"Multi-step validation error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-    
-    except Exception as e:
-        logger.error(f"Multi-step prediction error: {str(e)}")
-        logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail="Internal server error during multi-step prediction")
-
-@app.post("/predict/batch")
-async def predict_batch(requests: List[PredictionRequest]):
-    """
-    Batch prediction endpoint for multiple requests
-    
-    Args:
-        requests: List of PredictionRequest objects
-        
-    Returns:
-        List of PredictionResponse objects
-    """
-    if production_model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded")
-    
-    if len(requests) > 100:  # Limit batch size
-        raise HTTPException(status_code=400, detail="Batch size too large (max 100)")
-    
-    results = []
-    for i, request in enumerate(requests):
-        try:
-            # Reuse single prediction logic
-            response = await predict_calories(request, BackgroundTasks())
-            results.append(response)
-        except Exception as e:
-            # Continue with other predictions even if one fails
-            logger.error(f"Batch prediction {i} failed: {str(e)}")
-            results.append(PredictionResponse(
-                success=False,
-                prediction=None,
-                confidence_interval=None,
-                model_info={"error": str(e)},
-                input_summary={},
-                timestamp=datetime.now()
-            ))
-    
-    return results
-
-async def log_prediction(prediction: float, input_data: List[NBMDataPoint], confidence: Dict[str, float]):
-    """Background task to log predictions for monitoring"""
-    try:
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "prediction": prediction,
-            "confidence_interval": confidence,
-            "input_count": len(input_data),
-            "date_range": f"{input_data[0].tahun}-{input_data[0].bulan} to {input_data[-1].tahun}-{input_data[-1].bulan}"
-        }
-        
-        # Log to file (in production, you might use a database)
-        with open("prediction_logs.log", "a") as f:
-            f.write(f"{log_entry}\n")
-            
-    except Exception as e:
-        logger.error(f"Failed to log prediction: {str(e)}")
-
-# Error handlers
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    logger.error(f"HTTP error: {exc.status_code} - {exc.detail}")
-    return {
-        "error": True,
-        "status_code": exc.status_code,
-        "message": exc.detail,
-        "timestamp": datetime.now().isoformat()
-    }
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    logger.error(f"Unexpected error: {str(exc)}")
-    logger.error(traceback.format_exc())
-    return {
-        "error": True,
-        "status_code": 500,
-        "message": "Internal server error",
-        "timestamp": datetime.now().isoformat()
-    }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8081, log_level="info")
+# Health check untuk load balancer
+@app.get("/healthz")
+async def healthz():
+    """Kubernetes health check"""
+    return {"status": "ok"}

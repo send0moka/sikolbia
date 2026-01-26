@@ -325,28 +325,126 @@ class PemerintahController extends Controller
 
             // Prepare data for ML API (FastAPI expects exact 6 data points)
             $mlApiUrl = config('app.ml_api_url', 'http://localhost:8082');
+
+            // Precompute fallback caloric density if komoditi lacks it
+            $groupAvgKalori = Komoditi::where('kode_kelompok', $kelompok)
+                ->where('kalori_per_100g', '>', 0)->avg('kalori_per_100g') ?: 0;
+            $globalAvgKalori = Komoditi::where('kalori_per_100g', '>', 0)->avg('kalori_per_100g') ?: 0;
+            $defaultKaloriPer100g = $groupAvgKalori ?: $globalAvgKalori ?: 200; // sensible default if dataset empty
+
+            // Precompute average grams-per-capita-per-day for komoditi/group to estimate when makanan==0
+            $avgGramPerCapitaKomoditi = TransaksiNbm::where('kode_komoditi', $komoditi)
+                ->where('makanan', '>', 0)
+                ->where('populasi_indonesia', '>', 0)
+                ->get()
+                ->map(function($it) {
+                    $makananTons = floatval($it->makanan) * 1000; // convert thousand tons -> tons
+                    $makananKg = $makananTons * 1000; // tons -> kg
+                    $kgPerCapitaPerYear = $makananKg / max(1.0, floatval($it->populasi_indonesia));
+                    return ($kgPerCapitaPerYear * 1000) / 365; // grams per capita per day
+                })->avg() ?: 0;
+
+            $avgGramPerCapitaGroup = TransaksiNbm::where('kode_kelompok', $kelompok)
+                ->where('makanan', '>', 0)
+                ->where('populasi_indonesia', '>', 0)
+                ->get()
+                ->map(function($it) {
+                    $makananTons = floatval($it->makanan) * 1000;
+                    $makananKg = $makananTons * 1000;
+                    $kgPerCapitaPerYear = $makananKg / max(1.0, floatval($it->populasi_indonesia));
+                    return ($kgPerCapitaPerYear * 1000) / 365;
+                })->avg() ?: 0;
+
+            $defaultGramsPerDay = $avgGramPerCapitaKomoditi ?: $avgGramPerCapitaGroup ?: 100; // fallback grams/day
+
             $payload = [
-                'data_points' => $historicalData->map(function($item) use ($komoditiInfo, $kelompok, $komoditi) {
-                    // Calculate kalori_hari
+                'data_points' => $historicalData->map(function($item) use ($komoditiInfo, $kelompok, $komoditi, $defaultKaloriPer100g, $defaultGramsPerDay) {
+                    // Calculate kalori_hari, with fallback to group/global average caloric density
                     $kaloriHari = 0;
-                    if ($item->makanan > 0 && $item->populasi_indonesia > 0 && $komoditiInfo->kalori_per_100g > 0) {
+                    $usedFallback = false;
+                    $resultGramFallback = false;
+
+                    $kaloriPer100g = floatval($komoditiInfo->kalori_per_100g ?? 0);
+                    if ($item->makanan > 0 && $item->populasi_indonesia > 0) {
+                        if ($kaloriPer100g <= 0) {
+                            $kaloriPer100g = $defaultKaloriPer100g;
+                            $usedFallback = true;
+                        }
+
                         $makananTons = floatval($item->makanan) * 1000;
                         $makananKg = $makananTons * 1000;
-                        $kgPerCapitaPerYear = $makananKg / floatval($item->populasi_indonesia);
+                        $kgPerCapitaPerYear = $makananKg / max(1.0, floatval($item->populasi_indonesia));
                         $gramPerCapitaPerDay = ($kgPerCapitaPerYear * 1000) / 365;
-                        $kaloriHari = ($gramPerCapitaPerDay / 100) * floatval($komoditiInfo->kalori_per_100g);
+                        $kaloriHari = ($gramPerCapitaPerDay / 100) * $kaloriPer100g;
+                    } else {
+                        // If makanan or populasi missing/zero, estimate using average grams/day and caloric density
+                        $estGrams = $defaultGramsPerDay ?? 100;
+                        $usedFallback = true;
+                        $resultGramFallback = true;
+                        $kaloriHari = ($estGrams / 100) * ($kaloriPer100g > 0 ? $kaloriPer100g : $defaultKaloriPer100g);
                     }
 
-                    return [
+                    $result = [
                         'tahun' => (int)$item->tahun,
                         'bulan' => (int)$item->bulan,
                         'kelompok' => str_pad($kelompok, 2, '0', STR_PAD_LEFT), // 2-digit code
                         'komoditi' => str_pad($komoditi, 4, '0', STR_PAD_LEFT), // 4-digit code
                         'kalori_hari' => (float)round($kaloriHari, 2)
                     ];
+
+                    if ($usedFallback) {
+                        $result['used_fallback_kalori_per_100g'] = true;
+                        $result['fallback_kalori_per_100g'] = (float)$defaultKaloriPer100g;
+                        if (!empty($resultGramFallback)) {
+                            $result['used_fallback_grams_per_day'] = true;
+                            $result['fallback_grams_per_day'] = (float)$defaultGramsPerDay;
+                        }
+                    }
+
+                    return $result;
                 })->values()->toArray(),
                 'n_periods' => (int)$bulanPrediksi // Number of months to predict
             ];
+
+            // Validate computed calories: ensure we have at least one positive kalori_hari
+            $validCalories = array_filter($payload['data_points'], function($d) {
+                return isset($d['kalori_hari']) && floatval($d['kalori_hari']) > 0;
+            });
+
+            // Build list of invalid months for frontend help
+            $invalidMonths = [];
+            foreach ($payload['data_points'] as $d) {
+                if (!isset($d['kalori_hari']) || floatval($d['kalori_hari']) <= 0) {
+                    $invalidMonths[] = ($d['tahun'] ?? 'n/a') . '-' . str_pad(($d['bulan'] ?? '0'), 2, '0', STR_PAD_LEFT);
+                }
+            }
+
+            // If this is a preview request, return historical + invalid months without calling ML
+            if ($request->boolean('preview', false)) {
+                return response()->json([
+                    'success' => true,
+                    'historical' => $payload['data_points'],
+                    'invalid_months' => array_values($invalidMonths),
+                    'has_valid_calories' => count($validCalories) > 0,
+                    'message' => count($validCalories) > 0 ? 'Preview OK' : 'No valid calories in historical data'
+                ]);
+            }
+
+            // Normal flow: if no valid calories, abort and return structured error
+            if (count($validCalories) === 0) {
+                Log::warning('Prediksi aborted: all computed kalori_hari are zero', [
+                    'komoditi' => $komoditi,
+                    'kelompok' => $kelompok,
+                    'historical_count' => count($payload['data_points'])
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data kalori yang valid untuk komoditi ini (kalori_hari = 0). Periksa data transaksi atau pengaturan kalori untuk komoditi.',
+                    'invalid_months' => $invalidMonths,
+                    'historical' => $payload['data_points']
+                ], 400);
+            }
 
             Log::info('Calling ML API for prediction', [
                 'url' => $mlApiUrl . '/predict',

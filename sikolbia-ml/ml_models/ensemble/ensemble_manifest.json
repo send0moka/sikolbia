@@ -1,0 +1,11 @@
+{
+  "components": {
+    "scaler_X": {
+      "type": "scaler_npy",
+      "mean": "scaler_X_mean.npy",
+      "scale": "scaler_X_scale.npy"
+    }
+  },
+  "weights": {},
+  "model_info": null
+}
