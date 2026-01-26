@@ -1,0 +1,4 @@
+kode_kelompok,kode_komoditi,has_valid_calories,avg_calories,prediction,model_version,success
+10,1004,true,265.2,,,false
+01,0101,true,153.12,,,false
+02,0201,true,25.8,,,false

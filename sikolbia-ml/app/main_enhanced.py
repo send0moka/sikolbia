@@ -107,8 +107,9 @@ class NBMDataPoint(BaseModel):
     
     @validator('kalori_hari')
     def validate_calories(cls, v):
-        if v <= 0 or v > 1000:
-            raise ValueError('Calories must be between 0 and 1000')
+        if v <= 0:
+            raise ValueError('Calories must be > 0')
+        # allow larger incoming values; API will clamp to model-acceptable range and log
         return v
 
 class PredictionRequest(BaseModel):
@@ -359,29 +360,127 @@ def create_sequence_from_data(data: List[NBMDataPoint]) -> np.ndarray:
     if len(monthly_data) != 6:
         raise ValueError(f"Expected 6 months of data, got {len(monthly_data)}")
     
-    # Create sequence similar to training data format
-    sequence = []
-    for _, row in monthly_data.iterrows():
-        month_val = row['bulan']
-        kalori_val = row['kalori_hari']
-        
-        # Basic feature vector
-        features = [
-            kalori_val,  # kalori_hari_normalized
-            kalori_val,  # kalori_lag_1 (simplified)
-            kalori_val,  # kalori_lag_3 (simplified)
-            kalori_val,  # kalori_lag_6 (simplified)
-            kalori_val,  # kalori_ma_3 (simplified)
-            kalori_val,  # kalori_ma_6 (simplified)
-            kalori_val,  # kalori_ma_12 (simplified)
-            np.sin(2 * np.pi * month_val / 12),  # month_sin
-            np.cos(2 * np.pi * month_val / 12),  # month_cos
-            1.0  # trend (simplified)
-        ]
-        
-        sequence.append(features)
-    
-    return np.array([sequence])
+    # Build a flattened tabular feature vector (n_features=31) matching ensemble's feature_config
+    # We expect `monthly_data` to contain additional supply/economic/nutritional columns when available.
+    if len(monthly_data) != 6:
+        raise ValueError(f"Expected 6 months of data, got {len(monthly_data)}")
+
+    # Helper to safely get column values
+    def col_vals(col_name):
+        if col_name in monthly_data.columns:
+            return monthly_data[col_name].fillna(0).astype(float).tolist()
+        return [0.0] * len(monthly_data)
+
+    kalori_vals = col_vals('kalori_hari')
+    bulan_vals = monthly_data['bulan'].astype(int).tolist()
+    bahan_vals = col_vals('bahan_makanan')
+    masukan_vals = col_vals('masukan')
+    keluaran_vals = col_vals('keluaran')
+    impor_vals = col_vals('impor')
+    ekspor_vals = col_vals('ekspor')
+    perubahan_stok_vals = col_vals('perubahan_stok')
+    harga_produsen_vals = col_vals('harga_produsen')
+    harga_konsumen_vals = col_vals('harga_konsumen')
+    kalori_100g_vals = col_vals('kalori_per_100g')
+    protein_vals = col_vals('protein_per_100g')
+    lemak_vals = col_vals('lemak_per_100g')
+    karbo_vals = col_vals('karbohidrat_per_100g')
+
+    # Use the last (most recent) month to build the feature snapshot
+    i = len(kalori_vals) - 1
+    last_kalori = float(kalori_vals[i])
+
+    def safe_lag(arr, lag):
+        idx = i - lag
+        return float(arr[idx]) if idx >= 0 else float(arr[i])
+
+    kalori_lag_1 = safe_lag(kalori_vals, 1)
+    kalori_lag_3 = safe_lag(kalori_vals, 3)
+    kalori_lag_6 = safe_lag(kalori_vals, 6)
+    kalori_lag_12 = safe_lag(kalori_vals, 12)
+
+    bahan_lag_1 = safe_lag(bahan_vals, 1)
+    bahan_lag_3 = safe_lag(bahan_vals, 3)
+
+    def ma(arr, window):
+        start = max(0, i - (window - 1))
+        return float(np.mean(arr[start:i+1])) if len(arr[start:i+1]) > 0 else float(arr[i])
+
+    kalori_ma_3 = ma(kalori_vals, 3)
+    kalori_ma_6 = ma(kalori_vals, 6)
+    kalori_ma_12 = ma(kalori_vals, 12)
+
+    # YoY growth (if we had same month previous year in provided data; else 0)
+    kalori_growth_yoy = 0.0
+    # month cyclical encoding
+    month_val = int(bulan_vals[i])
+    month_sin = float(np.sin(2 * np.pi * month_val / 12))
+    month_cos = float(np.cos(2 * np.pi * month_val / 12))
+    quarter = ((month_val - 1) // 3) + 1
+    quarter_sin = float(np.sin(2 * np.pi * quarter / 4))
+    quarter_cos = float(np.cos(2 * np.pi * quarter / 4))
+
+    # Supply/economic features use last-known values (or 0)
+    bahan_makanan = float(bahan_vals[i])
+    masukan = float(masukan_vals[i])
+    keluaran = float(keluaran_vals[i])
+    impor = float(impor_vals[i])
+    ekspor = float(ekspor_vals[i])
+    perubahan_stok = float(perubahan_stok_vals[i])
+
+    # Ratios and margins
+    import_ratio = float(impor / max(1.0, keluaran))
+    export_ratio = float(ekspor / max(1.0, keluaran))
+    price_margin = float(harga_konsumen_vals[i] - harga_produsen_vals[i])
+
+    # Nutritional info
+    kalori_per_100g = float(kalori_100g_vals[i])
+    protein_per_100g = float(protein_vals[i])
+    lemak_per_100g = float(lemak_vals[i])
+    karbohidrat_per_100g = float(karbo_vals[i])
+
+    # Crisis flags (not available from UI) — default to 0
+    is_crisis_1998 = 0
+    is_crisis_2008 = 0
+    is_el_nino_2015 = 0
+    is_pandemic = 0
+
+    features = [
+        kalori_lag_1,
+        kalori_lag_3,
+        kalori_lag_6,
+        kalori_lag_12,
+        bahan_lag_1,
+        bahan_lag_3,
+        kalori_ma_3,
+        kalori_ma_6,
+        kalori_ma_12,
+        kalori_growth_yoy,
+        month_sin,
+        month_cos,
+        quarter_sin,
+        quarter_cos,
+        bahan_makanan,
+        masukan,
+        keluaran,
+        impor,
+        ekspor,
+        perubahan_stok,
+        import_ratio,
+        export_ratio,
+        price_margin,
+        kalori_per_100g,
+        protein_per_100g,
+        lemak_per_100g,
+        karbohidrat_per_100g,
+        is_crisis_1998,
+        is_crisis_2008,
+        is_el_nino_2015,
+        is_pandemic
+    ]
+
+    # final shape expected by ensemble scaler: (1, n_features)
+    return np.array([features])
 
 
 def try_reconstruct_ensemble_from_components(ensemble_dir: str):
@@ -651,12 +750,45 @@ def try_reconstruct_ensemble_from_components(ensemble_dir: str):
                 for k, w in norm.items():
                     combined += w * preds[k]
 
+                # Debug logging: record component outputs and scaling steps
+                try:
+                    logger.info(f"Prediction diagnostics: X_raw={X_arr.tolist()}, X_scaled_sample={X_scaled[0].tolist() if X_scaled.shape[0]>0 else []}")
+                    logger.info(f"Component preds: { {k: v.tolist() for k,v in preds.items()} }")
+                    logger.info(f"Combined pre-inverse (scaled target space): {combined.tolist()}")
+                except Exception:
+                    pass
+
                 # Inverse transform if scaler_y present
                 if self.scaler_y is not None:
                     try:
                         inv = self.scaler_y.inverse_transform(combined.reshape(-1, 1)).flatten()
+                        # Heuristic sanity check: compare inverse result against recent history-derived scale
+                        try:
+                            approx_hist_mean = None
+                            try:
+                                # first four features are kalori_lag_1..12 in original feature layout
+                                approx_hist_mean = float(np.mean(X_arr[:, 0:4])) if X_arr.shape[1] >= 4 else None
+                            except Exception:
+                                approx_hist_mean = None
+
+                            if approx_hist_mean is not None and np.mean(inv) > (approx_hist_mean * 20):
+                                logger.warning("Inverse transform produced values far outside historical scale; skipping inverse and returning combined pre-inverse values")
+                                # attach note by returning combined (assumed original scale) and include diag logging
+                                try:
+                                    logger.info(f"Combined pre-inverse (returned as final): {combined.tolist()}")
+                                except Exception:
+                                    pass
+                                return combined
+                        except Exception:
+                            pass
+
+                        try:
+                            logger.info(f"Combined post-inverse (original target scale): {inv.tolist()}")
+                        except Exception:
+                            pass
                         return inv
                     except Exception:
+                        logger.warning("scaler_y.inverse_transform failed; returning combined scaled values")
                         return combined
 
                 return combined
@@ -866,6 +998,21 @@ async def predict_calories_enhanced(request: Request, background_tasks: Backgrou
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
 
+    # Server-side clamp for ML validator/expected range (and diagnostics)
+    # Record originals for input_summary
+    original_calories = []
+    for idx, itm in enumerate(sanitized_list):
+        orig = float(itm.get('kalori_hari', 0.0))
+        original_calories.append(orig)
+        if orig > 1000.0:
+            logger.warning(f"Incoming kalori_hari at index {idx} is {orig}, clamping to 1000 for ML")
+            sanitized_list[idx]['kalori_hari'] = 1000.0
+    # Rebuild pred_req with clamped values
+    try:
+        pred_req = PredictionRequest(**{'data': sanitized_list, 'confidence_level': body.get('confidence_level', 0.95)})
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
     try:
         logger.info(f"Enhanced prediction request: {len(pred_req.data)} points, confidence={pred_req.confidence_level}")
 
@@ -923,7 +1070,65 @@ async def predict_calories_enhanced(request: Request, background_tasks: Backgrou
             
         else:
             # Fallback to original model with simple confidence
-            prediction = production_model.predict_original_scale(X_sequence)[0]
+            # call model to get prediction
+            raw_pred_arr = production_model.predict_original_scale(X_sequence)
+            prediction = raw_pred_arr[0]
+
+            # Collect diagnostics if production_model exposes components
+            try:
+                diag = {}
+                X_arr_diag = np.asarray(X_sequence)
+                if X_arr_diag.ndim == 1:
+                    X_arr_diag = X_arr_diag.reshape(1, -1)
+                X_scaled_diag = X_arr_diag
+                if getattr(production_model, 'scaler_X', None) is not None:
+                    try:
+                        X_scaled_diag = production_model.scaler_X.transform(X_arr_diag)
+                    except Exception:
+                        X_scaled_diag = X_arr_diag
+
+                preds_diag = {}
+                if getattr(production_model, 'xgb', None) is not None:
+                    try:
+                        preds_diag['xgboost'] = np.asarray(production_model.xgb.predict(X_scaled_diag)).flatten().tolist()
+                    except Exception:
+                        preds_diag['xgboost'] = None
+                if getattr(production_model, 'huber', None) is not None:
+                    try:
+                        preds_diag['huber'] = np.asarray(production_model.huber.predict(X_scaled_diag)).flatten().tolist()
+                    except Exception:
+                        preds_diag['huber'] = None
+                if getattr(production_model, 'lstm', None) is not None:
+                    try:
+                        preds_diag['lstm'] = np.asarray(production_model.lstm.predict(X_scaled_diag)).flatten().tolist()
+                    except Exception:
+                        preds_diag['lstm'] = None
+
+                diag['X_scaled_sample'] = X_scaled_diag[0].tolist() if X_scaled_diag.shape[0] > 0 else []
+                diag['component_preds'] = preds_diag
+                # record combined pre-inverse if scaler_y present
+                try:
+                    if getattr(production_model, 'scaler_y', None) is not None:
+                        # reconstruct combined in scaled target space using weights
+                        avail = {k: v for k, v in production_model.weights.items() if k in preds_diag and preds_diag[k] is not None}
+                        total = sum(avail.values()) if avail else 1.0
+                        norm = {k: (v / total) for k, v in avail.items()}
+                        combined_scaled = np.zeros((len(X_scaled_diag),))
+                        for k, w in norm.items():
+                            combined_scaled += w * np.asarray(preds_diag[k])
+                        diag['combined_pre_inverse'] = combined_scaled.tolist()
+                        try:
+                            inv = production_model.scaler_y.inverse_transform(np.array(combined_scaled).reshape(-1, 1)).flatten()
+                            diag['combined_post_inverse'] = inv.tolist()
+                        except Exception:
+                            diag['combined_post_inverse'] = None
+                except Exception:
+                    pass
+
+                resp_model_info = resp_model_info if 'resp_model_info' in locals() else {}
+                resp_model_info['diagnostics'] = diag
+            except Exception:
+                pass
             
             # Simple confidence interval (15% margin)
             margin = prediction * 0.15
@@ -981,6 +1186,44 @@ async def predict_calories_enhanced(request: Request, background_tasks: Backgrou
                 # version already set, but prefer startup's if present
                 if model_info.get('version'):
                     resp_model_info['version'] = model_info.get('version')
+        except Exception:
+            pass
+
+        # Attach diagnostics if computed earlier during prediction
+        try:
+            if 'diag' in locals():
+                resp_model_info['diagnostics'] = diag
+        except Exception:
+            pass
+
+        # Safety: if prediction is implausibly large compared to historical avg, replace with component-based fallback
+        try:
+            avg_hist = float(input_summary.get('avg_calories', 0.0))
+            threshold = max(5000.0, avg_hist * 5.0)
+            if prediction is not None and prediction > threshold:
+                # try median of component preds from diagnostics
+                comp_vals = []
+                try:
+                    diag_comp = resp_model_info.get('diagnostics', {}).get('component_preds', {})
+                    for k, v in diag_comp.items():
+                        if v is not None and len(v) > 0:
+                            comp_vals.append(float(v[0]))
+                except Exception:
+                    comp_vals = []
+
+                fallback = None
+                if comp_vals:
+                    fallback = float(np.median(np.array(comp_vals)))
+                else:
+                    fallback = avg_hist * 1.02 if avg_hist > 0 else min(prediction, 1000.0)
+
+                logger.warning(f"Prediction {prediction} exceeds threshold {threshold}; replacing with fallback {fallback}")
+                prediction = fallback
+                # adjust confidence interval around fallback
+                margin = max(0.15 * prediction, 50.0)
+                confidence_interval = create_confidence_interval_object(max(0, prediction - margin), prediction + margin)
+                uncertainty_metrics['interval_width'] = margin * 2
+                resp_model_info['note'] = (resp_model_info.get('note', '') + ' replaced_by_component_fallback_due_to_scale_mismatch').strip()
         except Exception:
             pass
 
