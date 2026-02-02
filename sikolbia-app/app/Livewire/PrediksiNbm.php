@@ -21,6 +21,14 @@ class PrediksiNbm extends Component
     public $apiStatus = 'checking';
     protected $listeners = ['updateDateRange' => 'updateDateRange'];
     
+    // NEW: Google Colab LSTM API properties
+    public $predictionMode = 'manual'; // 'manual' or 'komoditi'
+    public $komoditiList = [];
+    public $selectedKomoditi = '';
+    public $nMonths = 3;
+    public $komoditiPredictionResult = null;
+    public $komoditiLoading = false;
+    
     protected $rules = [
         'data.*.komoditi_data.*.kelompok' => 'required|string',
         'data.*.komoditi_data.*.komoditi' => 'required|string',
@@ -60,6 +68,9 @@ class PrediksiNbm extends Component
         
         $this->updateData();
         $this->loadModelStats();
+        
+        // NEW: Load komoditi list for new prediction mode
+        $this->loadKomoditiList();
     }
     
     public function initializeData()
@@ -466,8 +477,157 @@ class PrediksiNbm extends Component
         ]);
     }
     
+    // NEW: Google Colab LSTM API Methods
+    
+    public function switchMode($mode)
+    {
+        $this->predictionMode = $mode;
+        $this->predictionResult = null;
+        $this->komoditiPredictionResult = null;
+        
+        $this->dispatch('show-toast', [
+            'type' => 'info',
+            'message' => $mode === 'komoditi' ? 'Mode Prediksi Per Komoditi aktif' : 'Mode Prediksi Manual aktif'
+        ]);
+    }
+    
+    public function loadKomoditiList()
+    {
+        try {
+            $result = $this->predictionService->getKomoditiList();
+            
+            if ($result['success']) {
+                $this->komoditiList = $result['data']['data'] ?? []; // Fix: API returns data.data, not data.commodities
+                Log::info('Loaded ' . count($this->komoditiList) . ' commodities');
+            } else {
+                Log::error('Failed to load komoditi list: ' . ($result['message'] ?? 'Unknown error'));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error loading komoditi list: ' . $e->getMessage());
+        }
+    }
+    
+    // Lifecycle: clear results when komoditi changes
+    public function updatedSelectedKomoditi()
+    {
+        $this->komoditiPredictionResult = null;
+        $this->resetValidation(); // Clear validation errors
+    }
+
+    public function predictKomoditi()
+    {
+        $this->validate([
+            'selectedKomoditi' => 'required',
+            'nMonths' => 'required|integer|min:1|max:12'
+        ], [
+            'selectedKomoditi.required' => 'Pilih komoditi terlebih dahulu',
+            'nMonths.required' => 'Jumlah bulan harus diisi',
+            'nMonths.integer' => 'Jumlah bulan harus berupa angka',
+            'nMonths.min' => 'Minimal 1 bulan',
+            'nMonths.max' => 'Maksimal 12 bulan'
+        ]);
+        
+        $this->komoditiLoading = true;
+        
+        try {
+            $result = $this->predictionService->predictKomoditi(
+                $this->selectedKomoditi,
+                (int)$this->nMonths,
+                true // return confidence intervals
+            );
+            
+            if ($result['success']) {
+                $this->komoditiPredictionResult = $result['data'];
+                
+                $komoditiName = $this->getKomoditiName($this->selectedKomoditi);
+                
+                $this->dispatch('show-toast', [
+                    'type' => 'success',
+                    'message' => "Prediksi {$komoditiName} berhasil!"
+                ]);
+                
+                Log::info('Komoditi prediction successful', [
+                    'komoditi' => $this->selectedKomoditi,
+                    'komoditi_name' => $komoditiName,
+                    'n_months' => $this->nMonths,
+                    'predictions_count' => count($result['data']['predictions'] ?? [])
+                ]);
+            } else {
+                // Set error message for display in UI
+                $errorMsg = $result['message'] ?? 'Unknown error';
+                $this->komoditiPredictionResult = [
+                    'error' => true,
+                    'error_message' => $errorMsg
+                ];
+                
+                $this->dispatch('show-toast', [
+                    'type' => 'error',
+                    'message' => 'Gagal membuat prediksi: ' . $errorMsg
+                ]);
+                
+                Log::error('Komoditi prediction failed', [
+                    'error' => $errorMsg,
+                    'komoditi' => $this->selectedKomoditi
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Set error message for display in UI
+            $this->komoditiPredictionResult = [
+                'error' => true,
+                'error_message' => $e->getMessage()
+            ];
+            
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+            
+            Log::error('Komoditi prediction exception: ' . $e->getMessage());
+        } finally {
+            $this->komoditiLoading = false;
+        }
+    }
+    
+    public function exportKomoditiResult()
+    {
+        if (!$this->komoditiPredictionResult) {
+            return;
+        }
+        
+        $data = [
+            'komoditi' => $this->selectedKomoditi,
+            'n_months' => $this->nMonths,
+            'predictions' => $this->komoditiPredictionResult['predictions'],
+            'model_info' => $this->komoditiPredictionResult['model_info'],
+            'summary' => $this->komoditiPredictionResult['summary'],
+            'exported_at' => now()->toISOString()
+        ];
+        
+        $komoditiName = $this->getKomoditiName($this->selectedKomoditi);
+        $filename = 'prediksi-' . strtolower(str_replace(' ', '-', $komoditiName)) . '-' . now()->format('Y-m-d') . '.json';
+        
+        return response()->streamDownload(function () use ($data) {
+            echo json_encode($data, JSON_PRETTY_PRINT);
+        }, $filename, [
+            'Content-Type' => 'application/json',
+        ]);
+    }
+    
+    private function getKomoditiName($kode)
+    {
+        foreach ($this->komoditiList as $item) {
+            if ($item['kode_komoditi'] === $kode) {
+                return $item['nama'];
+            }
+        }
+        return 'komoditi';
+    }
+    
     public function render()
     {
-        return view('livewire.prediksi-nbm');
+        return view('livewire.prediksi-nbm')
+            ->layout('components.layouts.admin', [
+                'title' => 'Prediksi NBM - ' . config('app.name')
+            ]);
     }
 }

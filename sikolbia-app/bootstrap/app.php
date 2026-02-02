@@ -10,6 +10,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         api: __DIR__.'/../routes/api.php',
         health: '/up',
+        then: function () {
+            Route::middleware('api')
+                ->group(base_path('routes/nbm_api.php'));
+        }
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([

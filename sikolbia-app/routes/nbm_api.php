@@ -34,6 +34,16 @@ Route::prefix('api/nbm')->middleware(['api'])->group(function () {
     Route::post('/predict/batch', [NBMPredictionController::class, 'predictBatch'])
         ->name('nbm.api.predict.batch');
     
+    // NEW: Google Colab LSTM Ensemble API endpoints
+    Route::post('/predict/komoditi', [NBMPredictionController::class, 'predictKomoditi'])
+        ->name('nbm.api.predict.komoditi');
+    
+    Route::get('/komoditi/list', [NBMPredictionController::class, 'getKomoditiList'])
+        ->name('nbm.api.komoditi.list');
+    
+    Route::get('/komoditi/{kodeKomoditi}/historical', [NBMPredictionController::class, 'getHistoricalData'])
+        ->name('nbm.api.komoditi.historical');
+    
     // History endpoint
     Route::get('/predictions/history', [NBMPredictionController::class, 'predictionHistory'])
         ->name('nbm.api.predictions.history');

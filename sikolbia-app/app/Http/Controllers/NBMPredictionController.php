@@ -248,4 +248,92 @@ class NBMPredictionController extends Controller
             ], 500);
         }
     }
+    
+    /**
+     * Predict future values for a specific commodity (NEW - Google Colab API)
+     */
+    public function predictKomoditi(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'kode_komoditi' => 'required|string|size:4',
+            'n_months' => 'integer|min:1|max:24',
+            'return_confidence' => 'boolean'
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'details' => $validator->errors()
+            ], 400);
+        }
+        
+        $result = $this->predictionService->predictKomoditi(
+            $request->input('kode_komoditi'),
+            $request->input('n_months', 6),
+            $request->input('return_confidence', true)
+        );
+        
+        if ($result['success']) {
+            return response()->json($result['data']);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'error' => $result['error']
+        ], $result['status_code'] ?? 500);
+    }
+    
+    /**
+     * Get list of available commodities
+     */
+    public function getKomoditiList(): JsonResponse
+    {
+        $result = $this->predictionService->getKomoditiList();
+        
+        if ($result['success']) {
+            return response()->json($result['data']);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'error' => $result['error']
+        ], $result['status_code'] ?? 500);
+    }
+    
+    /**
+     * Get historical data for a commodity
+     */
+    public function getHistoricalData(string $kodeKomoditi, Request $request): JsonResponse
+    {
+        $validator = Validator::make(
+            ['kode_komoditi' => $kodeKomoditi] + $request->all(),
+            [
+                'kode_komoditi' => 'required|string|size:4',
+                'months' => 'integer|min:1|max:60'
+            ]
+        );
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'details' => $validator->errors()
+            ], 400);
+        }
+        
+        $result = $this->predictionService->getHistoricalData(
+            $kodeKomoditi,
+            $request->input('months', 12)
+        );
+        
+        if ($result['success']) {
+            return response()->json($result['data']);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'error' => $result['error']
+        ], $result['status_code'] ?? 500);
+    }
 }

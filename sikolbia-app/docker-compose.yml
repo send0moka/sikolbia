@@ -17,6 +17,7 @@ services:
             - sikolbia-network
         environment:
             - NBM_API_URL=http://sikolbia-ml-api:8000
+            - ML_API_URL=http://sikolbia-ml-api:8000
         depends_on:
             - mysql
             - redis
@@ -100,10 +101,7 @@ services:
         working_dir: /app
         volumes:
             - ../sikolbia-ml/app:/app
-            - ../sikolbia-ml/app/ml_models:/app/ml_models:ro
-            - ../sikolbia-ml/ml_models/models:/app/models:ro
-            - ../ml_models/data:/app/data:ro
-            - ../sikolbia-ml/ml_models/ensemble:/app/ensemble:ro
+            - ../sikolbia-ml/ml_models:/app/ml_models:ro
             - ../sikolbia-ml/logs:/app/logs
         ports:
             - "8082:8000"

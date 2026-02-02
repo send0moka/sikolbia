@@ -337,4 +337,143 @@ class NBMPredictionService
             ]
         ];
     }
+    
+    /**
+     * Predict future values for a specific commodity (NEW - Google Colab API)
+     * 
+     * @param string $kodeKomoditi Commodity code (e.g., '0102' for Beras)
+     * @param int $nMonths Number of months to predict (default: 6)
+     * @param bool $returnConfidence Whether to include confidence intervals
+     * @return array Prediction result
+     */
+    public function predictKomoditi(string $kodeKomoditi, int $nMonths = 6, bool $returnConfidence = true): array
+    {
+        try {
+            $response = Http::timeout($this->timeout)
+                ->post("{$this->apiUrl}/predict/komoditi", [
+                    'kode_komoditi' => $kodeKomoditi,
+                    'n_months' => $nMonths,
+                    'return_confidence' => $returnConfidence
+                ]);
+            
+            if ($response->successful()) {
+                $result = $response->json();
+                
+                Log::info('NBM commodity prediction successful', [
+                    'kode_komoditi' => $kodeKomoditi,
+                    'n_months' => $nMonths,
+                    'nama' => $result['komoditi_info']['nama'] ?? 'Unknown',
+                    'predictions_count' => count($result['predictions'] ?? []),
+                    'first_prediction' => $result['predictions'][0] ?? null
+                ]);
+                
+                return [
+                    'success' => true,
+                    'data' => $result
+                ];
+            }
+            
+            $errorData = $response->json();
+            
+            Log::error('NBM commodity prediction failed', [
+                'kode_komoditi' => $kodeKomoditi,
+                'status' => $response->status(),
+                'error' => $errorData
+            ]);
+            
+            return [
+                'success' => false,
+                'error' => $errorData['detail'] ?? 'Prediction request failed',
+                'message' => $errorData['detail'] ?? 'Prediction request failed',
+                'status_code' => $response->status()
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('NBM commodity prediction exception', [
+                'kode_komoditi' => $kodeKomoditi,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Get list of available commodities from API
+     * 
+     * @return array List of commodities
+     */
+    public function getKomoditiList(): array
+    {
+        try {
+            $response = Http::timeout($this->timeout)
+                ->get("{$this->apiUrl}/predict/komoditi/list");
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json()
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'Failed to fetch commodity list',
+                'status_code' => $response->status()
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch commodity list: ' . $e->getMessage());
+            
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
+     * Get historical data for a specific commodity
+     * 
+     * @param string $kodeKomoditi Commodity code
+     * @param int $months Number of months to retrieve (default: 12)
+     * @return array Historical data
+     */
+    public function getHistoricalData(string $kodeKomoditi, int $months = 12): array
+    {
+        try {
+            $response = Http::timeout($this->timeout)
+                ->get("{$this->apiUrl}/predict/data/historical/{$kodeKomoditi}", [
+                    'months' => $months
+                ]);
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json()
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'Failed to fetch historical data',
+                'status_code' => $response->status()
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch historical data: ' . $e->getMessage(), [
+                'kode_komoditi' => $kodeKomoditi
+            ]);
+            
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
 }

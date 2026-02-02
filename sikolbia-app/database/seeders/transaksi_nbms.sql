@@ -71,10 +71,6 @@ CREATE TABLE `transaksi_nbms` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `transaksi_nbms`
---
-
 INSERT INTO `transaksi_nbms` (`id`, `kode_kelompok`, `kode_komoditi`, `tahun`, `bulan`, `kuartal`, `periode_data`, `status_angka`, `masukan`, `keluaran`, `impor`, `ekspor`, `perubahan_stok`, `pakan`, `bibit`, `makanan`, `bukan_makanan`, `tercecer`, `penggunaan_lain`, `bahan_makanan`, `harga_produsen`, `harga_konsumen`, `inflasi_komoditi`, `nilai_tukar_usd`, `populasi_indonesia`, `gdp_per_kapita`, `tingkat_kemiskinan`, `curah_hujan_mm`, `suhu_rata_celsius`, `indeks_el_nino`, `luas_panen_ha`, `produktivitas_ton_ha`, `kebijakan_impor`, `subsidi_pemerintah`, `stok_bulog`, `confidence_score`, `data_source`, `validation_status`, `outlier_flag`, `created_at`, `updated_at`) VALUES
 (3211, '01', '0101', 2013, 1, 1, 'bulanan', 'tetap', 0.0000, 6409.2600, 0.0873, 0.0000, 0.0000, 27.4750, 57.2867, 5687.6116, 0.0000, 293.4863, 0.0000, 0.0000, 7638.7500, 10185.0000, NULL, NULL, 247500000, NULL, NULL, 2583.33, 26.80, NULL, 14256000.00, 5.3775, 'bebas', 0.00, NULL, 1.00, 'APP3 Pusdatin', 'verified', 0, '2026-01-20 01:21:39', '2026-01-20 01:21:39'),
 (3212, '01', '0101', 2013, 2, 1, 'bulanan', 'tetap', 0.0000, 6219.1800, 0.0875, 0.0000, 0.0000, 26.2713, 52.8249, 5421.7836, 0.0000, 345.1270, 0.0000, 0.0000, 7638.7500, 10185.0000, NULL, NULL, 247500000, NULL, NULL, 2583.33, 26.80, NULL, 14256000.00, 5.3775, 'bebas', 0.00, NULL, 1.00, 'APP3 Pusdatin', 'verified', 0, '2026-01-20 01:21:39', '2026-01-20 01:21:39'),

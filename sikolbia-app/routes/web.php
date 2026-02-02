@@ -376,7 +376,10 @@ Route::middleware(['auth', 'role:admin|superadmin', 'permission:view kelompokbps
 
 // NBM Prediction Routes - HANYA UNTUK ADMIN/SUPERADMIN
 Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/konsumsi-pangan')->name('admin.')->group(function () {
-    Route::get('prediksi-nbm', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'prediksiNbm'])->name('prediksi-nbm');
+    // NEW: Livewire-based prediction page with Google Colab LSTM API integration
+    Route::get('prediksi-nbm', App\Livewire\PrediksiNbm::class)->name('prediksi-nbm');
+    
+    // Legacy routes (keep for backward compatibility if needed)
     Route::post('prediksi-nbm/run', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'runPrediksi'])->name('prediksi-nbm.run');
     Route::get('prediksi-nbm/export-excel', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPrediksiExcel'])->name('prediksi-nbm.export-excel');
     Route::get('prediksi-nbm/export-pdf', [App\Http\Controllers\Pemerintah\PemerintahController::class, 'exportPrediksiPdf'])->name('prediksi-nbm.export-pdf');
@@ -392,6 +395,10 @@ Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin/konsumsi-pan
     Route::get('prediksi-nbm/api/health', [App\Http\Controllers\NBMPredictionController::class, 'health'])->name('prediksi-nbm.api.health');
     Route::post('prediksi-nbm/api/predict', [App\Http\Controllers\NBMPredictionController::class, 'predict'])->name('prediksi-nbm.api.predict');
     Route::get('prediksi-nbm/api/stats', [App\Http\Controllers\NBMPredictionController::class, 'modelStats'])->name('prediksi-nbm.api.stats');
+    
+    // NEW: Komoditi prediction endpoints
+    Route::post('prediksi-nbm/api/predict-komoditi', [App\Http\Controllers\NBMPredictionController::class, 'predictKomoditi'])->name('prediksi-nbm.api.predict-komoditi');
+    Route::get('prediksi-nbm/api/komoditi-list', [App\Http\Controllers\NBMPredictionController::class, 'getKomoditiList'])->name('prediksi-nbm.api.komoditi-list');
     
     // Registrasi Akses Management
     Route::view('registrasi-akses', 'admin.registrasi-akses')->name('registrasi-akses');
