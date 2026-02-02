@@ -1,11 +1,136 @@
 <div>
 <!-- Page Header -->
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
-    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        <i class="fas fa-brain mr-1"></i>
-        Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
-    </p>
+<div class="mb-6 flex items-start justify-between" x-data="{ showVersionHistory: false }">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <i class="fas fa-brain mr-1"></i>
+            Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
+        </p>
+    </div>
+    <div class="flex items-center gap-2">
+        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-300 dark:border-blue-700">
+            <i class="fas fa-code-branch mr-1"></i>v1.0.0
+        </span>
+        <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-700">
+            <i class="fas fa-check-circle mr-1"></i>Production
+        </span>
+        <button @click="showVersionHistory = true" 
+            class="w-7 h-7 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+            title="Version History">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Version History Modal -->
+    <div x-show="showVersionHistory" 
+         x-cloak
+         @click.self="showVersionHistory = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-clock-rotate-left mr-2 text-blue-600"></i>
+                    Version History
+                </h3>
+                <button @click="showVersionHistory = false" 
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-4 overflow-y-auto max-h-[60vh]">
+                <div class="space-y-4">
+                    <!-- Version 1.0.0 (Current) -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <div class="w-0.5 h-full bg-gray-300 dark:bg-gray-600"></div>
+                        </div>
+                        <div class="flex-1 pb-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="font-semibold text-gray-900 dark:text-white">v1.0.0</span>
+                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                    Current
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">LSTM Enhanced Ensemble - Production Model</p>
+                            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-2">
+                                <li>• Enhanced ensemble with LSTM, XGBoost, and Huber</li>
+                                <li>• Optimized feature engineering and scaling</li>
+                                <li>• MAE: 867.04, RMSE: 1788.78, MAPE: 3.73%, R²: 0.9901</li>
+                            </ul>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">
+                                <i class="fas fa-calendar mr-1"></i>Released: February 2, 2026
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Version 0.9.0 (Beta) -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <div class="w-0.5 h-full bg-gray-300 dark:bg-gray-600"></div>
+                        </div>
+                        <div class="flex-1 pb-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="font-semibold text-gray-900 dark:text-white">v0.9.0</span>
+                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                    Beta
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Advanced Ensemble Testing</p>
+                            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-2">
+                                <li>• Multi-model ensemble approach</li>
+                                <li>• Improved time series handling</li>
+                                <li>• MAE: 920.15, RMSE: 1850.32, MAPE: 4.12%</li>
+                            </ul>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">
+                                <i class="fas fa-calendar mr-1"></i>Released: January 15, 2026
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Version 0.5.0 (Alpha) -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="font-semibold text-gray-900 dark:text-white">v0.5.0</span>
+                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                    Alpha
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Initial LSTM Model</p>
+                            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-2">
+                                <li>• Basic LSTM architecture</li>
+                                <li>• Single model prediction</li>
+                                <li>• MAE: 1150.42, RMSE: 2100.18, MAPE: 5.89%</li>
+                            </ul>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">
+                                <i class="fas fa-calendar mr-1"></i>Released: December 10, 2025
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Model versions are trained on historical NBM data from 1993-2024
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
     <!-- Main Prediction Interface -->
