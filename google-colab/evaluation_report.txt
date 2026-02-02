@@ -1,0 +1,34 @@
+
+===========================================================================
+MODEL EVALUATION SUMMARY REPORT
+===========================================================================
+
+Dataset Information:
+  - Training Set: 33007 samples (1993-04-01 00:00:00 to 2016-01-01 00:00:00)
+  - Validation Set: 7155 samples (2016-02-01 00:00:00 to 2020-02-01 00:00:00)
+  - Test Set: 6925 samples (2020-03-01 00:00:00 to 2024-12-01 00:00:00)
+  - Total Commodities: 112
+
+Model Performance on Test Set:
+                 Model         MAE        RMSE      MAPE       R²
+                  LSTM 1403.597496 1800.343068 55.455998 0.989995
+        HuberRegressor  926.822465 2859.290576  2.572799 0.974764
+               XGBoost  862.085421 3225.990501  3.709982 0.967877
+LSTM Enhanced Ensemble  867.036199 1788.775710  3.730227 0.990123
+
+Best Model: LSTM Enhanced Ensemble
+  - Strategy: Conditional ensemble with threshold=5000
+  - For small values (<5000): Use XGBoost
+  - For large values (>=5000): Use weighted ensemble
+  - Ensemble Weights:
+      * LSTM: 90.00%
+      * XGBoost: 5.00%
+      * HuberRegressor: 5.00%
+
+Key Insights:
+  - MAE improved by 38.2% vs LSTM
+  - MAPE improved by 93.3% vs LSTM
+  - Test samples using XGBoost: 3512 (50.7%)
+  - Test samples using Ensemble: 3413 (49.3%)
+
+===========================================================================
