@@ -17,10 +17,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Check if model file exists
-if not exist "models\nbm_production_model.keras" (
-    echo [WARNING] Model file not found: models\nbm_production_model.keras
-    echo [INFO] Server will run in fallback mode
+REM Check if model directory exists
+if not exist "app\ml_models\models\nbm_google_colab" (
+    echo [WARNING] Model directory not found: app\ml_models\models\nbm_google_colab
+    echo [INFO] Please ensure Google Colab models are exported
     echo.
 )
 
@@ -28,12 +28,12 @@ REM Change to app directory
 cd app
 
 echo [INFO] Starting FastAPI server...
-echo [INFO] Server will run on: http://localhost:8083
-echo [INFO] API Documentation: http://localhost:8083/docs
+echo [INFO] Server will run on: http://localhost:8082
+echo [INFO] API Documentation: http://localhost:8082/docs
 echo [INFO] Press Ctrl+C to stop
 echo.
 
 REM Start uvicorn with auto-reload
-python -m uvicorn main_simple:app --host 0.0.0.0 --port 8083 --reload
+python -m uvicorn main:app --host 0.0.0.0 --port 8082 --reload
 
 pause
