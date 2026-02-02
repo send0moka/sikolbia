@@ -740,56 +740,33 @@ def try_reconstruct_ensemble_from_components(ensemble_dir: str):
                     except Exception:
                         preds['lstm'] = np.zeros((X_scaled.shape[0],))
 
+                # If we have a target scaler for LSTM, inverse-transform the LSTM predictions
+                if self.scaler_y is not None and 'lstm' in preds and preds['lstm'] is not None:
+                    try:
+                        lstm_vals = np.asarray(preds['lstm']).reshape(-1, 1)
+                        inv_lstm = self.scaler_y.inverse_transform(lstm_vals).flatten()
+                        preds['lstm'] = inv_lstm
+                        logger.info(f"Inverse-transformed LSTM preds: {preds['lstm'].tolist()}")
+                    except Exception:
+                        logger.warning("Failed to inverse-transform LSTM preds; leaving as-is")
+
                 # Normalize weights for available components
                 avail = {k: v for k, v in self.weights.items() if k in preds and preds[k] is not None}
                 total = sum(avail.values()) if avail else 1.0
                 norm = {k: (v / total) for k, v in avail.items()}
 
-                # Weighted sum
+                # Weighted sum (components should now be in original target scale)
                 combined = np.zeros((X_scaled.shape[0],))
                 for k, w in norm.items():
                     combined += w * preds[k]
 
-                # Debug logging: record component outputs and scaling steps
+                # Debug logging: record component outputs and combined result
                 try:
                     logger.info(f"Prediction diagnostics: X_raw={X_arr.tolist()}, X_scaled_sample={X_scaled[0].tolist() if X_scaled.shape[0]>0 else []}")
-                    logger.info(f"Component preds: { {k: v.tolist() for k,v in preds.items()} }")
-                    logger.info(f"Combined pre-inverse (scaled target space): {combined.tolist()}")
+                    logger.info(f"Component preds (post-inverse where applied): { {k: (v.tolist() if hasattr(v, 'tolist') else v) for k,v in preds.items()} }")
+                    logger.info(f"Combined (final target scale): {combined.tolist()}")
                 except Exception:
                     pass
-
-                # Inverse transform if scaler_y present
-                if self.scaler_y is not None:
-                    try:
-                        inv = self.scaler_y.inverse_transform(combined.reshape(-1, 1)).flatten()
-                        # Heuristic sanity check: compare inverse result against recent history-derived scale
-                        try:
-                            approx_hist_mean = None
-                            try:
-                                # first four features are kalori_lag_1..12 in original feature layout
-                                approx_hist_mean = float(np.mean(X_arr[:, 0:4])) if X_arr.shape[1] >= 4 else None
-                            except Exception:
-                                approx_hist_mean = None
-
-                            if approx_hist_mean is not None and np.mean(inv) > (approx_hist_mean * 20):
-                                logger.warning("Inverse transform produced values far outside historical scale; skipping inverse and returning combined pre-inverse values")
-                                # attach note by returning combined (assumed original scale) and include diag logging
-                                try:
-                                    logger.info(f"Combined pre-inverse (returned as final): {combined.tolist()}")
-                                except Exception:
-                                    pass
-                                return combined
-                        except Exception:
-                            pass
-
-                        try:
-                            logger.info(f"Combined post-inverse (original target scale): {inv.tolist()}")
-                        except Exception:
-                            pass
-                        return inv
-                    except Exception:
-                        logger.warning("scaler_y.inverse_transform failed; returning combined scaled values")
-                        return combined
 
                 return combined
 
@@ -1106,20 +1083,35 @@ async def predict_calories_enhanced(request: Request, background_tasks: Backgrou
 
                 diag['X_scaled_sample'] = X_scaled_diag[0].tolist() if X_scaled_diag.shape[0] > 0 else []
                 diag['component_preds'] = preds_diag
-                # record combined pre-inverse if scaler_y present
+                # record combined values and avoid blindly inverse-transforming them
                 try:
-                    if getattr(production_model, 'scaler_y', None) is not None:
-                        # reconstruct combined in scaled target space using weights
-                        avail = {k: v for k, v in production_model.weights.items() if k in preds_diag and preds_diag[k] is not None}
-                        total = sum(avail.values()) if avail else 1.0
-                        norm = {k: (v / total) for k, v in avail.items()}
-                        combined_scaled = np.zeros((len(X_scaled_diag),))
-                        for k, w in norm.items():
-                            combined_scaled += w * np.asarray(preds_diag[k])
-                        diag['combined_pre_inverse'] = combined_scaled.tolist()
+                    avail = {k: v for k, v in production_model.weights.items() if k in preds_diag and preds_diag[k] is not None}
+                    total = sum(avail.values()) if avail else 1.0
+                    norm = {k: (v / total) for k, v in avail.items()}
+                    combined_vals = np.zeros((len(X_scaled_diag),))
+                    for k, w in norm.items():
+                        combined_vals += w * np.asarray(preds_diag[k])
+                    # record the weighted combination of component outputs (these are component outputs,
+                    # not necessarily scaled values). Do NOT apply scaler_y.inverse_transform to this
+                    # combined vector because components (xgb/huber) are already in original target units.
+                    diag['combined_by_components'] = combined_vals.tolist()
+
+                    # If a target scaler exists and an LSTM component is present in scaled form,
+                    # attempt to inverse-transform only the LSTM preds and recompute a combined
+                    # result in target units for diagnostics.
+                    diag['combined_post_inverse'] = None
+                    if getattr(production_model, 'scaler_y', None) is not None and 'lstm' in preds_diag and preds_diag['lstm'] is not None:
                         try:
-                            inv = production_model.scaler_y.inverse_transform(np.array(combined_scaled).reshape(-1, 1)).flatten()
-                            diag['combined_post_inverse'] = inv.tolist()
+                            lstm_arr = np.asarray(preds_diag['lstm']).reshape(-1, 1)
+                            inv_lstm = production_model.scaler_y.inverse_transform(lstm_arr).flatten().tolist()
+                            # recompute combined using inv_lstm while keeping other components as-is
+                            recombined = np.zeros((len(X_scaled_diag),))
+                            for k, w in norm.items():
+                                if k == 'lstm':
+                                    recombined += w * np.asarray(inv_lstm)
+                                else:
+                                    recombined += w * np.asarray(preds_diag[k])
+                            diag['combined_post_inverse'] = recombined.tolist()
                         except Exception:
                             diag['combined_post_inverse'] = None
                 except Exception:
