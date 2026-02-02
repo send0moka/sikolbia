@@ -16,12 +16,34 @@
                     <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Parameter Prediksi</h3>
                     
                     <div class="space-y-4">
+                        <!-- Kelompok Selector -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <i class="fas fa-layer-group mr-1"></i>Pilih Kelompok Pangan
+                            </label>
+                            <select wire:model.live="selectedKelompok" 
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Pilih Kelompok --</option>
+                                @foreach ($kelompokList as $kelompok)
+                                    <option value="{{ $kelompok['kode'] }}">
+                                        {{ $kelompok['nama'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('selectedKelompok') 
+                                <span class="text-sm text-red-600">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
                         <!-- Komoditi Selector -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pilih Komoditi</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <i class="fas fa-apple-alt mr-1"></i>Pilih Komoditi
+                            </label>
                             <select wire:model="selectedKomoditi" 
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Pilih Komoditi --</option>
+                                {{ $selectedKelompok ? '' : 'disabled' }}
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <option value="">{{ $selectedKelompok ? '-- Pilih Komoditi --' : '-- Pilih Kelompok Terlebih Dahulu --' }}</option>
                                 @foreach ($komoditiList as $item)
                                     <option value="{{ $item['kode_komoditi'] }}">
                                         {{ $item['nama'] }}

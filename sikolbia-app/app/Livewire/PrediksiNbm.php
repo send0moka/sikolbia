@@ -5,12 +5,17 @@ namespace App\Livewire;
 use App\Models\Komoditi;
 use App\Services\NBMPredictionService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 
 class PrediksiNbm extends Component
 {
+    // Layout configuration
+    protected $layout = 'components.layouts.app.sidebar';
+    
     public $data = [];
     public $startDate;
     public $endDate;
@@ -23,6 +28,8 @@ class PrediksiNbm extends Component
     
     // NEW: Google Colab LSTM API properties
     public $predictionMode = 'komoditi'; // Always use 'komoditi' mode
+    public $kelompokList = [];
+    public $selectedKelompok = '';
     public $komoditiList = [];
     public $selectedKomoditi = '';
     public $nMonths = 3;
@@ -77,8 +84,9 @@ class PrediksiNbm extends Component
         $this->updateData();
         $this->loadModelStats();
         
-        // NEW: Load komoditi list for new prediction mode
-        $this->loadKomoditiList();
+        // NEW: Load kelompok and komoditi list for new prediction mode
+        $this->loadKelompokList();
+        // Don't load komoditi yet - wait for kelompok selection
     }
     
     public function initializeData()
@@ -499,20 +507,66 @@ class PrediksiNbm extends Component
         ]);
     }
     
+    public function loadKelompokList()
+    {
+        try {
+            // Load kelompok dari database, urut berdasarkan kode
+            $kelompokList = \App\Models\Kelompok::where('status_aktif', true)
+                ->orderBy('kode')
+                ->get(['kode', 'deskripsi', 'nama']);
+            
+            $this->kelompokList = $kelompokList->map(function($kelompok) {
+                return [
+                    'kode' => $kelompok->kode, // 2 digit
+                    'nama' => $kelompok->nama,
+                    'deskripsi' => $kelompok->deskripsi ?? $kelompok->nama
+                ];
+            })->toArray();
+            
+            Log::info('Loaded ' . count($this->kelompokList) . ' kelompok');
+        } catch (\Exception $e) {
+            Log::error('Error loading kelompok list: ' . $e->getMessage());
+        }
+    }
+    
     public function loadKomoditiList()
     {
         try {
             $result = $this->predictionService->getKomoditiList();
             
             if ($result['success']) {
-                $this->komoditiList = $result['data']['data'] ?? []; // Fix: API returns data.data, not data.commodities
-                Log::info('Loaded ' . count($this->komoditiList) . ' commodities');
+                $allKomoditi = $result['data']['data'] ?? []; // Fix: API returns data.data, not data.commodities
+                
+                // Filter komoditi berdasarkan kelompok yang dipilih
+                // kode_komoditi 4 digit: digit 1-2 = kode kelompok, digit 3-4 = nomor komoditi
+                if ($this->selectedKelompok) {
+                    $this->komoditiList = array_filter($allKomoditi, function($komoditi) {
+                        $kodeKomoditi = $komoditi['kode_komoditi'] ?? '';
+                        // Ambil 2 digit pertama dari kode komoditi (4 digit)
+                        $kodeKelompokFromKomoditi = substr($kodeKomoditi, 0, 2);
+                        return $kodeKelompokFromKomoditi === $this->selectedKelompok;
+                    });
+                    $this->komoditiList = array_values($this->komoditiList); // Re-index array
+                } else {
+                    $this->komoditiList = [];
+                }
+                
+                Log::info('Loaded ' . count($this->komoditiList) . ' komoditi for kelompok ' . $this->selectedKelompok);
             } else {
                 Log::error('Failed to load komoditi list: ' . ($result['message'] ?? 'Unknown error'));
             }
         } catch (\Exception $e) {
             Log::error('Error loading komoditi list: ' . $e->getMessage());
         }
+    }
+    
+    // Lifecycle: when kelompok changes, reload komoditi and clear selection
+    public function updatedSelectedKelompok()
+    {
+        $this->selectedKomoditi = ''; // Reset komoditi selection
+        $this->komoditiPredictionResult = null;
+        $this->chartData = [];
+        $this->loadKomoditiList(); // Reload komoditi filtered by selected kelompok
     }
     
     // Lifecycle: clear results when komoditi changes
@@ -623,7 +677,7 @@ class PrediksiNbm extends Component
             'input_summary' => $this->komoditiPredictionResult['input_summary'] ?? null,
             'model_info' => $this->komoditiPredictionResult['model_info'] ?? [],
             'exported_at' => now()->toISOString(),
-            'exported_by' => auth()->user()->name ?? 'System'
+            'exported_by' => Auth::user()->name ?? 'System'
         ];
         
         $komoditiName = $this->getKomoditiName($this->selectedKomoditi);
@@ -742,7 +796,7 @@ class PrediksiNbm extends Component
         
         try {
             // Query last 6 months of historical data
-            $historicalRecords = \DB::table('transaksi_nbms')
+            $historicalRecords = DB::table('transaksi_nbms')
                 ->join('komoditi', 'transaksi_nbms.komoditi', '=', 'komoditi.kode_komoditi')
                 ->where('transaksi_nbms.komoditi', $this->selectedKomoditiManual)
                 ->orderBy('transaksi_nbms.tahun', 'desc')
@@ -933,7 +987,7 @@ class PrediksiNbm extends Component
             'confidence_intervals' => $this->manualPredictionResult['confidence_intervals'] ?? [],
             'model_info' => $this->manualPredictionResult['model_info'] ?? [],
             'exported_at' => now()->toISOString(),
-            'exported_by' => auth()->user()->name ?? 'System'
+            'exported_by' => Auth::user()->name ?? 'System'
         ];
         
         $komoditiName = $this->getKomoditiName($this->selectedKomoditiManual);
@@ -946,11 +1000,15 @@ class PrediksiNbm extends Component
         ]);
     }
     
+    /**
+     * Render the component
+     * 
+     * @return \Illuminate\Contracts\View\View
+     */
     public function render()
     {
-        return view('livewire.prediksi-nbm')
-            ->layout('components.layouts.app.sidebar', [
-                'title' => 'Prediksi NBM'
-            ]);
+        return view('livewire.prediksi-nbm', [
+            'title' => 'Prediksi NBM'
+        ]);
     }
 }

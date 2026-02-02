@@ -12,6 +12,6 @@ class KelompokSeeder extends Seeder
      */
     public function run(): void
     {
-        Kelompok::factory(11)->create(); // Add kelompok 11 for beverages
+        Kelompok::factory(10)->create(); // Create 10 kelompok as defined in factory
     }
 }
