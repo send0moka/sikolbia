@@ -15,6 +15,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxStyles
     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
     <!-- Alpine.js is loaded via app.js -->
 </head>
 <body class="bg-neutral-50 dark:bg-neutral-900">
@@ -69,5 +72,6 @@
     </div>
 
     @fluxScripts
+    @stack('scripts')
 </body>
 </html>

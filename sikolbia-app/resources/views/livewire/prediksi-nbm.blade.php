@@ -1,26 +1,34 @@
-<div>
-    <!-- Header -->
+<div class="container mx-auto px-4 py-6">
+    <!-- Header with Breadcrumb -->
     <div class="mb-6">
-        <h1 class="text-2xl font-semibold text-gray-900">Prediksi NBM</h1>
-        <p class="mt-1 text-sm text-gray-600">
-            Prediksi Neraca Bahan Makanan dengan Machine Learning (LSTM Enhanced Ensemble - MAPE 3.74%)
-        </p>
+        <nav class="text-sm mb-4">
+            <ol class="list-none p-0 inline-flex">
+                <li class="flex items-center">
+                    <a href="{{ route('dashboard') }}" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-home mr-1"></i>Dashboard
+                    </a>
+                    <span class="mx-2 text-gray-400">/</span>
+                </li>
+                <li class="flex items-center">
+                    <span class="text-gray-600">Konsumsi Pangan</span>
+                    <span class="mx-2 text-gray-400">/</span>
+                </li>
+                <li class="flex items-center text-gray-500">
+                    Prediksi NBM
+                </li>
+            </ol>
+        </nav>
+        
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Prediksi NBM</h1>
+            <p class="mt-2 text-sm text-gray-600">
+                <i class="fas fa-brain mr-1"></i>
+                Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
+            </p>
+        </div>
     </div>
 
-    <!-- Mode Toggle -->
-    <div class="mb-6 flex gap-2">
-        <button wire:click="switchMode('komoditi')" 
-            class="px-4 py-2 rounded-md {{ $predictionMode === 'komoditi' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' }}">
-            <i class="fas fa-chart-bar mr-2"></i>Prediksi Per Komoditi
-        </button>
-        <button wire:click="switchMode('manual')" 
-            class="px-4 py-2 rounded-md {{ $predictionMode === 'manual' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300' }}">
-            <i class="fas fa-pencil mr-2"></i>Prediksi Manual (6 Bulan)
-        </button>
-    </div>
-
-    @if ($predictionMode === 'komoditi')
-        <!-- Prediksi Per Komoditi Mode -->
+    <!-- Main Prediction Interface -->
         <div class="grid gap-6 md:grid-cols-3">
             <!-- Input Sidebar -->
             <div class="md:col-span-1">
@@ -53,6 +61,21 @@
                             @error('nMonths') 
                                 <span class="text-sm text-red-600">{{ $message }}</span> 
                             @enderror
+                        </div>
+
+                        <!-- Historical Period Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-history mr-1"></i>Periode Data Historis
+                            </label>
+                            <select wire:model.live="historicalPeriod" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="6">6 Bulan Terakhir</option>
+                                <option value="12">1 Tahun Terakhir</option>
+                                <option value="60">5 Tahun Terakhir</option>
+                                <option value="all">Semua Data (Terlama)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Untuk visualisasi perbandingan</p>
                         </div>
 
                         <!-- Predict Button -->
@@ -100,24 +123,88 @@
                             </div>
                         @else
                             <!-- Normal Result Display -->
+                            
+                            <!-- Model Metrics Cards -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                <div class="p-4 bg-blue-50 rounded-lg">
+                                    <p class="text-xs text-blue-600 font-medium">R² Score</p>
+                                    <p class="text-2xl font-bold text-blue-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['r2'] ?? 0.9901, 4) }}
+                                    </p>
+                                </div>
+                                <div class="p-4 bg-green-50 rounded-lg">
+                                    <p class="text-xs text-green-600 font-medium">MAPE</p>
+                                    <p class="text-2xl font-bold text-green-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['mape'] ?? 3.73, 2) }}%
+                                    </p>
+                                </div>
+                                <div class="p-4 bg-yellow-50 rounded-lg">
+                                    <p class="text-xs text-yellow-600 font-medium">MAE</p>
+                                    <p class="text-2xl font-bold text-yellow-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['mae'] ?? 867.04, 2) }}
+                                    </p>
+                                </div>
+                                <div class="p-4 bg-red-50 rounded-lg">
+                                    <p class="text-xs text-red-600 font-medium">RMSE</p>
+                                    <p class="text-2xl font-bold text-red-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['rmse'] ?? 1788.78, 2) }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Chart Visualization -->
+                            <div class="mb-6" wire:ignore>
+                                <h3 class="text-lg font-semibold mb-4">
+                                    <i class="fas fa-chart-line mr-2 text-blue-600"></i>Visualisasi Prediksi
+                                </h3>
+                                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                                    <canvas id="predictionChart" 
+                                            style="height: 400px; max-height: 400px;"
+                                            @if($chartData && !empty($chartData['historical']) && !empty($chartData['predictions']))
+                                            data-chart-data="{{ json_encode($chartData) }}"
+                                            @endif
+                                    ></canvas>
+                                </div>
+                            </div>
+                            
+                            @if($chartData && !empty($chartData['historical']) && !empty($chartData['predictions']))
+                            <script>
+                                // FORCE RENDER saat ini juga
+                                (function() {
+                                    const chartData = @json($chartData);
+                                    console.log('=== INLINE SCRIPT EXECUTING ===');
+                                    console.log('Chart data available:', chartData);
+                                    
+                                    function tryRender() {
+                                        if (typeof renderChart === 'function' && typeof Chart !== 'undefined') {
+                                            console.log('Calling renderChart NOW');
+                                            renderChart(chartData);
+                                            return true;
+                                        }
+                                        return false;
+                                    }
+                                    
+                                    // Try immediate
+                                    if (!tryRender()) {
+                                        // Try after 100ms
+                                        setTimeout(() => {
+                                            if (!tryRender()) {
+                                                // Try after 500ms
+                                                setTimeout(() => tryRender(), 500);
+                                            }
+                                        }, 100);
+                                    }
+                                })();
+                            </script>
+                            @endif
+
+                            <!-- Export & Title -->
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-semibold">Hasil Prediksi</h3>
+                                <h3 class="text-lg font-semibold">Hasil Prediksi Detail</h3>
                                 <button wire:click="exportKomoditiResult" 
                                     class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
                                     <i class="fas fa-download mr-1"></i>Export JSON
                                 </button>
-                            </div>
-
-                            <!-- Model Info -->
-                            <div class="mb-4 p-4 bg-blue-50 rounded-md">
-                                <p class="text-sm">
-                                    <strong>Model:</strong> {{ $komoditiPredictionResult['model_info']['type'] ?? 'N/A' }}<br>
-                                    <strong>Metrics:</strong> 
-                                    R² {{ number_format($komoditiPredictionResult['model_info']['r2'] ?? 0, 4) }}, 
-                                    MAPE {{ number_format($komoditiPredictionResult['model_info']['mape'] ?? 0, 2) }}%, 
-                                    MAE {{ number_format($komoditiPredictionResult['model_info']['mae'] ?? 0, 2) }}, 
-                                    RMSE {{ number_format($komoditiPredictionResult['model_info']['rmse'] ?? 0, 2) }}
-                                </p>
                             </div>
 
                             <!-- Predictions Table -->
@@ -205,11 +292,300 @@
                 @endif
             </div>
         </div>
-
-    @else
-        <!-- Manual Prediction Mode (Original 6-Month Input) -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <p class="text-gray-600 mb-4">Mode prediksi manual (coming soon)</p>
-        </div>
-    @endif
 </div>
+
+@push('scripts')
+<script>
+    let predictionChart = null;
+
+    function renderChart(chartData) {
+        console.log('renderChart called with:', chartData);
+        
+        const ctx = document.getElementById('predictionChart');
+        if (!ctx) {
+            console.error('Canvas element not found!');
+            return;
+        }
+
+        if (!chartData || !chartData.historical || !chartData.predictions) {
+            console.error('Invalid chart data:', chartData);
+            return;
+        }
+
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded!');
+            return;
+        }
+
+        console.log('Historical:', chartData.historical.length, 'Predictions:', chartData.predictions.length);
+
+        // Destroy existing chart
+        if (predictionChart) {
+            predictionChart.destroy();
+        }
+
+        // Prepare data - SAMBUNGKAN historical dan prediction
+        const labels = [...chartData.historical.map(d => d.period), ...chartData.predictions.map(d => d.period)];
+        
+        // Historical values: isi semua periode historical, null di periode prediction
+        const historicalValues = [...chartData.historical.map(d => d.value), ...Array(chartData.predictions.length).fill(null)];
+        
+        // Prediction values: null di historical KECUALI titik terakhir (untuk sambung), lalu isi prediction
+        const lastHistoricalValue = chartData.historical[chartData.historical.length - 1].value;
+        const predictionValues = [
+            ...Array(chartData.historical.length - 1).fill(null), 
+            lastHistoricalValue, // TITIK PENGHUBUNG
+            ...chartData.predictions.map(d => d.value)
+        ];
+        
+        // CI bounds - mulai dari titik terakhir historical
+        const ciLower = [
+            ...Array(chartData.historical.length - 1).fill(null),
+            lastHistoricalValue,
+            ...chartData.predictions.map(d => d.ci_lower)
+        ];
+        const ciUpper = [
+            ...Array(chartData.historical.length - 1).fill(null),
+            lastHistoricalValue,
+            ...chartData.predictions.map(d => d.ci_upper)
+        ];
+        
+        // Hitung range data untuk Y axis yang lebih baik
+        const allValues = [...chartData.historical.map(d => d.value), ...chartData.predictions.map(d => d.value)];
+        const minValue = Math.min(...allValues);
+        const maxValue = Math.max(...allValues);
+        const padding = (maxValue - minValue) * 0.1; // 10% padding
+        const suggestedMin = Math.max(0, minValue - padding);
+        const suggestedMax = maxValue + padding;
+        
+        // Dynamic point radius - hilangkan bulatan jika data terlalu banyak
+        const totalDataPoints = chartData.historical.length + chartData.predictions.length;
+        const pointRadius = totalDataPoints > 24 ? 0 : 5; // Hilangkan bulatan jika > 24 bulan (2 tahun)
+        const pointHoverRadius = totalDataPoints > 24 ? 3 : 7;
+
+        // Create chart
+        predictionChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Data Historis (6 Bulan)',
+                        data: historicalValues,
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: pointRadius,
+                        pointHoverRadius: pointHoverRadius,
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    },
+                    {
+                        label: 'Prediksi',
+                        data: predictionValues,
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        borderDash: [8, 4],
+                        tension: 0.4,
+                        pointRadius: pointRadius,
+                        pointHoverRadius: pointHoverRadius,
+                        pointBackgroundColor: 'rgb(16, 185, 129)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    },
+                    {
+                        label: 'Confidence Interval',
+                        data: ciUpper,
+                        borderColor: 'rgba(249, 115, 22, 0.4)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.15)',
+                        fill: '+1',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'CI Lower',
+                        data: ciLower,
+                        borderColor: 'rgba(249, 115, 22, 0.4)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.15)',
+                        fill: false,
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            filter: (item) => item.text !== 'CI Lower',
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Prediksi Kalori per Kapita per Hari',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('id-ID', { 
+                                        minimumFractionDigits: 2, 
+                                        maximumFractionDigits: 2 
+                                    }).format(context.parsed.y) + ' kkal/hari';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        suggestedMin: suggestedMin,
+                        suggestedMax: suggestedMax,
+                        title: {
+                            display: true,
+                            text: 'Kalori (kkal/hari)',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('id-ID').format(value);
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Periode (Tahun-Bulan)',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+        
+        console.log('Chart rendered successfully!');
+    }
+
+    // Listen for Livewire events
+    document.addEventListener('livewire:initialized', () => {
+        console.log('Livewire ready, listening for chart updates');
+        
+        // Method 1: Livewire.on
+        Livewire.on('update-chart', (event) => {
+            console.log('Method 1 - Livewire.on received:', event);
+            const chartData = event.chartData || event[0]?.chartData || event[0];
+            if (chartData) {
+                renderChart(chartData);
+            }
+        });
+    });
+
+    // Method 2: Window event listener (fallback)
+    window.addEventListener('update-chart', (event) => {
+        console.log('Method 2 - Window event received:', event.detail);
+        if (event.detail && event.detail.chartData) {
+            // Tunggu DOM selesai update
+            setTimeout(() => {
+                const canvas = document.getElementById('predictionChart');
+                if (canvas) {
+                    console.log('Canvas found after timeout, rendering...');
+                    renderChart(event.detail.chartData);
+                } else {
+                    console.error('Canvas still not found after timeout!');
+                }
+            }, 300);
+        }
+    });
+
+    // Check for initial data
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialData = @json($chartData ?? null);
+        console.log('Initial data check:', initialData);
+        
+        if (initialData && initialData.historical && initialData.predictions && 
+            initialData.historical.length > 0 && initialData.predictions.length > 0) {
+            console.log('Rendering initial chart');
+            setTimeout(() => renderChart(initialData), 200);
+        } else {
+            console.log('No initial data - waiting for prediction');
+        }
+    });
+
+    // HOOK LIVEWIRE - render chart setelah component update (SEKALI SAJA)
+    document.addEventListener('livewire:initialized', () => {
+        let lastRendered = null;
+        
+        Livewire.hook('morph.updated', ({ el, component }) => {
+            const canvas = document.getElementById('predictionChart');
+            if (canvas && canvas.dataset.chartData) {
+                const dataStr = canvas.dataset.chartData;
+                
+                // Hanya render jika data berubah
+                if (dataStr && dataStr !== lastRendered) {
+                    lastRendered = dataStr;
+                    console.log('New chart data detected!');
+                    
+                    try {
+                        const chartData = JSON.parse(dataStr);
+                        console.log('Parsed chart data:', chartData);
+                        renderChart(chartData);
+                    } catch (e) {
+                        console.error('Failed to parse chart data:', e);
+                    }
+                }
+            }
+        });
+    });
+</script>
+@endpush

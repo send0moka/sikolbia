@@ -22,12 +22,20 @@ class PrediksiNbm extends Component
     protected $listeners = ['updateDateRange' => 'updateDateRange'];
     
     // NEW: Google Colab LSTM API properties
-    public $predictionMode = 'manual'; // 'manual' or 'komoditi'
+    public $predictionMode = 'komoditi'; // Always use 'komoditi' mode
     public $komoditiList = [];
     public $selectedKomoditi = '';
     public $nMonths = 3;
+    public $historicalPeriod = 6; // Default 6 months
     public $komoditiPredictionResult = null;
     public $komoditiLoading = false;
+    
+    // Manual prediction properties
+    public $selectedKomoditiManual = '';
+    public $manualInputData = [];
+    public $manualPredictionResult = null;
+    public $historicalData = [];
+    public $chartData = [];
     
     protected $rules = [
         'data.*.komoditi_data.*.kelompok' => 'required|string',
@@ -511,7 +519,16 @@ class PrediksiNbm extends Component
     public function updatedSelectedKomoditi()
     {
         $this->komoditiPredictionResult = null;
+        $this->chartData = [];
         $this->resetValidation(); // Clear validation errors
+    }
+
+    public function updatedHistoricalPeriod()
+    {
+        // Re-generate chart jika sudah ada prediction result
+        if ($this->komoditiPredictionResult && $this->selectedKomoditi) {
+            $this->generateKomoditiChartData();
+        }
     }
 
     public function predictKomoditi()
@@ -538,6 +555,9 @@ class PrediksiNbm extends Component
             
             if ($result['success']) {
                 $this->komoditiPredictionResult = $result['data'];
+                
+                // Generate chart data for visualization
+                $this->generateKomoditiChartData();
                 
                 $komoditiName = $this->getKomoditiName($this->selectedKomoditi);
                 
@@ -596,18 +616,21 @@ class PrediksiNbm extends Component
         
         $data = [
             'komoditi' => $this->selectedKomoditi,
+            'komoditi_nama' => $this->getKomoditiName($this->selectedKomoditi),
             'n_months' => $this->nMonths,
-            'predictions' => $this->komoditiPredictionResult['predictions'],
-            'model_info' => $this->komoditiPredictionResult['model_info'],
-            'summary' => $this->komoditiPredictionResult['summary'],
-            'exported_at' => now()->toISOString()
+            'predictions' => $this->komoditiPredictionResult['predictions'] ?? [],
+            'confidence_intervals' => $this->komoditiPredictionResult['confidence_intervals'] ?? [],
+            'input_summary' => $this->komoditiPredictionResult['input_summary'] ?? null,
+            'model_info' => $this->komoditiPredictionResult['model_info'] ?? [],
+            'exported_at' => now()->toISOString(),
+            'exported_by' => auth()->user()->name ?? 'System'
         ];
         
         $komoditiName = $this->getKomoditiName($this->selectedKomoditi);
         $filename = 'prediksi-' . strtolower(str_replace(' ', '-', $komoditiName)) . '-' . now()->format('Y-m-d') . '.json';
         
         return response()->streamDownload(function () use ($data) {
-            echo json_encode($data, JSON_PRETTY_PRINT);
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         }, $filename, [
             'Content-Type' => 'application/json',
         ]);
@@ -621,6 +644,306 @@ class PrediksiNbm extends Component
             }
         }
         return 'komoditi';
+    }
+    
+    // NEW: Manual Prediction Methods
+    
+    public function generateKomoditiChartData()
+    {
+        Log::info('generateKomoditiChartData called', [
+            'has_result' => !empty($this->komoditiPredictionResult),
+            'has_komoditi' => !empty($this->selectedKomoditi)
+        ]);
+        
+        if (!$this->komoditiPredictionResult || !$this->selectedKomoditi) {
+            Log::warning('Chart data generation skipped - missing data');
+            return;
+        }
+        
+        try {
+            // Hitung limit berdasarkan historicalPeriod
+            $limit = null;
+            if ($this->historicalPeriod == 6) {
+                $limit = 6;
+            } elseif ($this->historicalPeriod == 12) {
+                $limit = 12;
+            } elseif ($this->historicalPeriod == 60) {
+                $limit = 60; // 5 tahun
+            }
+            // else: null = semua data (terlama)
+            
+            // Load historical data menggunakan Model (untuk accessor kalori_hari)
+            $query = \App\Models\TransaksiNbm::where('kode_komoditi', $this->selectedKomoditi)
+                ->orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc');
+            
+            if ($limit) {
+                $query->limit($limit);
+            }
+            
+            $historicalRecords = $query->get()
+                ->reverse()
+                ->values();
+            
+            Log::info('Historical records loaded', [
+                'count' => $historicalRecords->count(),
+                'sample' => $historicalRecords->first()
+            ]);
+            
+            $historical = $historicalRecords->map(function ($record) {
+                return [
+                    'period' => sprintf('%d-%02d', $record->tahun, $record->bulan),
+                    'value' => (float) $record->kalori_hari // Accessor
+                ];
+            })->toArray();
+            
+            // Format predictions
+            $predictions = [];
+            foreach ($this->komoditiPredictionResult['predictions'] as $idx => $pred) {
+                $predictions[] = [
+                    'period' => sprintf('%d-%02d', $pred['tahun'], $pred['bulan']),
+                    'value' => $pred['kalori_hari'],
+                    'ci_lower' => $this->komoditiPredictionResult['confidence_intervals'][$idx]['lower'] ?? 0,
+                    'ci_upper' => $this->komoditiPredictionResult['confidence_intervals'][$idx]['upper'] ?? 0
+                ];
+            }
+            
+            $this->chartData = [
+                'historical' => $historical,
+                'predictions' => $predictions
+            ];
+            
+            Log::info('Chart data generated', [
+                'historical_count' => count($historical),
+                'predictions_count' => count($predictions),
+                'komoditi' => $this->selectedKomoditi,
+                'historical_period' => $this->historicalPeriod
+            ]);
+            
+            // Force re-render by updating property
+            $this->js('
+                console.log("Dispatching chart data from PHP");
+                window.dispatchEvent(new CustomEvent("update-chart", { 
+                    detail: { chartData: ' . json_encode($this->chartData) . ' }
+                }));
+            ');
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to generate chart data: ' . $e->getMessage());
+        }
+    }
+    
+    public function loadHistoricalData()
+    {
+        if (!$this->selectedKomoditiManual) {
+            $this->historicalData = [];
+            return;
+        }
+        
+        try {
+            // Query last 6 months of historical data
+            $historicalRecords = \DB::table('transaksi_nbms')
+                ->join('komoditi', 'transaksi_nbms.komoditi', '=', 'komoditi.kode_komoditi')
+                ->where('transaksi_nbms.komoditi', $this->selectedKomoditiManual)
+                ->orderBy('transaksi_nbms.tahun', 'desc')
+                ->orderBy('transaksi_nbms.bulan', 'desc')
+                ->limit(6)
+                ->select(
+                    'transaksi_nbms.tahun',
+                    'transaksi_nbms.bulan',
+                    'transaksi_nbms.kalori_per_kapita_per_hari as kalori_hari'
+                )
+                ->get()
+                ->reverse()
+                ->values();
+            
+            $this->historicalData = $historicalRecords->map(function ($record) {
+                return [
+                    'period' => sprintf('%d-%02d', $record->tahun, $record->bulan),
+                    'kalori_hari' => (float) $record->kalori_hari
+                ];
+            })->toArray();
+            
+            // Auto-fill manual input fields with historical data
+            $this->manualInputData = $historicalRecords->pluck('kalori_hari')->toArray();
+            
+            Log::info('Historical data loaded', [
+                'komoditi' => $this->selectedKomoditiManual,
+                'count' => count($this->historicalData)
+            ]);
+            
+        } catch (\Exception $e) {
+            $this->historicalData = [];
+            $this->manualInputData = [];
+            
+            Log::error('Failed to load historical data: ' . $e->getMessage());
+            
+            $this->dispatch('show-toast', [
+                'type' => 'warning',
+                'message' => 'Data historis tidak tersedia untuk komoditi ini'
+            ]);
+        }
+    }
+    
+    public function predictManual()
+    {
+        // Validate manual inputs
+        $this->validate([
+            'selectedKomoditiManual' => 'required',
+            'manualInputData.*' => 'required|numeric|min:0|max:1000'
+        ], [
+            'selectedKomoditiManual.required' => 'Pilih komoditi terlebih dahulu',
+            'manualInputData.*.required' => 'Semua input kalori harus diisi',
+            'manualInputData.*.numeric' => 'Input harus berupa angka',
+            'manualInputData.*.min' => 'Nilai minimal 0',
+            'manualInputData.*.max' => 'Nilai maksimal 1000'
+        ]);
+        
+        // Ensure we have exactly 6 data points
+        if (count($this->manualInputData) !== 6) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => 'Data harus berjumlah 6 bulan'
+            ]);
+            return;
+        }
+        
+        try {
+            $this->komoditiLoading = true;
+            
+            // Prepare payload for ML API
+            $komoditiData = Komoditi::where('kode_komoditi', $this->selectedKomoditiManual)->first();
+            
+            if (!$komoditiData) {
+                throw new \Exception('Komoditi tidak ditemukan');
+            }
+            
+            $baseDate = now()->subMonths(5);
+            $sequence = [];
+            
+            for ($i = 0; $i < 6; $i++) {
+                $date = $baseDate->copy()->addMonths($i);
+                $sequence[] = [
+                    'tahun' => $date->year,
+                    'bulan' => $date->month,
+                    'kelompok' => $komoditiData->kode_kelompok ?? '01',
+                    'komoditi' => $this->selectedKomoditiManual,
+                    'kalori_hari' => (float) $this->manualInputData[$i]
+                ];
+            }
+            
+            // Call ML API
+            $apiUrl = rtrim(config('app.ml_api_url', 'http://localhost:8082'), '/');
+            $response = Http::timeout(30)->post($apiUrl . '/predict', [
+                'sequence' => $sequence,
+                'n_months' => 3
+            ]);
+            
+            if (!$response->successful()) {
+                throw new \Exception('ML API error: ' . $response->body());
+            }
+            
+            $result = $response->json();
+            
+            if ($result['success'] ?? false) {
+                $this->manualPredictionResult = $result['data'];
+                
+                // Generate chart data
+                $this->generateChartData();
+                
+                $this->dispatch('show-toast', [
+                    'type' => 'success',
+                    'message' => 'Prediksi manual berhasil!'
+                ]);
+                
+                Log::info('Manual prediction successful', [
+                    'komoditi' => $this->selectedKomoditiManual,
+                    'input_count' => count($sequence),
+                    'predictions_count' => count($result['data']['predictions'] ?? [])
+                ]);
+            } else {
+                throw new \Exception($result['message'] ?? 'Prediction failed');
+            }
+            
+        } catch (\Exception $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+            
+            Log::error('Manual prediction error: ' . $e->getMessage());
+        } finally {
+            $this->komoditiLoading = false;
+        }
+    }
+    
+    private function generateChartData()
+    {
+        if (!$this->manualPredictionResult || !$this->historicalData) {
+            return;
+        }
+        
+        $chartData = [
+            'historical' => array_map(function ($item) {
+                return [
+                    'period' => $item['period'],
+                    'value' => $item['kalori_hari']
+                ];
+            }, $this->historicalData),
+            'predictions' => []
+        ];
+        
+        foreach ($this->manualPredictionResult['predictions'] as $idx => $pred) {
+            $chartData['predictions'][] = [
+                'period' => sprintf('%d-%02d', $pred['tahun'], $pred['bulan']),
+                'value' => $pred['kalori_hari'],
+                'ci_lower' => $this->manualPredictionResult['confidence_intervals'][$idx]['lower'] ?? 0,
+                'ci_upper' => $this->manualPredictionResult['confidence_intervals'][$idx]['upper'] ?? 0
+            ];
+        }
+        
+        $this->chartData = $chartData;
+        $this->dispatch('updateChart', $chartData);
+    }
+    
+    public function clearManualInputs()
+    {
+        $this->manualInputData = [];
+        $this->manualPredictionResult = null;
+        $this->chartData = [];
+        
+        $this->dispatch('show-toast', [
+            'type' => 'info',
+            'message' => 'Input telah dibersihkan'
+        ]);
+    }
+    
+    public function exportManualResult()
+    {
+        if (!$this->manualPredictionResult) {
+            return;
+        }
+        
+        $data = [
+            'komoditi' => $this->selectedKomoditiManual,
+            'komoditi_nama' => $this->getKomoditiName($this->selectedKomoditiManual),
+            'input_type' => 'manual',
+            'input_data' => $this->manualInputData,
+            'predictions' => $this->manualPredictionResult['predictions'] ?? [],
+            'confidence_intervals' => $this->manualPredictionResult['confidence_intervals'] ?? [],
+            'model_info' => $this->manualPredictionResult['model_info'] ?? [],
+            'exported_at' => now()->toISOString(),
+            'exported_by' => auth()->user()->name ?? 'System'
+        ];
+        
+        $komoditiName = $this->getKomoditiName($this->selectedKomoditiManual);
+        $filename = 'prediksi-manual-' . strtolower(str_replace(' ', '-', $komoditiName)) . '-' . now()->format('Y-m-d') . '.json';
+        
+        return response()->streamDownload(function () use ($data) {
+            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        }, $filename, [
+            'Content-Type' => 'application/json',
+        ]);
     }
     
     public function render()
