@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BcgleDO6.css",
+    "file": "assets/app-B0y3bqLi.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -8,10 +8,22 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CNCsP34b.js",
+    "file": "assets/app-D7pmeqPS.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/pertanian/index.js"
+    ]
+  },
+  "resources/js/pertanian/index.js": {
+    "file": "assets/index-DkdeOr9f.js",
+    "name": "index",
+    "src": "resources/js/pertanian/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
   },
   "resources/js/prediksi-nbm-enhanced.js": {
     "file": "assets/prediksi-nbm-enhanced-cPcBjJoi.js",

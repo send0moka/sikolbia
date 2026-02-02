@@ -6,7 +6,7 @@
         class="flex aspect-square size-8 items-center justify-center rounded-md bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white">
         <x-app-logo-icon class="size-5 fill-current" />
     </div>
-    <span class="text-balance text-sm leading-tight font-semibold">
+    <span class="text-balance text-sm leading-tight font-semibold text-neutral-900 dark:text-white">
         Basis Data 
         @if(request()->is('admin/konsumsi-pangan*'))
             Konsumsi Pangan

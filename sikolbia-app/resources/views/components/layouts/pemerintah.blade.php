@@ -1,7 +1,7 @@
 @props(['title' => 'Panel Pemerintah - ' . config('app.name')])
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head', ['title' => $title])
     </head>

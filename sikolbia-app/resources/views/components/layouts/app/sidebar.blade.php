@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
@@ -111,8 +111,8 @@
                                 </span>
 
                                 <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
+                                    <span class="truncate font-semibold text-neutral-900 dark:text-white">{{ auth()->user()->name }}</span>
+                                    <span class="truncate text-xs text-neutral-600 dark:text-neutral-400">{{ auth()->user()->email }}</span>
                                 </div>
                             </div>
                         </div>
@@ -163,8 +163,8 @@
                                 </span>
 
                                 <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
+                                    <span class="truncate font-semibold text-neutral-900 dark:text-white">{{ auth()->user()->name }}</span>
+                                    <span class="truncate text-xs text-neutral-600 dark:text-neutral-400">{{ auth()->user()->email }}</span>
                                 </div>
                             </div>
                         </div>
@@ -191,7 +191,8 @@
 
         {{ $slot }}
 
-        @stack('scripts')
         @fluxScripts
+        @livewireScripts
+        @stack('scripts')
     </body>
 </html>

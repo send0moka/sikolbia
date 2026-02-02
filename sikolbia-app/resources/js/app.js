@@ -1,33 +1,21 @@
-// Alpine.js setup - Let Livewire handle Alpine initialization
-import Alpine from 'alpinejs';
+// Alpine.js will be provided by Livewire and Flux - DO NOT IMPORT
+// This prevents multiple Alpine instances conflict
 
-// Make Alpine available globally before Livewire loads
-window.Alpine = Alpine;
-
-// Custom Alpine component for Pertanian Report Form (via new compatibility factory)
-import pertanianReportForm from './pertanian/index.js';
-Alpine.data('pertanianReportForm', pertanianReportForm);
-// End Pertanian Report Form
+// Wait for Alpine to be available from Livewire/Flux
+document.addEventListener('alpine:init', () => {
+    console.log('App.js initialized - Alpine provided by Livewire/Flux');
+    
+    // Custom Alpine component for Pertanian Report Form
+    if (window.Alpine) {
+        const pertanianReportFormModule = import('./pertanian/index.js');
+        pertanianReportFormModule.then(module => {
+            window.Alpine.data('pertanianReportForm', module.default);
+        });
+    }
+});
 
 // Sticky table utility (auto-initializes on import)
 import './utils/stickyTable.js';
-
-// IMPORTANT: Do NOT start Alpine manually when Livewire is present
-// Livewire will handle Alpine initialization including navigate functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if this is a Livewire page
-    const hasLivewire = document.querySelector('[wire\\:id]') || 
-                       document.querySelector('[livewire\\:id]') || 
-                       window.Livewire;
-    
-    // Only start Alpine manually for non-Livewire pages and if not already started
-    if (!hasLivewire && !window.Alpine._x_started) {
-        console.log('Starting Alpine manually for non-Livewire page');
-        Alpine.start();
-    } else if (hasLivewire) {
-        console.log('Livewire detected - Alpine will be handled by Livewire');
-    }
-});
 
 // Admin Pages
 // Force dark mode for admin pages
