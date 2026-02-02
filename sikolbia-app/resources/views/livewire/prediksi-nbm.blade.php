@@ -1,46 +1,26 @@
-<div class="container mx-auto px-4 py-6">
-    <!-- Header with Breadcrumb -->
+<flux:main>
+    <!-- Page Header -->
     <div class="mb-6">
-        <nav class="text-sm mb-4">
-            <ol class="list-none p-0 inline-flex">
-                <li class="flex items-center">
-                    <a href="{{ route('dashboard') }}" class="text-blue-600 hover:text-blue-800">
-                        <i class="fas fa-home mr-1"></i>Dashboard
-                    </a>
-                    <span class="mx-2 text-gray-400">/</span>
-                </li>
-                <li class="flex items-center">
-                    <span class="text-gray-600">Konsumsi Pangan</span>
-                    <span class="mx-2 text-gray-400">/</span>
-                </li>
-                <li class="flex items-center text-gray-500">
-                    Prediksi NBM
-                </li>
-            </ol>
-        </nav>
-        
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Prediksi NBM</h1>
-            <p class="mt-2 text-sm text-gray-600">
-                <i class="fas fa-brain mr-1"></i>
-                Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
-            </p>
-        </div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <i class="fas fa-brain mr-1"></i>
+            Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
+        </p>
     </div>
 
     <!-- Main Prediction Interface -->
-        <div class="grid gap-6 md:grid-cols-3">
+    <div class="grid gap-6 lg:grid-cols-3">
             <!-- Input Sidebar -->
-            <div class="md:col-span-1">
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h3 class="text-lg font-semibold mb-4">Parameter Prediksi</h3>
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 border border-zinc-200 dark:border-zinc-700">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Parameter Prediksi</h3>
                     
                     <div class="space-y-4">
                         <!-- Komoditi Selector -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Komoditi</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pilih Komoditi</label>
                             <select wire:model="selectedKomoditi" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">-- Pilih Komoditi --</option>
                                 @foreach ($komoditiList as $item)
                                     <option value="{{ $item['kode_komoditi'] }}">
@@ -55,9 +35,9 @@
 
                         <!-- N Months Input -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Bulan Prediksi</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Bulan Prediksi</label>
                             <input type="number" wire:model="nMonths" min="1" max="12" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-blue-500 focus:border-blue-500">
                             @error('nMonths') 
                                 <span class="text-sm text-red-600">{{ $message }}</span> 
                             @enderror
@@ -65,17 +45,17 @@
 
                         <!-- Historical Period Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 <i class="fas fa-history mr-1"></i>Periode Data Historis
                             </label>
                             <select wire:model.live="historicalPeriod" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <option value="6">6 Bulan Terakhir</option>
                                 <option value="12">1 Tahun Terakhir</option>
                                 <option value="60">5 Tahun Terakhir</option>
                                 <option value="all">Semua Data (Terlama)</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Untuk visualisasi perbandingan</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Untuk visualisasi perbandingan</p>
                         </div>
 
                         <!-- Predict Button -->
@@ -94,9 +74,9 @@
             </div>
 
             <!-- Results Area -->
-            <div class="md:col-span-2">
+            <div class="lg:col-span-2">
                 @if ($komoditiPredictionResult)
-                    <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 border border-zinc-200 dark:border-zinc-700">
                         <!-- Error Message Display -->
                         @if (isset($komoditiPredictionResult['error']) && $komoditiPredictionResult['error'])
                             <div class="p-6 bg-red-50 border-2 border-red-200 rounded-lg">
@@ -154,10 +134,10 @@
 
                             <!-- Chart Visualization -->
                             <div class="mb-6" wire:ignore>
-                                <h3 class="text-lg font-semibold mb-4">
+                                <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                                     <i class="fas fa-chart-line mr-2 text-blue-600"></i>Visualisasi Prediksi
                                 </h3>
-                                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                                <div class="bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-700 p-4">
                                     <canvas id="predictionChart" 
                                             style="height: 400px; max-height: 400px;"
                                             @if($chartData && !empty($chartData['historical']) && !empty($chartData['predictions']))
@@ -200,7 +180,7 @@
 
                             <!-- Export & Title -->
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-semibold">Hasil Prediksi Detail</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Hasil Prediksi Detail</h3>
                                 <button wire:click="exportKomoditiResult" 
                                     class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
                                     <i class="fas fa-download mr-1"></i>Export JSON
@@ -285,14 +265,14 @@
                         @endif {{-- End of error check --}}
                     </div>
                 @else
-                    <div class="bg-gray-50 rounded-lg p-12 text-center">
-                        <i class="fas fa-chart-line text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500">Pilih komoditi dan klik Prediksi untuk melihat hasil</p>
+                    <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg p-12 text-center border border-zinc-200 dark:border-zinc-700">
+                        <i class="fas fa-chart-line text-6xl text-gray-300 dark:text-zinc-600 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Pilih komoditi dan klik Prediksi untuk melihat hasil</p>
                     </div>
                 @endif
             </div>
         </div>
-</div>
+</flux:main>
 
 @push('scripts')
 <script>

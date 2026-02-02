@@ -949,8 +949,8 @@ class PrediksiNbm extends Component
     public function render()
     {
         return view('livewire.prediksi-nbm')
-            ->layout('components.layouts.admin', [
-                'title' => 'Prediksi NBM - ' . config('app.name')
+            ->layout('components.layouts.app.sidebar', [
+                'title' => 'Prediksi NBM'
             ]);
     }
 }

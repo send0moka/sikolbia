@@ -258,7 +258,7 @@
                                 <div x-show="open" @click.away="open = false" x-transition 
                                      class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                                     <div class="py-1">
-                                        <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <a href="{{ route('settings.profile') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                             <i class="fas fa-user-circle mr-3"></i>
                                             Profile
                                         </a>
