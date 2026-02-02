@@ -24,7 +24,10 @@ class PrediksiNbm extends Component
     public $predictionResult = null;
     public $modelStats = [];
     public $apiStatus = 'checking';
-    protected $listeners = ['updateDateRange' => 'updateDateRange'];
+    protected $listeners = [
+        'updateDateRange' => 'updateDateRange',
+        'nbm-data-changed' => 'checkDataChanges'
+    ];
     
     // NEW: Google Colab LSTM API properties
     public $predictionMode = 'komoditi'; // Always use 'komoditi' mode
@@ -43,6 +46,18 @@ class PrediksiNbm extends Component
     public $manualPredictionResult = null;
     public $historicalData = [];
     public $chartData = [];
+    
+    // Model versioning properties
+    public $modelVersions;
+    public $activeModelVersion;
+    public $activeModelStage;
+    public $isTraining = false;
+    public $trainingProgress = 0;
+    public $trainingMessage = '';
+    public $releaseStage = 'beta';
+    public $modelDescription = '';
+    public $nextModelVersion;
+    public $hasDataChanges = false; // Track if there are new data changes
     
     protected $rules = [
         'data.*.komoditi_data.*.kelompok' => 'required|string',
@@ -83,6 +98,7 @@ class PrediksiNbm extends Component
         
         $this->updateData();
         $this->loadModelStats();
+        $this->loadModelVersions();
         
         // NEW: Load kelompok and komoditi list for new prediction mode
         $this->loadKelompokList();
@@ -1092,6 +1108,146 @@ class PrediksiNbm extends Component
         ]);
     }
     
+    public function loadModelVersions()
+    {
+        $modelVersionService = app(\App\Services\ModelVersionService::class);
+        $this->modelVersions = $modelVersionService->getAllVersions();
+        
+        $active = $modelVersionService->getActiveVersion();
+        $this->activeModelVersion = $active?->version ?? 'v1.0.0';
+        $this->activeModelStage = $active?->release_stage ?? 'production';
+        
+        $this->nextModelVersion = \App\Models\ModelVersion::getNextPatchVersion();
+        
+        // Check if there are data changes since last training
+        $this->checkDataChanges();
+    }
+    
+    public function checkDataChanges()
+    {
+        try {
+            // Get active model's last data sync timestamp
+            $activeModel = \App\Models\ModelVersion::where('is_active', true)->first();
+            
+            if (!$activeModel) {
+                // No active model, enable update button
+                $this->hasDataChanges = true;
+                return;
+            }
+            
+            // Get current data count
+            $currentDataCount = DB::table('transaksi_nbms')->count();
+            
+            // Method 1: Compare data count (detects deletes, inserts)
+            // If training_data_count is not set, populate it now for future comparisons
+            $countChanged = false;
+            if ($activeModel->training_data_count === null) {
+                // First time check - set the baseline count
+                $activeModel->update(['training_data_count' => $currentDataCount]);
+                Log::info("Set baseline training_data_count to {$currentDataCount} for model {$activeModel->version}");
+            } elseif ($activeModel->training_data_count != $currentDataCount) {
+                $countChanged = true;
+                Log::info("Data count changed: {$activeModel->training_data_count} -> {$currentDataCount}");
+            }
+            
+            // Method 2: Check timestamps for updates
+            $lastSync = $activeModel->last_data_sync;
+            $hasNewData = false;
+            
+            if ($lastSync) {
+                // Check if there are any transaksi_nbm records updated/created after last sync
+                $hasNewData = DB::table('transaksi_nbms')
+                    ->where(function($query) use ($lastSync) {
+                        $query->where('created_at', '>', $lastSync)
+                              ->orWhere('updated_at', '>', $lastSync);
+                    })
+                    ->exists();
+            } else {
+                // No sync timestamp recorded, check if model was just created
+                // If model created recently (within last hour), assume data is synced
+                if ($activeModel->created_at->diffInHours(now()) < 1) {
+                    $this->hasDataChanges = false;
+                    return;
+                }
+                // Otherwise enable update
+                $hasNewData = true;
+            }
+            
+            // Enable button if EITHER count changed OR new/updated data exists
+            $this->hasDataChanges = $countChanged || $hasNewData;
+            
+        } catch (\Exception $e) {
+            Log::error('Error checking data changes: ' . $e->getMessage());
+            // On error, enable button to be safe
+            $this->hasDataChanges = true;
+        }
+    }
+
+    public function trainNewModel()
+    {
+        try {
+            $modelVersionService = app(\App\Services\ModelVersionService::class);
+            
+            $result = $modelVersionService->trainNewModel([
+                'data_source' => 'mysql',
+                'release_stage' => $this->releaseStage,
+                'description' => $this->modelDescription,
+            ]);
+            
+            if ($result['success']) {
+                $this->isTraining = true;
+                session()->flash('message', 'Model training started! Version: ' . $result['version']);
+                
+                // Start polling for status
+                $this->dispatch('start-training-poll');
+            } else {
+                session()->flash('error', 'Training failed: ' . $result['error']);
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to start training: ' . $e->getMessage());
+        }
+    }
+
+    public function checkTrainingStatus()
+    {
+        $modelVersionService = app(\App\Services\ModelVersionService::class);
+        $status = $modelVersionService->getTrainingStatus();
+        
+        $this->isTraining = $status['is_training'] ?? false;
+        $this->trainingProgress = $status['progress'] ?? 0;
+        $this->trainingMessage = $status['message'] ?? '';
+        
+        if (!$this->isTraining && $this->trainingProgress >= 100) {
+            // Training completed, update last_data_sync for the new model
+            $newModel = \App\Models\ModelVersion::orderBy('created_at', 'desc')->first();
+            if ($newModel) {
+                $newModel->update(['last_data_sync' => now()]);
+            }
+            
+            // Reload versions and check data changes
+            $this->loadModelVersions();
+            session()->flash('message', 'Model training completed successfully!');
+        }
+    }
+
+    public function switchModelVersion($version)
+    {
+        try {
+            $modelVersionService = app(\App\Services\ModelVersionService::class);
+            
+            $result = $modelVersionService->switchVersion($version);
+            
+            if ($result['success']) {
+                $this->loadModelVersions();
+                session()->flash('message', 'Successfully switched to ' . $version . '. API restart recommended.');
+            } else {
+                session()->flash('error', 'Failed to switch: ' . $result['error']);
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error switching version: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Render the component
      * 

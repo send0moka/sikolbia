@@ -1,6 +1,6 @@
 <div>
 <!-- Page Header -->
-<div class="mb-6 flex items-start justify-between" x-data="{ showVersionHistory: false }">
+<div class="mb-6 flex items-start justify-between" x-data="{ showVersionHistory: false, showUpdateModal: false }">
     <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -9,11 +9,41 @@
         </p>
     </div>
     <div class="flex items-center gap-2">
+        @can('manage model_versions')
+        
+        @if($hasDataChanges && !$isTraining)
+            {{-- ENABLED BUTTON - Bisa diklik --}}
+            <button 
+                @click="showUpdateModal = true"
+                class="px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm flex items-center gap-1.5"
+                title="Train New Model Version">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                Update Model
+            </button>
+        @else
+            {{-- DISABLED - Benar-benar tidak bisa diklik, tidak ada Alpine directive --}}
+            <span 
+                class="inline-flex px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-600 text-white opacity-50 cursor-not-allowed shadow-sm items-center gap-1.5 pointer-events-none select-none user-select-none"
+                title="No data changes detected"
+                style="pointer-events: none !important; user-select: none !important;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                Update Model
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+            </span>
+        @endif
+        
+        @endcan
         <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-300 dark:border-blue-700">
-            <i class="fas fa-code-branch mr-1"></i>v1.0.0
+            <i class="fas fa-code-branch mr-1"></i>{{ $activeModelVersion ?? 'v1.0.0' }}
         </span>
         <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-700">
-            <i class="fas fa-check-circle mr-1"></i>Production
+            <i class="fas fa-check-circle mr-1"></i>{{ $activeModelStage ?? 'Production' }}
         </span>
         <button @click="showVersionHistory = true" 
             class="w-7 h-7 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
@@ -46,79 +76,72 @@
             <!-- Modal Body -->
             <div class="p-4 overflow-y-auto max-h-[60vh]">
                 <div class="space-y-4">
-                    <!-- Version 1.0.0 (Current) -->
+                    @forelse($modelVersions as $index => $modelVersion)
+                    <!-- Version {{ $modelVersion->version }} -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <div class="w-3 h-3 rounded-full 
+                                @if($modelVersion->is_active) bg-green-500
+                                @elseif($modelVersion->release_stage === 'production') bg-blue-500
+                                @else bg-gray-400
+                                @endif"></div>
+                            @if(!$loop->last)
                             <div class="w-0.5 h-full bg-gray-300 dark:bg-gray-600"></div>
+                            @endif
                         </div>
-                        <div class="flex-1 pb-6">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="font-semibold text-gray-900 dark:text-white">v1.0.0</span>
-                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                    Current
-                                </span>
+                        <div class="flex-1 {{ !$loop->last ? 'pb-6' : '' }}">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ $modelVersion->version }}</span>
+                                    @if($modelVersion->is_active)
+                                    <span class="px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                        Active
+                                    </span>
+                                    @endif
+                                    <span class="px-2 py-0.5 text-xs font-medium rounded 
+                                        @if($modelVersion->release_stage === 'production') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                                        @elseif($modelVersion->release_stage === 'beta') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
+                                        @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
+                                        @endif">
+                                        {{ ucfirst($modelVersion->release_stage) }}
+                                    </span>
+                                </div>
+                                @if(!$modelVersion->is_active && $modelVersion->status === 'completed')
+                                @can('manage model_versions')
+                                <button wire:click="switchModelVersion('{{ $modelVersion->version }}')" 
+                                    class="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300">
+                                    <i class="fas fa-exchange-alt mr-1"></i>Switch
+                                </button>
+                                @endcan
+                                @endif
                             </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">LSTM Enhanced Ensemble - Production Model</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ $modelVersion->model_name }}</p>
                             <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-2">
-                                <li>• Enhanced ensemble with LSTM, XGBoost, and Huber</li>
-                                <li>• Optimized feature engineering and scaling</li>
-                                <li>• MAE: 867.04, RMSE: 1788.78, MAPE: 3.73%, R²: 0.9901</li>
+                                @if($modelVersion->description)
+                                <li>• {{ $modelVersion->description }}</li>
+                                @endif
+                                <li>• MAE: {{ number_format($modelVersion->mae, 2) }}, 
+                                    RMSE: {{ number_format($modelVersion->rmse, 2) }}, 
+                                    MAPE: {{ number_format($modelVersion->mape, 2) }}%, 
+                                    R²: {{ number_format($modelVersion->r2_score, 4) }}</li>
+                                @if($modelVersion->training_data_count)
+                                <li>• Training data: {{ number_format($modelVersion->training_data_count) }} records</li>
+                                @endif
                             </ul>
                             <p class="text-xs text-gray-500 dark:text-gray-500">
-                                <i class="fas fa-calendar mr-1"></i>Released: February 2, 2026
+                                <i class="fas fa-calendar mr-1"></i>Released: {{ $modelVersion->released_at?->format('F j, Y') ?? 'N/A' }}
+                                @if($modelVersion->trainer)
+                                <span class="ml-2">by {{ $modelVersion->trainer->name }}</span>
+                                @endif
                             </p>
                         </div>
                     </div>
-
-                    <!-- Version 0.9.0 (Beta) -->
-                    <div class="flex gap-4">
-                        <div class="flex flex-col items-center">
-                            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                            <div class="w-0.5 h-full bg-gray-300 dark:bg-gray-600"></div>
-                        </div>
-                        <div class="flex-1 pb-6">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="font-semibold text-gray-900 dark:text-white">v0.9.0</span>
-                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                    Beta
-                                </span>
-                            </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Advanced Ensemble Testing</p>
-                            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-2">
-                                <li>• Multi-model ensemble approach</li>
-                                <li>• Improved time series handling</li>
-                                <li>• MAE: 920.15, RMSE: 1850.32, MAPE: 4.12%</li>
-                            </ul>
-                            <p class="text-xs text-gray-500 dark:text-gray-500">
-                                <i class="fas fa-calendar mr-1"></i>Released: January 15, 2026
-                            </p>
-                        </div>
+                    @empty
+                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-inbox text-3xl mb-2"></i>
+                        <p>No model versions found</p>
                     </div>
-
-                    <!-- Version 0.5.0 (Alpha) -->
-                    <div class="flex gap-4">
-                        <div class="flex flex-col items-center">
-                            <div class="w-3 h-3 rounded-full bg-gray-400"></div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="font-semibold text-gray-900 dark:text-white">v0.5.0</span>
-                                <span class="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                    Alpha
-                                </span>
-                            </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Initial LSTM Model</p>
-                            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1 mb-2">
-                                <li>• Basic LSTM architecture</li>
-                                <li>• Single model prediction</li>
-                                <li>• MAE: 1150.42, RMSE: 2100.18, MAPE: 5.89%</li>
-                            </ul>
-                            <p class="text-xs text-gray-500 dark:text-gray-500">
-                                <i class="fas fa-calendar mr-1"></i>Released: December 10, 2025
-                            </p>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -128,6 +151,113 @@
                     <i class="fas fa-info-circle mr-1"></i>
                     Model versions are trained on historical NBM data from 1993-2024
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Model Modal - Hanya tampil jika hasDataChanges true dan isTraining false -->
+    <div x-show="showUpdateModal && {{ $hasDataChanges ? 'true' : 'false' }} && {{ $isTraining ? 'false' : 'true' }}" 
+         x-cloak
+         @click.self="showUpdateModal = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-xl max-w-lg w-full overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <i class="fas fa-sync-alt mr-2 text-purple-600"></i>
+                    Train New Model Version
+                </h3>
+                <button @click="showUpdateModal = false" 
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-4">
+                @if($isTraining)
+                <div class="space-y-4">
+                    <div class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                    </div>
+                    <p class="text-center text-gray-700 dark:text-gray-300 font-medium">
+                        Training in progress...
+                    </p>
+                    <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+                        {{ $trainingProgress }}% - {{ $trainingMessage }}
+                    </p>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                             style="width: {{ $trainingProgress }}%"></div>
+                    </div>
+                </div>
+                @else
+                <form wire:submit="trainNewModel">
+                    <div class="space-y-4">
+                        <!-- Info Alert -->
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-0.5 mr-3"></i>
+                                <div class="text-sm text-blue-800 dark:text-blue-300">
+                                    <p class="font-semibold mb-1">Training will create a new model version</p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs">
+                                        <li>Uses all current data from transaksi_nbms table</li>
+                                        <li>Trains LSTM + XGBoost + Huber ensemble</li>
+                                        <li>New version will be: <strong>{{ $nextModelVersion }}</strong></li>
+                                        <li>Training takes approximately 15-30 minutes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Release Stage -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tag mr-1"></i>Release Stage
+                            </label>
+                            <select wire:model="releaseStage" 
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-purple-500 focus:border-purple-500">
+                                <option value="alpha">Alpha (Testing)</option>
+                                <option value="beta" selected>Beta (Pre-Production)</option>
+                                <option value="production">Production (Ready)</option>
+                            </select>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-comment mr-1"></i>Description (Optional)
+                            </label>
+                            <textarea wire:model="modelDescription" rows="3"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white rounded-md focus:ring-purple-500 focus:border-purple-500"
+                                placeholder="e.g., Updated with Q1 2026 data"></textarea>
+                        </div>
+
+                        <!-- Warning -->
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2"></i>
+                                <p class="text-xs text-yellow-800 dark:text-yellow-300">
+                                    Training process will run in the background. You can close this modal and continue working.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" @click="showUpdateModal = false"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-300 dark:border-zinc-600 dark:hover:bg-zinc-600">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                            <i class="fas fa-rocket mr-2"></i>Start Training
+                        </button>
+                    </div>
+                </form>
+                @endif
             </div>
         </div>
     </div>

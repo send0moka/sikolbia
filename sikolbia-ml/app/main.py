@@ -17,7 +17,7 @@ from pathlib import Path
 # Add app directory to path
 sys.path.append(str(Path(__file__).parent))
 
-from routers import nbm_predictions
+from routers import nbm_predictions, model_management
 
 # Setup logging
 logging.basicConfig(
@@ -46,6 +46,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(nbm_predictions.router)
+app.include_router(model_management.router)
 
 
 # ============================================================================

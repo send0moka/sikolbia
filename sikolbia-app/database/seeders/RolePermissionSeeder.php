@@ -77,6 +77,7 @@ class RolePermissionSeeder extends Seeder
             'view ml_dashboard',
             'manage ml_models',
             'view ml_predictions',
+            'manage model_versions',
         ];
 
         foreach ($permissions as $permission) {
@@ -146,6 +147,7 @@ class RolePermissionSeeder extends Seeder
             'view ml_dashboard',
             'manage ml_models',
             'view ml_predictions',
+            'manage model_versions',
         ]);
 
         // Pemerintah role - read-only access to reports

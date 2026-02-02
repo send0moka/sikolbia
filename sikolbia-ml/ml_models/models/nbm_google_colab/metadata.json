@@ -1,0 +1,27 @@
+{
+  "version": "v1.0.0",
+  "trained_at": "2026-02-02T00:00:00",
+  "release_stage": "production",
+  "description": "Production model - LSTM Enhanced Ensemble trained on historical NBM data (1993-2024)",
+  "metrics": {
+    "mae": 867.04,
+    "rmse": 1788.78,
+    "mape": 3.73,
+    "r2": 0.9901
+  },
+  "training_info": {
+    "total_records": null,
+    "data_from": 1993,
+    "data_to": 2024,
+    "commodities": 114
+  },
+  "artifacts": [
+    "model_lstm.keras",
+    "model_xgb.pkl",
+    "model_huber.pkl",
+    "scaler_X.pkl",
+    "scaler_y.pkl",
+    "label_encoder.pkl",
+    "ensemble_config.pkl"
+  ]
+}

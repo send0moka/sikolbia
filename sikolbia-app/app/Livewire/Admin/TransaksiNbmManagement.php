@@ -412,6 +412,10 @@ class TransaksiNbmManagement extends Component
         });
 
         session()->flash('message', 'Transaksi NBM berhasil dibuat.');
+        
+        // Dispatch event to notify other components about data change
+        $this->dispatch('nbm-data-changed');
+        
         $this->closeCreateModal();
     }
 
@@ -452,6 +456,9 @@ class TransaksiNbmManagement extends Component
                 session()->flash('message', 'Transaksi NBM berhasil diupdate.');
             }
         });
+        
+        // Dispatch event to notify other components about data change
+        $this->dispatch('nbm-data-changed');
 
         $this->closeEditModal();
     }
@@ -461,6 +468,10 @@ class TransaksiNbmManagement extends Component
         if ($this->deletingTransaksi) {
             $this->deletingTransaksi->delete();
             session()->flash('message', 'Transaksi NBM berhasil dihapus.');
+            
+            // Dispatch event to notify other components about data change
+            $this->dispatch('nbm-data-changed');
+            
             $this->closeDeleteModal();
         }
     }
@@ -505,7 +516,7 @@ class TransaksiNbmManagement extends Component
             'confidence_score' => $this->confidence_score ?: null,
             'data_source' => $this->data_source ?: null,
             'validation_status' => $this->validation_status ?: null,
-            'outlier_flag' => $this->outlier_flag ?: null,
+            'outlier_flag' => $this->outlier_flag !== '' ? (bool)$this->outlier_flag : false,
         ];
     }
 
