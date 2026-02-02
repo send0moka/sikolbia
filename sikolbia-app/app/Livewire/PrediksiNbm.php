@@ -613,6 +613,9 @@ class PrediksiNbm extends Component
                 // Generate chart data for visualization
                 $this->generateKomoditiChartData();
                 
+                // Generate comprehensive summary
+                $this->generatePredictionSummary();
+                
                 $komoditiName = $this->getKomoditiName($this->selectedKomoditi);
                 
                 $this->dispatch('show-toast', [
@@ -662,6 +665,95 @@ class PrediksiNbm extends Component
         }
     }
     
+    private function generatePredictionSummary()
+    {
+        if (!$this->komoditiPredictionResult || !$this->chartData) {
+            return;
+        }
+
+        $historical = $this->chartData['historical'] ?? [];
+        $predictions = $this->komoditiPredictionResult['predictions'] ?? [];
+
+        if (empty($historical) || empty($predictions)) {
+            return;
+        }
+
+        // Calculate historical statistics
+        $historicalValues = array_column($historical, 'value');
+        $historicalMean = array_sum($historicalValues) / count($historicalValues);
+        $historicalLast = end($historicalValues);
+
+        // Calculate prediction statistics
+        $predictionValues = array_map(fn($p) => $p['kalori_hari'] ?? 0, $predictions);
+        $predictionMean = array_sum($predictionValues) / count($predictionValues);
+        $predictionFirst = $predictionValues[0] ?? 0;
+        $predictionLast = end($predictionValues);
+
+        // Calculate trend
+        $trendPercent = $historicalLast > 0 
+            ? (($predictionLast - $historicalLast) / $historicalLast) * 100 
+            : 0;
+        
+        $trendDirection = $trendPercent > 5 ? 'Naik Signifikan' 
+            : ($trendPercent > 0 ? 'Naik' 
+            : ($trendPercent < -5 ? 'Turun Signifikan' : 'Stabil'));
+
+        // Calculate volatility (coefficient of variation)
+        $predStdDev = $this->calculateStdDev($predictionValues);
+        $volatility = $predictionMean > 0 ? ($predStdDev / $predictionMean) * 100 : 0;
+        $volatilityLevel = $volatility > 15 ? 'Tinggi' : ($volatility > 5 ? 'Sedang' : 'Rendah');
+
+        // Overall change
+        $overallChange = $historicalLast > 0 
+            ? (($predictionMean - $historicalMean) / $historicalMean) * 100 
+            : 0;
+
+        // Growth rate (simple)
+        $growthRate = $historicalLast > 0 
+            ? (($predictionLast - $historicalLast) / $historicalLast) * 100 
+            : 0;
+
+        $this->komoditiPredictionResult['analysis'] = [
+            'historical' => [
+                'mean' => $historicalMean,
+                'last_value' => $historicalLast,
+                'min' => min($historicalValues),
+                'max' => max($historicalValues),
+            ],
+            'prediction' => [
+                'mean' => $predictionMean,
+                'first_value' => $predictionFirst,
+                'last_value' => $predictionLast,
+                'min' => min($predictionValues),
+                'max' => max($predictionValues),
+                'std_dev' => $predStdDev,
+            ],
+            'trend' => [
+                'direction' => $trendDirection,
+                'percent' => $trendPercent,
+                'growth_rate' => $growthRate,
+            ],
+            'volatility' => [
+                'coefficient' => $volatility,
+                'level' => $volatilityLevel,
+            ],
+            'comparison' => [
+                'overall_change' => $overallChange,
+                'mean_difference' => $predictionMean - $historicalMean,
+            ],
+        ];
+    }
+
+    private function calculateStdDev($values)
+    {
+        $count = count($values);
+        if ($count < 2) return 0;
+        
+        $mean = array_sum($values) / $count;
+        $variance = array_sum(array_map(fn($x) => pow($x - $mean, 2), $values)) / $count;
+        return sqrt($variance);
+    }
+
     public function exportKomoditiResult()
     {
         if (!$this->komoditiPredictionResult) {

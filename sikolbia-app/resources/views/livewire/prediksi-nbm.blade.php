@@ -1,12 +1,12 @@
-<flux:main>
-    <!-- Page Header -->
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            <i class="fas fa-brain mr-1"></i>
-            Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
-        </p>
-    </div>
+<div>
+<!-- Page Header -->
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        <i class="fas fa-brain mr-1"></i>
+        Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
+    </p>
+</div>
 
     <!-- Main Prediction Interface -->
     <div class="grid gap-6 lg:grid-cols-3">
@@ -267,6 +267,221 @@
                             </table>
                         </div>
 
+                        <!-- Comprehensive Summary Analysis -->
+                        @if (isset($komoditiPredictionResult['analysis']))
+                        <div class="mt-6 space-y-4">
+                            <!-- Summary Header -->
+                            <div class="border-b border-gray-200 dark:border-zinc-700 pb-3">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                    <i class="fas fa-chart-area mr-2 text-blue-600"></i>
+                                    Analisis & Insight Prediksi
+                                </h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Ringkasan komprehensif dari data historis dan hasil prediksi
+                                </p>
+                            </div>
+
+                            <!-- Kegunaan Data Section -->
+                            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 mt-1 mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-2">Kegunaan Prediksi NBM</h4>
+                                        <ul class="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                                            <li>• <strong>Perencanaan Ketahanan Pangan:</strong> Memperkirakan ketersediaan kalori per kapita untuk {{ $nMonths }} bulan ke depan</li>
+                                            <li>• <strong>Kebijakan Pangan:</strong> Membantu pengambilan keputusan terkait import, distribusi, dan stok nasional</li>
+                                            <li>• <strong>Early Warning System:</strong> Mendeteksi potensi defisit atau surplus konsumsi pangan</li>
+                                            <li>• <strong>Monitoring Nutrisi:</strong> Memantau trend konsumsi kalori masyarakat dari komoditi {{ $this->getKomoditiName($selectedKomoditi) }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Trend Analysis -->
+                            @php
+                                $analysis = $komoditiPredictionResult['analysis'];
+                                $trend = $analysis['trend'];
+                                $trendColor = $trend['direction'] === 'Naik Signifikan' || $trend['direction'] === 'Naik' ? 'green' : 
+                                              ($trend['direction'] === 'Turun Signifikan' ? 'red' : 'yellow');
+                                $trendIcon = $trend['direction'] === 'Naik Signifikan' || $trend['direction'] === 'Naik' ? 'arrow-trend-up' : 
+                                             ($trend['direction'] === 'Turun Signifikan' ? 'arrow-trend-down' : 'minus');
+                            @endphp
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Trend Card -->
+                                <div class="bg-white dark:bg-zinc-800 border border-{{ $trendColor }}-200 dark:border-{{ $trendColor }}-800 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Trend Prediksi</span>
+                                        <i class="fas fa-{{ $trendIcon }} text-{{ $trendColor }}-600"></i>
+                                    </div>
+                                    <div class="text-2xl font-bold text-{{ $trendColor }}-600 dark:text-{{ $trendColor }}-400">
+                                        {{ $trend['direction'] }}
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        {{ $trend['percent'] >= 0 ? '+' : '' }}{{ number_format($trend['percent'], 2) }}%
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                                        dari periode terakhir historis ke prediksi akhir
+                                    </p>
+                                </div>
+
+                                <!-- Growth Rate Card -->
+                                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Laju Pertumbuhan</span>
+                                        <i class="fas fa-percentage text-purple-600"></i>
+                                    </div>
+                                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                                        {{ $trend['growth_rate'] >= 0 ? '+' : '' }}{{ number_format($trend['growth_rate'], 2) }}%
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                                        Perubahan dari nilai historis terakhir
+                                    </p>
+                                </div>
+
+                                <!-- Volatility Card -->
+                                @php
+                                    $volatility = $analysis['volatility'];
+                                    $volColor = $volatility['level'] === 'Tinggi' ? 'red' : ($volatility['level'] === 'Sedang' ? 'yellow' : 'green');
+                                @endphp
+                                <div class="bg-white dark:bg-zinc-800 border border-{{ $volColor }}-200 dark:border-{{ $volColor }}-800 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Volatilitas</span>
+                                        <i class="fas fa-wave-square text-{{ $volColor }}-600"></i>
+                                    </div>
+                                    <div class="text-2xl font-bold text-{{ $volColor }}-600 dark:text-{{ $volColor }}-400">
+                                        {{ $volatility['level'] }}
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        CV: {{ number_format($volatility['coefficient'], 2) }}%
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                                        Stabilitas prediksi {{ $nMonths }} bulan ke depan
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Statistics -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Historical Stats -->
+                                <div class="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                                        <i class="fas fa-history mr-2 text-gray-600"></i>
+                                        Statistik Data Historis
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Rata-rata</p>
+                                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                {{ number_format($analysis['historical']['mean'], 2) }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Terakhir</p>
+                                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                {{ number_format($analysis['historical']['last_value'], 2) }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Minimum</p>
+                                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                {{ number_format($analysis['historical']['min'], 2) }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Maksimum</p>
+                                            <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                {{ number_format($analysis['historical']['max'], 2) }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        Periode {{ $historicalPeriod === 'all' ? 'Semua Data' : $historicalPeriod . ' Bulan' }} Historis
+                                    </p>
+                                </div>
+
+                                <!-- Prediction Stats -->
+                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                                        <i class="fas fa-crystal-ball mr-2 text-blue-600"></i>
+                                        Statistik Prediksi
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Rata-rata</p>
+                                            <p class="text-lg font-semibold text-blue-900 dark:text-blue-200">
+                                                {{ number_format($analysis['prediction']['mean'], 2) }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Akhir Periode</p>
+                                            <p class="text-lg font-semibold text-blue-900 dark:text-blue-200">
+                                                {{ number_format($analysis['prediction']['last_value'], 2) }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Minimum</p>
+                                            <p class="text-lg font-semibold text-blue-900 dark:text-blue-200">
+                                                {{ number_format($analysis['prediction']['min'], 2) }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400">Maksimum</p>
+                                            <p class="text-lg font-semibold text-blue-900 dark:text-blue-200">
+                                                {{ number_format($analysis['prediction']['max'], 2) }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-3">
+                                        <i class="fas fa-forward mr-1"></i>
+                                        Prediksi {{ $nMonths }} Bulan ke Depan
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Interpretation Box -->
+                            <div class="bg-white dark:bg-zinc-800 border-2 border-purple-400 dark:border-purple-600 rounded-lg p-5 shadow-sm">
+                                <h4 class="font-bold text-gray-900 dark:text-white mb-3 flex items-center text-base">
+                                    <i class="fas fa-lightbulb mr-2 text-yellow-600 dark:text-yellow-400"></i>
+                                    Interpretasi & Rekomendasi
+                                </h4>
+                                <div class="text-sm font-medium text-gray-800 dark:text-gray-100 space-y-2">
+                                    @if ($trend['direction'] === 'Naik Signifikan')
+                                        <p class="text-gray-900 dark:text-gray-100">✓ <strong class="text-gray-900 dark:text-white">Tren Positif:</strong> Prediksi menunjukkan peningkatan signifikan konsumsi kalori dari komoditi ini. Ini mengindikasikan peningkatan ketersediaan atau konsumsi yang baik.</p>
+                                    @elseif ($trend['direction'] === 'Naik')
+                                        <p class="text-gray-900 dark:text-gray-100">✓ <strong class="text-gray-900 dark:text-white">Tren Stabil-Meningkat:</strong> Konsumsi diprediksi meningkat secara moderat, menunjukkan kondisi yang stabil dengan pertumbuhan positif.</p>
+                                    @elseif ($trend['direction'] === 'Turun Signifikan')
+                                        <p class="text-gray-900 dark:text-gray-100">⚠ <strong class="text-gray-900 dark:text-white">Perlu Perhatian:</strong> Prediksi menunjukkan penurunan signifikan. Evaluasi kebijakan distribusi dan ketersediaan stok diperlukan.</p>
+                                    @else
+                                        <p class="text-gray-900 dark:text-gray-100">✓ <strong class="text-gray-900 dark:text-white">Kondisi Stabil:</strong> Prediksi menunjukkan konsumsi yang relatif stabil tanpa perubahan signifikan.</p>
+                                    @endif
+
+                                    @if ($volatility['level'] === 'Tinggi')
+                                        <p class="text-gray-900 dark:text-gray-100">⚠ <strong class="text-gray-900 dark:text-white">Volatilitas Tinggi:</strong> Terdapat fluktuasi yang cukup besar dalam prediksi. Perlu monitoring ekstra dan cadangan buffer stok.</p>
+                                    @elseif ($volatility['level'] === 'Sedang')
+                                        <p class="text-gray-900 dark:text-gray-100">→ <strong class="text-gray-900 dark:text-white">Volatilitas Sedang:</strong> Prediksi menunjukkan variasi normal. Pantau secara berkala untuk antisipasi perubahan.</p>
+                                    @else
+                                        <p class="text-gray-900 dark:text-gray-100">✓ <strong class="text-gray-900 dark:text-white">Volatilitas Rendah:</strong> Prediksi sangat stabil dengan variasi minimal. Kondisi ideal untuk perencanaan jangka panjang.</p>
+                                    @endif
+
+                                    @php
+                                        $overallChange = $analysis['comparison']['overall_change'];
+                                    @endphp
+                                    @if (abs($overallChange) > 10)
+                                        <p class="text-gray-900 dark:text-gray-100">📊 <strong class="text-gray-900 dark:text-white">Perubahan Signifikan:</strong> Terdapat perubahan {{ number_format(abs($overallChange), 2) }}% antara rata-rata historis dan prediksi. 
+                                        {{ $overallChange > 0 ? 'Pertimbangkan peningkatan produksi atau import.' : 'Evaluasi faktor penyebab penurunan konsumsi.' }}</p>
+                                    @endif
+
+                                    <div class="mt-3 pt-3 border-t-2 border-gray-300 dark:border-gray-600">
+                                        <p class="font-bold text-gray-900 dark:text-white mb-1">📌 Catatan Penting:</p>
+                                        <p class="text-xs font-medium text-gray-700 dark:text-gray-200">Model menggunakan LSTM Enhanced Ensemble dengan confidence interval 95%. Akurasi tergantung kualitas data historis dan faktor eksternal tidak terprediksi.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- Summary Stats -->
                         @if (isset($komoditiPredictionResult['summary']))
                             <div class="mt-4 grid grid-cols-3 gap-4">
@@ -294,7 +509,7 @@
                 @endif
             </div>
         </div>
-</flux:main>
+</div>
 
 @push('scripts')
 <script>
