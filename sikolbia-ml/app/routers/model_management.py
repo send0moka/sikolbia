@@ -203,7 +203,7 @@ def train_model_background(version: str, data_path: str, output_dir: str):
         # Run training script
         cmd = [
             'python',
-            'app/training/train_nbm_model.py',
+            'training/train_nbm_model.py',
             '--version', version,
             '--data', data_path,
             '--output', output_dir

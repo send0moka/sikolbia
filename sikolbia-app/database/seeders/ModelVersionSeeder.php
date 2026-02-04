@@ -26,10 +26,10 @@ class ModelVersionSeeder extends Seeder
                 'description' => 'Production model - LSTM Enhanced Ensemble trained on historical NBM data (1993-2024). Optimized ensemble combining LSTM, XGBoost, and Huber Regressor.',
                 
                 // Metrics
-                'mae' => 867.04,
-                'rmse' => 1788.78,
+                'mae' => 760.39,
+                'rmse' => 1692.31,
                 'mape' => 3.73,
-                'r2_score' => 0.9901,
+                'r2_score' => 0.9912,
                 
                 // Training info
                 'training_data_count' => null, // Will be updated when synced
@@ -59,7 +59,7 @@ class ModelVersionSeeder extends Seeder
                 'trained_by' => $trainedBy, // Use first user or null
                 
                 // Metadata
-                'notes' => 'Initial production model deployed from Google Colab training. Validated on NBM data with excellent performance metrics (R²: 0.9901, MAPE: 3.73%). This model serves as the baseline for future versions.',
+                'notes' => 'Initial production model deployed from Google Colab training. Validated on NBM data with excellent performance metrics (R²: 0.9912, MAPE: 3.73%). This model serves as the baseline for future versions.',
                 'artifacts' => [
                     'model_lstm.keras',
                     'model_xgb.pkl',

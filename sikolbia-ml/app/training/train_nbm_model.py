@@ -80,17 +80,18 @@ class NBMModelTrainer:
         self.label_encoder = LabelEncoder()
         df['komoditi_encoded'] = self.label_encoder.fit_transform(df['kode_komoditi'])
         
-        # Select features
+        # Select features - menggunakan kolom yang ada di database
         feature_cols = [
             'tahun', 'bulan', 'komoditi_encoded', 'tahun_bulan',
-            'produksi', 'import_bahan', 'ekspor', 'persediaan_awal'
+            'masukan', 'impor', 'ekspor', 'perubahan_stok'
         ]
         
         # Handle missing values
         df[feature_cols] = df[feature_cols].fillna(0)
         
         X = df[feature_cols].values
-        y = df['kalori_hari'].values
+        # Target: bahan_makanan (ketersediaan bahan makanan dalam ton)
+        y = df['bahan_makanan'].values
         
         # Scale features
         self.scaler_X = StandardScaler()

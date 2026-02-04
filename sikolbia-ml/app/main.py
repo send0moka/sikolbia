@@ -98,21 +98,11 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     try:
-        # Try to get predictor
-        pred = nbm_predictions.get_predictor()
-        
         return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "model_loaded": True,
-            "model_info": {
-                "type": "LSTM Enhanced Ensemble",
-                "mae": 867.04,
-                "rmse": 1788.78,
-                "mape": 3.73,
-                "r2": 0.9901,
-                "threshold": pred.threshold
-            }
+            "service": "NBM Prediction API",
+            "version": "2.0.0"
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
@@ -142,10 +132,10 @@ async def get_model_stats():
                 'threshold': pred.threshold,
                 'weights': pred.ensemble_weights,
                 'performance': {
-                    'mae': 867.04,
-                    'rmse': 1788.78,
+                    'mae': 760.39,
+                    'rmse': 1692.31,
                     'mape': 3.73,
-                    'r2': 0.9901,
+                    'r2': 0.9912,
                     'unit': 'kalori/hari'
                 },
                 'training': {
