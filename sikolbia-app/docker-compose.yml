@@ -15,6 +15,8 @@ services:
             - node_modules_data:/var/www/html/node_modules
         networks:
             - sikolbia-network
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         environment:
             - NBM_API_URL=http://sikolbia-ml-api:8000
             - ML_API_URL=http://sikolbia-ml-api:8000
@@ -101,8 +103,9 @@ services:
         working_dir: /app
         volumes:
             - ../sikolbia-ml/app:/app
-            - ../sikolbia-ml/ml_models:/app/ml_models:ro
+            - ../sikolbia-ml/ml_models:/app/ml_models
             - ../sikolbia-ml/logs:/app/logs
+            - ./storage/app:/shared_storage
         ports:
             - "8082:8000"
         environment:
