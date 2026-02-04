@@ -153,13 +153,38 @@ class TransaksiNbm extends Model
     public function getGramHariAttribute()
     {
         // APP3 data: bahan_makanan in '000 tons (ribu ton)
-        // Convert to gram per capita per day: (ribu_ton * 1000 * 1000000 gram) / (populasi * 365)
+        // Convert to gram per capita per day: (ribu_ton * 1e9) / (populasi * jumlah_hari)
+        // Note: kalori_hari accessor divides by 100 when multiplying with kalori_per_100g
+        // So we don't divide by 100 here to match Google Colab formula:
+        // kalori = (bahan * 1e9 * kalori_per_100g) / (populasi * jumlah_hari * 100)
         // Use abs() because negative values indicate deficit (consumption > production)
         // but per-capita consumption display should always be positive
-        if ($this->bahan_makanan && $this->populasi_indonesia) {
-            return round((abs($this->bahan_makanan) * 1000 * 1000000) / ($this->populasi_indonesia * 365), 2);
+        if ($this->bahan_makanan && $this->populasi_indonesia && $this->bulan) {
+            // Calculate days in month (28-31)
+            $jumlah_hari = $this->getDaysInMonth();
+            return round((abs($this->bahan_makanan) * 1_000_000_000) / ($this->populasi_indonesia * $jumlah_hari), 2);
         }
         return 0;
+    }
+    
+    private function getDaysInMonth()
+    {
+        if (!$this->tahun || !$this->bulan) {
+            return 30; // Default fallback
+        }
+        
+        // Feb: 28 or 29 (leap year)
+        if ($this->bulan == 2) {
+            return ($this->tahun % 4 == 0 && ($this->tahun % 100 != 0 || $this->tahun % 400 == 0)) ? 29 : 28;
+        }
+        
+        // Apr, Jun, Sep, Nov: 30 days
+        if (in_array($this->bulan, [4, 6, 9, 11])) {
+            return 30;
+        }
+        
+        // Jan, Mar, May, Jul, Aug, Oct, Dec: 31 days
+        return 31;
     }
 
     public function getKaloriHariAttribute()
