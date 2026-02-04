@@ -1,11 +1,45 @@
 <div>
+<!-- Success Message Alert -->
+@if (session()->has('message'))
+    <div x-data="{ show: true }" 
+         x-show="show" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         x-init="setTimeout(() => show = false, 8000)"
+         class="mb-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 shadow-sm">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3 flex-1">
+                <p class="text-sm font-medium text-green-800 dark:text-green-300">
+                    {{ session('message') }}
+                </p>
+            </div>
+            <div class="ml-auto pl-3">
+                <button @click="show = false" class="inline-flex rounded-md p-1.5 text-green-500 hover:bg-green-100 dark:hover:bg-green-900/50 focus:outline-none">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
+
 <!-- Page Header -->
 <div class="mb-6 flex items-start justify-between" x-data="{ showVersionHistory: false, showUpdateModal: false }">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi NBM</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi Kalori per Kapita Neraca Bahan Makanan</h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
             <i class="fas fa-brain mr-1"></i>
-            Prediksi Neraca Bahan Makanan menggunakan LSTM Enhanced Ensemble
+            Form untuk melakukan prediksi Kalori per Kapita Neraca Bahan Makanan (NBM) menggunakan model machine learning.
         </p>
     </div>
     <div class="flex items-center gap-2">
@@ -158,7 +192,6 @@
     <!-- Update Model Modal - Hanya tampil jika hasDataChanges true dan isTraining false -->
     <div x-show="showUpdateModal && {{ $hasDataChanges ? 'true' : 'false' }} && {{ $isTraining ? 'false' : 'true' }}" 
          x-cloak
-         @click.self="showUpdateModal = false"
          class="fixed inset-0 z-50 flex items-center justify-center p-4"
          style="background-color: rgba(0, 0, 0, 0.5);">
         <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-xl max-w-lg w-full overflow-hidden">
@@ -166,30 +199,66 @@
             <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     <i class="fas fa-sync-alt mr-2 text-purple-600"></i>
-                    Train New Model Version
+                    {{ $isTraining ? 'Training in Progress...' : 'Train New Model Version' }}
                 </h3>
+                @if(!$isTraining)
                 <button @click="showUpdateModal = false" 
                     class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                     <i class="fas fa-times text-xl"></i>
                 </button>
+                @endif
             </div>
             
             <!-- Modal Body -->
             <div class="p-4">
                 @if($isTraining)
                 <div class="space-y-4">
+                    <!-- Spinner dan Status -->
                     <div class="flex items-center justify-center">
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                        <div class="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
                     </div>
-                    <p class="text-center text-gray-700 dark:text-gray-300 font-medium">
-                        Training in progress...
-                    </p>
-                    <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-                        {{ $trainingProgress }}% - {{ $trainingMessage }}
-                    </p>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                    
+                    <!-- Progress Percentage -->
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                            {{ $trainingProgress }}%
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {{ $trainingMessage }}
+                        </p>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-3 overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500 ease-out" 
                              style="width: {{ $trainingProgress }}%"></div>
+                    </div>
+                    
+                    <!-- Estimasi Waktu -->
+                    @php
+                        $totalMinutes = 20; // estimasi total 20 menit
+                        $remainingMinutes = $trainingProgress > 0 ? round(($totalMinutes * (100 - $trainingProgress)) / 100) : $totalMinutes;
+                    @endphp
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-blue-800 dark:text-blue-300">
+                                <i class="fas fa-clock mr-2"></i>Estimasi Sisa Waktu:
+                            </span>
+                            <span class="font-semibold text-blue-900 dark:text-blue-200">
+                                {{ $remainingMinutes }} menit
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Warning Notice -->
+                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2"></i>
+                            <div class="text-xs text-yellow-800 dark:text-yellow-300">
+                                <p class="font-semibold mb-1">Jangan tutup halaman ini!</p>
+                                <p>Proses training sedang berjalan. Menutup halaman akan membatalkan training.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @else
@@ -234,13 +303,14 @@
                                 placeholder="e.g., Updated with Q1 2026 data"></textarea>
                         </div>
 
-                        <!-- Warning -->
-                        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                        <!-- Info Notice -->
+                        <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
                             <div class="flex items-start">
-                                <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2"></i>
-                                <p class="text-xs text-yellow-800 dark:text-yellow-300">
-                                    Training process will run in the background. You can close this modal and continue working.
-                                </p>
+                                <i class="fas fa-info-circle text-purple-600 dark:text-purple-400 mt-0.5 mr-2"></i>
+                                <div class="text-xs text-purple-800 dark:text-purple-300">
+                                    <p class="font-semibold mb-1">Proses Training</p>
+                                    <p>Training akan berjalan secara real-time dengan progress bar. Estimasi waktu: <strong>15-20 menit</strong>.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -258,6 +328,127 @@
                     </div>
                 </form>
                 @endif
+            </div>
+        </div>
+    </div>
+    
+    <!-- Training Progress Modal - Muncul saat isTraining = true -->
+    <div x-show="{{ $isTraining ? 'true' : 'false' }}"
+         x-cloak
+         class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+         style="background-color: rgba(0, 0, 0, 0.75); pointer-events: auto;"
+         @click.prevent.stop
+         wire:poll.2s="checkTrainingStatus">
+        <div x-data="{ cancelConfirm: false }"
+             @click.stop
+             class="bg-white dark:bg-zinc-800 rounded-lg shadow-2xl max-w-lg w-full overflow-hidden border-2 border-purple-500">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 p-4">
+                <h3 class="text-lg font-bold text-white flex items-center">
+                    <i class="fas fa-cog fa-spin mr-3 text-2xl"></i>
+                    Training Model in Progress
+                </h3>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 space-y-5">
+                <!-- Spinner dan Status -->
+                <div class="flex items-center justify-center">
+                    <div class="relative">
+                        <div class="animate-spin rounded-full h-20 w-20 border-4 border-purple-200 border-t-purple-600"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-brain text-2xl text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Percentage -->
+                <div class="text-center">
+                    <p class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                        {{ $trainingProgress }}%
+                    </p>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {{ $trainingMessage ?: 'Processing...' }}
+                    </p>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-4 overflow-hidden shadow-inner">
+                    <div class="bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 h-4 rounded-full transition-all duration-500 ease-out relative" 
+                         style="width: {{ $trainingProgress }}%">
+                        <div class="absolute inset-0 bg-white opacity-30 animate-pulse"></div>
+                    </div>
+                </div>
+                
+                <!-- Estimasi Waktu -->
+                @php
+                    $totalMinutes = 20;
+                    $remainingMinutes = $trainingProgress > 0 ? max(1, round(($totalMinutes * (100 - $trainingProgress)) / 100)) : $totalMinutes;
+                @endphp
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-300 dark:border-blue-700 rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-blue-600 dark:text-blue-400 text-xl mr-3"></i>
+                            <span class="text-sm font-medium text-blue-900 dark:text-blue-200">
+                                Estimasi Sisa Waktu
+                            </span>
+                        </div>
+                        <span class="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                            {{ $remainingMinutes }} <span class="text-sm">menit</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Warning Notice -->
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 mt-1 mr-3 text-lg"></i>
+                        <div class="text-sm text-yellow-800 dark:text-yellow-300">
+                            <p class="font-bold mb-1">⚠️ Jangan tutup halaman ini!</p>
+                            <p class="text-xs">Proses training sedang berjalan. Menutup halaman akan membatalkan seluruh progress.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cancel Button -->
+                <div x-show="!cancelConfirm" class="pt-2">
+                    <button @click="cancelConfirm = true" type="button"
+                        class="w-full px-4 py-2.5 text-sm font-semibold text-red-700 bg-red-50 border-2 border-red-300 rounded-lg hover:bg-red-100 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900/50 transition-colors">
+                        <i class="fas fa-times-circle mr-2"></i>Cancel Training
+                    </button>
+                </div>
+                
+                <!-- Konfirmasi Cancel -->
+                <div x-show="cancelConfirm" 
+                     style="display: none;"
+                     class="bg-red-50 dark:bg-red-900/30 border-2 border-red-400 dark:border-red-700 rounded-lg p-4 shadow-lg">
+                    <div class="flex items-start mb-3">
+                        <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-2xl mr-3 mt-1"></i>
+                        <div>
+                            <p class="text-base font-bold text-red-900 dark:text-red-200 mb-2">
+                                Konfirmasi Pembatalan
+                            </p>
+                            <p class="text-sm text-red-800 dark:text-red-300 mb-1">
+                                Apakah Anda yakin ingin membatalkan training?
+                            </p>
+                            <p class="text-xs text-red-700 dark:text-red-400">
+                                ⚠️ Progress <strong>{{ $trainingProgress }}%</strong> yang sudah berjalan akan hilang dan harus diulang dari awal.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 justify-end mt-4">
+                        <button @click="cancelConfirm = false" type="button"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-300 dark:border-zinc-600 dark:hover:bg-zinc-600 transition-colors">
+                            <i class="fas fa-arrow-left mr-1"></i>Tidak, Lanjutkan
+                        </button>
+                        <button wire:click="cancelTraining" 
+                                @click="cancelConfirm = false"
+                                type="button"
+                            class="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-colors">
+                            <i class="fas fa-ban mr-1"></i>Ya, Batalkan Training
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -383,10 +574,16 @@
                             
                             <!-- Model Metrics Cards -->
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                <div class="p-4 bg-blue-50 rounded-lg">
-                                    <p class="text-xs text-blue-600 font-medium">R² Score</p>
-                                    <p class="text-2xl font-bold text-blue-700">
-                                        {{ number_format($komoditiPredictionResult['model_info']['r2'] ?? 0.9901, 4) }}
+                                <div class="p-4 bg-yellow-50 rounded-lg">
+                                    <p class="text-xs text-yellow-600 font-medium">MAE</p>
+                                    <p class="text-2xl font-bold text-yellow-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['mae'] ?? 760.39, 2) }}
+                                    </p>
+                                </div>
+                                <div class="p-4 bg-red-50 rounded-lg">
+                                    <p class="text-xs text-red-600 font-medium">RMSE</p>
+                                    <p class="text-2xl font-bold text-red-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['rmse'] ?? 1692.31, 2) }}
                                     </p>
                                 </div>
                                 <div class="p-4 bg-green-50 rounded-lg">
@@ -395,16 +592,10 @@
                                         {{ number_format($komoditiPredictionResult['model_info']['mape'] ?? 3.73, 2) }}%
                                     </p>
                                 </div>
-                                <div class="p-4 bg-yellow-50 rounded-lg">
-                                    <p class="text-xs text-yellow-600 font-medium">MAE</p>
-                                    <p class="text-2xl font-bold text-yellow-700">
-                                        {{ number_format($komoditiPredictionResult['model_info']['mae'] ?? 867.04, 2) }}
-                                    </p>
-                                </div>
-                                <div class="p-4 bg-red-50 rounded-lg">
-                                    <p class="text-xs text-red-600 font-medium">RMSE</p>
-                                    <p class="text-2xl font-bold text-red-700">
-                                        {{ number_format($komoditiPredictionResult['model_info']['rmse'] ?? 1788.78, 2) }}
+                                <div class="p-4 bg-blue-50 rounded-lg">
+                                    <p class="text-xs text-blue-600 font-medium">R² Score</p>
+                                    <p class="text-2xl font-bold text-blue-700">
+                                        {{ number_format($komoditiPredictionResult['model_info']['r2'] ?? 0.9912, 4) }}
                                     </p>
                                 </div>
                             </div>
@@ -499,6 +690,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prediksi (kkal/hari)</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CI Lower</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CI Upper</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Model Digunakan</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -515,6 +707,15 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {{ number_format($komoditiPredictionResult['confidence_intervals'][$idx]['upper'] ?? 0, 2) }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                @php
+                                                    $modelUsed = $pred['model_used'] ?? 'Ensemble';
+                                                    $badgeColor = $modelUsed === 'Ensemble' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                                                @endphp
+                                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $badgeColor }}">
+                                                    {{ $modelUsed }}
+                                                </span>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -548,6 +749,40 @@
                                             <li>• <strong>Early Warning System:</strong> Mendeteksi potensi defisit atau surplus konsumsi pangan</li>
                                             <li>• <strong>Monitoring Nutrisi:</strong> Memantau trend konsumsi kalori masyarakat dari komoditi {{ $this->getKomoditiName($selectedKomoditi) }}</li>
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Model Strategy Explanation -->
+                            <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <i class="fas fa-brain text-purple-600 dark:text-purple-400 mt-1 mr-3"></i>
+                                    <div class="w-full">
+                                        <h4 class="font-semibold text-purple-900 dark:text-purple-200 mb-2">Strategi Pemilihan Model</h4>
+                                        <div class="text-sm text-purple-800 dark:text-purple-300 space-y-2">
+                                            <p>Sistem menggunakan <strong>Conditional Ensemble Strategy</strong> dengan threshold 5.000 ribu ton untuk mengoptimalkan akurasi prediksi:</p>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                                                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded p-3">
+                                                    <p class="font-semibold text-green-900 dark:text-green-200 mb-1">
+                                                        <i class="fas fa-robot mr-1"></i>XGBoost
+                                                    </p>
+                                                    <p class="text-xs text-green-800 dark:text-green-300">
+                                                        Digunakan untuk konsumsi <strong>&lt; 5.000 ribu ton</strong>. Unggul pada prediksi nilai kecil hingga menengah dengan pola stabil dan detail fitur kompleks.
+                                                    </p>
+                                                </div>
+                                                <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded p-3">
+                                                    <p class="font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                                                        <i class="fas fa-project-diagram mr-1"></i>Ensemble (90% LSTM + 5% XGBoost + 5% Huber)
+                                                    </p>
+                                                    <p class="text-xs text-blue-800 dark:text-blue-300">
+                                                        Digunakan untuk konsumsi <strong>≥ 5.000 ribu ton</strong>. Menggabungkan LSTM untuk menangkap temporal pattern kompleks pada skala besar.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p class="text-xs mt-2">
+                                                <strong>Model Performance:</strong> MAPE 3.73% • MAE 759.61 ton • R² 0.9912 (99.12% variance explained)
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

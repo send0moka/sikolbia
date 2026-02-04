@@ -103,6 +103,11 @@ class PrediksiNbm extends Component
         // NEW: Load kelompok and komoditi list for new prediction mode
         $this->loadKelompokList();
         // Don't load komoditi yet - wait for kelompok selection
+        
+        // Check if redirected after training completion
+        if (request()->query('training') === 'success') {
+            session()->flash('message', '✅ Training simulation completed! (Test mode - Real training will take 15-20 minutes)');
+        }
     }
     
     public function initializeData()
@@ -1186,48 +1191,128 @@ class PrediksiNbm extends Component
     public function trainNewModel()
     {
         try {
-            $modelVersionService = app(\App\Services\ModelVersionService::class);
+            // Get next version
+            $nextVersion = \App\Models\ModelVersion::getNextPatchVersion();
             
-            $result = $modelVersionService->trainNewModel([
-                'data_source' => 'mysql',
-                'release_stage' => $this->releaseStage,
-                'description' => $this->modelDescription,
+            // Create pending version record
+            $modelVersion = \App\Models\ModelVersion::create([
+                'version' => $nextVersion,
+                'model_name' => 'LSTM Enhanced Ensemble',
+                'model_type' => 'nbm_prediction',
+                'folder_path' => "ml_models/models/{$nextVersion}",
+                'status' => 'training',
+                'is_active' => false,
+                'release_stage' => $this->releaseStage ?? 'beta',
+                'description' => $this->modelDescription ?? "Model trained on " . now()->format('Y-m-d H:i'),
+                'trained_by' => Auth::id(),
             ]);
             
-            if ($result['success']) {
-                $this->isTraining = true;
-                session()->flash('message', 'Model training started! Version: ' . $result['version']);
-                
-                // Start polling for status
-                $this->dispatch('start-training-poll');
-            } else {
-                session()->flash('error', 'Training failed: ' . $result['error']);
-            }
+            // Initialize training state in cache
+            \Illuminate\Support\Facades\Cache::put('model_training_status', [
+                'is_training' => true,
+                'progress' => 5,
+                'message' => 'Queuing training job...',
+                'version' => $nextVersion,
+                'started_at' => now()->toIso8601String()
+            ], 3600);
+            
+            // Set UI state
+            $this->isTraining = true;
+            $this->trainingProgress = 5;
+            $this->trainingMessage = 'Queuing training job...';
+            
+            // Dispatch background job
+            \App\Jobs\TrainModelJob::dispatch(
+                $nextVersion,
+                $modelVersion->id,
+                [
+                    'data_source' => 'mysql',
+                    'release_stage' => $this->releaseStage ?? 'beta',
+                    'description' => $this->modelDescription ?? null,
+                ]
+            );
+            
+            Log::info('Training job dispatched', [
+                'version' => $nextVersion,
+                'model_id' => $modelVersion->id
+            ]);
+            
+            session()->flash('message', "Model training started! Version: {$nextVersion} - This will take 15-20 minutes.");
+            
         } catch (\Exception $e) {
+            $this->isTraining = false;
             session()->flash('error', 'Failed to start training: ' . $e->getMessage());
+            Log::error('Training failed: ' . $e->getMessage());
+        }
+    }
+    
+    public function cancelTraining()
+    {
+        try {
+            // Clear cache and stop job
+            \Illuminate\Support\Facades\Cache::forget('model_training_status');
+            
+            // TODO: Implement job cancellation if needed
+            // For now, just mark last training model as cancelled
+            $latestTraining = \App\Models\ModelVersion::where('status', 'training')
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($latestTraining) {
+                $latestTraining->update(['status' => 'cancelled']);
+            }
+            
+            // Reset UI state
+            $this->isTraining = false;
+            $this->trainingProgress = 0;
+            $this->trainingMessage = '';
+            
+            session()->flash('message', 'Training cancelled.');
+            Log::info('Training cancelled by user');
+            
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to cancel training: ' . $e->getMessage());
+            Log::error('Cancel training error: ' . $e->getMessage());
         }
     }
 
     public function checkTrainingStatus()
     {
-        $modelVersionService = app(\App\Services\ModelVersionService::class);
-        $status = $modelVersionService->getTrainingStatus();
+        // Read status from cache (updated by TrainModelJob)
+        $status = \Illuminate\Support\Facades\Cache::get('model_training_status', [
+            'is_training' => false,
+            'progress' => 0,
+            'message' => ''
+        ]);
         
         $this->isTraining = $status['is_training'] ?? false;
         $this->trainingProgress = $status['progress'] ?? 0;
         $this->trainingMessage = $status['message'] ?? '';
         
-        if (!$this->isTraining && $this->trainingProgress >= 100) {
-            // Training completed, update last_data_sync for the new model
-            $newModel = \App\Models\ModelVersion::orderBy('created_at', 'desc')->first();
-            if ($newModel) {
-                $newModel->update(['last_data_sync' => now()]);
-            }
+        // If training completed, trigger reload
+        if (!$this->isTraining && $this->trainingProgress >= 100 && !isset($status['error'])) {
+            Log::info('Training completed - triggering page reload');
             
-            // Reload versions and check data changes
-            $this->loadModelVersions();
-            session()->flash('message', 'Model training completed successfully!');
+            // Clear cache
+            \Illuminate\Support\Facades\Cache::forget('model_training_status');
+            
+            // Reload page with success parameter
+            $this->dispatch('training-completed');
+            $this->js('setTimeout(() => window.location.href = window.location.pathname + "?training=success", 1500)');
         }
+        
+        // If training failed, show error
+        if (!$this->isTraining && isset($status['error'])) {
+            session()->flash('error', 'Training failed: ' . $status['error']);
+            \Illuminate\Support\Facades\Cache::forget('model_training_status');
+            $this->trainingProgress = 0;
+        }
+        
+        Log::debug("Training status check", [
+            'is_training' => $this->isTraining,
+            'progress' => $this->trainingProgress,
+            'message' => $this->trainingMessage
+        ]);
     }
 
     public function switchModelVersion($version)
