@@ -102,19 +102,19 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                 <div>
-                    <div class="text-3xl md:text-4xl font-bold text-[#2f8b3e] mb-2">10+</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#2f8b3e] mb-2">{{ $stats['kelompok_pangan'] }}</div>
                     <div class="text-neutral-600 font-medium">Kelompok Pangan</div>
                 </div>
                 <div>
-                    <div class="text-3xl md:text-4xl font-bold text-[#6a4c35] mb-2">200+</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#6a4c35] mb-2">{{ $stats['jenis_komoditi'] }}</div>
                     <div class="text-neutral-600 font-medium">Jenis Komoditi</div>
                 </div>
                 <div>
-                    <div class="text-3xl md:text-4xl font-bold text-[#782c7c] mb-2">30+</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#782c7c] mb-2">{{ $stats['tahun_data'] }}</div>
                     <div class="text-neutral-600 font-medium">Tahun Data</div>
                 </div>
                 <div>
-                    <div class="text-3xl md:text-4xl font-bold text-[#e34e38] mb-2">34</div>
+                    <div class="text-3xl md:text-4xl font-bold text-[#e34e38] mb-2">{{ $stats['provinsi'] }}</div>
                     <div class="text-neutral-600 font-medium">Provinsi</div>
                 </div>
             </div>

@@ -2,12 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Public\KetersediaanController;
+use App\Http\Controllers\HomepageController;
 use Livewire\Volt\Volt;
 
 // Landing Page Routes
-Route::get('/', function () {
-    return view('homepage');
-})->name('home');
+Route::get('/', [HomepageController::class, 'index'])->name('home');
 
 // Public NBM Information Routes  
 Route::prefix('ketersediaan')->name('public.ketersediaan.')->group(function () {
