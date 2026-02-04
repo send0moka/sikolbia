@@ -1,0 +1,64 @@
+{
+    "komoditi": "1004",
+    "komoditi_nama": "Minyak Goreng Sawit",
+    "n_months": 3,
+    "predictions": [
+        {
+            "date": "2025-01-01",
+            "tahun": 2025,
+            "bulan": 1,
+            "bahan_makanan": 3071.16,
+            "kalori_hari": 265.17,
+            "model_used": "XGBoost"
+        },
+        {
+            "date": "2025-02-01",
+            "tahun": 2025,
+            "bulan": 2,
+            "bahan_makanan": 3055.43,
+            "kalori_hari": 263.81,
+            "model_used": "XGBoost"
+        },
+        {
+            "date": "2025-03-01",
+            "tahun": 2025,
+            "bulan": 3,
+            "bahan_makanan": 3061.32,
+            "kalori_hari": 264.32,
+            "model_used": "XGBoost"
+        }
+    ],
+    "confidence_intervals": [
+        {
+            "date": "2025-01-01",
+            "lower": 238.65,
+            "upper": 291.69
+        },
+        {
+            "date": "2025-02-01",
+            "lower": 237.43,
+            "upper": 290.19
+        },
+        {
+            "date": "2025-03-01",
+            "lower": 237.89,
+            "upper": 290.75
+        }
+    ],
+    "input_summary": null,
+    "model_info": {
+        "type": "LSTM Enhanced Ensemble",
+        "mae": 760.39,
+        "rmse": 1692.31,
+        "mape": 3.73,
+        "r2": 0.9912,
+        "threshold": 5000,
+        "weights": {
+            "lstm": 0.9,
+            "xgboost": 0.05,
+            "huber": 0.05
+        }
+    },
+    "exported_at": "2026-02-04T02:50:31.650704Z",
+    "exported_by": "Super Admin"
+}

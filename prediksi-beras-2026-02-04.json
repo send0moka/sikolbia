@@ -1,0 +1,64 @@
+{
+    "komoditi": "0102",
+    "komoditi_nama": "Beras",
+    "n_months": 3,
+    "predictions": [
+        {
+            "date": "2025-01-01",
+            "tahun": 2025,
+            "bulan": 1,
+            "bahan_makanan": 30345.65,
+            "kalori_hari": 1067.02,
+            "model_used": "Ensemble"
+        },
+        {
+            "date": "2025-02-01",
+            "tahun": 2025,
+            "bulan": 2,
+            "bahan_makanan": 30064.67,
+            "kalori_hari": 1057.14,
+            "model_used": "Ensemble"
+        },
+        {
+            "date": "2025-03-01",
+            "tahun": 2025,
+            "bulan": 3,
+            "bahan_makanan": 29794.35,
+            "kalori_hari": 1047.64,
+            "model_used": "Ensemble"
+        }
+    ],
+    "confidence_intervals": [
+        {
+            "date": "2025-01-01",
+            "lower": 960.32,
+            "upper": 1173.72
+        },
+        {
+            "date": "2025-02-01",
+            "lower": 951.43,
+            "upper": 1162.85
+        },
+        {
+            "date": "2025-03-01",
+            "lower": 942.88,
+            "upper": 1152.4
+        }
+    ],
+    "input_summary": null,
+    "model_info": {
+        "type": "LSTM Enhanced Ensemble",
+        "mae": 760.39,
+        "rmse": 1692.31,
+        "mape": 3.73,
+        "r2": 0.9912,
+        "threshold": 5000,
+        "weights": {
+            "lstm": 0.9,
+            "xgboost": 0.05,
+            "huber": 0.05
+        }
+    },
+    "exported_at": "2026-02-04T02:50:18.186995Z",
+    "exported_by": "Super Admin"
+}
