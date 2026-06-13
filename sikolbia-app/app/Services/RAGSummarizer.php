@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use OpenAI\Laravel\Facades\OpenAI;
+use App\Services\LLM\LLMService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -23,26 +23,25 @@ class RAGSummarizer
 
         $ctx = $this->truncate($context, $maxChars, $maxLines);
 
-        // If OpenAI is not configured, return offline summary
-        $apiKey = config('openai.api_key') ?: env('OPENAI_API_KEY');
-        if (empty($apiKey)) {
-            return $this->summarizeOffline($ctx, $userMessage);
-        }
-
         $prompt = $this->buildPrompt($ctx, $userMessage);
         try {
-            $resp = OpenAI::chat()->create([
-                'model' => $model,
-                'messages' => [
+            $llm = new LLMService();
+            $resp = $llm->chat(
+                [
                     ['role' => 'system', 'content' => 'Anda adalah asisten data pertanian yang akurat dan ringkas.'],
                     ['role' => 'user', 'content' => $prompt],
                 ],
-                'temperature' => $temperature,
-            ]);
-            $out = trim((string)($resp->choices[0]->message->content ?? ''));
-            if ($out !== '') return $out;
+                [
+                    'purpose' => 'summarizer',
+                    'model' => $model,
+                    'temperature' => $temperature,
+                ]
+            );
+
+            $out = trim((string)($resp->content ?? ''));
+            if (($resp->success ?? false) && $out !== '') return $out;
         } catch (\Throwable $e) {
-            try { Log::warning('[RAGSummarizer] OpenAI error', ['err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
+            try { Log::warning('[RAGSummarizer] LLM error', ['err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
         }
         return $this->summarizeOffline($ctx, $userMessage);
     }

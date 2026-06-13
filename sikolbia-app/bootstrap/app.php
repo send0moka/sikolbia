@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'redirect.role' => \App\Http\Middleware\RedirectBasedOnRole::class,
             'admin.only' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'chatbot.anon' => \App\Http\Middleware\EnsureChatbotAnonId::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

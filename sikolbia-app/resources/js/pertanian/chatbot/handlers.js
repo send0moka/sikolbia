@@ -12,7 +12,8 @@ export async function stepBack(ctx) {
     variabel: 'topik',
     klasifikasi: 'variabel',
     waktu_tahun: 'klasifikasi',
-    waktu_bulan: 'waktu_tahun',
+    waktu_bulan_choice: 'waktu_tahun',
+    waktu_bulan: 'waktu_bulan_choice',
     wilayah_level: (ctx.wizard?.moduleType === 'lahan' ? 'waktu_tahun' : 'waktu_bulan'),
     wilayah_provinsi: 'wilayah_level',
     wilayah_pilih_provinsi: 'wilayah_level',
@@ -44,6 +45,8 @@ export async function stepBack(ctx) {
     ctx.loadWizardKlasifikasis();
   } else if (prev === 'waktu_tahun') {
     ctx.askYears();
+  } else if (prev === 'waktu_bulan_choice') {
+    ctx.loadWizardBulans();
   } else if (prev === 'waktu_bulan') {
     ctx.loadWizardBulans();
   } else if (prev === 'wilayah_level') {
@@ -200,10 +203,10 @@ export async function handleOption(ctx, index, opt) {
     if (!ctx.wizard.tahunIds.includes(id)) ctx.wizard.tahunIds.push(id);
     ctx.conversation.push({ sender: 'user', type: 'text', text: String(opt.label || id) });
     if (ctx.wizard.moduleType !== 'lahan') {
-      ctx.wizard.step = 'waktu_bulan';
+      ctx.wizard.step = 'waktu_bulan_choice';
       ctx.loadWizardBulans();
     } else {
-      ctx.wizard.step = 'wilayah';
+      ctx.wizard.step = 'wilayah_level';
       ctx.askWilayah();
     }
   } else if (step === 'waktu_bulan_choice') {
@@ -211,7 +214,7 @@ export async function handleOption(ctx, index, opt) {
     if (opt.value === 'bulan_all') {
       const bulans = ctx.wizardData?.bulans || [];
       ctx.wizard.bulanIds = bulans.map(b => b.id);
-      ctx.wizard.step = 'wilayah';
+      ctx.wizard.step = 'wilayah_level';
       ctx.askWilayah();
     } else {
       ctx.renderBulanChecklist();

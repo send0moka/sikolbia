@@ -44,6 +44,7 @@ export function askYears(ctx) {
 
 export function loadWizardBulans(ctx) {
   const bulans = Array.isArray(ctx.wizardData.bulans) ? ctx.wizardData.bulans : [];
+  ctx.wizard.step = 'waktu_bulan_choice';
   if (!bulans.length) {
     ctx.conversation.push({ sender: 'bot', type: 'text', text: 'Tidak ada data bulan tersedia.' });
   } else {

@@ -1,13 +1,16 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\StructuredSearchController;
 
-Route::post('/chatbot', [ChatbotController::class, 'handle']);
-Route::post('/chatbot/reset', [ChatbotController::class, 'reset']);
-Route::post('/chatbot/summary', [ChatbotController::class, 'summary']);
+Route::middleware(['chatbot.anon', 'throttle:chatbot-user'])
+	->withoutMiddleware('throttle:api')
+	->group(function () {
+		Route::post('/chatbot', [ChatbotController::class, 'handle']);
+		Route::post('/chatbot/reset', [ChatbotController::class, 'reset']);
+		Route::post('/chatbot/summary', [ChatbotController::class, 'summary']);
+	});
 Route::get('/structured/search', [StructuredSearchController::class, 'search']);
 
 use App\Models\TransaksiNbm;
@@ -88,7 +91,7 @@ Route::post('/debug/prediksi-preview', function (\Illuminate\Http\Request $reque
 	$minGramsPerDay = 30.0;
 	if ($defaultGramsPerDay < $minGramsPerDay) $defaultGramsPerDay = $minGramsPerDay;
 
-	$data_points = $historicalData->map(function($item) use ($komoditiInfo, $kelompok, $komoditi, $defaultKaloriPer100g, $defaultGramsPerDay) {
+	$data_points = $historicalData->map(function($item) use ($komoditiInfo, $kelompok, $komoditi, $defaultKaloriPer100g, $defaultGramsPerDay, $minGramsPerDay) {
 		$kaloriHari = 0;
 		$usedFallback = false;
 		$resultGramFallback = false;

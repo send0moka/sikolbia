@@ -26,15 +26,15 @@ export function confirmChecklist(ctx, index) {
     // Proceed after choosing years via checklist
     ctx.wizard.tahunIds = (chat.selected || []).map(v => Number(v));
     if (ctx.wizard.moduleType !== 'lahan') {
-      ctx.wizard.step = 'waktu_bulan';
+      ctx.wizard.step = 'waktu_bulan_choice';
       ctx.loadWizardBulans();
     } else {
-      ctx.wizard.step = 'wilayah';
+      ctx.wizard.step = 'wilayah_level';
       ctx.askWilayah();
     }
   } else if (step === 'waktu_bulan') {
     ctx.wizard.bulanIds = chat.selected || [];
-    ctx.wizard.step = 'wilayah';
+    ctx.wizard.step = 'wilayah_level';
     ctx.askWilayah();
   } else if (step === 'wilayah_provinsi') {
     ctx.wizard.provinsiIds = chat.selected || [];

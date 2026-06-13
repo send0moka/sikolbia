@@ -4,6 +4,120 @@
 import chatbotApi from '../api/chatbotApi.js';
 import { injectCompareChips } from './compare.js';
 
+function normalizeText(v) {
+  return String(v || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function buildCandidateAliases(candidate) {
+  const aliases = new Set();
+  const rawLabel = String(candidate?.label || '');
+  const normLabel = normalizeText(rawLabel);
+  if (normLabel) aliases.add(normLabel);
+
+  for (const alias of Array.isArray(candidate?.aliases) ? candidate.aliases : []) {
+    const normAlias = normalizeText(alias);
+    if (normAlias) aliases.add(normAlias);
+  }
+
+  const core = normLabel
+    .replace(/\bprovinsi\b\s+/g, '')
+    .replace(/\bkabupaten\b\s+/g, '')
+    .replace(/\bkab\.?\b\s+/g, '')
+    .replace(/\bkota\b\s+/g, '')
+    .replace(/\bprov\b\s+/g, '')
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (core) aliases.add(core);
+
+  const kind = String(candidate?.kind || '');
+  const coreValue = String(candidate?.core || core || '').trim();
+  if (coreValue) {
+    aliases.add(coreValue);
+    if (kind === 'kabupaten') {
+      aliases.add(`kabupaten ${coreValue}`);
+      aliases.add(`kab ${coreValue}`);
+      aliases.add(`kab. ${coreValue}`);
+      aliases.add(`kab kota ${coreValue}`);
+    } else if (kind === 'provinsi') {
+      aliases.add(`provinsi ${coreValue}`);
+    }
+  }
+
+  return Array.from(aliases).filter(Boolean);
+}
+
+function resolveCandidatesFromText(prompt, rawText) {
+  const candidates = Array.isArray(prompt?.candidates) ? prompt.candidates : [];
+  if (!candidates.length) return [];
+
+  const parts = String(rawText || '')
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
+  if (!parts.length) return [];
+
+  const out = [];
+  for (const p of parts) {
+    const index = Number(p);
+    if (Number.isFinite(index) && index >= 1 && index <= candidates.length) {
+      out.push(candidates[index - 1]);
+      continue;
+    }
+    const norm = normalizeText(p);
+    const hit = candidates.find((c) => {
+      const aliases = buildCandidateAliases(c);
+      return aliases.some((alias) => alias === norm || alias.includes(norm) || norm.includes(alias));
+    });
+    if (hit) out.push(hit);
+  }
+
+  const uniq = [];
+  for (const c of out) {
+    if (!uniq.find((x) => String(x.id) === String(c.id))) uniq.push(c);
+  }
+  return uniq;
+}
+
+async function handleStructuredDisambiguation(ctx, messageToSend) {
+  const prompt = ctx.pendingPrompt;
+  const selected = resolveCandidatesFromText(prompt, messageToSend);
+  if (!selected.length) {
+    const labels = (prompt?.candidates || []).slice(0, 8).map((c, i) => `${i + 1}. ${c.label}`).join('; ');
+    ctx.renderBotText(`Pilihan belum dikenali. Coba balas dengan nama atau nomor: ${labels}`);
+    return true;
+  }
+
+  if (prompt.field === 'topikId') {
+    ctx.wizard.topikId = selected[0].id;
+    ctx.wizard.variabelId = null;
+    ctx.wizard.klasifikasiIds = [];
+  } else if (prompt.field === 'variabelId') {
+    ctx.wizard.variabelId = selected[0].id;
+    ctx.wizard.klasifikasiIds = [];
+  } else if (prompt.field === 'klasifikasiIds') {
+    ctx.wizard.klasifikasiIds = selected.map((s) => s.id);
+  } else if (prompt.field === 'tahunIds') {
+    ctx.wizard.tahunIds = [Number(selected[0].id)];
+  } else if (prompt.field === 'bulanIds') {
+    ctx.wizard.bulanIds = selected.map((s) => Number(s.id));
+  } else if (prompt.field === 'wilayah') {
+    const pick = selected[0];
+    if (pick.kind === 'kabupaten') {
+      ctx.wizard.provinsiIds = pick.parentId ? [pick.parentId] : [];
+      ctx.wizard.kabupatenIds = [pick.id];
+    } else {
+      ctx.wizard.provinsiIds = [pick.id];
+      ctx.wizard.kabupatenIds = [];
+    }
+  }
+
+  ctx.pendingPrompt = null;
+  ctx.renderBotText(`Baik, saya pakai: ${selected.map((s) => s.label).join(', ')}.`);
+  await ctx.applyStructuredSuggestion(null, { resume: true, forceCompact: true });
+  return true;
+}
+
 export async function rePromptCurrentStep(ctx) {
   try {
     const step = ctx.wizard.step;
@@ -54,6 +168,11 @@ export async function rePromptCurrentStep(ctx) {
 }
 
 export async function handleNaturalMessage(ctx, messageToSend) {
+  if (ctx.pendingPrompt && ctx.pendingPrompt.type === 'structured_disambiguation') {
+    await handleStructuredDisambiguation(ctx, messageToSend);
+    return;
+  }
+
   // Intercept pending typed clarifications first
   if (ctx.pendingPrompt && ctx.pendingPrompt.type === 'klasifikasi') {
     const raw = String(messageToSend||'');
@@ -97,6 +216,14 @@ export async function handleNaturalMessage(ctx, messageToSend) {
     }
   }
 
+  if ((ctx.pendingStructured || ctx.structuredSuggestion) && /\b(tampilkan|ya tampilkan|ok tampilkan|silakan tampilkan|tolong tampilkan)\b/i.test(txtLower)) {
+    ctx.pendingStructured = false;
+    ctx.renderBotText('Baik, sedang saya ambilkan datanya...');
+    try { await ctx.applyStructuredSuggestion(null, { forceCompact: true }); } catch(_) {}
+    try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
+    return;
+  }
+
   ctx.isLoading = true;
   try {
     const data = await chatbotApi.sendMessage(messageToSend, 'natural');
@@ -122,15 +249,10 @@ export async function handleNaturalMessage(ctx, messageToSend) {
       ctx.pendingStructured = false; // prefer compare chips over plain show
       reply = `${baseReply} — Pilih jenis perbandingan di bawah.`;
     } else if (hasSignals) {
-      // Only suggest "ya tampilkan" when not in compare intent
-      if (ctx.compactChat) {
-        reply = `${baseReply} — Ketik "ya tampilkan" untuk menampilkan, atau lanjutkan chat bebas.`;
-      } else {
-        ctx.renderBotText(baseReply);
-        ctx.renderBotText('Ketik "ya tampilkan" bila ingin saya ambilkan hasilnya sekarang, atau lanjutkan chat bebas.');
-        try { ctx.$nextTick(() => ctx.scrollChatToBottom()); } catch {}
-        return;
-      }
+      ctx.pendingStructured = false;
+      ctx.renderBotText('Baik, sedang saya ambilkan datanya...');
+      await ctx.applyStructuredSuggestion(null, { forceCompact: true });
+      return;
     }
 
     if (intent === 'unknown' && !hasSignals && !ctx.guidedFallbackShown) {
@@ -152,6 +274,11 @@ export async function handleNaturalMessage(ctx, messageToSend) {
 }
 
 export async function handleStructuredMessage(ctx, messageToSend) {
+  if (ctx.pendingPrompt && ctx.pendingPrompt.type === 'structured_disambiguation') {
+    await handleStructuredDisambiguation(ctx, messageToSend);
+    return;
+  }
+
   // Intercept default show when compare is available
   const raw0 = String(messageToSend || '');
   const l0 = raw0.trim().toLowerCase();
@@ -213,12 +340,12 @@ export async function handleStructuredMessage(ctx, messageToSend) {
       const modules = Array.isArray(s.modules) ? s.modules : [];
       const wilayahs = Array.isArray(s.wilayah_hits) ? s.wilayah_hits : [];
 
-      if (ctx.compactChat && (modules.length || wilayahs.length)) {
+      if (modules.length || wilayahs.length) {
         ctx.pendingStructured = true;
-        reply = `${reply} — Ketik "ya tampilkan" untuk menampilkan.`;
-      } else if (modules.length || wilayahs.length) {
-        ctx.pendingStructured = true;
-        reply = `${reply} — Ketik "" untuk menampilkan.`;
+        ctx.pendingStructured = false;
+        ctx.renderBotText('Baik, sedang saya ambilkan datanya...');
+        await ctx.applyStructuredSuggestion(null, { forceCompact: true });
+        return;
       }
     }
       // Compare chips injection when intent is compare

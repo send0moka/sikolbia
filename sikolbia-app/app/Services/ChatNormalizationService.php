@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Services\LLM\LLMService;
 use Illuminate\Support\Facades\Log;
-use OpenAI\Laravel\Facades\OpenAI;
 
 /**
  * ChatNormalizationService
@@ -26,13 +26,8 @@ class ChatNormalizationService
             ];
         }
 
-        // If OpenAI is not configured, return empty hints
-        $apiKey = config('openai.api_key') ?: env('OPENAI_API_KEY');
-        if (empty($apiKey)) {
-            return [ 'module'=>null, 'wilayah_phrases'=>[], 'years'=>[], 'months'=>[] ];
-        }
-
-        $model = config('openai.chat_model', env('OPENAI_CHAT_MODEL', 'gpt-5-nano'));
+        $provider = (string) config('llm.default_provider', 'openai');
+        $model = (string) config("llm.providers.$provider.model", config('openai.chat_model', env('OPENAI_CHAT_MODEL', 'gpt-5-nano')));
 
         $system = 'Kembalikan JSON saja (tanpa teks lain). Tugas Anda: normalisasi pertanyaan bahasa Indonesia '
                 .'menjadi entitas berikut: {"module": "lahan|benih-pupuk|iklim-opt-dpi|null", '
@@ -46,15 +41,23 @@ class ChatNormalizationService
 
         try {
             // Note: we rely on prompt discipline to get JSON. If parse fails, return empty hints.
-            $response = OpenAI::chat()->create([
-                'model' => $model,
-                'messages' => [
+            $llm = new LLMService();
+            $response = $llm->chat(
+                [
                     ['role' => 'system', 'content' => $system],
                     ['role' => 'user', 'content' => $user],
                 ],
-                'temperature' => 1,
-            ]);
-            $raw = $response->choices[0]->message->content ?? '';
+                [
+                    'purpose' => 'normalizer',
+                    'provider' => $provider,
+                    'model' => $model,
+                    'temperature' => 1,
+                ]
+            );
+            if (!$response->success) {
+                return [ 'module'=>null, 'wilayah_phrases'=>[], 'years'=>[], 'months'=>[] ];
+            }
+            $raw = $response->content ?? '';
             $data = json_decode((string)$raw, true);
             if (!is_array($data)) { return [ 'module'=>null, 'wilayah_phrases'=>[], 'years'=>[], 'months'=>[] ]; }
             $module = $data['module'] ?? null;
@@ -66,7 +69,7 @@ class ChatNormalizationService
             try { Log::info('[Normalizer] normalize', ['text'=>$text, 'out'=>$out]); } catch (\Throwable $e) {}
             return $out;
         } catch (\Throwable $e) {
-            try { Log::warning('[Normalizer] OpenAI error', ['err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
+            try { Log::warning('[Normalizer] LLM error', ['err'=>$e->getMessage()]); } catch (\Throwable $ee) {}
             return [ 'module'=>null, 'wilayah_phrases'=>[], 'years'=>[], 'months'=>[] ];
         }
     }

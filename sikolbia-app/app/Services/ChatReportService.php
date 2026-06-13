@@ -226,7 +226,7 @@ class ChatReportService
             $wilSubset = count($wilayahNames) > 2 ? array_slice($wilayahNames, 0, 2) : $wilayahNames;
             $wilStr = $join($wilSubset);
             if (count($wilayahNames) > 2) { $wilStr .= ', dan lainnya'; }
-            return "Baik, saya menemukan data untuk modul {$modStr} di wilayah {$wilStr}{$timePhrase}. Apakah Anda ingin saya tampilkan hasilnya sekarang?";
+            return "Baik, saya menemukan data untuk modul {$modStr} di wilayah {$wilStr}{$timePhrase}.";
         }
 
         if (empty($modulesLabeled) && !empty($wilayahNames)) {
@@ -401,7 +401,7 @@ class ChatReportService
 
         $context = implode("\n", $summaryParts);
         if (!empty($lines)) {
-            $context += "\nContoh Data:\n". implode("\n", array_slice($lines, 0, 50));
+            $context .= "\nContoh Data:\n". implode("\n", array_slice($lines, 0, 50));
         }
         return trim($context);
     }
@@ -417,6 +417,13 @@ class ChatReportService
     {
         $headers = $payload['headers'] ?? [];
         $rows = $payload['rows'] ?? [];
+        $monthLabels = [
+            'januari','februari','maret','april','mei','juni',
+            'juli','agustus','september','oktober','november','desember',
+        ];
+        $isMonthLabel = function(string $name) use ($monthLabels): bool {
+            return in_array(mb_strtolower(trim($name), 'UTF-8'), $monthLabels, true);
+        };
         $lastHeader = [];
         if (!empty($headers)) {
             $lastHeader = $headers[count($headers) - 1]; // [{ name: '...' }, ...]
@@ -441,11 +448,13 @@ class ChatReportService
 
         // Build per-column stats across rows
         $colCount = count($colNames);
-        $maxCols = min(3, $colCount); // keep concise
         $numericCols = [];
+        $monthCols = [];
+        $otherCols = [];
         for ($i = 0; $i < $colCount; $i++) {
             $name = $colNames[$i];
             $stats = [
+                'index' => $i,
                 'name' => $name,
                 'min' => null, 'min_wilayah' => null,
                 'max' => null, 'max_wilayah' => null,
@@ -462,43 +471,111 @@ class ChatReportService
                     if ($stats['max'] === null || $vn > $stats['max']) { $stats['max'] = $vn; $stats['max_wilayah'] = (string)($r['wilayah'] ?? ''); }
                 }
             }
-            if ($stats['count'] > 0) { $numericCols[] = $stats; }
+            if ($stats['count'] > 0) {
+                $numericCols[] = $stats;
+                if ($isMonthLabel($name)) { $monthCols[] = $stats; }
+                else { $otherCols[] = $stats; }
+            }
         }
 
-        // Sort by coverage (count), then variance (max-min)
-        usort($numericCols, function($a, $b){
-            $covA = $a['count'] ?? 0; $covB = $b['count'] ?? 0;
-            if ($covA !== $covB) return $covB <=> $covA;
-            $varA = (($a['max'] ?? 0) - ($a['min'] ?? 0));
-            $varB = (($b['max'] ?? 0) - ($b['min'] ?? 0));
-            return $varB <=> $varA;
-        });
-
-        $topCols = array_slice($numericCols, 0, $maxCols);
-        foreach ($topCols as $col) {
-            $avg = ($col['count'] ?? 0) > 0 ? ($col['sum'] / max(1, (int)$col['count'])) : null;
-            $fmt = function($x){ return number_format((float)$x, 2, ',', '.'); };
-            if ($col['max'] !== null && $col['max_wilayah']) {
-                $lines[] = "Tertinggi ${col['name']}: {$col['max_wilayah']} (".$fmt($col['max']).')';
-            }
-            if ($col['min'] !== null && $col['min_wilayah'] && $col['min_wilayah'] !== $col['max_wilayah']) {
-                $lines[] = "Terendah ${col['name']}: {$col['min_wilayah']} (".$fmt($col['min']).')';
-            }
-            if ($avg !== null) {
-                $lines[] = "Rata-rata ${col['name']}: ".$fmt($avg);
-            }
-            $insights['columns'][] = [
-                'name' => $col['name'],
-                'min' => $col['min'], 'min_wilayah' => $col['min_wilayah'],
-                'max' => $col['max'], 'max_wilayah' => $col['max_wilayah'],
-                'avg' => $avg,
-                'count' => $col['count'],
+        $fmt = function($x){ return number_format((float)$x, 2, ',', '.'); };
+        $buildMonthlyLines = function(array $cols) use (&$lines, &$insights, $fmt) {
+            $overall = [
+                'min' => null, 'min_label' => null, 'min_wilayah' => null,
+                'max' => null, 'max_label' => null, 'max_wilayah' => null,
+                'sum' => 0.0, 'count' => 0,
             ];
+            foreach ($cols as $col) {
+                $avg = ($col['count'] ?? 0) > 0 ? ($col['sum'] / max(1, (int)$col['count'])) : null;
+                if ($col['max'] !== null) {
+                    if ($overall['max'] === null || $col['max'] > $overall['max']) {
+                        $overall['max'] = $col['max'];
+                        $overall['max_label'] = $col['name'];
+                        $overall['max_wilayah'] = $col['max_wilayah'];
+                    }
+                }
+                if ($col['min'] !== null) {
+                    if ($overall['min'] === null || $col['min'] < $overall['min']) {
+                        $overall['min'] = $col['min'];
+                        $overall['min_label'] = $col['name'];
+                        $overall['min_wilayah'] = $col['min_wilayah'];
+                    }
+                }
+                $overall['sum'] += (float)($col['sum'] ?? 0);
+                $overall['count'] += (int)($col['count'] ?? 0);
+
+                $lines[] = $col['name'].
+                    ': tertinggi '.($col['max_wilayah'] ?: '-').($col['max'] !== null ? ' ('.$fmt($col['max']).')' : '').
+                    ', terendah '.($col['min_wilayah'] ?: '-').($col['min'] !== null ? ' ('.$fmt($col['min']).')' : '').
+                    ', rata-rata '.($avg !== null ? $fmt($avg) : '-');
+
+                $insights['columns'][] = [
+                    'name' => $col['name'],
+                    'min' => $col['min'], 'min_wilayah' => $col['min_wilayah'],
+                    'max' => $col['max'], 'max_wilayah' => $col['max_wilayah'],
+                    'avg' => $avg,
+                    'count' => $col['count'],
+                ];
+            }
+
+            if ($overall['count'] > 0) {
+                $overallAvg = $overall['sum'] / max(1, (int)$overall['count']);
+                $lines = array_merge([
+                    'Secara keseluruhan: tertinggi '.($overall['max_label'] ? $overall['max_label'].' / ' : '').($overall['max_wilayah'] ?: '-').($overall['max'] !== null ? ' ('.$fmt($overall['max']).')' : '').
+                    ', terendah '.($overall['min_label'] ? $overall['min_label'].' / ' : '').($overall['min_wilayah'] ?: '-').($overall['min'] !== null ? ' ('.$fmt($overall['min']).')' : '').
+                    ', rata-rata keseluruhan '.$fmt($overallAvg),
+                ], $lines);
+                $insights['overall'] = [
+                    'max' => $overall['max'],
+                    'max_label' => $overall['max_label'],
+                    'max_wilayah' => $overall['max_wilayah'],
+                    'min' => $overall['min'],
+                    'min_label' => $overall['min_label'],
+                    'min_wilayah' => $overall['min_wilayah'],
+                    'avg' => $overallAvg,
+                    'count' => $overall['count'],
+                ];
+            }
+        };
+
+        $isMonthlyTable = count($monthCols) >= 6 && count($monthCols) >= (int)ceil(max(1, $colCount) * 0.75);
+        if ($isMonthlyTable) {
+            $buildMonthlyLines($monthCols);
+            $insights['mode'] = 'monthly';
+        } else {
+            // Sort by coverage (count), then variance (max-min)
+            usort($numericCols, function($a, $b){
+                $covA = $a['count'] ?? 0; $covB = $b['count'] ?? 0;
+                if ($covA !== $covB) return $covB <=> $covA;
+                $varA = (($a['max'] ?? 0) - ($a['min'] ?? 0));
+                $varB = (($b['max'] ?? 0) - ($b['min'] ?? 0));
+                return $varB <=> $varA;
+            });
+
+            $maxCols = min(3, count($numericCols));
+            $topCols = array_slice($numericCols, 0, $maxCols);
+            foreach ($topCols as $col) {
+                $avg = ($col['count'] ?? 0) > 0 ? ($col['sum'] / max(1, (int)$col['count'])) : null;
+                if ($col['max'] !== null && $col['max_wilayah']) {
+                    $lines[] = "Tertinggi ${col['name']}: {$col['max_wilayah']} (".$fmt($col['max']).')';
+                }
+                if ($col['min'] !== null && $col['min_wilayah'] && $col['min_wilayah'] !== $col['max_wilayah']) {
+                    $lines[] = "Terendah ${col['name']}: {$col['min_wilayah']} (".$fmt($col['min']).')';
+                }
+                if ($avg !== null) {
+                    $lines[] = "Rata-rata ${col['name']}: ".$fmt($avg);
+                }
+                $insights['columns'][] = [
+                    'name' => $col['name'],
+                    'min' => $col['min'], 'min_wilayah' => $col['min_wilayah'],
+                    'max' => $col['max'], 'max_wilayah' => $col['max_wilayah'],
+                    'avg' => $avg,
+                    'count' => $col['count'],
+                ];
+            }
         }
 
         if (empty($lines)) { $lines[] = 'Tidak ada nilai numerik yang dapat diringkas.'; }
-        // Keep it short (max 6 lines)
-        $lines = array_slice($lines, 0, 6);
         return [ 'lines' => $lines, 'insights' => $insights ];
     }
 }

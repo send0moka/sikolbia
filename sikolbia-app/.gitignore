@@ -1,2 +1,4 @@
 phpstan.neon
 /public/storage
+.env.testing
+.env

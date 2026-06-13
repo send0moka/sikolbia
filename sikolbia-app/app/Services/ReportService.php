@@ -17,36 +17,6 @@ use Illuminate\Support\Facades\Log;
  */
 class ReportService
 {
-    /**
-     * Lightweight intent router for chatbot queries.
-     * - Handles informational/general intents with natural responses (no extractor call).
-     * - Falls through to structured-first pipeline for data-specific queries.
-     *
-     * Return shape: ['message'=>string] plus optional ['structured_result'=>array] when structured.
-     */
-    
-    /**
-     * Build a structured-first response for chatbot: run extractor → keep structured_result → format a natural message.
-     * Does not change the core retrieval pipeline; only adds human-friendly text around detected entities.
-     *
-     * Contract:
-     * - Input: free-form $query from user
-     * - Output: [ 'structured_result' => array, 'message' => string ]
-     * - Error modes: on extractor failure, returns minimal payload with gentle guidance
-     */
-    
-
-    /**
-     * Turn structured extraction result into a natural Indonesian sentence with light clarifications.
-     * Keeps domain labels consistent (e.g., Benih & Pupuk, Iklim & OPT DPI).
-     *
-     * Rules:
-     * - If modules AND wilayah available → confirm finding + optionally mention years/months.
-     * - If only wilayah → ask which module is intended.
-     * - If only modules → ask which wilayah is intended (or suggest to pilih wilayah).
-     * - If neither → prompt for either module or wilayah.
-     */
-    // Note: chatbot formatting logic moved to ChatReportService. No local formatter retained.
 
     /**
      * Internal static cache so repeated calls don't rebuild the map.

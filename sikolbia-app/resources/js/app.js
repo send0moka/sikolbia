@@ -12,13 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('App.js initialized - Starting Alpine for non-Livewire page');
         window.Alpine = Alpine;
         
-        // Register pertanian component if needed
+        // Register pertanian component if needed - MUST complete before Alpine.start()
         const pertanianReportFormModule = import('./pertanian/index.js');
         pertanianReportFormModule.then(module => {
             Alpine.data('pertanianReportForm', module.default);
+            Alpine.start();  // Start Alpine only after component is registered
+            console.log('Alpine started after pertanianReportForm registered');
+        }).catch(err => {
+            console.error('Failed to load pertanianReportForm:', err);
+            Alpine.start();  // Still start Alpine even if component load fails
         });
-        
-        Alpine.start();
     } else {
         // Livewire page - Alpine will be started by Livewire/Flux
         console.log('App.js initialized - Livewire detected, Alpine will be handled by Livewire');
